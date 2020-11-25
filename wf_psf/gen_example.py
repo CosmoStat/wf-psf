@@ -26,28 +26,39 @@ for it in range(45):
     zernikes.append(Zcube['Zpols'][0,it][5])
 
 
-sim_psf_toolkit = simPSF.SimPSFToolkit(zernike_maps=zernikes ,plot_opt=True)
+# All parameters in default value
+sim_PSF_toolkit = SimPSFToolkit(zernikes, max_order=45, max_wfe_rms=0.1,
+                                output_dim=64, rand_seed=None, plot_opt=True, oversampling_rate=2,
+                                pix_sampling=12, tel_diameter=1.2, tel_focal_length=24.5,
+                                pupil_diameter=1024, verbose=0)
 
-# First example
-sim_psf_toolkit.generate_mono_PSF(lambda_obs=0.725)
-psf_725 = sim_psf_toolkit.get_psf()
-sim_psf_toolkit.plot_psf(cmap=newcmp)
-sim_psf_toolkit.plot_wf_phase(cmap=newcmp)
+# Generate a random sample of coefficients
+sim_PSF_toolkit.gen_random_Z_coeffs(max_order=45)
+# Normalize coefficients
+z_coeffs = sim_PSF_toolkit.normalize_zernikes(sim_PSF_toolkit.get_z_coeffs(), sim_PSF_toolkit.max_wfe_rms)
+# Save coefficients
+sim_PSF_toolkit.set_z_coeffs(z_coeffs)
+# Plot Z coefficients
+sim_PSF_toolkit.plot_z_coeffs()
 
-# Generate PSFs at different wavelengths
-sim_psf_toolkit.generate_mono_PSF(lambda_obs=0.550)
-sim_psf_toolkit.plot_psf()
-sim_psf_toolkit.generate_mono_PSF(lambda_obs=0.650)
-sim_psf_toolkit.plot_psf()
-sim_psf_toolkit.generate_mono_PSF(lambda_obs=0.750)
-sim_psf_toolkit.plot_psf()
-sim_psf_toolkit.generate_mono_PSF(lambda_obs=0.850)
-sim_psf_toolkit.plot_psf()
-sim_psf_toolkit.generate_mono_PSF(lambda_obs=0.950)
-sim_psf_toolkit.plot_psf()
+# Generate monochromatic PSFs at different wavelengths
+sim_PSF_toolkit.generate_mono_PSF(lambda_obs=0.9, regen_sample=False)
+sim_PSF_toolkit.plot_psf()
+sim_PSF_toolkit.generate_mono_PSF(lambda_obs=0.8, regen_sample=False)
+sim_PSF_toolkit.plot_psf()
+sim_PSF_toolkit.generate_mono_PSF(lambda_obs=0.7, regen_sample=False)
+sim_PSF_toolkit.plot_psf()
+sim_PSF_toolkit.generate_mono_PSF(lambda_obs=0.6, regen_sample=False)
+sim_PSF_toolkit.plot_psf()
+sim_PSF_toolkit.generate_mono_PSF(lambda_obs=0.55, regen_sample=False)
+sim_PSF_toolkit.plot_psf()
+
+### Inspect the wavefront
+sim_PSF_toolkit.plot_opd_phase(newcmp)
 
 
-# Generate a polychromatic PSF
+### Load an example SED
+# Load the SED
 SED_path = '/Users/tliaudat/Documents/PhD/codes/WF_PSF/data/templatesCOSMOS/SB1_A_0_UV.sed'
 PA_SED_path = '/Users/tliaudat/Documents/PhD/codes/WF_PSF/data/PA-zernike-cubes/example_TSED.txt'
 
@@ -60,15 +71,15 @@ PA_SED = np.genfromtxt(PA_SED_path,dtype=np.dtype('float64'))
 PA_wvlength = np.arange(351)+550
 PA_SED_wv = np.concatenate((PA_wvlength.reshape(-1,1), PA_SED.reshape(-1,1)), axis=1)
 
+### Polychromatic PSF with 35 bins
+# Turn the plot option on
+sim_PSF_toolkit.plot_opt = True
+poly_psf_35 = sim_PSF_toolkit.generate_poly_PSF(PA_SED_wv, n_bins=35)
+sim_PSF_toolkit.psf_plotter(poly_psf_35, lambda_obs=0.000, cmap='gist_stern')
 
-sim_psf_toolkit = simPSF.SimPSFToolkit(zernike_maps=zernikes ,plot_opt=True)
+### Polychromatic PSF with 100 bins
+poly_psf_100 = sim_PSF_toolkit.generate_poly_PSF(PA_SED_wv, n_bins=100)
+sim_PSF_toolkit.psf_plotter(poly_psf_100, lambda_obs=0.000, cmap='gist_stern')
 
-poly_psf = sim_psf_toolkit.generate_poly_PSF(PA_SED_wv, n_bins=35)
-sim_psf_toolkit.psf_plotter(poly_psf, lambda_obs=0.000, cmap='gist_stern')
-
-sim_psf_toolkit.generate_mono_PSF(lambda_obs=0.550)
-sim_psf_toolkit.plot_psf()
-sim_psf_toolkit.generate_mono_PSF(lambda_obs=0.725)
-sim_psf_toolkit.plot_psf()
-sim_psf_toolkit.generate_mono_PSF(lambda_obs=0.900)
-sim_psf_toolkit.plot_psf()
+## Residual between both PSFs
+sim_PSF_toolkit.psf_plotter(poly_psf_100 - poly_psf_35, lambda_obs=0.000, cmap='gist_stern')
