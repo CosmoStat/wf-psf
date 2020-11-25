@@ -25,7 +25,6 @@ class SimPSFToolkit(object):
     Parameters
     ----------
     zernike_maps
-    decim_f=16
     pad_factor=2
     max_order=45
     max_wfe: float
@@ -41,29 +40,41 @@ class SimPSFToolkit(object):
 
     """
 
-    def __init__(self, zernike_maps, decim_f=16, pad_factor=2, max_order=45, max_wfe=0.1,
-                 lambda_norm=0.550, rand_seed=None, plot_opt=False):
+    def __init__(self, zernike_maps, max_order=45, max_wfe_rms=0.1,
+                 output_dim=64, rand_seed=None, plot_opt=False, oversampling_rate=2,
+                 pix_sampling=12, tel_diameter=1.2, tel_focal_length=24.5,
+                 pupil_diameter=1024, verbose=0):
         # Input attributes
-        self.pad_factor = pad_factor
         self.max_order = max_order
         self.rand_seed = rand_seed
         self.plot_opt = plot_opt
         self.zernike_maps = zernike_maps
-        self.decim_f = decim_f
-        self.max_wfe = max_wfe
-        self.lambda_norm = lambda_norm
+        self.max_wfe_rms = max_wfe_rms  # In [um]
+        self.output_dim = output_dim  # In pixels per dimension
+        self.verbose = verbose
+
+
+        # Telescope characteristics
+        self.oversampling_rate = oversampling_rate  # dimensionless
+        self.pix_sampling = pix_sampling  # In [um]
+        self.tel_diameter = tel_diameter  # In [m]
+        self.tel_focal_length = tel_focal_length  # In [m]
+        self.pupil_diameter = pupil_diameter  # In [pix]
 
         # Class attributes
-        self.rand_coeffs = None
+        self.z_coeffs = None
         self.psf = None
-        self.wf = None
+        self.opd = None
         self.phase = None
-        self.pupil_mask = None
         self.lambda_obs = None
+        self.poly_psf = None
+
+        # Generate pupil mask
+        self.pupil_mask = ~np.isnan(self.zernike_maps[0])
 
 
     @staticmethod
-    def fft_diffraction_op(wf, pupil_mask, pad_factor=2, match_shapes=True):
+    def _OLD_fft_diffraction_op(wf, pupil_mask, pad_factor=2, match_shapes=True):
         """ Perform a fft-based diffraction.
 
         Parameters
@@ -88,6 +99,8 @@ class SimPSFToolkit(object):
         padded_wf[start:stop, start:stop][pupil_mask] = wf[pupil_mask]
 
         fft_wf = np.fft.fftshift(np.fft.fft2(padded_wf))
+        # fft_wf = np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(padded_wf)))
+
         psf = np.abs(fft_wf)**2
 
         if match_shapes:
@@ -98,6 +111,31 @@ class SimPSFToolkit(object):
             return psf[x_dif :psf.shape[0]-x_dif, y_dif :psf.shape[1]-y_dif]
         else:
             return psf
+
+
+    @staticmethod
+    def fft_diffract(wf, output_dim=64):
+        # Perform the FFT-based diffraction operation
+        fft_wf = np.fft.fftshift(np.fft.fft2(wf))
+        psf = np.abs(fft_wf)**2
+
+        # Crop the image
+        start = int(psf.shape[0]//2-output_dim//2)
+        stop = int(psf.shape[0]//2+output_dim//2)
+
+        return psf[start:stop, start:stop]
+
+
+    @staticmethod
+    def crop_img(to_crop_img, ref_im):
+        cent_x = int(to_crop_img.shape[0]//2)
+        cent_y = int(to_crop_img.shape[1]//2)
+
+        delta_x = int(ref_im.shape[0]//2)
+        delta_y = int(ref_im.shape[1]//2)
+
+        return to_crop_img[ cent_x-delta_x : cent_x+delta_x , cent_y-delta_y : cent_y+delta_y ]
+
 
     @staticmethod
     def decimate_im(input_im, decim_f):
@@ -114,6 +152,7 @@ class SimPSFToolkit(object):
 
         return np.array(im_resized)
 
+
     @staticmethod
     def get_radial_idx(max_order=45):
         it=1
@@ -126,6 +165,7 @@ class SimPSFToolkit(object):
             it+=1
 
         return np.array(radial_idxs)
+
 
     @staticmethod
     def psf_plotter(psf, lambda_obs=0.000, cmap='gist_stern'):
@@ -157,8 +197,9 @@ class SimPSFToolkit(object):
 
         plt.show()
 
+
     @staticmethod
-    def wf_phase_plotter(pupil_mask, wf, phase, lambda_obs, cmap='viridis'):
+    def opd_phase_plotter(pupil_mask, opd, phase, lambda_obs, cmap='viridis'):
         fig = plt.figure(figsize=(16,10))
 
         ax1 = fig.add_subplot(131)
@@ -170,7 +211,7 @@ class SimPSFToolkit(object):
         ax1.set_xticks([]);ax1.set_yticks([])
 
         ax2 = fig.add_subplot(132)
-        im2 = ax2.imshow(wf, cmap=cmap, interpolation='None')
+        im2 = ax2.imshow(opd, cmap=cmap, interpolation='None')
         divider2 = make_axes_locatable(ax2)
         cax2 = divider2.append_axes('right', size='5%', pad=0.05)
         fig.colorbar(im2, cax=cax2, orientation='vertical')
@@ -187,11 +228,13 @@ class SimPSFToolkit(object):
 
         plt.show()
 
+
     def get_psf(self):
         if self.psf is not None:
             return self.psf
         else:
             print('No PSF has been computed yet.')
+
 
     def plot_psf(self, cmap='gist_stern'):
         if self.psf is not None:
@@ -199,11 +242,13 @@ class SimPSFToolkit(object):
         else:
             print('No PSF has been computed yet.')
 
-    def plot_wf_phase(self, cmap='viridis'):
-        if self.wf is not None:
-            self.wf_phase_plotter(self.pupil_mask, self.wf, self.phase, self.lambda_obs, cmap)
+
+    def plot_opd_phase(self, cmap='viridis'):
+        if self.opd is not None:
+            self.opd_phase_plotter(self.pupil_mask, self.opd, self.phase, self.lambda_obs, cmap)
         else:
             print('No WF has been computed yet.')
+
 
     def gen_random_Z_coeffs(self, max_order=45, rand_seed=None):
         """ Generate a random set of Zernike coefficients.
@@ -231,80 +276,203 @@ class SimPSFToolkit(object):
         rad_idx = self.get_radial_idx(max_order)
         rad_idx[0] = 1
 
-        rand_coeffs = []
+        z_coeffs = []
 
         for it in range(max_order):
-            rand_coeffs.append((np.random.rand()-0.5)*2./rad_idx[it])
+            z_coeffs.append((np.random.rand()-0.5)*2./rad_idx[it])
 
-        self.rand_coeffs = rand_coeffs
+        self.z_coeffs = z_coeffs
 
-    def plot_rand_coeffs(self):
+
+    def plot_z_coeffs(self):
         """Plot random Zernike coefficients."""
-        if self.rand_coeffs is not None:
+        if self.z_coeffs is not None:
             fig = plt.figure(figsize=(12,6))
             ax1 = fig.add_subplot(111)
-            im1 = ax1.bar(np.arange(len(self.rand_coeffs)), np.array(self.rand_coeffs))
+            im1 = ax1.bar(np.arange(len(self.z_coeffs)), np.array(self.z_coeffs))
             ax1.set_title('Phase map')
-            ax1.set_xlabel('Zernike coeeficients')
+            ax1.set_xlabel('Zernike coefficients')
             ax1.set_ylabel('Magnitude [rad]')
             plt.show()
         else:
             print('Random coeffs not generated.')
 
-    def get_rand_coeffs(self):
+
+    def get_z_coeffs(self):
         """Get random coefficients"""
-        if self.rand_coeffs is not None:
-            return self.rand_coeffs
+        if self.z_coeffs is not None:
+            return self.z_coeffs
         else:
             print('Random coeffs not generated.')
 
 
-    def generate_mono_PSF(self, lambda_obs=0.725, regen_sample=False):
+    def set_z_coeffs(self, z_coeffs):
+        """Set zernike coefficients."""
+        if len(z_coeffs) == self.max_order:
+            self.z_coeffs = z_coeffs
+        else:
+            print('Zernike coefficients should be of length %d'%(self.max_order))
+
+
+    def normalize_zernikes(self, z_coeffs=None, max_wfe_rms=None):
+        """Normalize zernike coefficients."""
+        if max_wfe_rms is None:
+            max_wfe_rms = self.max_wfe_rms
+
+        # Calculate normalization factor
+        wfe_rms = self.calculate_wfe_rms(z_coeffs=z_coeffs)
+        mult_factor = max_wfe_rms / wfe_rms
+
+        # Normalize Zernike coefficients and return them
+        z_coeffs = [_z*mult_factor for _z in z_coeffs]
+
+        return z_coeffs
+
+    def calculate_wfe_rms(self, z_coeffs=None):
+        """Calculate WFE rms from a set of zernike coefficients."""
+        if z_coeffs is None:
+            if self.z_coeffs is None:
+                self.gen_random_Z_coeffs(self.max_order, self.rand_seed)
+                z_coeffs = self.get_z_coeffs()
+            else:
+                z_coeffs = self.get_z_coeffs()
+
+        # Create the phase with the Zernike basis
+        opd = 0
+        for it in range(self.max_order):
+            opd += self.zernike_maps[it]*z_coeffs[it]
+
+        # Calculate normalization factor
+        wfe_rms = np.sqrt(np.mean((opd[self.pupil_mask] -np.mean(opd[self.pupil_mask]))**2))
+
+        return wfe_rms
+
+    def check_wfe_rms(self, z_coeffs=None, max_wfe_rms=None):
+        """Check if Zernike coefficients are within the maximum admitted error."""
+
+        if max_wfe_rms is None:
+            max_wfe_rms = self.max_wfe_rms
+
+        # Calculate normalization factor
+        wfe_rms = self.calculate_wfe_rms(z_coeffs=z_coeffs)
+
+        return max_wfe_rms - wfe_rms
+
+
+    def generate_mono_PSF(self, lambda_obs=0.725, regen_sample=False, get_psf=False):
         """Generate monochromatic PSF."""
+        if lambda_obs<0.55 or lambda_obs>0.9:
+            print('WARNING: requested wavelength %.4f um is not in VIS passband [0.55,0.9]um'%(lambda_obs))
         self.lambda_obs = lambda_obs
 
-        if self.rand_coeffs is None or regen_sample is True:
+        # Calculate the OPD from the Zernike coefficients
+        self.calculate_opd(regen_sample)
+
+        # Apply the diffraction operator using the opd (optical path differences)
+        self.diffract_phase()
+
+        if get_psf is True:
+            return np.copy(self.psf)
+
+    def calculate_opd(self, regen_sample=False):
+        """Calculate the OPD from the Zernike coefficients."""
+        if self.z_coeffs is None or regen_sample is True:
+            # Generate a random sample of coefficients
             self.gen_random_Z_coeffs(self.max_order, self.rand_seed)
+            # Normalize coefficients
+            z_coeffs = self.normalize_zernikes(self.get_z_coeffs(), self.max_wfe_rms)
+            # Save coefficients
+            self.set_z_coeffs(z_coeffs)
+            # Plot Zernike coefficients
             if self.plot_opt:
-                self.plot_rand_coeffs()
-            rand_coeffs = self.get_rand_coeffs()
+                self.plot_z_coeffs()
+
         else:
-            rand_coeffs = self.get_rand_coeffs()
+            # Get the stored Zernike coefficients
+            z_coeffs = self.get_z_coeffs()
 
 
         # Create the phase with the Zernike basis
-        wf = 0
+        opd = 0
         for it in range(self.max_order):
-            wf += self.zernike_maps[it]*rand_coeffs[it]
-
-        # Decimate image
-        wf = self.decimate_im(wf, self.decim_f)
-
-
-        # Generate pupil mask
-        self.pupil_mask = ~np.isnan(wf)
-
-        # Normalize wfe map
-        wfe = np.sqrt(np.mean((wf[self.pupil_mask] -np.mean(wf[self.pupil_mask]))**2))
-        mult_factor = (self.max_wfe * self.lambda_norm) / wfe
-        wf[self.pupil_mask] *= mult_factor
+            opd += self.zernike_maps[it]*z_coeffs[it]
 
         # Save the wavefront
-        self.wf = wf
+        self.opd = opd
 
 
-        # Generate the full phase
-        self.phase = np.zeros(wf.shape, dtype=np.complex128)
-        self.phase[self.pupil_mask] = np.exp(2j*np.pi*wf[self.pupil_mask]/self.lambda_obs)
+    def diffract_phase(self, lambda_obs=None):
+        """Diffract the phase map."""
+        if lambda_obs is None:
+            if self.lambda_obs is None:
+                print('WARNING: No wavelength is defined. Using default value 0.8um.')
+                lambda_obs = 0.8
+            else:
+                lambda_obs = self.lambda_obs
+        elif lambda_obs<0.55*0.99 or lambda_obs>0.9*1.01:
+            print('WARNING: wavelength %.4f is not in VIS passband [0.55,0.9]um'%(lambda_obs))
 
-        # Apply the diffraction operator
-        self.psf = self.fft_diffraction_op(self.phase, self.pupil_mask, self.pad_factor)
+        # Calculate the feasible lambda closest to lambda_obs
+        possible_lambda = self.feasible_wavelength(lambda_obs)
+
+        # Save wavelength
+        self.lambda_obs = possible_lambda
+
+        # Calculate the required N for the input lambda_obs
+        possible_N = self.feasible_N(self.lambda_obs)
+
+        # Generate the full phase and
+        # Add zeros to the phase to have the correct fourier sampling
+        start = possible_N//2 - self.opd.shape[0]//2
+        stop = possible_N//2 + self.opd.shape[0]//2
+
+        self.phase = np.zeros((possible_N, possible_N), dtype=np.complex128)
+        self.phase[start:stop, start:stop][self.pupil_mask] = np.exp(
+            2j*np.pi*self.opd[self.pupil_mask]/self.lambda_obs)
+
+        # FFT-diffract the phase (wavefront) and then crop to desired dimension
+        self.psf = self.fft_diffract(wf=self.phase, output_dim=self.output_dim)
 
         # Normalize psf
         self.psf /= np.sum(self.psf)
 
+
+    def feasible_N(self, lambda_obs):
+        """Calculate the feasible N for a lambda_obs diffraction.
+
+        Input wavelength must be in [um].
+        """
+        # Calculate the required N for the input lambda_obs
+        req_N = (
+            self.oversampling_rate * self.pupil_diameter * lambda_obs * self.tel_focal_length)/ (
+            self.tel_diameter * self.pix_sampling)
+        # Recalculate the req_N into a possible value (a pair integer)
+        possible_N = int((req_N//2)*2)
+
+        return possible_N
+
+    def feasible_wavelength(self, lambda_obs):
+        """Calculate closest fesible wavelength to target wavelength.
+
+        Input wavelength must be in [um].
+        """
+        # Calculate a feasible N for the input lambda_obs
+        possible_N = self.feasible_N(lambda_obs)
+
+        # Recalculate the corresponding the wavelength
+        possible_lambda = (
+            possible_N * self.tel_diameter * self.pix_sampling) / (
+            self.pupil_diameter * self.oversampling_rate * self.tel_focal_length)
+
+        if self.verbose > 0:
+            print("Requested wavelength: %.5f \nRequired N: %.2f"%(lambda_obs, req_N))
+            print("Possible wavelength: %.5f \nPossible N: %.2f"%(possible_lambda, possible_N))
+
+        return possible_lambda
+
+
     @staticmethod
-    def gen_SED_interp(SED, n_bins=35):
+    def gen_SED_interp(SED, n_bins=35, interp_kind='cubic'):
         """Generate SED interpolator.
 
         Returns the interpolator and the wavelengths in [nm].
@@ -314,42 +482,62 @@ class SimPSFToolkit(object):
         wvlength = np.arange(wv_min, wv_max, int((wv_max-wv_min)/n_bins))
 
         SED_interp = sinterp.interp1d(
-            SED[:,0], SED[:,1], kind='quadratic')
+            SED[:,0], SED[:,1], kind=interp_kind, bounds_error=False, fill_value="extrapolate")
 
         return wvlength, SED_interp
 
-    def generate_poly_PSF(self, SED, n_bins=35, regen_sample=False):
+
+    def generate_poly_PSF(self, SED, n_bins=35):
         """Generate polychromatic PSF with a specific SED.
 
         The wavelength space will be the Euclid VIS instrument band:
         [550,900]nm and will be sample in ``n_bins``.
 
         """
-        if self.rand_coeffs is None or regen_sample is True:
-            self.gen_random_Z_coeffs(self.max_order, self.rand_seed)
-            if self.plot_opt:
-                self.plot_rand_coeffs()
-            rand_coeffs = self.get_rand_coeffs()
-        else:
-            rand_coeffs = self.get_rand_coeffs()
-
         # Generate SED interpolator and wavelengtyh array
         wvlength, SED_interp = self.gen_SED_interp(SED, n_bins)
 
+        # Convert wavelength from [nm] to [um]
+        wvlength_um = wvlength/1e3
+
+        # Calculate feasible wavelengths (in [um])
+        verbose = self.verbose
+        self.verbose = 0
+        feasible_wv = np.array([self.feasible_wavelength(_wv) for _wv in wvlength_um])
+        self.verbose = verbose
+
         # Interpolate and normalize SED
-        SED_norm = SED_interp(wvlength)
+        SED_norm = SED_interp(feasible_wv*1e3)  # Interpolation is done in [nm]
         SED_norm /= np.sum(SED_norm)
+
+        # Plot input SEDs and interpolated SEDs
+        if self.plot_opt:
+            fig = plt.figure(figsize=(14,8))
+            ax1 = fig.add_subplot(111)
+            ax1.plot(SED[:,0],SED[:,1], label='Input SED')
+            ax1.scatter(feasible_wv*1e3, SED_interp(feasible_wv*1e3), label='Interpolated', c='red')
+            ax1.set_xlabel('wavelength [nm]')
+            ax1.set_ylabel('SED(wavelength)')
+            ax1.set_title('SED')
+            ax1.legend()
+            plt.show()
 
         stacked_psf = 0
 
-        for it in range(wvlength.shape[0]):
+        # Generate the required monochromatic PSFs
+        for it in range(feasible_wv.shape[0]):
+            self.generate_mono_PSF(lambda_obs=feasible_wv[it])
+            stacked_psf += self.get_psf()*SED_norm[it]
 
-            wvl_um = wvlength[it]/1e3
-            SED_T = SED_norm[it]
-
-            self.generate_mono_PSF(lambda_obs=wvl_um)
-            stacked_psf += self.get_psf()*SED_T
-
-#         stacked_psf /= wvlength.shape[0]
+        self.poly_psf = stacked_psf
 
         return stacked_psf
+
+# This pythonic version of the polychromatic calculation is not working
+# The parallelisation with the class with shared variables might not be working
+# It may work if we define a @staticmethod for the diffracvtion
+#         psf_cube = np.array([_sed*self.generate_mono_PSF(_wv, get_psf=True)
+#                              for _wv, _sed in zip(feasible_wv, SED_norm)])
+#         # Sum to obtain the polychromatic PSFs
+#         self.poly_psf = np.sum(np_psf_cube, axis=0)
+#         return np.copy(self.poly_psf)
