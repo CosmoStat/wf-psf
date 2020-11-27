@@ -99,7 +99,7 @@ class SimPSFToolkit(object):
         padded_wf[start:stop, start:stop][pupil_mask] = wf[pupil_mask]
 
         fft_wf = np.fft.fftshift(np.fft.fft2(padded_wf))
-        # fft_wf = np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(padded_wf)))
+#         fft_wf = np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(padded_wf)))
 
         psf = np.abs(fft_wf)**2
 
@@ -168,8 +168,8 @@ class SimPSFToolkit(object):
 
 
     @staticmethod
-    def psf_plotter(psf, lambda_obs=0.000, cmap='gist_stern'):
-        fig = plt.figure(figsize=(16,10))
+    def psf_plotter(psf, lambda_obs=0.000, cmap='gist_stern', save_img=False):
+        fig = plt.figure(figsize=(18,10))
 
         ax1 = fig.add_subplot(131)
         im1 = ax1.imshow(psf, cmap=cmap, interpolation='None')
@@ -195,12 +195,15 @@ class SimPSFToolkit(object):
         ax3.set_title('log PSF (lambda=%.3f [um])'%(lambda_obs))
         ax3.set_xticks([]);ax3.set_yticks([])
 
+        if save_img:
+            plt.savefig('./PSF_lambda_%.3f.pdf'%lambda_obs, bbox_inches='tight')
+
         plt.show()
 
 
     @staticmethod
-    def opd_phase_plotter(pupil_mask, opd, phase, lambda_obs, cmap='viridis'):
-        fig = plt.figure(figsize=(16,10))
+    def opd_phase_plotter(pupil_mask, opd, phase, lambda_obs, cmap='viridis', save_img=False):
+        fig = plt.figure(figsize=(18,10))
 
         ax1 = fig.add_subplot(131)
         im1 = ax1.imshow(pupil_mask, interpolation='None')
@@ -210,21 +213,26 @@ class SimPSFToolkit(object):
         ax1.set_title('Pupil mask')
         ax1.set_xticks([]);ax1.set_yticks([])
 
+        vmax = np.max(abs(opd))
         ax2 = fig.add_subplot(132)
-        im2 = ax2.imshow(opd, cmap=cmap, interpolation='None')
+        im2 = ax2.imshow(opd, cmap=cmap, interpolation='None', vmin=-vmax, vmax=vmax)
         divider2 = make_axes_locatable(ax2)
         cax2 = divider2.append_axes('right', size='5%', pad=0.05)
         fig.colorbar(im2, cax=cax2, orientation='vertical')
-        ax2.set_title('WF map [um]')
+        ax2.set_title('OPD [um]')
         ax2.set_xticks([]);ax2.set_yticks([])
 
+        vmax = np.max(abs(np.angle(phase)))
         ax3 = fig.add_subplot(133)
-        im3 = ax3.imshow(np.angle(phase), cmap=cmap, interpolation='None')
+        im3 = ax3.imshow(np.angle(phase), cmap=cmap, interpolation='None', vmin=-vmax, vmax=vmax)
         divider3 = make_axes_locatable(ax3)
         cax3 = divider3.append_axes('right', size='5%', pad=0.05)
         fig.colorbar(im3, cax=cax3, orientation='vertical')
-        ax3.set_title('Phase map [rad] (lambda=%.3f [um])'%(lambda_obs))
+        ax3.set_title('W phase [rad](wv=%.2f[um])'%(lambda_obs))
         ax3.set_xticks([]);ax3.set_yticks([])
+
+        if save_img:
+            plt.savefig('./OPD_lambda_%.3f.pdf'%lambda_obs, bbox_inches='tight')
 
         plt.show()
 
@@ -236,16 +244,16 @@ class SimPSFToolkit(object):
             print('No PSF has been computed yet.')
 
 
-    def plot_psf(self, cmap='gist_stern'):
+    def plot_psf(self, cmap='gist_stern', save_img=False):
         if self.psf is not None:
-            self.psf_plotter(self.psf,self.lambda_obs, cmap)
+            self.psf_plotter(self.psf,self.lambda_obs, cmap, save_img)
         else:
             print('No PSF has been computed yet.')
 
 
-    def plot_opd_phase(self, cmap='viridis'):
+    def plot_opd_phase(self, cmap='viridis', save_img=False):
         if self.opd is not None:
-            self.opd_phase_plotter(self.pupil_mask, self.opd, self.phase, self.lambda_obs, cmap)
+            self.opd_phase_plotter(self.pupil_mask, self.opd, self.phase, self.lambda_obs, cmap, save_img)
         else:
             print('No WF has been computed yet.')
 
@@ -284,15 +292,18 @@ class SimPSFToolkit(object):
         self.z_coeffs = z_coeffs
 
 
-    def plot_z_coeffs(self):
+    def plot_z_coeffs(self, save_img=False):
         """Plot random Zernike coefficients."""
         if self.z_coeffs is not None:
             fig = plt.figure(figsize=(12,6))
             ax1 = fig.add_subplot(111)
             im1 = ax1.bar(np.arange(len(self.z_coeffs)), np.array(self.z_coeffs))
-            ax1.set_title('Phase map')
             ax1.set_xlabel('Zernike coefficients')
-            ax1.set_ylabel('Magnitude [rad]')
+            ax1.set_ylabel('Magnitude')
+
+            if save_img:
+                plt.savefig('./Z_coeffs.pdf', bbox_inches='tight')
+
             plt.show()
         else:
             print('Random coeffs not generated.')
@@ -520,6 +531,7 @@ class SimPSFToolkit(object):
             ax1.set_ylabel('SED(wavelength)')
             ax1.set_title('SED')
             ax1.legend()
+            # plt.savefig(output_path+'SED_interp_nbin_%d.pdf'%n_bins, bbox_inches='tight')
             plt.show()
 
         stacked_psf = 0

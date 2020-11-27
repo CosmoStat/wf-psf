@@ -148,11 +148,11 @@ class GenFieldPSF(object):
 
         return self.sim_psf_toolkit.get_psf()
 
-    def inspect_opd_map(self):
+    def inspect_opd_map(self, cmap='viridis', save_img=False):
         """Plot the last saved OPD map."""
-        self.sim_psf_toolkit.plot_opd_phase(cmap='viridis')
+        self.sim_psf_toolkit.plot_opd_phase(cmap, save_img)
 
-    def inspect_field_wfe_rms(self, mesh_bins=20):
+    def inspect_field_wfe_rms(self, mesh_bins=20, save_img=False):
         """Plot a chart of WFE_RMS as a function of position throughout the field."""
         x_coord = np.linspace(0,xlim,mesh_bins)
         y_coord = np.linspace(0,ylim,mesh_bins)
@@ -174,6 +174,10 @@ class GenFieldPSF(object):
         ax1.set_title('PSF field WFE RMS [um]')
         ax1.set_xlabel('x axis')
         ax1.set_ylabel('y axis')
+
+        if save_img:
+            plt.savefig('./WFE_field_meshdim_%d.pdf'%mesh_bins, bbox_inches='tight')
+
         plt.show()
 
 
