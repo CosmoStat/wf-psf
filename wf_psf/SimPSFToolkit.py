@@ -1,5 +1,5 @@
 import numpy as np
-import scipy as sp
+import scipy.signal as spsig
 import scipy.interpolate as sinterp
 import scipy.io as sio
 import matplotlib.pyplot as plt
@@ -43,7 +43,7 @@ class SimPSFToolkit(object):
     def __init__(self, zernike_maps, max_order=45, max_wfe_rms=0.1,
                  output_dim=64, rand_seed=None, plot_opt=False, oversampling_rate=2,
                  pix_sampling=12, tel_diameter=1.2, tel_focal_length=24.5,
-                 pupil_diameter=1024, verbose=0):
+                 pupil_diameter=1024, euclid_obsc=True, LP_filter_length=3, verbose=0):
         # Input attributes
         self.max_order = max_order
         self.rand_seed = rand_seed
@@ -72,6 +72,12 @@ class SimPSFToolkit(object):
         # Generate pupil mask
         self.pupil_mask = ~np.isnan(self.zernike_maps[0])
 
+        # Generate obscurations
+        if euclid_obsc:
+            self.obscurations = self.generate_pupil_obscurations(N_pix=pupil_diameter, N_filter=LP_filter_length)
+        else:
+            self.obscurations = np.ones((pupil_diameter, pupil_diameter))
+
 
     @staticmethod
     def _OLD_fft_diffraction_op(wf, pupil_mask, pad_factor=2, match_shapes=True):
@@ -99,7 +105,7 @@ class SimPSFToolkit(object):
         padded_wf[start:stop, start:stop][pupil_mask] = wf[pupil_mask]
 
         fft_wf = np.fft.fftshift(np.fft.fft2(padded_wf))
-#         fft_wf = np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(padded_wf)))
+        # fft_wf = np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(padded_wf)))
 
         psf = np.abs(fft_wf)**2
 
@@ -124,6 +130,111 @@ class SimPSFToolkit(object):
         stop = int(psf.shape[0]//2+output_dim//2)
 
         return psf[start:stop, start:stop]
+
+    @staticmethod
+    def generate_pupil_obscurations(N_pix=1024, N_filter=3):
+        """Generate Euclid like pupil obscurations.
+
+        Simple procedure considering only the 2D plane.
+        No 3D projections wrt the angle of the FoV is done.
+
+        Parameters
+        ----------
+        N_pix: int
+            Total number of pixels
+        N_filter: int
+            Length of the low-pass filter [pixels]
+
+        """
+        # Telescope parameters
+        AS_diam = 1200  # Aperture stop diameter [mm]
+        M1_diam = 395  # Mirror 1 cap stopper diameter [mm]
+
+        sp_lenght = 700  # Spider length [mm]
+        sp_width = 12  # Spider width [mm]
+
+        AS_centre = [0, 0]
+        M1_centre = [0, 51]
+
+        sp1_angle = 106.78 - 90 # [degrees]
+        sp2_angle = 50.11 - 90 # [degrees]
+        sp3_angle = -10.76 - 90 # [degrees]
+
+        sp1_x_pos = 260  # [mm]
+        sp1_y_pos = 240  # [mm]
+        sp2_x_pos = -330  # [mm]
+        sp2_y_pos = 130  # [mm]
+        sp3_x_pos = 70  # [mm]
+        sp3_y_pos = -330  # [mm]
+
+
+        # Build pupil plane
+        pupil_plane = np.ones((N_pix, N_pix))
+
+        # coordinates of map in [mm]
+        W, H  = np.meshgrid(np.linspace(-AS_diam//2, AS_diam//2, N_pix), np.linspace(-AS_diam//2, AS_diam//2, N_pix))
+
+
+        ### Calculate the Aperture stop and draw it ###
+        aperture_stop_mask = np.sqrt((W - AS_centre[0])**2 + (H - AS_centre[1])**2) <= (AS_diam/2)
+        pupil_plane[~aperture_stop_mask] = 0
+
+
+        ### Calculate the M1/M2 obscurations and draw them ###
+        M1_mask = np.sqrt((W - M1_centre[0])**2 + (H - M1_centre[1])**2) <= (M1_diam/2)
+        pupil_plane[M1_mask] = 0
+
+
+        ### Calculate the spiders and draw them ###
+
+        # Spider 1
+        sp1_a = np.tan(sp1_angle*(np.pi/180))
+        sp1_b = sp1_y_pos - sp1_a*sp1_x_pos
+
+        sp1_mask_1 = sp1_a*W + sp1_b - sp_width/2 * np.sqrt(1 + sp1_a**2) < H
+        sp1_mask_2 = sp1_a*W + sp1_b + sp_width/2 * np.sqrt(1 + sp1_a**2) > H
+        sp1_mask = np.logical_and(sp1_mask_1, sp1_mask_2)
+
+        sp1_length_mask = np.sqrt((W - sp1_x_pos)**2 + (H - sp1_y_pos)**2) <= (sp_lenght/2)
+        sp1_mask = np.logical_and(sp1_mask, sp1_length_mask)
+
+        # Spider 2
+        sp2_a = np.tan(sp2_angle*(np.pi/180))
+        sp2_b = sp2_y_pos - sp2_a*sp2_x_pos
+
+        sp2_mask_1 = sp2_a*W + sp2_b - sp_width/2 * np.sqrt(1 + sp2_a**2) < H
+        sp2_mask_2 = sp2_a*W + sp2_b + sp_width/2 * np.sqrt(1 + sp2_a**2) > H
+        sp2_mask = np.logical_and(sp2_mask_1, sp2_mask_2)
+
+        sp2_length_mask = np.sqrt((W - sp2_x_pos)**2 + (H - sp2_y_pos)**2) <= (sp_lenght/2)
+        sp2_mask = np.logical_and(sp2_mask, sp2_length_mask)
+
+        # Spider 3
+        sp3_a = np.tan(sp3_angle*(np.pi/180))
+        sp3_b = sp3_y_pos - sp3_a*sp3_x_pos
+
+        sp3_mask_1 = sp3_a*W + sp3_b - sp_width/2 * np.sqrt(1 + sp3_a**2) < H
+        sp3_mask_2 = sp3_a*W + sp3_b + sp_width/2 * np.sqrt(1 + sp3_a**2) > H
+        sp3_mask = np.logical_and(sp3_mask_1, sp3_mask_2)
+
+        sp3_length_mask = np.sqrt((W - sp3_x_pos)**2 + (H - sp3_y_pos)**2) <= (sp_lenght/2)
+        sp3_mask = np.logical_and(sp3_mask, sp3_length_mask)
+
+        # Draw the three spider arms
+        pupil_plane[sp1_mask] = 0
+        pupil_plane[sp2_mask] = 0
+        pupil_plane[sp3_mask] = 0
+
+
+        ### Low-pass filter the image ###
+        top_hat_filter = np.ones((N_filter, N_filter))
+
+        pupil_plane = spsig.convolve2d(
+        pupil_plane, top_hat_filter, boundary='fill', mode='same', fillvalue=0)
+
+        pupil_plane /= np.sum(top_hat_filter)
+
+        return pupil_plane
 
 
     @staticmethod
@@ -253,7 +364,10 @@ class SimPSFToolkit(object):
 
     def plot_opd_phase(self, cmap='viridis', save_img=False):
         if self.opd is not None:
-            self.opd_phase_plotter(self.pupil_mask, self.opd, self.phase, self.lambda_obs, cmap, save_img)
+            self.opd_phase_plotter(self.pupil_mask*self.obscurations,
+                                   self.opd*self.obscurations,
+                                   self.phase, self.lambda_obs,
+                                   cmap, save_img)
         else:
             print('No WF has been computed yet.')
 
@@ -353,6 +467,9 @@ class SimPSFToolkit(object):
         for it in range(self.max_order):
             opd += self.zernike_maps[it]*z_coeffs[it]
 
+        # Proyect obscurations on to the OPD
+        opd *= self.obscurations
+
         # Calculate normalization factor
         wfe_rms = np.sqrt(np.mean((opd[self.pupil_mask] -np.mean(opd[self.pupil_mask]))**2))
 
@@ -440,6 +557,9 @@ class SimPSFToolkit(object):
         self.phase = np.zeros((possible_N, possible_N), dtype=np.complex128)
         self.phase[start:stop, start:stop][self.pupil_mask] = np.exp(
             2j*np.pi*self.opd[self.pupil_mask]/self.lambda_obs)
+
+        # Project obscurations to the phase
+        self.phase[start:stop, start:stop] *= self.obscurations
 
         # FFT-diffract the phase (wavefront) and then crop to desired dimension
         self.psf = self.fft_diffract(wf=self.phase, output_dim=self.output_dim)
