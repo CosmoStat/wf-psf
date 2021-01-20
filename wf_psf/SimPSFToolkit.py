@@ -41,7 +41,7 @@ class SimPSFToolkit(object):
     """
 
     def __init__(self, zernike_maps, max_order=45, max_wfe_rms=0.1,
-                 output_dim=64, rand_seed=None, plot_opt=False, oversampling_rate=2.15,
+                 output_dim=64, rand_seed=None, plot_opt=False, oversampling_rate=2,
                  pix_sampling=12, tel_diameter=1.2, tel_focal_length=24.5,
                  pupil_diameter=1024, euclid_obsc=True, LP_filter_length=3, verbose=0):
         # Input attributes
@@ -489,7 +489,7 @@ class SimPSFToolkit(object):
 
     def generate_mono_PSF(self, lambda_obs=0.725, regen_sample=False, get_psf=False):
         """Generate monochromatic PSF."""
-        if lambda_obs<0.55*0.95 or lambda_obs>0.9*0.95:
+        if lambda_obs<0.55*0.9 or lambda_obs>0.9*1.1:
             print('WARNING: requested wavelength %.4f um is not in VIS passband [0.55,0.9]um'%(lambda_obs))
         self.lambda_obs = lambda_obs
 
@@ -617,12 +617,15 @@ class SimPSFToolkit(object):
 
         return wvlength, SED_interp
 
-    def calc_SED_wave_values(self, SED, n_bins=35):
-        """Calculate feasible wavelength and SED values.
 
-        Feasable so that the padding number N is integer.
+    def generate_poly_PSF(self, SED, n_bins=35):
+        """Generate polychromatic PSF with a specific SED.
+
+        The wavelength space will be the Euclid VIS instrument band:
+        [550,900]nm and will be sample in ``n_bins``.
+
         """
-        # Generate SED interpolator and wavelength array
+        # Generate SED interpolator and wavelengtyh array
         wvlength, SED_interp = self.gen_SED_interp(SED, n_bins)
 
         # Convert wavelength from [nm] to [um]
@@ -638,24 +641,8 @@ class SimPSFToolkit(object):
         SED_norm = SED_interp(feasible_wv*1e3)  # Interpolation is done in [nm]
         SED_norm /= np.sum(SED_norm)
 
-        return feasible_wv, SED_norm
-
-
-    def generate_poly_PSF(self, SED, n_bins=35):
-        """Generate polychromatic PSF with a specific SED.
-
-        The wavelength space will be the Euclid VIS instrument band:
-        [550,900]nm and will be sample in ``n_bins``.
-
-        """
-        # Calculate the feasible values of wavelength and the corresponding
-        # SED interpolated values
-        feasible_wv, SED_norm = self.calc_SED_wave_values(SED, n_bins)
-
+        # Plot input SEDs and interpolated SEDs
         if self.plot_opt:
-            # Plot input SEDs and interpolated SEDs
-            wvlength, SED_interp = self.gen_SED_interp(SED, n_bins)
-
             fig = plt.figure(figsize=(14,8))
             ax1 = fig.add_subplot(111)
             ax1.plot(SED[:,0],SED[:,1], label='Input SED')
