@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-
+import PIL
 
 def generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
     """Generate the SED elements needed for using the TF_poly_PSF.
@@ -25,3 +25,16 @@ def generate_packed_elems(SED, sim_psf_toolkit, n_bins=20):
 
     # returnes the packed tensors
     return [tf_feasible_N, tf_feasible_wv, tf_SED_norm]
+
+def decimate_im(input_im, decim_f):
+    """Decimate image.
+
+    Decimated by a factor of decim_f.
+    Based on the PIL library using the default interpolator.
+    Default: PIL.Image.BICUBIC.
+    """
+    pil_im = PIL.Image.fromarray(input_im)
+    (width, height) = (pil_im.width // decim_f, pil_im.height // decim_f)
+    im_resized = pil_im.resize((width, height))
+
+    return np.array(im_resized)
