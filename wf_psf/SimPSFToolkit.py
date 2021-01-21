@@ -1,19 +1,11 @@
 import numpy as np
 import scipy.signal as spsig
 import scipy.interpolate as sinterp
-import scipy.io as sio
+import PIL
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-import PIL
-
-# Pre-defined colormap
-top = mpl.cm.get_cmap('Oranges_r', 128)
-bottom = mpl.cm.get_cmap('Blues', 128)
-newcolors = np.vstack((top(np.linspace(0, 1, 128)),
-                       bottom(np.linspace(0, 1, 128))))
-newcmp = ListedColormap(newcolors, name='OrangeBlue')
 
 
 
