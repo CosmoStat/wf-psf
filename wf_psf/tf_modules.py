@@ -1,20 +1,5 @@
 import numpy as np
-import scipy.signal as spsig
-import scipy.interpolate as sinterp
-import scipy.io as sio
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-import PIL
-import time
-from tqdm.notebook import tqdm
-
 import tensorflow as tf
-
-%pylab inline
-
-plt.rcParams['figure.figsize'] = (16, 8)
 
 
 class TF_fft_diffract(tf.Module):
@@ -132,6 +117,7 @@ class TF_mono_PSF(tf.Module):
 
         return psf
 
+
 class TF_zernike_OPD(tf.Module):
     """ Turn zernike coefficients into an OPD.
 
@@ -172,33 +158,6 @@ class TF_Zernike_mono_PSF(tf.Module):
         psf = self.tf_fft_diffract.__call__(phase)
 
         return psf
-
-
-# sim_psf_toolkit = SimPSFToolkit.SimPSFToolkit(zernikes)
-
-def generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
-    """Generate the SED elements needed for using the TF_poly_PSF.
-
-    sim_psf_toolkit: An instance of the SimPSFToolkit class with the correct
-    initialization values.
-    """
-
-    feasible_wv, SED_norm = sim_psf_toolkit.calc_SED_wave_values(SED, n_bins)
-    feasible_N = np.array([sim_psf_toolkit.feasible_N(_wv)  for _wv in feasible_wv])
-
-    return feasible_N, feasible_wv, SED_norm
-
-
-def generate_packed_elems(SED, sim_psf_toolkit, n_bins=20):
-    """Generate the packed values for using the TF_poly_PSF."""
-    feasible_N, feasible_wv, SED_norm = generate_SED_elems(SED, sim_psf_toolkit, n_bins=20)
-
-    tf_feasible_N = tf.convert_to_tensor(feasible_N, dtype=tf.float64)
-    tf_feasible_wv = tf.convert_to_tensor(feasible_wv, dtype=tf.float64)
-    tf_SED_norm = tf.convert_to_tensor(SED_norm, dtype=tf.float64)
-
-    # returnes the packed tensors
-    return [tf_feasible_N, tf_feasible_wv, tf_SED_norm]
 
 
 class TF_poly_PSF(tf.Module):
@@ -280,7 +239,10 @@ class TF_poly_PSF(tf.Module):
         # work in the @tf.function context
         # @tf.function
         def calculate_poly_PSF(elems_to_unpack):
-            return tf.map_fn(self.calculate_mono_PSF, elems_to_unpack, parallel_iterations=1, fn_output_signature=tf.float64)
+            return tf.map_fn(self.calculate_mono_PSF,
+                             elems_to_unpack,
+                             parallel_iterations=10,
+                             fn_output_signature=tf.float32)
 
         stacked_psfs = calculate_poly_PSF(packed_elems)
         poly_psf = tf.math.reduce_sum(stacked_psfs, axis=0)
