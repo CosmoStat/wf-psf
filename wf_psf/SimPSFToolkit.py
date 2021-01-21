@@ -610,14 +610,12 @@ class SimPSFToolkit(object):
         return wvlength, SED_interp
 
 
-    def generate_poly_PSF(self, SED, n_bins=35):
-        """Generate polychromatic PSF with a specific SED.
+    def calc_SED_wave_values(self, SED, n_bins=35):
+        """Calculate feasible wavelength and SED values.
 
-        The wavelength space will be the Euclid VIS instrument band:
-        [550,900]nm and will be sample in ``n_bins``.
-
+        Feasable so that the padding number N is integer.
         """
-        # Generate SED interpolator and wavelengtyh array
+        # Generate SED interpolator and wavelength array
         wvlength, SED_interp = self.gen_SED_interp(SED, n_bins)
 
         # Convert wavelength from [nm] to [um]
@@ -633,8 +631,24 @@ class SimPSFToolkit(object):
         SED_norm = SED_interp(feasible_wv*1e3)  # Interpolation is done in [nm]
         SED_norm /= np.sum(SED_norm)
 
-        # Plot input SEDs and interpolated SEDs
+        return feasible_wv, SED_norm
+
+
+    def generate_poly_PSF(self, SED, n_bins=35):
+        """Generate polychromatic PSF with a specific SED.
+
+        The wavelength space will be the Euclid VIS instrument band:
+        [550,900]nm and will be sample in ``n_bins``.
+
+        """
+        # Calculate the feasible values of wavelength and the corresponding
+        # SED interpolated values
+        feasible_wv, SED_norm = self.calc_SED_wave_values(SED, n_bins)
+
         if self.plot_opt:
+            # Plot input SEDs and interpolated SEDs
+            wvlength, SED_interp = self.gen_SED_interp(SED, n_bins)
+
             fig = plt.figure(figsize=(14,8))
             ax1 = fig.add_subplot(111)
             ax1.plot(SED[:,0],SED[:,1], label='Input SED')
@@ -656,6 +670,7 @@ class SimPSFToolkit(object):
         self.poly_psf = stacked_psf
 
         return stacked_psf
+
 
 # This pythonic version of the polychromatic calculation is not working
 # The parallelisation with the class with shared variables might not be working
