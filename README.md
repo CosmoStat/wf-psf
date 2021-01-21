@@ -1,2 +1,3 @@
 # wf-psf
-Wavefront PSF
+
+Differentiable wavefront-based PSF modelling.
