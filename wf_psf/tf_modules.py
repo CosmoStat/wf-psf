@@ -3,6 +3,8 @@ import tensorflow as tf
 
 
 class TF_fft_diffract(tf.Module):
+    """ Diffract the wavefront into a monochromatic PSF.
+    """
     def __init__(self, output_dim=64, name=None):
         super().__init__(name=name)
         self.output_dim = output_dim
@@ -17,28 +19,30 @@ class TF_fft_diffract(tf.Module):
     def tf_crop_img(self, image):
         """Crop images with tf methods.
 
-        Right now it is implemented to handle 2D images: [width, height]
+        It handles a batch of 2D images: [batch, width, height]
         """
+        # Define shape at runtime as we don't know it yet
+        im_shape = tf.shape(image)
         # start
-        offset_height = int(image.shape[1]//2 - self.output_dim//2)
-        offset_width = int(image.shape[0]//2 - self.output_dim//2)
+        offset_height = int(im_shape[2]//2 - self.output_dim//2)
+        offset_width = int(im_shape[1]//2 - self.output_dim//2)
         # stop
         target_height = int(self.output_dim)
         target_width = int(self.output_dim)
 
         # Crop image
         cropped_image = tf.image.crop_to_bounding_box(
-            tf.reshape(image, shape=(image.shape[0], image.shape[1], -1)),
+            tf.transpose(image, perm=[1,2,0]),
             offset_height,
             offset_width,
             target_height,
             target_width)
 
-        return tf.reshape(cropped_image, shape=(cropped_image.shape[0], cropped_image.shape[1]))
+        return tf.transpose(cropped_image, perm=[2,0,1])
 
     def normalize_psf(self, psf):
         # Sum over all the dimensions
-        norm_factor = tf.math.reduce_sum(psf)
+        norm_factor = tf.math.reduce_sum(psf, axis=[1,2], keepdims=True)
 
         return psf/norm_factor
 
@@ -47,13 +51,12 @@ class TF_fft_diffract(tf.Module):
         """ Calculate the normalized PSF from the padded phase array.
         """
         # Perform the FFT-based diffraction operation
-        fft_phase = tf.signal.fftshift(tf.signal.fft2d(input_phase))
-        psf = tf.math.pow(tf.math.abs(fft_phase), 2)
-
+        # fft_phase = tf.signal.fftshift(tf.signal.fft2d(input_phase))
+        fft_phase = tf.signal.fftshift(tf.signal.fft2d(input_phase[:,...]), axes=[1, 2])
+        psf = tf.math.pow(tf.cast(tf.math.abs(fft_phase), dtype=tf.float64), 2)
         # Crop the image
         # cropped_psf = self.crop_img(psf)
         cropped_psf = self.tf_crop_img(psf)
-
         # Normalize the PSF
         norm_psf = self.normalize_psf(cropped_psf)
 
@@ -61,6 +64,8 @@ class TF_fft_diffract(tf.Module):
 
 
 class TF_build_phase(tf.Module):
+    """ Build complex phase map from OPD map.
+    """
     def __init__(self, phase_N, lambda_obs, obscurations, name=None):
         super().__init__(name=name)
 
@@ -68,19 +73,24 @@ class TF_build_phase(tf.Module):
         self.lambda_obs = lambda_obs
         self.obscurations = obscurations
 
-    @staticmethod
-    def zero_padding_diffraction(no_pad_phase, phase_N):
+    def zero_padding_diffraction(self, no_pad_phase):
         """ Pad with zeros corresponding to the required lambda. """
-        pad_num = int(phase_N//2 - no_pad_phase.shape[0]//2)
+        # pad_num = int(self.phase_N//2 - no_pad_phase.shape[0]//2)
+        # pure tensorflow
+        start = tf.math.floordiv(tf.cast(self.phase_N, dtype=tf.int32), tf.cast(2, dtype=tf.int32))
+        stop = tf.math.floordiv(tf.cast(no_pad_phase.shape[0], dtype=tf.int32), tf.cast(2, dtype=tf.int32))
+        pad_num = tf.math.subtract(start, stop) # start - stop
 
-        padded_phase = tf.pad(
-            no_pad_phase,
-            [
-                (pad_num, pad_num),
-                (pad_num, pad_num)
-            ])
+        padding = [
+                   (0, 0),
+                   (pad_num, pad_num),
+                   (pad_num, pad_num)
+                   ]
+
+        padded_phase = tf.pad(no_pad_phase, padding)
 
         return padded_phase
+        # return tf.pad(no_pad_phase, padding)
 
     def apply_obscurations(self, phase):
         """Multiply element-wise with the obscurations. """
@@ -91,31 +101,16 @@ class TF_build_phase(tf.Module):
         """Convert from opd to phase."""
         pre_phase = tf.math.multiply(tf.cast((2*np.pi)/self.lambda_obs, opd.dtype), opd)
         phase = tf.math.exp(tf.dtypes.complex(tf.cast(0, pre_phase.dtype), pre_phase))
+        # return tf.cast(phase, dtype=tf.complex64)
         return phase
 
     def __call__(self, opd):
         """Build the phase from the opd."""
-
         phase = self.opd_to_phase(opd)
         obsc_phase = self.apply_obscurations(phase)
-        padded_phase = self.zero_padding_diffraction(obsc_phase, self.phase_N)
+        padded_phase = self.zero_padding_diffraction(obsc_phase)
 
         return padded_phase
-
-
-class TF_mono_PSF(tf.Module):
-    def __init__(self, phase_N, lambda_obs, obscurations, output_dim=64, name=None):
-        super().__init__(name=name)
-
-        self.tf_build_phase = TF_build_phase(phase_N, lambda_obs, obscurations)
-        self.tf_fft_diffract = TF_fft_diffract(output_dim)
-
-
-    def __call__(self, opd):
-        phase = self.tf_build_phase.__call__(opd)
-        psf = self.tf_fft_diffract.__call__(phase)
-
-        return psf
 
 
 class TF_zernike_OPD(tf.Module):
@@ -123,10 +118,15 @@ class TF_zernike_OPD(tf.Module):
 
     Will use all of the Zernike maps provided.
     Both the Zernike maps and the Zernike coefficients must be provided.
+
     Parameters
     ----------
     zernike_maps: Tensor (Num_coeffs, x_dim, y_dim)
-    z_coeffs: Tensor (Num_coeffs, 1, 1)
+    z_coeffs: Tensor (num_star, num_coeffs, 1, 1)
+
+    Returns
+    -------
+    opd: Tensor (num_star, x_dim, y_dim)
 
     """
     def __init__(self, zernike_maps, name=None):
@@ -136,7 +136,7 @@ class TF_zernike_OPD(tf.Module):
 
     def __call__(self, z_coeffs):
         # Perform the weighted sum of Zernikes coeffs and maps
-        opd = tf.math.reduce_sum(tf.math.multiply(self.zernike_maps, z_coeffs), axis=0)
+        opd = tf.math.reduce_sum(tf.math.multiply(self.zernike_maps, z_coeffs), axis=1)
         return opd
 
 
@@ -158,6 +158,22 @@ class TF_Zernike_mono_PSF(tf.Module):
         psf = self.tf_fft_diffract.__call__(phase)
 
         return psf
+
+
+class TF_mono_PSF(tf.Module):
+    """ Calculate a monochromatic PSF from an OPD map.
+    """
+    def __init__(self, phase_N, lambda_obs, obscurations, output_dim=64, name=None):
+        super().__init__(name=name)
+
+        self.tf_build_phase = TF_build_phase(phase_N, lambda_obs, obscurations)
+        self.tf_fft_diffract = TF_fft_diffract(output_dim)
+
+    def __call__(self, opd):
+        phase = self.tf_build_phase.__call__(opd)
+        psf = self.tf_fft_diffract.__call__(phase)
+
+        return tf.cast(psf, dtype=opd.dtype)
 
 
 class TF_poly_PSF(tf.Module):
