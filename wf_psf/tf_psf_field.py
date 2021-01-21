@@ -75,19 +75,27 @@ class TF_PSF_field_model(tf.keras.Model):
 
         return poly_psfs
 
-def build_PSF_model(model_inst, l_rate):
+def build_PSF_model(model_inst, l_rate=0.1, optimizer=None, loss=None,
+    metrics=None):
     """ Define the model-compilation parameters.
 
     Specially the loss function, the optimizer and the metrics.
     """
     # Define model loss function
-    loss = tf.keras.losses.MeanSquaredError()
+    if loss is None:
+        loss = tf.keras.losses.MeanSquaredError()
+
     # Define optimizer function
-    optimizer = tf.keras.optimizers.Adam(
-        learning_rate=l_rate, beta_1=0.9, beta_2=0.999,
-        epsilon=1e-07, amsgrad=False)
+    if optimizer is None:
+        # optimizer = tf.keras.optimizers.Adam(
+        #     learning_rate=l_rate, beta_1=0.9, beta_2=0.999,
+        #     epsilon=1e-07, amsgrad=False)
+        optimizer = tf.keras.optimizers.SGD(
+        learning_rate=l_rate, momentum=0.0, nesterov=False)
+
     # Define metric functions
-    metrics = [tf.keras.metrics.MeanSquaredError()]
+    if metric is None:
+        metrics = [tf.keras.metrics.MeanSquaredError()]
 
     # Compile the model
     model_inst.compile(optimizer=optimizer,
