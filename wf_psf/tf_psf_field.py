@@ -94,7 +94,7 @@ def build_PSF_model(model_inst, l_rate=0.1, optimizer=None, loss=None,
         learning_rate=l_rate, momentum=0.0, nesterov=False)
 
     # Define metric functions
-    if metric is None:
+    if metrics is None:
         metrics = [tf.keras.metrics.MeanSquaredError()]
 
     # Compile the model
