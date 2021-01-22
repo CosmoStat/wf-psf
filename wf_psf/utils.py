@@ -17,7 +17,7 @@ def generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
 
 def generate_packed_elems(SED, sim_psf_toolkit, n_bins=20):
     """Generate the packed values for using the TF_poly_PSF."""
-    feasible_N, feasible_wv, SED_norm = generate_SED_elems(SED, sim_psf_toolkit, n_bins=20)
+    feasible_N, feasible_wv, SED_norm = generate_SED_elems(SED, sim_psf_toolkit, n_bins=n_bins)
 
     tf_feasible_N = tf.convert_to_tensor(feasible_N, dtype=tf.float64)
     tf_feasible_wv = tf.convert_to_tensor(feasible_wv, dtype=tf.float64)
