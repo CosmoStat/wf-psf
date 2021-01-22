@@ -52,8 +52,15 @@ class TF_PSF_field_model(tf.keras.Model):
 
         # Initialize the model parameters with non-default value
         if coeff_mat is not None:
-            self.tf_poly_Z_field.assign_coeff_matrix(coeff_mat)
+            self.assign_coeff_matrix(coeff_mat)
 
+    def get_coeff_matrix(self):
+        """ Get coefficient matrix."""
+        return self.tf_poly_Z_field.get_coeff_matrix()
+
+    def assign_coeff_matrix(self, coeff_mat):
+        """ Assign coefficient matrix."""
+        self.tf_poly_Z_field.assign_coeff_matrix(coeff_mat)
 
     def call(self, inputs):
         """Define the PSF field forward model.

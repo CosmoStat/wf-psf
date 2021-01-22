@@ -38,6 +38,10 @@ class TF_poly_Z_field(tf.keras.layers.Layer):
         """ Assign coefficient matrix."""
         self.coeff_mat.assign(coeff_mat)
 
+    def get_coeff_matrix(self):
+        """ Get coefficient matrix."""
+        return self.coeff_mat
+
     def init_coeff_matrix(self):
         """ Initialize coefficient matrix."""
         coef_init = tf.random_uniform_initializer(minval=-0.01, maxval=0.01)
