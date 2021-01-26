@@ -602,7 +602,8 @@ class SimPSFToolkit(object):
         """
         wv_max = 900
         wv_min = 550
-        wvlength = np.arange(wv_min, wv_max, int((wv_max-wv_min)/n_bins))
+        # wvlength = np.arange(wv_min, wv_max, int((wv_max-wv_min)/n_bins))
+        wvlength = np.linspace(wv_min, wv_max, num=n_bins, endpoint=True)
 
         SED_interp = sinterp.interp1d(
             SED[:,0], SED[:,1], kind=interp_kind, bounds_error=False, fill_value="extrapolate")
