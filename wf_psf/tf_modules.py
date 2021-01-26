@@ -74,11 +74,16 @@ class TF_build_phase(tf.Module):
         self.obscurations = obscurations
 
     def zero_padding_diffraction(self, no_pad_phase):
-        """ Pad with zeros corresponding to the required lambda. """
+        """ Pad with zeros corresponding to the required lambda.
+
+        Important: To check the original size of the ``no_pad_phase`` variable
+        we have to look in the [1] dimension not the [0] as it is the batch.
+        """
         # pad_num = int(self.phase_N//2 - no_pad_phase.shape[0]//2)
+        phase_shape = tf.shape(no_pad_phase)
         # pure tensorflow
         start = tf.math.floordiv(tf.cast(self.phase_N, dtype=tf.int32), tf.cast(2, dtype=tf.int32))
-        stop = tf.math.floordiv(tf.cast(no_pad_phase.shape[0], dtype=tf.int32), tf.cast(2, dtype=tf.int32))
+        stop = tf.math.floordiv(tf.cast(phase_shape[1], dtype=tf.int32), tf.cast(2, dtype=tf.int32))
         pad_num = tf.math.subtract(start, stop) # start - stop
 
         padding = [
