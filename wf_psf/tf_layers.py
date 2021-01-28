@@ -50,7 +50,7 @@ class TF_poly_Z_field(tf.keras.layers.Layer):
             trainable=True,
             dtype=tf.float32)
 
-    def calc_poly_position_mat(self, pos, normalize=True):
+    def calc_poly_position_mat(self, pos):
         """ Calculate a matrix with position polynomials.
 
         Scale positions to the square:
@@ -71,9 +71,6 @@ class TF_poly_Z_field(tf.keras.layers.Layer):
                 poly_list.append(scaled_pos_x ** (d - p) * scaled_pos_y ** p)
 
         poly_mat = tf.convert_to_tensor(poly_list, dtype=tf.float32)
-        # Normalize
-        # Skip normalization as positions are scaled
-        # poly_mat, _ = tf.linalg.normalize(poly_mat, ord='euclidean', axis=0)
 
         return poly_mat
 
@@ -93,7 +90,7 @@ class TF_poly_Z_field(tf.keras.layers.Layer):
         -------
         zernikes_coeffs: Tensor(batch, n_zernikes, 1, 1)
         """
-        poly_mat = self.calc_poly_position_mat(positions, normalize=True)
+        poly_mat = self.calc_poly_position_mat(positions)
         zernikes_coeffs = tf.transpose(tf.linalg.matmul(self.coeff_mat, poly_mat))
 
         return zernikes_coeffs[:, :, tf.newaxis, tf.newaxis]
