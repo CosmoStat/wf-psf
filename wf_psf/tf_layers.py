@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from wf_psf.tf_modules import TF_mono_PSF
+from wf_psf.utils import calc_poly_position_mat
 
 
 class TF_poly_Z_field(tf.keras.layers.Layer):
@@ -50,29 +51,29 @@ class TF_poly_Z_field(tf.keras.layers.Layer):
             trainable=True,
             dtype=tf.float32)
 
-    def calc_poly_position_mat(self, pos):
-        """ Calculate a matrix with position polynomials.
-
-        Scale positions to the square:
-        [self.x_lims[0], self.x_lims[1]] x [self.y_lims[0], self.y_lims[1]]
-        to the square [-1,1] x [-1,1]
-        """
-        # Scale positions
-        scaled_pos_x = (pos[:,0] - self.x_lims[0]) / (self.x_lims[1] - self.x_lims[0])
-        scaled_pos_x = (scaled_pos_x - 0.5) * 2
-        scaled_pos_y = (pos[:,1] - self.y_lims[0]) / (self.y_lims[1] - self.y_lims[0])
-        scaled_pos_y = (scaled_pos_y - 0.5) * 2
-
-        poly_list = []
-
-        for d in range(self.d_max + 1):
-            row_idx = d * (d + 1) // 2
-            for p in range(d + 1):
-                poly_list.append(scaled_pos_x ** (d - p) * scaled_pos_y ** p)
-
-        poly_mat = tf.convert_to_tensor(poly_list, dtype=tf.float32)
-
-        return poly_mat
+    # def calc_poly_position_mat(self, pos):
+    #     """ Calculate a matrix with position polynomials.
+    #
+    #     Scale positions to the square:
+    #     [self.x_lims[0], self.x_lims[1]] x [self.y_lims[0], self.y_lims[1]]
+    #     to the square [-1,1] x [-1,1]
+    #     """
+    #     # Scale positions
+    #     scaled_pos_x = (pos[:,0] - self.x_lims[0]) / (self.x_lims[1] - self.x_lims[0])
+    #     scaled_pos_x = (scaled_pos_x - 0.5) * 2
+    #     scaled_pos_y = (pos[:,1] - self.y_lims[0]) / (self.y_lims[1] - self.y_lims[0])
+    #     scaled_pos_y = (scaled_pos_y - 0.5) * 2
+    #
+    #     poly_list = []
+    #
+    #     for d in range(self.d_max + 1):
+    #         row_idx = d * (d + 1) // 2
+    #         for p in range(d + 1):
+    #             poly_list.append(scaled_pos_x ** (d - p) * scaled_pos_y ** p)
+    #
+    #     poly_mat = tf.convert_to_tensor(poly_list, dtype=tf.float32)
+    #
+    #     return poly_mat
 
 
     def call(self, positions):
@@ -90,7 +91,8 @@ class TF_poly_Z_field(tf.keras.layers.Layer):
         -------
         zernikes_coeffs: Tensor(batch, n_zernikes, 1, 1)
         """
-        poly_mat = self.calc_poly_position_mat(positions)
+        poly_mat = calc_poly_position_mat(positions, self.x_lims, self.y_lims, self.d_max)
+        # poly_mat = self.calc_poly_position_mat(positions)
         zernikes_coeffs = tf.transpose(tf.linalg.matmul(self.coeff_mat, poly_mat))
 
         return zernikes_coeffs[:, :, tf.newaxis, tf.newaxis]
@@ -364,3 +366,71 @@ class TF_batch_poly_PSF(tf.keras.layers.Layer):
         poly_psf_batch = _calculate_PSF_batch((opd_batch, packed_SED_data))
 
         return poly_psf_batch
+
+
+class TF_NP_poly_OPD(tf.keras.layers.Layer):
+    """ Non-parametric OPD generation with polynomial variations.
+
+
+    Parameters
+    ----------
+    d_max: int
+        Max degree of polynomial determining the FoV variations.
+
+    """
+    def __init__(self, x_lims, y_lims, d_max=3, opd_dim=256, name='TF_NP_poly_OPD'):
+        super().__init__(name=name)
+        # Parameters
+        self.x_lims = x_lims
+        self.y_lims = y_lims
+        self.d_max = d_max
+        self.opd_dim = opd_dim
+
+        # Variables
+        self.S_mat = None
+        self.alpha_mat = None
+        self.init_vars()
+
+
+    def init_vars(self):
+        """ Initialize trainable variables.
+
+        Basic initialization. Random uniform for S and identity for alpha.
+        """
+        n_poly = int((self.d_max+1)*(self.d_max+2)/2)
+        # S initialization
+        random_init = tf.random_uniform_initializer(minval=-0.1, maxval=0.1)
+        self.S_mat = tf.Variable(
+            initial_value=random_init(shape=[n_poly, self.opd_dim, self.opd_dim]),
+            trainable=True,
+            dtype=tf.float32)
+
+        # Alpha initialization
+        self.alpha_mat = tf.Variable(
+            initial_value=tf.eye(n_poly),
+            trainable=True,
+            dtype=tf.float32)
+
+
+    def call(self, positions):
+        """ Calculate the OPD maps for the given positions.
+
+        Calculating: Pi(pos) x alpha x S
+
+        Parameters
+        ----------
+        positions: Tensor(batch, 2)
+            First element is x-axis, second is y-axis.
+
+        Returns
+        -------
+        opd_maps: Tensor(batch, opd_dim, opd_dim)
+        """
+        # Calculate the Pi matrix
+        poly_mat = wf_utils.calc_poly_position_mat(positions, self.x_lims, self.y_lims, self.d_max)
+        # We need to transpose it here to have the batch dimension at first
+        poly_mat = tf.transpose(poly_mat, perm=[1,0])
+
+        inter_res = tf.linalg.matmul(poly_mat, self.alpha_mat)
+
+        return tf.tensordot(inter_res, self.S_mat, axes=1)

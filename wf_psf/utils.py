@@ -26,6 +26,30 @@ def generate_packed_elems(SED, sim_psf_toolkit, n_bins=20):
     # returnes the packed tensors
     return [tf_feasible_N, tf_feasible_wv, tf_SED_norm]
 
+
+def calc_poly_position_mat(pos, x_lims, y_lims, d_max):
+    """ Calculate a matrix with position polynomials.
+
+    Scale positions to the square:
+    [self.x_lims[0], self.x_lims[1]] x [self.y_lims[0], self.y_lims[1]]
+    to the square [-1,1] x [-1,1]
+    """
+    # Scale positions
+    scaled_pos_x = (pos[:,0] - x_lims[0]) / (x_lims[1] - x_lims[0])
+    scaled_pos_x = (scaled_pos_x - 0.5) * 2
+    scaled_pos_y = (pos[:,1] - y_lims[0]) / (y_lims[1] - y_lims[0])
+    scaled_pos_y = (scaled_pos_y - 0.5) * 2
+
+    poly_list = []
+
+    for d in range(d_max + 1):
+        row_idx = d * (d + 1) // 2
+        for p in range(d + 1):
+            poly_list.append(scaled_pos_x ** (d - p) * scaled_pos_y ** p)
+
+    return tf.convert_to_tensor(poly_list, dtype=tf.float32)
+
+
 def decimate_im(input_im, decim_f):
     """Decimate image.
 
