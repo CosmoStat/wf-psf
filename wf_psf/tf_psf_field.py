@@ -94,11 +94,9 @@ def build_PSF_model(model_inst, optimizer=None, loss=None,
 
     # Define optimizer function
     if optimizer is None:
-        # optimizer = tf.keras.optimizers.Adam(
-        #     learning_rate=l_rate, beta_1=0.9, beta_2=0.999,
-        #     epsilon=1e-07, amsgrad=False)
-        optimizer = tf.keras.optimizers.SGD(
-        learning_rate=0.01, momentum=0.0, nesterov=False)
+        optimizer = tf.keras.optimizers.Adam(
+            learning_rate=1e-2, beta_1=0.9, beta_2=0.999,
+            epsilon=1e-07, amsgrad=False)
 
     # Define metric functions
     if metrics is None:
