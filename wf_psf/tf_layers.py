@@ -374,8 +374,14 @@ class TF_NP_poly_OPD(tf.keras.layers.Layer):
 
     Parameters
     ----------
+    x_lims: [int, int]
+        Limits of the x axis.
+    y_lims: [int, int]
+        Limits of the y axis.
     d_max: int
         Max degree of polynomial determining the FoV variations.
+    opd_dim: int
+        Dimension of the OPD maps. Same as pupil diameter.
 
     """
     def __init__(self, x_lims, y_lims, d_max=3, opd_dim=256, name='TF_NP_poly_OPD'):
