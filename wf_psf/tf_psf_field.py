@@ -166,7 +166,7 @@ class TF_SemiParam_field(tf.keras.Model):
         d_max_nonparam=3,
         output_dim=64, n_zernikes=45, d_max=2, x_lims=[0, 1e3], y_lims=[0, 1e3],
         coeff_mat=None, name='TF_SemiParam_field'):
-        super(TF_PSF_field_model, self).__init__()
+        super(TF_SemiParam_field, self).__init__()
 
         # Inputs: TF_poly_Z_field
         self.n_zernikes = n_zernikes
