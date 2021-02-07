@@ -405,7 +405,7 @@ class TF_NP_poly_OPD(tf.keras.layers.Layer):
         """
         n_poly = int((self.d_max+1)*(self.d_max+2)/2)
         # S initialization
-        random_init = tf.random_uniform_initializer(minval=-0.1, maxval=0.1)
+        random_init = tf.random_uniform_initializer(minval=-0.001, maxval=0.001)
         self.S_mat = tf.Variable(
             initial_value=random_init(shape=[n_poly, self.opd_dim, self.opd_dim]),
             trainable=True,
