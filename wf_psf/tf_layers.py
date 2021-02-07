@@ -433,7 +433,7 @@ class TF_NP_poly_OPD(tf.keras.layers.Layer):
         opd_maps: Tensor(batch, opd_dim, opd_dim)
         """
         # Calculate the Pi matrix
-        poly_mat = wf_utils.calc_poly_position_mat(positions, self.x_lims, self.y_lims, self.d_max)
+        poly_mat = calc_poly_position_mat(positions, self.x_lims, self.y_lims, self.d_max)
         # We need to transpose it here to have the batch dimension at first
         poly_mat = tf.transpose(poly_mat, perm=[1,0])
 
