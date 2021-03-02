@@ -472,13 +472,17 @@ class TF_NP_MCCD_OPD(tf.keras.layers.Layer):
 
     """
     def __init__(self, obs_pos, spatial_dic, x_lims, y_lims, d_max=3,
-                graph_features=6, opd_dim=256, name='TF_NP_MCCD_OPD'):
+                graph_features=6, l1_rate=1e-3, opd_dim=256,
+                name='TF_NP_MCCD_OPD'):
         super().__init__(name=name)
         # Parameters
         self.x_lims = x_lims
         self.y_lims = y_lims
         self.d_max = d_max
         self.opd_dim = opd_dim
+
+        # L1 regularisation parameter
+        self.l1_rate = l1_rate
 
         self.obs_pos = obs_pos
         self.spatial_dic = spatial_dic
@@ -539,6 +543,8 @@ class TF_NP_MCCD_OPD(tf.keras.layers.Layer):
         -------
         opd_maps: Tensor(batch, opd_dim, opd_dim)
         """
+        # Add L1 loss of teh alpha matrix
+        self.add_loss(self.l1_rate * tf.math.reduce_sum(tf.math.abs(self.alpha_mat)))
 
         def calc_index(idx_pos):
             return tf.where(tf.equal(self.obs_pos, idx_pos))[0,0]

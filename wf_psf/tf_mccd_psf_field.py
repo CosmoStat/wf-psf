@@ -36,7 +36,7 @@ class TF_SP_MCCD_field(tf.keras.Model):
 
     """
     def __init__(self, zernike_maps, obscurations, batch_size, obs_pos,
-        spatial_dic, d_max_nonparam=3, graph_features=6,
+        spatial_dic, d_max_nonparam=3, graph_features=6, l1_rate=1e-3,
         output_dim=64, n_zernikes=45, d_max=2, x_lims=[0, 1e3], y_lims=[0, 1e3],
         coeff_mat=None, name='TF_SP_MCCD_field'):
         super(TF_SP_MCCD_field, self).__init__()
@@ -51,6 +51,7 @@ class TF_SP_MCCD_field(tf.keras.Model):
         self.d_max_nonparam = d_max_nonparam
         self.opd_dim = tf.shape(zernike_maps)[1].numpy()
         self.graph_features = graph_features
+        self.l1_rate = l1_rate
 
         # Inputs: TF_zernike_OPD
         # They are not stored as they are memory-heavy
@@ -81,6 +82,7 @@ class TF_SP_MCCD_field(tf.keras.Model):
                                              y_lims=self.y_lims,
                                              d_max=self.d_max_nonparam,
                                              graph_features=self.graph_features,
+                                             l1_rate=self.l1_rate,
                                              opd_dim=self.opd_dim)
 
 
