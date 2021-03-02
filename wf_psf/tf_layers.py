@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+import tensorflow_addons as tfa
 from wf_psf.tf_modules import TF_mono_PSF
 from wf_psf.utils import calc_poly_position_mat
 
@@ -51,31 +52,6 @@ class TF_poly_Z_field(tf.keras.layers.Layer):
             trainable=True,
             dtype=tf.float32)
 
-    # def calc_poly_position_mat(self, pos):
-    #     """ Calculate a matrix with position polynomials.
-    #
-    #     Scale positions to the square:
-    #     [self.x_lims[0], self.x_lims[1]] x [self.y_lims[0], self.y_lims[1]]
-    #     to the square [-1,1] x [-1,1]
-    #     """
-    #     # Scale positions
-    #     scaled_pos_x = (pos[:,0] - self.x_lims[0]) / (self.x_lims[1] - self.x_lims[0])
-    #     scaled_pos_x = (scaled_pos_x - 0.5) * 2
-    #     scaled_pos_y = (pos[:,1] - self.y_lims[0]) / (self.y_lims[1] - self.y_lims[0])
-    #     scaled_pos_y = (scaled_pos_y - 0.5) * 2
-    #
-    #     poly_list = []
-    #
-    #     for d in range(self.d_max + 1):
-    #         row_idx = d * (d + 1) // 2
-    #         for p in range(d + 1):
-    #             poly_list.append(scaled_pos_x ** (d - p) * scaled_pos_y ** p)
-    #
-    #     poly_mat = tf.convert_to_tensor(poly_list, dtype=tf.float32)
-    #
-    #     return poly_mat
-
-
     def call(self, positions):
         """ Calculate the zernike coefficients for a given position.
 
@@ -92,7 +68,6 @@ class TF_poly_Z_field(tf.keras.layers.Layer):
         zernikes_coeffs: Tensor(batch, n_zernikes, 1, 1)
         """
         poly_mat = calc_poly_position_mat(positions, self.x_lims, self.y_lims, self.d_max)
-        # poly_mat = self.calc_poly_position_mat(positions)
         zernikes_coeffs = tf.transpose(tf.linalg.matmul(self.coeff_mat, poly_mat))
 
         return zernikes_coeffs[:, :, tf.newaxis, tf.newaxis]
@@ -670,6 +645,35 @@ class TF_NP_MCCD_OPD_v2(tf.keras.layers.Layer):
         _ = self.alpha_graph.assign(tf.eye(num_rows=self.n_graph_elems,
                                          num_columns=self.graph_features,
                                          dtype=tf.float32))
+
+    def predict(self, positions):
+        """ Prediction step."""
+        ## Polynomial part
+        # Calculate the Pi matrix
+        poly_mat = calc_poly_position_mat(positions, self.x_lims, self.y_lims, self.d_max)
+        # We need to transpose it here to have the batch dimension at first
+        A_poly = tf.linalg.matmul(tf.transpose(poly_mat, perm=[1,0]), self.alpha_poly)
+        interp_poly_opd = tf.tensordot(A_poly, self.S_poly, axes=1)
+
+        ## Graph part
+        A_graph_train = tf.linalg.matmul(self.graph_dic, self.alpha_graph)
+        # RBF interpolation
+        # Order 2 means a thin_plate RBF interpolation
+        # All tensors need to expand one dimension to fulfil requirement in
+        # the tfa's interpolate_spline function
+        A_interp_graph = tfa.image.interpolate_spline(
+                        train_points=tf.expand_dims(self.obs_pos, axis=0),
+                        train_values=tf.expand_dims(A_graph_train, axis=0),
+                        query_points=tf.expand_dims(positions, axis=0),
+                        order=2,
+                        regularization_weight=0.0)
+
+        # Remove extra dimension required by tfa's interpolate_spline
+        A_interp_graph = tf.squeeze(A_interp_graph, axis=0)
+        interp_graph_opd = tf.tensordot(A_interp_graph, self.S_graph, axes=1)
+
+        return tf.math.add(interp_poly_opd, interp_graph_opd)
+
 
     def call(self, positions):
         """ Calculate the OPD maps for the given positions.
