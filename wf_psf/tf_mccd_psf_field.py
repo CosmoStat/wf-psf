@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+from tensorflow.python.keras.engine import data_adapter
 from wf_psf.tf_layers import TF_poly_Z_field, TF_zernike_OPD, TF_batch_poly_PSF
 from wf_psf.tf_layers import TF_NP_MCCD_OPD, TF_NP_MCCD_OPD_v2
 from wf_psf.graph_utils import GraphBuilder
@@ -115,6 +116,35 @@ class TF_SP_MCCD_field(tf.keras.Model):
     def assign_coeff_matrix(self, coeff_mat):
         """ Assign coefficient matrix."""
         self.tf_poly_Z_field.assign_coeff_matrix(coeff_mat)
+
+    def predict_step(self, data):
+        """ Custom predict (inference) step.
+
+        It is needed as the non-parametric MCCD part requires a special
+        interpolation (different from training).
+
+        """
+        # Format input data
+        data = data_adapter.expand_1d(data)
+        input_data, _, _ = data_adapter.unpack_x_y_sample_weight(data)
+
+        # Unpack inputs
+        input_positions = input_data[0]
+        packed_SEDs = input_data[1]
+
+        # Calculate parametric part
+        zernike_coeffs = self.tf_poly_Z_field(input_positions)
+        param_opd_maps = self.tf_zernike_OPD(zernike_coeffs)
+
+        # Calculate the non parametric part
+        nonparam_opd_maps =  self.tf_NP_mccd_OPD.predict(input_positions)
+
+        # Add the estimations
+        opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
+        # Compute the polychromatic PSFs
+        poly_psfs = self.tf_batch_poly_PSF([opd_maps, packed_SEDs])
+
+        return poly_psfs
 
     def call(self, inputs):
         """Define the PSF field forward model.
