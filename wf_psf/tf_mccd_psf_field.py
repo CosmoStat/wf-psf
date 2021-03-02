@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from wf_psf.tf_layers import TF_poly_Z_field, TF_zernike_OPD, TF_batch_poly_PSF
-from wf_psf.tf_layers import TF_NP_MCCD_OPD
+from wf_psf.tf_layers import TF_NP_MCCD_OPD, TF_NP_MCCD_OPD_v2
 from wf_psf.graph_utils import GraphBuilder
 from wf_psf.utils import calc_poly_position_mat
 
@@ -76,7 +76,7 @@ class TF_SP_MCCD_field(tf.keras.Model):
         self.tf_zernike_OPD = TF_zernike_OPD(zernike_maps=zernike_maps)
 
         # Initialize the non-parametric layer
-        self.tf_NP_mccd_OPD = TF_NP_MCCD_OPD(obs_pos=obs_pos,
+        self.tf_NP_mccd_OPD = TF_NP_MCCD_OPD_v2(obs_pos=obs_pos,
                                              spatial_dic=spatial_dic,
                                              x_lims=self.x_lims,
                                              y_lims=self.y_lims,
@@ -178,3 +178,36 @@ def build_mccd_spatial_dic(obs_stars, obs_pos, x_lims, y_lims,
 
     # Return the tf spatial dictionary
     return tf.convert_to_tensor(spatial_dic, dtype=tf.float32)
+
+def build_mccd_spatial_dic_v2(obs_stars, obs_pos, x_lims, y_lims,
+    d_max = 2, graph_features=6, verbose=0):
+    """Build the spatial-constraint dictionaries.
+
+    Based on the hybrid approach from the MCCD model.
+    Returns the polynomial dict and the graph dict.
+    """
+    # The obs_data needs to be in RCA format (with the batch dim at the end)
+
+    # Graph parameters
+    graph_kwargs = {
+    'obs_data': obs_stars.swapaxes(0, 1).swapaxes(1, 2),
+    'obs_pos': obs_pos,
+    'obs_weights': np.ones_like(obs_stars),
+    'n_comp': graph_features,
+    'n_eigenvects': 5,
+    'n_iter': 3,
+    'ea_gridsize': 10,
+    'distances': None,
+    'auto_run': True,
+    'verbose': verbose
+    }
+
+    # Compute graph-spatial constraint matrix
+    VT = GraphBuilder(**graph_kwargs).VT
+
+    # Compute polynomial-spatial constaint matrix
+    tf_Pi = calc_poly_position_mat(pos=obs_pos, x_lims=x_lims, y_lims=y_lims, d_max=d_max)
+
+
+    # Return the poly dictionary and the graph dictionary
+    return tf.transpose(tf_Pi, perm=[1, 0]), tf.convert_to_tensor(VT.T, dtype=tf.float32)
