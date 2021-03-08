@@ -223,6 +223,19 @@ class TF_SemiParam_field(tf.keras.Model):
         """ Assign coefficient matrix."""
         self.tf_poly_Z_field.assign_coeff_matrix(coeff_mat)
 
+    def set_zero_nonparam(self):
+        """ Set to zero the non-parametric part."""
+        self.tf_np_poly_opd.set_alpha_zero()
+
+    def set_nonzero_nonparam(self):
+        """ Set to non-zero the non-parametric part."""
+        self.tf_np_poly_opd.set_alpha_identity()
+
+    def set_trainable_layers(self, param_bool=True, nonparam_bool=True):
+        """ Set the layers to be trainable or not."""
+        self.tf_np_poly_opd.trainable = nonparam_bool
+        self.tf_poly_Z_field.trainable = param_bool
+
     def call(self, inputs):
         """Define the PSF field forward model.
 
