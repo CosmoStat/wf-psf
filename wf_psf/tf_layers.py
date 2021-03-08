@@ -392,6 +392,14 @@ class TF_NP_poly_OPD(tf.keras.layers.Layer):
             trainable=True,
             dtype=tf.float32)
 
+    def set_alpha_zero(self):
+        """ Set alpha matrix to zero."""
+        _ = self.alpha_mat.assign(tf.zeros_like(self.alpha_mat,
+                                                dtype=tf.float32))
+
+    def set_alpha_identity(self):
+        """ Set alpha matrix to the identity."""
+        _ = self.alpha_mat.assign(tf.eye(n_poly, dtype=tf.float32))
 
     def call(self, positions):
         """ Calculate the OPD maps for the given positions.
