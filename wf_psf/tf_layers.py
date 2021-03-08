@@ -383,7 +383,7 @@ class TF_NP_poly_OPD(tf.keras.layers.Layer):
         # S initialization
         random_init = tf.random_uniform_initializer(minval=-0.001, maxval=0.001)
         self.S_mat = tf.Variable(
-            initial_value=random_init(shape=[n_poly, self.opd_dim, self.opd_dim]),
+            initial_value=random_init(shape=[self.n_poly, self.opd_dim, self.opd_dim]),
             trainable=True,
             dtype=tf.float32)
 
