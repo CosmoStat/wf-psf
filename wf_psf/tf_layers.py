@@ -367,6 +367,8 @@ class TF_NP_poly_OPD(tf.keras.layers.Layer):
         self.d_max = d_max
         self.opd_dim = opd_dim
 
+        self.n_poly = int((self.d_max+1)*(self.d_max+2)/2)
+
         # Variables
         self.S_mat = None
         self.alpha_mat = None
@@ -378,7 +380,6 @@ class TF_NP_poly_OPD(tf.keras.layers.Layer):
 
         Basic initialization. Random uniform for S and identity for alpha.
         """
-        n_poly = int((self.d_max+1)*(self.d_max+2)/2)
         # S initialization
         random_init = tf.random_uniform_initializer(minval=-0.001, maxval=0.001)
         self.S_mat = tf.Variable(
@@ -388,7 +389,7 @@ class TF_NP_poly_OPD(tf.keras.layers.Layer):
 
         # Alpha initialization
         self.alpha_mat = tf.Variable(
-            initial_value=tf.eye(n_poly),
+            initial_value=tf.eye(self.n_poly),
             trainable=True,
             dtype=tf.float32)
 
@@ -399,7 +400,7 @@ class TF_NP_poly_OPD(tf.keras.layers.Layer):
 
     def set_alpha_identity(self):
         """ Set alpha matrix to the identity."""
-        _ = self.alpha_mat.assign(tf.eye(n_poly, dtype=tf.float32))
+        _ = self.alpha_mat.assign(tf.eye(self.n_poly, dtype=tf.float32))
 
     def call(self, positions):
         """ Calculate the OPD maps for the given positions.
