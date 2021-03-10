@@ -100,6 +100,11 @@ class TF_SP_MCCD_field(tf.keras.Model):
         """ Set to zero the non-parametric part."""
         self.tf_NP_mccd_OPD.set_alpha_zero()
 
+    def set_l1_rate(self, new_l1_rate):
+        """ Set l1 rate the non-parametric part."""
+        self.l1_rate = new_l1_rate
+        self.tf_NP_mccd_OPD.l1_rate = new_l1_rate
+
     def set_nonzero_nonparam(self):
         """ Set to non-zero the non-parametric part."""
         self.tf_NP_mccd_OPD.set_alpha_identity()
