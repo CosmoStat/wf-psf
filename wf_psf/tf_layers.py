@@ -702,7 +702,7 @@ class TF_NP_MCCD_OPD_v2(tf.keras.layers.Layer):
         # self.add_loss(self.l1_rate * tf.math.reduce_sum(tf.math.abs(self.alpha_graph)))
         # Try Lp norm with p=1.1
         p=1.1
-        self.add_loss(self.l1_rate * tf.math.pow(tf.math.reduce_sum(tf.math.pow(tf.math.abs(self.alpha_graph), p)), 1/p)
+        self.add_loss(self.l1_rate * tf.math.pow(tf.math.reduce_sum(tf.math.pow(tf.math.abs(self.alpha_graph), p)), 1/p))
 
         def calc_index(idx_pos):
             return tf.where(tf.equal(self.obs_pos, idx_pos))[0,0]
