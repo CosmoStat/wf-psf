@@ -725,3 +725,155 @@ class TF_NP_MCCD_OPD_v2(tf.keras.layers.Layer):
         contribution_graph = tf.tensordot(intermediate_graph, self.S_graph, axes=1)
 
         return tf.math.add(contribution_poly, contribution_graph)
+
+
+
+class TF_NP_GRAPH_OPD(tf.keras.layers.Layer):
+    """ Non-parametric OPD generation with only graph-cosntraint variations.
+
+
+    Parameters
+    ----------
+    obs_pos: tensor(n_stars, 2)
+        Observed positions of the `n_stars` in the dataset. The indexing of the
+        positions has to correspond to the indexing in the `spatial_dic`.
+    spatial_dic: tensor(n_stars, n_dic_elems)
+        Dictionary containing the spatial-constraint dictionary. `n_stars`
+        corresponds to the total number of stars in the dataset. `n_dic_elems`
+        corresponds to the number of elements of the dictionary, not to be
+        confounded with `n_comp`, the total number of non-parametric features
+        of the wavefront-PSF.
+    x_lims: [int, int]
+        Limits of the x axis.
+    y_lims: [int, int]
+        Limits of the y axis.
+    graph_comps: int
+        Number of wavefront-PSF features correspondign to the graph constraint.
+    d_max: int
+        Max degree of polynomial determining the FoV variations. The number of
+        wavefront-PSF features of the polynomial part is
+        computed `(d_max+1)*(d_max+2)/2`.
+    opd_dim: int
+        Dimension of the OPD maps. Same as pupil diameter.
+
+    """
+    def __init__(self, obs_pos, spatial_dic, x_lims, y_lims, d_max=2,
+                graph_features=6, l1_rate=1e-5, opd_dim=256,
+                name='TF_NP_GRAPH_OPD'):
+        super().__init__(name=name)
+        # Parameters
+        self.x_lims = x_lims
+        self.y_lims = y_lims
+        self.opd_dim = opd_dim
+
+        # L1 regularisation parameter
+        self.l1_rate = l1_rate
+
+        self.obs_pos = obs_pos
+        self.poly_dic = spatial_dic[0]
+        self.graph_dic = spatial_dic[1]
+
+        self.n_stars = self.poly_dic.shape[0]
+        self.n_graph_elems = self.graph_dic.shape[1]
+        self.poly_features = int((self.d_max+1)*(self.d_max+2)/2)
+        self.graph_features = graph_features
+
+        # Variables
+        self.S_graph = None
+        self.alpha_graph = None
+        self.init_vars()
+
+
+    def init_vars(self):
+        """ Initialize trainable variables.
+
+        Basic initialization. Random uniform for S and identity for alpha.
+        """
+        # S initialization
+        random_init = tf.random_uniform_initializer(minval=-0.001, maxval=0.001)
+
+        self.S_graph = tf.Variable(
+            initial_value=random_init(shape=[self.graph_features,
+                                             self.opd_dim,
+                                             self.opd_dim]),
+            trainable=True,
+            dtype=tf.float32)
+
+        # Alpha initialization
+        self.alpha_graph = tf.Variable(
+            initial_value=tf.eye(num_rows=self.n_graph_elems,
+                                 num_columns=self.graph_features),
+            trainable=True,
+            dtype=tf.float32)
+
+    def set_alpha_zero(self):
+        """ Set alpha matrix to zero."""
+        _ = self.alpha_graph.assign(tf.zeros_like(self.alpha_graph,
+                                                dtype=tf.float32))
+
+    def set_alpha_identity(self):
+        """ Set alpha matrix to the identity."""
+        _ = self.alpha_graph.assign(tf.eye(num_rows=self.n_graph_elems,
+                                         num_columns=self.graph_features,
+                                         dtype=tf.float32))
+
+    def predict(self, positions):
+        """ Prediction step."""
+
+        ## Graph part
+        A_graph_train = tf.linalg.matmul(self.graph_dic, self.alpha_graph)
+        # RBF interpolation
+        # Order 2 means a thin_plate RBF interpolation
+        # All tensors need to expand one dimension to fulfil requirement in
+        # the tfa's interpolate_spline function
+        A_interp_graph = tfa.image.interpolate_spline(
+                        train_points=tf.expand_dims(self.obs_pos, axis=0),
+                        train_values=tf.expand_dims(A_graph_train, axis=0),
+                        query_points=tf.expand_dims(positions, axis=0),
+                        order=2,
+                        regularization_weight=0.0)
+
+        # Remove extra dimension required by tfa's interpolate_spline
+        A_interp_graph = tf.squeeze(A_interp_graph, axis=0)
+        interp_graph_opd = tf.tensordot(A_interp_graph, self.S_graph, axes=1)
+
+        return interp_graph_opd
+
+
+    def call(self, positions):
+        """ Calculate the OPD maps for the given positions.
+
+        Calculating: batch(spatial_dict) x alpha x S
+
+        Parameters
+        ----------
+        positions: Tensor(batch, 2)
+            First element is x-axis, second is y-axis.
+
+        Returns
+        -------
+        opd_maps: Tensor(batch, opd_dim, opd_dim)
+        """
+        # Add L1 loss of the graph alpha matrix
+        # self.add_loss(self.l1_rate * tf.math.reduce_sum(tf.math.abs(self.alpha_graph)))
+        # Try Lp norm with p=1.1
+        p=1.1
+        self.add_loss(self.l1_rate * tf.math.pow(tf.math.reduce_sum(tf.math.pow(tf.math.abs(self.alpha_graph), p)), 1/p))
+
+        def calc_index(idx_pos):
+            return tf.where(tf.equal(self.obs_pos, idx_pos))[0,0]
+
+        # Calculate the indices of the input batch
+        indices = tf.map_fn(calc_index, positions, fn_output_signature=tf.int64)
+
+
+        # Recover the spatial dict from the batch indexes
+        # Matrix multiplication dict*alpha
+        # Tensor product to calculate the contribution
+
+        # Graph contribution
+        batch_graph_dict = tf.gather(self.graph_dic, indices=indices, axis=0, batch_dims=0)
+        intermediate_graph = tf.linalg.matmul(batch_graph_dict, self.alpha_graph)
+        contribution_graph = tf.tensordot(intermediate_graph, self.S_graph, axes=1)
+
+        return contribution_graph
