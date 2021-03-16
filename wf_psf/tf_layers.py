@@ -775,7 +775,6 @@ class TF_NP_GRAPH_OPD(tf.keras.layers.Layer):
 
         self.n_stars = self.poly_dic.shape[0]
         self.n_graph_elems = self.graph_dic.shape[1]
-        self.poly_features = int((self.d_max+1)*(self.d_max+2)/2)
         self.graph_features = graph_features
 
         # Variables
