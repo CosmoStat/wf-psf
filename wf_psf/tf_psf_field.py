@@ -31,10 +31,12 @@ class TF_PSF_field_model(tf.keras.Model):
         field model.
 
     """
-    def __init__(self, zernike_maps, obscurations, batch_size,
+    def __init__(self, zernike_maps, obscurations, batch_size, output_Q,
         output_dim=64, n_zernikes=45, d_max=2, x_lims=[0, 1e3], y_lims=[0, 1e3],
         coeff_mat=None, name='TF_PSF_field_model'):
         super(TF_PSF_field_model, self).__init__()
+
+        self.output_Q = output_Q
 
         # Inputs: TF_poly_Z_field
         self.n_zernikes = n_zernikes
@@ -67,6 +69,7 @@ class TF_PSF_field_model(tf.keras.Model):
         # Initialize the batch opd to batch polychromatic PSF layer
         self.tf_batch_poly_PSF = TF_batch_poly_PSF(obscurations=self.obscurations,
                                                     psf_batch=self.psf_batch,
+                                                    output_Q=self.output_Q,
                                                     output_dim=self.output_dim)
 
         # Initialize the model parameters with non-default value
@@ -145,6 +148,16 @@ class TF_SemiParam_field(tf.keras.Model):
         Predefined obscurations of the phase.
     batch_size: int
         Batch size
+    output_Q: float
+        Oversampling used. This should match the oversampling Q used to generate
+        the diffraction zero padding that is found in the input `packed_SEDs`.
+        We call this other Q the `input_Q`.
+        In that case, we replicate the original sampling of the model used to
+        calculate the input `packed_SEDs`.
+        The final oversampling of the generated PSFs with respect to the
+        original instrument sampling depend on the division `input_Q/output_Q`.
+        It is not recommended to use `output_Q < 1`.
+        Although it works with float values it is better to use integer values.
     d_max_nonparam: int
         Maximum degree of the polynomial for the non-parametric variations.
     output_dim: int
@@ -162,11 +175,14 @@ class TF_SemiParam_field(tf.keras.Model):
         field model.
 
     """
-    def __init__(self, zernike_maps, obscurations, batch_size,
+    def __init__(self, zernike_maps, obscurations, batch_size, output_Q,
         d_max_nonparam=3,
         output_dim=64, n_zernikes=45, d_max=2, x_lims=[0, 1e3], y_lims=[0, 1e3],
         coeff_mat=None, name='TF_SemiParam_field'):
         super(TF_SemiParam_field, self).__init__()
+
+        # Inputs: oversampling used
+        self.output_Q = output_Q
 
         # Inputs: TF_poly_Z_field
         self.n_zernikes = n_zernikes
@@ -209,6 +225,7 @@ class TF_SemiParam_field(tf.keras.Model):
         # Initialize the batch opd to batch polychromatic PSF layer
         self.tf_batch_poly_PSF = TF_batch_poly_PSF(obscurations=self.obscurations,
                                                     psf_batch=self.psf_batch,
+                                                    output_Q=self.output_Q,
                                                     output_dim=self.output_dim)
 
         # Initialize the model parameters with non-default value

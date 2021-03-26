@@ -260,10 +260,11 @@ class TF_batch_poly_PSF(tf.keras.layers.Layer):
         time a calculation is required.
 
     """
-    def __init__(self, obscurations, psf_batch,
+    def __init__(self, obscurations, psf_batch, output_Q,
         output_dim=64, name='TF_batch_poly_PSF'):
         super().__init__(name=name)
 
+        self.output_Q = output_Q
         self.obscurations = obscurations
         self.output_dim = output_dim
         self.psf_batch = psf_batch
@@ -288,6 +289,7 @@ class TF_batch_poly_PSF(tf.keras.layers.Layer):
         tf_mono_psf_gen = TF_mono_PSF(phase_N,
                                       lambda_obs,
                                       self.obscurations,
+                                      output_Q=self.output_Q,
                                       output_dim=self.output_dim)
 
         # Calculate the PSF

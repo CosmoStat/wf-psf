@@ -37,10 +37,13 @@ class TF_SP_MCCD_field(tf.keras.Model):
 
     """
     def __init__(self, zernike_maps, obscurations, batch_size, obs_pos,
-        spatial_dic, d_max_nonparam=3, graph_features=6, l1_rate=1e-3,
+        spatial_dic, output_Q, d_max_nonparam=3, graph_features=6, l1_rate=1e-3,
         output_dim=64, n_zernikes=45, d_max=2, x_lims=[0, 1e3], y_lims=[0, 1e3],
         coeff_mat=None, name='TF_SP_MCCD_field'):
         super(TF_SP_MCCD_field, self).__init__()
+
+        # Inputs: oversampling used
+        self.output_Q = output_Q
 
         # Inputs: TF_poly_Z_field
         self.n_zernikes = n_zernikes
@@ -90,6 +93,7 @@ class TF_SP_MCCD_field(tf.keras.Model):
         # Initialize the batch opd to batch polychromatic PSF layer
         self.tf_batch_poly_PSF = TF_batch_poly_PSF(obscurations=self.obscurations,
                                                     psf_batch=self.psf_batch,
+                                                    output_Q=self.output_Q,
                                                     output_dim=self.output_dim)
 
         # Initialize the model parameters with non-default value
@@ -276,10 +280,13 @@ class TF_SP_graph_field(tf.keras.Model):
 
     """
     def __init__(self, zernike_maps, obscurations, batch_size, obs_pos,
-        spatial_dic, d_max_nonparam=3, graph_features=6, l1_rate=1e-3,
+        spatial_dic, output_Q, d_max_nonparam=3, graph_features=6, l1_rate=1e-3,
         output_dim=64, n_zernikes=45, d_max=2, x_lims=[0, 1e3], y_lims=[0, 1e3],
         coeff_mat=None, name='TF_SP_graph_field'):
         super(TF_SP_graph_field, self).__init__()
+
+        # Inputs: oversampling used
+        self.output_Q = output_Q
 
         # Inputs: TF_poly_Z_field
         self.n_zernikes = n_zernikes
@@ -329,6 +336,7 @@ class TF_SP_graph_field(tf.keras.Model):
         # Initialize the batch opd to batch polychromatic PSF layer
         self.tf_batch_poly_PSF = TF_batch_poly_PSF(obscurations=self.obscurations,
                                                     psf_batch=self.psf_batch,
+                                                    output_Q=self.output_Q,
                                                     output_dim=self.output_dim)
 
         # Initialize the model parameters with non-default value
