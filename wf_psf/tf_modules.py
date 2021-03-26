@@ -5,9 +5,10 @@ import tensorflow as tf
 class TF_fft_diffract(tf.Module):
     """ Diffract the wavefront into a monochromatic PSF.
     """
-    def __init__(self, output_dim=64, name=None):
+    def __init__(self, output_dim=64, output_Q=2, name=None):
         super().__init__(name=name)
         self.output_dim = output_dim
+        self.output_Q = output_Q
 
     def crop_img(self, image):
         # Crop the image
@@ -16,7 +17,7 @@ class TF_fft_diffract(tf.Module):
 
         return image[start:stop, start:stop]
 
-    def tf_crop_img(self, image):
+    def tf_crop_img(self, image, output_crop_dim):
         """Crop images with tf methods.
 
         It handles a batch of 2D images: [batch, width, height]
@@ -24,11 +25,11 @@ class TF_fft_diffract(tf.Module):
         # Define shape at runtime as we don't know it yet
         im_shape = tf.shape(image)
         # start
-        offset_height = int(im_shape[2]//2 - self.output_dim//2)
-        offset_width = int(im_shape[1]//2 - self.output_dim//2)
+        offset_height = int(im_shape[2]//2 - output_crop_dim//2)
+        offset_width = int(im_shape[1]//2 - output_crop_dim//2)
         # stop
-        target_height = int(self.output_dim)
-        target_width = int(self.output_dim)
+        target_height = int(output_crop_dim)
+        target_width = int(output_crop_dim)
 
         # Crop image
         cropped_image = tf.image.crop_to_bounding_box(
@@ -46,7 +47,6 @@ class TF_fft_diffract(tf.Module):
 
         return psf/norm_factor
 
-
     def __call__(self, input_phase):
         """ Calculate the normalized PSF from the padded phase array.
         """
@@ -54,14 +54,28 @@ class TF_fft_diffract(tf.Module):
         # fft_phase = tf.signal.fftshift(tf.signal.fft2d(input_phase))
         fft_phase = tf.signal.fftshift(tf.signal.fft2d(input_phase[:,...]), axes=[1, 2])
         psf = tf.math.pow(tf.cast(tf.math.abs(fft_phase), dtype=tf.float64), 2)
+
         # Crop the image
-        # cropped_psf = self.crop_img(psf)
-        cropped_psf = self.tf_crop_img(psf)
+        # We crop to output_dim*Q
+        cropped_psf = self.tf_crop_img(psf,
+            output_crop_dim=int(self.output_dim*self.output_Q))
+
+        # Downsample image
+        # We downsample by a factor Q to get output_dim
+        if self.output_Q != 1:
+            cropped_psf = tf.image.resize(
+                cropped_psf[ ..., tf.newaxis],
+                size=[self.output_dim, self.output_dim],
+                method=tf.image.ResizeMethod.LANCZOS3,
+                preserve_aspect_ratio=False,
+                antialias=True)
+            # Remove channel dimension [batch, heigh, width, channel]
+            cropped_psf = tf.squeeze(cropped_psf, axis=-1)
+
         # Normalize the PSF
         norm_psf = self.normalize_psf(cropped_psf)
 
         return norm_psf
-
 
 class TF_build_phase(tf.Module):
     """ Build complex phase map from OPD map.
@@ -168,11 +182,12 @@ class TF_Zernike_mono_PSF(tf.Module):
 class TF_mono_PSF(tf.Module):
     """ Calculate a monochromatic PSF from an OPD map.
     """
-    def __init__(self, phase_N, lambda_obs, obscurations, output_dim=64, name=None):
+    def __init__(self, phase_N, lambda_obs, obscurations, output_Q, output_dim=64, name=None):
         super().__init__(name=name)
 
+        self.output_Q = output_Q
         self.tf_build_phase = TF_build_phase(phase_N, lambda_obs, obscurations)
-        self.tf_fft_diffract = TF_fft_diffract(output_dim)
+        self.tf_fft_diffract = TF_fft_diffract(output_dim, output_Q=self.output_Q)
 
     def __call__(self, opd):
         phase = self.tf_build_phase.__call__(opd)
