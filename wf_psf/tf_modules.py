@@ -66,7 +66,7 @@ class TF_fft_diffract(tf.Module):
             cropped_psf = tf.image.resize(
                 cropped_psf[ ..., tf.newaxis],
                 size=[self.output_dim, self.output_dim],
-                method=tf.image.ResizeMethod.LANCZOS3,
+                method=tf.image.ResizeMethod.AREA,
                 preserve_aspect_ratio=False,
                 antialias=True)
             # Remove channel dimension [batch, heigh, width, channel]
