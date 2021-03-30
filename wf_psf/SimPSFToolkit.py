@@ -2,6 +2,7 @@ import numpy as np
 import scipy.signal as spsig
 import scipy.interpolate as sinterp
 import PIL
+from cv2 import resize, INTER_AREA
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
@@ -12,30 +13,67 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 class SimPSFToolkit(object):
     """Simulate PSFs.
 
-    In the future the zernike maps could be created with galsim.
+    In the future the zernike maps could be created with galsim or some other
+    alternative.
 
     Parameters
     ----------
-    zernike_maps
-    pad_factor=2
-    max_order=45
-    max_wfe: float
-        Maximum allowed WFE at ``lambda_norm``. Used for
-        normalization. Units in [\mu m].
+    zernike_maps: list of np.ndarray
+        Each element of the list should contain a Zernike map of the order
+        (OSA/ANSI index convention) corresponding to the position in the list.
+    max_order: int
+        Maximum Zernike polynomial order. Default is `45`.
+    max_wfe_rms: float
+        Maximum allowed WFE in RMS. Used forvnormalization. Units in [\mu m].
         Default is ``0.1``.
-    lambda_norm: float
-        Corresponds to the wavelength at which the normalization
-        of the WFE is taking place. Units in [\mu m].
-        Default is ``0.550``.
-    rand_seed=None
-    plot_opt=True
+    output_dim: int
+        Output dimension of the square PSF stamp. Default is `64`.
+    rand_seed: int
+        Random seed to be used to generate random zernike values.
+        Default is `None`.
+    plot_opt: bool
+        Option to plot some characteristics of the PSF generated.
+        Default is `False`.
+    oversampling_rate: float
+        Oversampling rate for the wavefront PSF simulation. Default is `2.14`
+        that is the minumum number required by Euclid so that there is no
+        aliasing at any wavelength in the pass band [0.55um, 0.9um].
+    output_Q: float
+        Downsampling rate to match the specified telescope's sampling. The value
+        of `output_Q` should be equal to `oversampling_rate` in order to have
+        the right pixel sampling corresponding to the telescope characteristics
+        `pix_sampling`, `tel_diameter`, `tel_focal_length`. The final
+        oversampling obtained is `oversampling_rate/output_Q`.
+        Default is `1`, so the output psf will be super-resolved by a factor of
+        `oversampling_rate`.
+    pix_sampling: float
+        Pixel sampling in [um]. Default is `12`[um] (Euclid-like).
+    tel_diameter: float
+        Telescope's main mirror diameter in [m]. Default is `1.2`[m]
+        (Euclid-like).
+    tel_focal_length: float
+        Telescope's focal length in [m]. Default is `24.5`[m] (Euclid-like).
+    pupil_diameter: int
+        Pupil diameter in pixels. Number of samples of the wavefront in the
+        pupil plane. More specifically, the Optical Path Differences map.
+        Default is `1024` [pix].
+    euclid_obsc: bool
+        Wheter to use Euclid-like obscurations. Defualt is `True`.
+    LP_filter_length: int
+        Length of one dimension of the Low-Pass (LP) filter to apply to the
+        obscurations to avoid the aliasing effect. The filter is a simple
+        top-hat filter. Default is `3`.
+    verbose: int
+        Self-explanatory variable. Default is `0`, use a value `>0` to activate.
 
     """
 
     def __init__(self, zernike_maps, max_order=45, max_wfe_rms=0.1,
-                 output_dim=64, rand_seed=None, plot_opt=False, oversampling_rate=2.14,
+                 output_dim=64, rand_seed=None, plot_opt=False,
+                 oversampling_rate=2.14, output_Q=1,
                  pix_sampling=12, tel_diameter=1.2, tel_focal_length=24.5,
-                 pupil_diameter=1024, euclid_obsc=True, LP_filter_length=3, verbose=0):
+                 pupil_diameter=1024, euclid_obsc=True, LP_filter_length=3,
+                 verbose=0):
         # Input attributes
         self.max_order = max_order
         self.rand_seed = rand_seed
@@ -48,6 +86,7 @@ class SimPSFToolkit(object):
 
         # Telescope characteristics
         self.oversampling_rate = oversampling_rate  # dimensionless
+        self.output_Q = output_Q  # dimensionless
         self.pix_sampling = pix_sampling  # In [um]
         self.tel_diameter = tel_diameter  # In [m]
         self.tel_focal_length = tel_focal_length  # In [m]
@@ -112,16 +151,28 @@ class SimPSFToolkit(object):
 
 
     @staticmethod
-    def fft_diffract(wf, output_dim=64):
+    def fft_diffract(wf, output_Q, output_dim=64):
         # Perform the FFT-based diffraction operation
         fft_wf = np.fft.fftshift(np.fft.fft2(wf))
         psf = np.abs(fft_wf)**2
 
-        # Crop the image
-        start = int(psf.shape[0]//2-output_dim//2)
-        stop = int(psf.shape[0]//2+output_dim//2)
+        # Calculate crop dimensions
+        if output_dim*output_Q < psf.shape[0]:
+            start = int(psf.shape[0]//2-(output_dim*output_Q)//2)
+            stop = int(psf.shape[0]//2+(output_dim*output_Q)//2)
+        else:
+            start = int(0)
+            stop = psf.shape[0]
 
-        return psf[start:stop, start:stop]
+        # Crop psf
+        psf = psf[start:stop, start:stop]
+
+        # Downsample the image depending on `self.output_Q`
+        psf = resize(src=psf,
+                     dsize=(int(output_dim), int(output_dim)),
+                     interpolation=INTER_AREA)
+
+        return psf
 
     @staticmethod
     def generate_pupil_obscurations(N_pix=1024, N_filter=3):
@@ -554,7 +605,9 @@ class SimPSFToolkit(object):
         self.phase[start:stop, start:stop] *= self.obscurations
 
         # FFT-diffract the phase (wavefront) and then crop to desired dimension
-        self.psf = self.fft_diffract(wf=self.phase, output_dim=self.output_dim)
+        self.psf = self.fft_diffract(wf=self.phase,
+                                     output_Q=self.output_Q,
+                                     output_dim=self.output_dim)
 
         # Normalize psf
         self.psf /= np.sum(self.psf)
