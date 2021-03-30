@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 import PIL
+from cv2 import resize, INTER_AREA
 
 def generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
     """Generate the SED elements needed for using the TF_poly_PSF.
@@ -62,3 +63,29 @@ def decimate_im(input_im, decim_f):
     im_resized = pil_im.resize((width, height))
 
     return np.array(im_resized)
+
+
+def downsample_im(input_im, output_dim):
+    """Downsample image.
+
+    Based on opencv function resize.
+    [doc](https://docs.opencv.org/2.4/modules/imgproc/doc/geometric_transformations.html#void%20resize(InputArray%20src,%20OutputArray%20dst,%20Size%20dsize,%20double%20fx,%20double%20fy,%20int%20interpolation))
+    The input image is downsampled to the dimensions specified in `output_dim`.
+    The downsampling method is based on the `INTER_AREA` method.
+    See [tensorflow_doc](https://www.tensorflow.org/api_docs/cc/class/tensorflow/ops/resize-area)
+    Each output pixel is computed by first transforming the pixel's footprint
+    into the input tensor and then averaging the pixels that intersect the
+    footprint. An input pixel's contribution to the average is weighted by the
+    fraction of its area that intersects the footprint.
+    This is the same as OpenCV's INTER_AREA.
+
+    This version should be consistent with the tensorflow one.
+
+    Parameters
+    ----------
+    input_im: np.ndarray (dim_x, dim_y)
+        input image
+    output_dim: int
+        Contains the dimension of the square output image.
+    """
+    return resize(input_im, (output_dim, output_dim), interpolation=INTER_AREA)
