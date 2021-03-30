@@ -78,6 +78,8 @@ def downsample_im(input_im, output_dim):
     footprint. An input pixel's contribution to the average is weighted by the
     fraction of its area that intersects the footprint.
     This is the same as OpenCV's INTER_AREA.
+    An explanation of the INTER_AREA method can be found in the next
+    [link](https://medium.com/@wenrudong/what-is-opencvs-inter-area-actually-doing-282a626a09b3).
 
     This version should be consistent with the tensorflow one.
 
