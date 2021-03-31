@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+import matplotlib.pyplot as plt
 from wf_psf.utils import generate_packed_elems
 from wf_psf.tf_psf_field import build_PSF_model
 
