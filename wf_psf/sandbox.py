@@ -218,7 +218,7 @@ def train_cycle(tf_semiparam_field, inputs, outputs, batch_size,
 
 def compute_metrics(tf_semiparam_field, simPSF_np, test_SEDs, train_SEDs,
                     tf_test_pos, tf_train_pos, tf_test_stars, tf_train_stars,
-                    n_bins_lda):
+                    n_bins_lda, batch_size=16):
     # Generate SED data list
     test_packed_SED_data = [generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_lda)
                             for _sed in test_SEDs]
@@ -249,7 +249,8 @@ def compute_metrics(tf_semiparam_field, simPSF_np, test_SEDs, train_SEDs,
 
     return test_res, train_res
 
-def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, test_pos, train_pos):
+def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, test_pos,
+                        train_pos):
     """ Compute the OPD metrics. """
 
     np_obscurations = np.real(tf_semiparam_field.obscurations.numpy())
@@ -302,7 +303,8 @@ def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, test_pos, tra
     return test_opd_rmse, train_opd_rmse
 
 
-def compute_opd_metrics_polymodel(tf_semiparam_field, GT_tf_semiparam_field, test_pos, train_pos):
+def compute_opd_metrics_polymodel(tf_semiparam_field, GT_tf_semiparam_field,
+                                  test_pos, train_pos):
     """ Compute the OPD metrics. """
 
     np_obscurations = np.real(tf_semiparam_field.obscurations.numpy())
