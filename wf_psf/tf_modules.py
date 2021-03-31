@@ -4,11 +4,25 @@ import tensorflow as tf
 
 class TF_fft_diffract(tf.Module):
     """ Diffract the wavefront into a monochromatic PSF.
+
+    Parameters
+    ----------
+    output_dim: int
+        Dimension of the output square postage stamp
+    output_Q: int
+        Downsampling factor. Must be integer.
     """
     def __init__(self, output_dim=64, output_Q=2, name=None):
         super().__init__(name=name)
         self.output_dim = output_dim
-        self.output_Q = output_Q
+        self.output_Q = int(output_Q)
+
+        self.downsample_layer = tf.keras.layers.AveragePooling2D(
+            pool_size=(self.output_Q, self.output_Q),
+            strides=None,
+            padding='valid',
+            data_format='channels_last')
+
 
     def crop_img(self, image):
         # Crop the image
@@ -63,12 +77,17 @@ class TF_fft_diffract(tf.Module):
         # Downsample image
         # We downsample by a factor Q to get output_dim
         if self.output_Q != 1:
-            cropped_psf = tf.image.resize(
-                cropped_psf[ ..., tf.newaxis],
-                size=[self.output_dim, self.output_dim],
-                method=tf.image.ResizeMethod.AREA,
-                preserve_aspect_ratio=False,
-                antialias=True)
+            cropped_psf = self.downsample_layer(cropped_psf[ ..., tf.newaxis])
+
+            # # Alternative solution but tf.image.resize does not have the
+            # # gradients implemented in tensorflow
+            # cropped_psf = tf.image.resize(
+            #     cropped_psf[ ..., tf.newaxis],
+            #     size=[self.output_dim, self.output_dim],
+            #     method=tf.image.ResizeMethod.AREA,
+            #     preserve_aspect_ratio=False,
+            #     antialias=True)
+
             # Remove channel dimension [batch, heigh, width, channel]
             cropped_psf = tf.squeeze(cropped_psf, axis=-1)
 
