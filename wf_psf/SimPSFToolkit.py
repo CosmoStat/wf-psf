@@ -70,7 +70,7 @@ class SimPSFToolkit(object):
 
     def __init__(self, zernike_maps, max_order=45, max_wfe_rms=0.1,
                  output_dim=64, rand_seed=None, plot_opt=False,
-                 oversampling_rate=2.14, output_Q=1,
+                 oversampling_rate=3., output_Q=1,
                  pix_sampling=12, tel_diameter=1.2, tel_focal_length=24.5,
                  pupil_diameter=1024, euclid_obsc=True, LP_filter_length=3,
                  verbose=0):
