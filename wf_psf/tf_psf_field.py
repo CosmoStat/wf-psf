@@ -84,6 +84,23 @@ class TF_PSF_field_model(tf.keras.Model):
         """ Assign coefficient matrix."""
         self.tf_poly_Z_field.assign_coeff_matrix(coeff_mat)
 
+    def set_output_Q(self, output_Q, output_dim=None):
+        """ Set the value of the output_Q parameter.
+        Useful for generating/predicting PSFs at a different sampling wrt the
+        observation sampling.
+        """
+        self.output_Q = output_Q
+        if output_dim is not None:
+            self.output_dim = output_dim
+            self.psf_batch = tf.zeros(
+                (self.batch_size, self.output_dim, self.output_dim),
+                dtype=tf.float32)
+        # Reinitialize the PSF batch poly generator
+        self.tf_batch_poly_PSF = TF_batch_poly_PSF(obscurations=self.obscurations,
+                                                    psf_batch=self.psf_batch,
+                                                    output_Q=self.output_Q,
+                                                    output_dim=self.output_dim)
+
     def call(self, inputs):
         """Define the PSF field forward model.
 
@@ -252,6 +269,23 @@ class TF_SemiParam_field(tf.keras.Model):
         """ Set the layers to be trainable or not."""
         self.tf_np_poly_opd.trainable = nonparam_bool
         self.tf_poly_Z_field.trainable = param_bool
+
+    def set_output_Q(self, output_Q, output_dim=None):
+        """ Set the value of the output_Q parameter.
+        Useful for generating/predicting PSFs at a different sampling wrt the
+        observation sampling.
+        """
+        self.output_Q = output_Q
+        if output_dim is not None:
+            self.output_dim = output_dim
+            self.psf_batch = tf.zeros(
+                (self.batch_size, self.output_dim, self.output_dim),
+                dtype=tf.float32)
+        # Reinitialize the PSF batch poly generator
+        self.tf_batch_poly_PSF = TF_batch_poly_PSF(obscurations=self.obscurations,
+                                                    psf_batch=self.psf_batch,
+                                                    output_Q=self.output_Q,
+                                                    output_dim=self.output_dim)
 
     def call(self, inputs):
         """Define the PSF field forward model.

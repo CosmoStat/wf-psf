@@ -104,6 +104,23 @@ class TF_SP_MCCD_field(tf.keras.Model):
         """ Set to zero the non-parametric part."""
         self.tf_NP_mccd_OPD.set_alpha_zero()
 
+    def set_output_Q(self, output_Q, output_dim=None):
+        """ Set the value of the output_Q parameter.
+        Useful for generating/predicting PSFs at a different sampling wrt the
+        observation sampling.
+        """
+        self.output_Q = output_Q
+        if output_dim is not None:
+            self.output_dim = output_dim
+            self.psf_batch = tf.zeros(
+                (self.batch_size, self.output_dim, self.output_dim),
+                dtype=tf.float32)
+        # Reinitialize the PSF batch poly generator
+        self.tf_batch_poly_PSF = TF_batch_poly_PSF(obscurations=self.obscurations,
+                                                    psf_batch=self.psf_batch,
+                                                    output_Q=self.output_Q,
+                                                    output_dim=self.output_dim)
+
     def set_l1_rate(self, new_l1_rate):
         """ Set l1 rate the non-parametric part."""
         self.l1_rate = new_l1_rate
