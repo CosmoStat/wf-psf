@@ -294,3 +294,74 @@ def plot_imgs(mat, cmap = 'gist_stern', figsize=(20,20)):
             idx += 1
 
     plt.show()
+
+def compute_shape_metrics(tf_semiparam_field, GT_tf_semiparam_field, simPSF_np, SEDs,
+                    tf_pos, n_bins_lda, output_Q=1, output_dim=64, batch_size=16):
+    """ Compute the pixel, shape and size RMSE of a PSF model.
+
+    This is done at a specific sampling and output image dimension.
+    It is done for polychromatic PSFs so SEDs are needed.
+    """
+    # Save original output_Q and output_dim
+    original_out_Q = tf_semiparam_field.output_Q
+    original_out_dim = tf_semiparam_field.output_dim
+    GT_original_out_Q = GT_tf_semiparam_field.output_Q
+    GT_original_out_dim = GT_tf_semiparam_field.output_dim
+
+    # Set the required output_Q and output_dim parameters in the models
+    tf_semiparam_field.set_output_Q(output_Q=output_Q, output_dim=output_dim)
+    GT_tf_semiparam_field.set_output_Q(output_Q=output_Q, output_dim=output_dim)
+
+    # Need to compile the models again
+    tf_semiparam_field = build_PSF_model(tf_semiparam_field)
+    GT_tf_semiparam_field = build_PSF_model(GT_tf_semiparam_field)
+
+
+    # Generate SED data list
+    packed_SED_data = [generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_lda)
+                            for _sed in SEDs]
+
+    # Prepare inputs
+    tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
+    tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
+    pred_inputs = [tf_pos , tf_packed_SED_data]
+
+    # PSF model
+    predictions = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
+
+    # Ground Truth model
+    GT_predictions = GT_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
+
+
+    # Calculate RMSE values
+    pixel_residual = np.sqrt(np.mean((GT_predictions - predictions)**2))
+    # Print pixel RMSE values
+    print('Pixel star RMSE:\t %.4e\n'%pixel_residual)
+
+    # Measure shapes of the reconstructions
+    pred_moments = [gs.hsm.FindAdaptiveMom(gs.Image(_pred), strict=True) for _pred in predictions]
+    pred_e1_HSM = np.array([_pred_mom.observed_shape.g1 for _pred_mom in pred_moments])
+    pred_e2_HSM = np.array([_pred_mom.observed_shape.g2 for _pred_mom in pred_moments])
+    pred_R2_HSM = np.array([2*(_pred_mom.moments_sigma**2) for _pred_mom in pred_moments])
+
+    # Measure shapes of the reconstructions
+    GT_pred_moments = [gs.hsm.FindAdaptiveMom(gs.Image(_pred), strict=True) for _pred in GT_predictions]
+    GT_pred_e1_HSM = np.array([_pred_mom.observed_shape.g1 for _pred_mom in GT_pred_moments])
+    GT_pred_e2_HSM = np.array([_pred_mom.observed_shape.g2 for _pred_mom in GT_pred_moments])
+    GT_pred_R2_HSM = np.array([2*(_pred_mom.moments_sigma**2) for _pred_mom in GT_pred_moments])
+
+    # Print shape/size errors
+    print('sigma(e1) RMSE = %.4e'%np.sqrt(np.mean((GT_pred_e1_HSM - pred_e1_HSM)**2)))
+    print('sigma(e2) RMSE = %.4e'%np.sqrt(np.mean((GT_pred_e2_HSM - pred_e2_HSM)**2)))
+    print('sigma(R2)/<R2>  = %.4e'%(np.sqrt(np.mean((GT_pred_R2_HSM - pred_R2_HSM)**2))/np.mean(GT_pred_R2_HSM)) )
+
+
+    # Re-et the original output_Q and output_dim parameters in the models
+    tf_semiparam_field.set_output_Q(output_Q=original_out_Q, output_dim=original_out_dim)
+    GT_tf_semiparam_field.set_output_Q(output_Q=GT_original_out_Q, output_dim=GT_original_out_dim)
+
+    # Need to compile the models again
+    tf_semiparam_field = build_PSF_model(tf_semiparam_field)
+    GT_tf_semiparam_field = build_PSF_model(GT_tf_semiparam_field)
+
+    return predictions, GT_predictions
