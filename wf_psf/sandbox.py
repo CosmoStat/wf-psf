@@ -302,7 +302,6 @@ def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, test_pos,
 
     return test_opd_rmse, train_opd_rmse
 
-
 def compute_opd_metrics_polymodel(tf_semiparam_field, GT_tf_semiparam_field,
                                   test_pos, train_pos):
     """ Compute the OPD metrics. """
@@ -356,7 +355,6 @@ def compute_opd_metrics_polymodel(tf_semiparam_field, GT_tf_semiparam_field,
 
     return test_opd_rmse, train_opd_rmse
 
-
 def compute_one_opd_rmse(GT_tf_semiparam_field, tf_semiparam_field, pos, is_poly=False):
     """ Compute the OPD map for one position!. """
 
@@ -401,7 +399,6 @@ def plot_function(mesh_pos, residual, tf_train_pos, tf_test_pos, title='Error'):
     plt.xlabel('x-axis')
     plt.ylabel('y-axis')
     plt.show()
-
 
 def plot_residual_maps(GT_tf_semiparam_field, tf_semiparam_field, simPSF_np, train_SEDs,
                        tf_train_pos, tf_test_pos, n_bins_lda=20, n_points_per_dim=30,
@@ -506,6 +503,14 @@ def plot_imgs(mat, cmap = 'gist_stern', figsize=(20,20)):
             idx += 1
 
     plt.show()
+
+
+def add_noise(image, desired_SNR):
+    """ Function to add noise to a 2D image in order to have a desired SNR.
+    """
+    sigma_noise = np.sqrt((np.sum(image**2))/(desired_SNR * image.shape[0] * image.shape[1]))
+    noisy_image = image + np.random.standard_normal(image.shape) * sigma_noise
+    return noisy_image
 
 # Not to loose this lines of code..
 def GT_model():
