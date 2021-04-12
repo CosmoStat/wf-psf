@@ -146,6 +146,51 @@ def compute_opd_metrics_polymodel(tf_semiparam_field, GT_tf_semiparam_field,
 
     return test_opd_rmse, train_opd_rmse
 
+def compute_opd_metrics_param_model(tf_semiparam_field, GT_tf_semiparam_field,
+                                    test_pos, train_pos):
+    """ Compute the OPD metrics. """
+
+    np_obscurations = np.real(tf_semiparam_field.obscurations.numpy())
+
+    ## For test positions
+    # Param part
+    zernike_coeffs = tf_semiparam_field.tf_poly_Z_field(test_pos)
+    opd_pred = tf_semiparam_field.tf_zernike_OPD(zernike_coeffs)
+
+    # GT model
+    GT_zernike_coeffs = GT_tf_semiparam_field.tf_poly_Z_field(test_pos)
+    GT_opd_maps = GT_tf_semiparam_field.tf_zernike_OPD(GT_zernike_coeffs)
+
+    # Compute residual and obscure the OPD
+    res_opd = (GT_opd_maps.numpy() - opd_pred.numpy())*np_obscurations
+
+    # Calculate RMSE values
+    test_opd_rmse = np.sqrt(np.mean(res_opd**2))
+
+    # Pritn RMSE values
+    print('Test stars OPD RMSE:\t %.4e'%test_opd_rmse)
+
+
+    ## For train part
+    # Param part
+    zernike_coeffs = tf_semiparam_field.tf_poly_Z_field(train_pos)
+    opd_pred = tf_semiparam_field.tf_zernike_OPD(zernike_coeffs)
+
+    # GT model
+    GT_zernike_coeffs = GT_tf_semiparam_field.tf_poly_Z_field(train_pos)
+    GT_opd_maps = GT_tf_semiparam_field.tf_zernike_OPD(GT_zernike_coeffs)
+
+    # Compute residual and obscure the OPD
+    res_opd = (GT_opd_maps.numpy() - opd_pred.numpy())*np_obscurations
+
+    # Calculate RMSE values
+    train_opd_rmse = np.sqrt(np.mean(res_opd**2))
+
+    # Pritn RMSE values
+    print('Train stars OPD RMSE:\t %.4e'%train_opd_rmse)
+
+    return test_opd_rmse, train_opd_rmse
+
 def compute_one_opd_rmse(GT_tf_semiparam_field, tf_semiparam_field, pos, is_poly=False):
     """ Compute the OPD map for one position!. """
 
