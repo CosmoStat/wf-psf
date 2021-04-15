@@ -33,9 +33,17 @@ def compute_metrics(tf_semiparam_field, simPSF_np, test_SEDs, train_SEDs,
     test_res = np.sqrt(np.mean((tf_test_stars - test_predictions)**2))
     train_res = np.sqrt(np.mean((tf_train_stars - train_predictions)**2))
 
-    # Pritn RMSE values
-    print('Test stars RMSE:\t %.4e'%test_res)
-    print('Training stars RMSE:\t %.4e'%train_res)
+    # Calculate relative RMSE values
+    relative_test_res = test_res / np.sqrt(np.mean((tf_test_stars)**2))
+    relative_train_res = train_res / np.sqrt(np.mean((tf_train_stars)**2))
+
+    # Print RMSE values
+    print('Test stars absolute RMSE:\t %.4e'%test_res)
+    print('Training stars absolute RMSE:\t %.4e'%train_res)
+
+    # Print RMSE values
+    print('Test stars relative RMSE:\t %.4e\%'%(relative_test_res*100.))
+    print('Training stars relative RMSE:\t %.4e\%'%(relative_train_res*100.))
 
 
     return test_res, train_res
@@ -62,11 +70,15 @@ def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, test_pos,
     # Compute residual and obscure the OPD
     res_opd = (GT_opd_maps.numpy() - opd_pred.numpy())*np_obscurations
 
-    # Calculate RMSE values
+    # Calculate absolute RMSE values
     test_opd_rmse = np.sqrt(np.mean(res_opd**2))
 
-    # Pritn RMSE values
-    print('Test stars OPD RMSE:\t %.4e'%test_opd_rmse)
+    # Calculate relative RMSE values
+    relative_test_opd_rmse = test_opd_rmse / np.sqrt(np.mean((GT_opd_maps.numpy()*np_obscurations)**2))
+
+    # Print RMSE values
+    print('Test stars absolute OPD RMSE:\t %.4e'%test_opd_rmse)
+    print('Test stars relative OPD RMSE:\t %.4e %%\n'%(relative_test_opd_rmse*100.))
 
 
     ## For train part
@@ -88,8 +100,13 @@ def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, test_pos,
     # Calculate RMSE values
     train_opd_rmse = np.sqrt(np.mean(res_opd**2))
 
-    # Pritn RMSE values
-    print('Train stars OPD RMSE:\t %.4e'%train_opd_rmse)
+    # Calculate relative RMSE values
+    relative_train_opd_rmse = train_opd_rmse / np.sqrt(np.mean((GT_opd_maps.numpy()*np_obscurations)**2))
+
+
+    # Print RMSE values
+    print('Train stars absolute OPD RMSE:\t %.4e'%train_opd_rmse)
+    print('Test stars relative OPD RMSE:\t %.4e %%\n'%(relative_train_opd_rmse*100.))
 
     return test_opd_rmse, train_opd_rmse
 
@@ -164,12 +181,15 @@ def compute_opd_metrics_param_model(tf_semiparam_field, GT_tf_semiparam_field,
     # Compute residual and obscure the OPD
     res_opd = (GT_opd_maps.numpy() - opd_pred.numpy())*np_obscurations
 
-    # Calculate RMSE values
+    # Calculate absolute RMSE values
     test_opd_rmse = np.sqrt(np.mean(res_opd**2))
 
-    # Pritn RMSE values
-    print('Test stars OPD RMSE:\t %.4e'%test_opd_rmse)
+    # Calculate relative RMSE values
+    relative_test_opd_rmse = test_opd_rmse / np.sqrt(np.mean((GT_opd_maps.numpy()*np_obscurations)**2))
 
+    # Print RMSE values
+    print('Test stars absolute OPD RMSE:\t %.4e'%test_opd_rmse)
+    print('Test stars relative OPD RMSE:\t %.4e %%\n'%(relative_test_opd_rmse*100.))
 
     ## For train part
     # Param part
@@ -186,8 +206,13 @@ def compute_opd_metrics_param_model(tf_semiparam_field, GT_tf_semiparam_field,
     # Calculate RMSE values
     train_opd_rmse = np.sqrt(np.mean(res_opd**2))
 
-    # Pritn RMSE values
-    print('Train stars OPD RMSE:\t %.4e'%train_opd_rmse)
+    # Calculate relative RMSE values
+    relative_train_opd_rmse = train_opd_rmse / np.sqrt(np.mean((GT_opd_maps.numpy()*np_obscurations)**2))
+
+
+    # Print RMSE values
+    print('Train stars absolute OPD RMSE:\t %.4e'%train_opd_rmse)
+    print('Test stars relative OPD RMSE:\t %.4e %%\n'%(relative_train_opd_rmse*100.))
 
     return test_opd_rmse, train_opd_rmse
 
@@ -378,10 +403,15 @@ def compute_shape_metrics(tf_semiparam_field, GT_tf_semiparam_field, simPSF_np, 
     GT_predictions = GT_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
 
-    # Calculate RMSE values
+    # Calculate absolute RMSE values
     pixel_residual = np.sqrt(np.mean((GT_predictions - predictions)**2))
+
+    # Calculate relative RMSE values
+    relative_pixel_residual = pixel_residual / np.sqrt(np.mean((GT_predictions)**2))
+
     # Print pixel RMSE values
-    print('Pixel star RMSE:\t %.4e\n'%pixel_residual)
+    print('Pixel star absolute RMSE:\t %.4e\n'%pixel_residual)
+    print('Pixel star relative RMSE:\t %.4e %%\n'%(relative_pixel_residual*100.))
 
     # Measure shapes of the reconstructions
     pred_moments = [gs.hsm.FindAdaptiveMom(gs.Image(_pred), strict=True) for _pred in predictions]
@@ -398,8 +428,11 @@ def compute_shape_metrics(tf_semiparam_field, GT_tf_semiparam_field, simPSF_np, 
     # Print shape/size errors
     print('sigma(e1) RMSE = %.4e'%np.sqrt(np.mean((GT_pred_e1_HSM - pred_e1_HSM)**2)))
     print('sigma(e2) RMSE = %.4e'%np.sqrt(np.mean((GT_pred_e2_HSM - pred_e2_HSM)**2)))
-    print('sigma(R2)/<R2>  = %.4e'%(np.sqrt(np.mean((GT_pred_R2_HSM - pred_R2_HSM)**2))/np.mean(GT_pred_R2_HSM)) )
+    print('sigma(R2)/<R2>  = %.4e \n'%(np.sqrt(np.mean((GT_pred_R2_HSM - pred_R2_HSM)**2))/np.mean(GT_pred_R2_HSM)) )
 
+    # Print relative shape/size errors
+    print('relative sigma(e1) RMSE = %.4e %%'%(100.* np.sqrt(np.mean((GT_pred_e1_HSM - pred_e1_HSM)**2)) / np.sqrt(np.mean((GT_pred_e1_HSM)**2)) ))
+    print('relative sigma(e2) RMSE = %.4e %%'%(100.* np.sqrt(np.mean((GT_pred_e2_HSM - pred_e2_HSM)**2)) / np.sqrt(np.mean((GT_pred_e2_HSM)**2)) ))
 
     # Re-et the original output_Q and output_dim parameters in the models
     tf_semiparam_field.set_output_Q(output_Q=original_out_Q, output_dim=original_out_dim)
