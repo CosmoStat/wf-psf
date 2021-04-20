@@ -69,6 +69,7 @@ def first_train_cycle(tf_semiparam_field, inputs, outputs, batch_size,
                                                     loss=loss, metrics=metrics)
 
     # Train the parametric part
+    print('Starting parametric update..')
     history_param = tf_semiparam_field.fit(x=inputs, y=outputs,
                                            batch_size=batch_size,
                                            epochs=n_epochs_param,
@@ -102,6 +103,7 @@ def first_train_cycle(tf_semiparam_field, inputs, outputs, batch_size,
                                                     loss=loss, metrics=metrics)
 
     # Train the parametric part
+    print('Starting non-parametric update..')
     history_non_param = tf_semiparam_field.fit(x=inputs, y=outputs,
                                                batch_size=batch_size,
                                                epochs=n_epochs_non_param,
@@ -138,6 +140,7 @@ def train_cycle(tf_semiparam_field, inputs, outputs, batch_size,
                                                     loss=loss, metrics=metrics)
 
     # Train the parametric part
+    print('Starting parametric update..')
     history_param = tf_semiparam_field.fit(x=inputs, y=outputs,
                                            batch_size=batch_size,
                                            epochs=n_epochs_param,
@@ -164,6 +167,7 @@ def train_cycle(tf_semiparam_field, inputs, outputs, batch_size,
                                                     loss=loss, metrics=metrics)
 
     # Train the parametric part
+    print('Starting non-parametric update..')
     history_non_param = tf_semiparam_field.fit(x=inputs, y=outputs,
                                                batch_size=batch_size,
                                                epochs=n_epochs_non_param,
