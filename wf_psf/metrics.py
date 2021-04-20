@@ -135,9 +135,12 @@ def compute_opd_metrics_polymodel(tf_semiparam_field, GT_tf_semiparam_field,
     # Calculate RMSE values
     test_opd_rmse = np.sqrt(np.mean(res_opd**2))
 
-    # Pritn RMSE values
-    print('Test stars OPD RMSE:\t %.4e'%test_opd_rmse)
+    # Calculate relative RMSE values
+    relative_test_opd_rmse = test_opd_rmse / np.sqrt(np.mean((GT_opd_maps.numpy()*np_obscurations)**2))
 
+    # Print RMSE values
+    print('Test stars OPD RMSE:\t %.4e'%test_opd_rmse)
+    print('Test stars relative OPD RMSE:\t %.4e %%\n'%(relative_test_opd_rmse*100.))
 
     ## For train part
     # Param part
@@ -158,8 +161,12 @@ def compute_opd_metrics_polymodel(tf_semiparam_field, GT_tf_semiparam_field,
     # Calculate RMSE values
     train_opd_rmse = np.sqrt(np.mean(res_opd**2))
 
+    # Calculate relative RMSE values
+    relative_train_opd_rmse = train_opd_rmse / np.sqrt(np.mean((GT_opd_maps.numpy()*np_obscurations)**2))
+
     # Pritn RMSE values
     print('Train stars OPD RMSE:\t %.4e'%train_opd_rmse)
+    print('Test stars relative OPD RMSE:\t %.4e %%\n'%(relative_train_opd_rmse*100.))
 
     return test_opd_rmse, train_opd_rmse
 
@@ -410,7 +417,7 @@ def compute_shape_metrics(tf_semiparam_field, GT_tf_semiparam_field, simPSF_np, 
     relative_pixel_residual = pixel_residual / np.sqrt(np.mean((GT_predictions)**2))
 
     # Print pixel RMSE values
-    print('Pixel star absolute RMSE:\t %.4e\n'%pixel_residual)
+    print('\nPixel star absolute RMSE:\t %.4e'%pixel_residual)
     print('Pixel star relative RMSE:\t %.4e %%\n'%(relative_pixel_residual*100.))
 
     # Measure shapes of the reconstructions
