@@ -42,8 +42,8 @@ def compute_metrics(tf_semiparam_field, simPSF_np, test_SEDs, train_SEDs,
     print('Training stars absolute RMSE:\t %.4e'%train_res)
 
     # Print RMSE values
-    print('Test stars relative RMSE:\t %.4e\%'%(relative_test_res*100.))
-    print('Training stars relative RMSE:\t %.4e\%'%(relative_train_res*100.))
+    print('Test stars relative RMSE:\t %.4e %%'%(relative_test_res*100.))
+    print('Training stars relative RMSE:\t %.4e %%'%(relative_train_res*100.))
 
 
     return test_res, train_res
