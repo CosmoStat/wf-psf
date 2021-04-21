@@ -52,6 +52,7 @@ print('Starting the log file.')
 
 # Decimation factor for Zernike polynomials
 decim_f = 4  # Original shape (1024x1024)
+n_zernikes = 15
 
 # Some parameters
 pupil_diameter = 1024 // decim_f
@@ -76,7 +77,7 @@ l1_rate = 1e-8  # L1 regularisation
 Zcube = sio.loadmat(Zcube_path)
 zernikes = []
 zernike_shape = int(1024/decim_f)
-n_zernikes = 15
+
 
 for it in range(n_zernikes):
     zernikes.append(wf.utils.downsample_im(Zcube['Zpols'][0,it][5], zernike_shape))
@@ -273,6 +274,9 @@ print('Cycle2 elapsed time: %f'%(end_cycle2 - start_cycle2))
 saving_optim_hist['param_cycle2'] = history_param.history['loss']
 saving_optim_hist['nonparam_cycle2'] = history_non_param.history['loss']
 
+# Save optimisation history dictionary
+np.save(optim_hist_file + 'optim_hist_' + run_id_name + '.npy', saving_optim_hist)
+
 
 # Compute the train/test RMSE values
 test_res, train_res = wf.metrics.compute_metrics(tf_semiparam_field, simPSF_np,
@@ -420,9 +424,6 @@ _, _ = wf.metrics.compute_shape_metrics(
 
 
 # # Before ending
-
-# Save optimisation history dictionary
-np.save(optim_hist_file + 'optim_hist_' + run_id_name + '.npy', saving_optim_hist)
 
 # Close log file
 print('\n Good bye..')
