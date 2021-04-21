@@ -40,6 +40,9 @@ def l1_schedule_rule(epoch_n, l1_rate):
 def first_train_cycle(tf_semiparam_field, inputs, outputs, batch_size,
                       l_rate_param, l_rate_non_param,
                       n_epochs_param, n_epochs_non_param,
+                      param_optim=None, non_param_optim=None,
+                      param_loss=None, non_param_loss=None,
+                      param_metrics=None, non_param_metrics=None,
                       param_callback=None, non_param_callback=None,
                       verbose=1):
 
@@ -48,12 +51,22 @@ def first_train_cycle(tf_semiparam_field, inputs, outputs, batch_size,
     # Define the model optimisation
     # l_rate_param = 1e-2
     # n_epochs_param = 20
+    if param_loss is None:
+        loss = tf.keras.losses.MeanSquaredError()
+    else:
+        loss = param_loss
 
-    loss = tf.keras.losses.MeanSquaredError()
-    optimizer = tf.keras.optimizers.Adam(
-        learning_rate=l_rate_param, beta_1=0.9, beta_2=0.999,
-        epsilon=1e-07, amsgrad=False)
-    metrics = [tf.keras.metrics.MeanSquaredError()]
+    if param_optim is None:
+        optimizer = tf.keras.optimizers.Adam(
+            learning_rate=l_rate_param, beta_1=0.9, beta_2=0.999,
+            epsilon=1e-07, amsgrad=False)
+    else:
+        optimizer = param_optim
+
+    if param_metrics is None:
+        metrics = [tf.keras.metrics.MeanSquaredError()]
+    else:
+        metrics = param_metrics
 
     # Set the non-parametric model to zero
     # With alpha to zero its already enough
@@ -92,11 +105,23 @@ def first_train_cycle(tf_semiparam_field, inputs, outputs, batch_size,
     # n_epochs_non_param = 100
 
     # Define the model optimisation
-    loss = tf.keras.losses.MeanSquaredError()
-    optimizer = tf.keras.optimizers.Adam(
-        learning_rate=l_rate_non_param, beta_1=0.9, beta_2=0.999,
-        epsilon=1e-07, amsgrad=False)
-    metrics = [tf.keras.metrics.MeanSquaredError()]
+    if non_param_loss is None:
+        loss = tf.keras.losses.MeanSquaredError()
+    else:
+        loss = non_param_loss
+
+    if non_param_optim is None:
+        optimizer = tf.keras.optimizers.Adam(
+            learning_rate=l_rate_non_param, beta_1=0.9, beta_2=0.999,
+            epsilon=1e-07, amsgrad=False)
+    else:
+        optimizer = non_param_optim
+
+    if non_param_metrics is None:
+        metrics = [tf.keras.metrics.MeanSquaredError()]
+    else:
+        metrics = non_param_metrics
+
 
     # Compile the model again for the second optimisation
     tf_semiparam_field = build_PSF_model(tf_semiparam_field, optimizer=optimizer,
@@ -117,6 +142,9 @@ def first_train_cycle(tf_semiparam_field, inputs, outputs, batch_size,
 def train_cycle(tf_semiparam_field, inputs, outputs, batch_size,
                 l_rate_param, l_rate_non_param,
                 n_epochs_param, n_epochs_non_param,
+                param_optim=None, non_param_optim=None,
+                param_loss=None, non_param_loss=None,
+                param_metrics=None, non_param_metrics=None,
                 param_callback=None, non_param_callback=None,
                 verbose=1):
 
@@ -125,12 +153,22 @@ def train_cycle(tf_semiparam_field, inputs, outputs, batch_size,
     # Define the model optimisation
     # l_rate_param = 1e-2
     # n_epochs_param = 20
+    if param_loss is None:
+        loss = tf.keras.losses.MeanSquaredError()
+    else:
+        loss = param_loss
 
-    loss = tf.keras.losses.MeanSquaredError()
-    optimizer = tf.keras.optimizers.Adam(
-        learning_rate=l_rate_param, beta_1=0.9, beta_2=0.999,
-        epsilon=1e-07, amsgrad=False)
-    metrics = [tf.keras.metrics.MeanSquaredError()]
+    if param_optim is None:
+        optimizer = tf.keras.optimizers.Adam(
+            learning_rate=l_rate_param, beta_1=0.9, beta_2=0.999,
+            epsilon=1e-07, amsgrad=False)
+    else:
+        optimizer = param_optim
+
+    if param_metrics is None:
+        metrics = [tf.keras.metrics.MeanSquaredError()]
+    else:
+        metrics = param_metrics
 
     # Set the trainable layer
     tf_semiparam_field.set_trainable_layers(param_bool=True, nonparam_bool=False)
@@ -156,11 +194,22 @@ def train_cycle(tf_semiparam_field, inputs, outputs, batch_size,
     # n_epochs_non_param = 100
 
     # Define the model optimisation
-    loss = tf.keras.losses.MeanSquaredError()
-    optimizer = tf.keras.optimizers.Adam(
-        learning_rate=l_rate_non_param, beta_1=0.9, beta_2=0.999,
-        epsilon=1e-07, amsgrad=False)
-    metrics = [tf.keras.metrics.MeanSquaredError()]
+    if non_param_loss is None:
+        loss = tf.keras.losses.MeanSquaredError()
+    else:
+        loss = non_param_loss
+
+    if non_param_optim is None:
+        optimizer = tf.keras.optimizers.Adam(
+            learning_rate=l_rate_non_param, beta_1=0.9, beta_2=0.999,
+            epsilon=1e-07, amsgrad=False)
+    else:
+        optimizer = non_param_optim
+
+    if non_param_metrics is None:
+        metrics = [tf.keras.metrics.MeanSquaredError()]
+    else:
+        metrics = non_param_metrics
 
     # Compile the model again for the second optimisation
     tf_semiparam_field = build_PSF_model(tf_semiparam_field, optimizer=optimizer,
