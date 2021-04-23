@@ -512,6 +512,81 @@ def add_noise(image, desired_SNR):
     noisy_image = image + np.random.standard_normal(image.shape) * sigma_noise
     return noisy_image
 
+
+class MyLRSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
+    """ Learning rate scheduler.
+
+    To be passed to the optimization algorithm.
+
+    Parameters
+    ----------
+    lr_update_strategy: function(step, params) -> lr
+        Learning rate update strategy. Should have as input the step number and some parameters
+        and return a learning rate that corresponds to the input step number.
+    """
+    def __init__(self, lr_update_strategy, params=None):
+        self.lr_update_strategy = lr_update_strategy
+        self.params = params
+
+    def __call__(self, step):
+        return self.lr_update_strategy(step, self.params)
+
+def step_update_strategy(step, params):
+    """ Piecewise constant update strategy.
+
+    Parameters
+    ----------
+    step: int
+        Optimization step (not to confound with epoch.)
+    params['batch_size']: int
+        Batch size.
+    params['input_elements']: int
+        Total number of input elements.
+    params['total_epochs']: int
+        Total number of epochs.
+    params['epoch_list']: list of int
+        List of epoch intervals. It corresponds tot he intervals of the learning rate
+        list params['lr_list'].
+        It must verify:
+        params['epoch_list'][0] = 0
+        params['epoch_list'][-1] = params['total_epochs']
+        len(params['epoch_list']) = 1 + len(params['lr_list'])
+    params['lr_list']: list of float
+        List of learning rate values. See params['epoch_list'].
+
+    Returns
+    -------
+    current_lr: float
+        Learning rate correspondign to the current step.
+
+    """
+    # Calculate the current epoch
+    one_epoch_in_steps = params['input_elements']/params['batch_size']
+    current_epoch = step/one_epoch_in_steps
+
+    print('step')
+    print(step)
+    print('current_epoch')
+    print(current_epoch)
+
+    for it in range(len(params['lr_list'])):
+        if params['epoch_list'][it] <= current_epoch and current_epoch < params['epoch_list'][it+1]:
+            current_lr = params['lr_list'][it]
+            break
+
+    print('current_lr')
+    print(current_lr)
+
+    return current_lr
+
+# my_params = dict()
+# my_params['epoch_list'] = [0, 5, 10, 100]
+# my_params['lr_list'] = [1e0, 1e-1, 1e-2]
+# my_params['input_elements'] = 160
+# my_params['batch_size'] = 16
+# my_params['total_epochs'] = 100
+# my_lr_schedule = MyLRSchedule(step_update_strategy, my_params)
+
 # Not to loose this lines of code..
 def GT_model():
     # Preparate the GT model
