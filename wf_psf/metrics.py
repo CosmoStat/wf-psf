@@ -421,16 +421,33 @@ def compute_shape_metrics(tf_semiparam_field, GT_tf_semiparam_field, simPSF_np, 
     print('Pixel star relative RMSE:\t %.4e %%\n'%(relative_pixel_residual*100.))
 
     # Measure shapes of the reconstructions
-    pred_moments = [gs.hsm.FindAdaptiveMom(gs.Image(_pred), strict=True) for _pred in predictions]
-    pred_e1_HSM = np.array([_pred_mom.observed_shape.g1 for _pred_mom in pred_moments])
-    pred_e2_HSM = np.array([_pred_mom.observed_shape.g2 for _pred_mom in pred_moments])
-    pred_R2_HSM = np.array([2*(_pred_mom.moments_sigma**2) for _pred_mom in pred_moments])
+    pred_moments = [gs.hsm.FindAdaptiveMom(gs.Image(_pred), strict=False) for _pred in predictions]
 
     # Measure shapes of the reconstructions
-    GT_pred_moments = [gs.hsm.FindAdaptiveMom(gs.Image(_pred), strict=True) for _pred in GT_predictions]
-    GT_pred_e1_HSM = np.array([_pred_mom.observed_shape.g1 for _pred_mom in GT_pred_moments])
-    GT_pred_e2_HSM = np.array([_pred_mom.observed_shape.g2 for _pred_mom in GT_pred_moments])
-    GT_pred_R2_HSM = np.array([2*(_pred_mom.moments_sigma**2) for _pred_mom in GT_pred_moments])
+    GT_pred_moments = [gs.hsm.FindAdaptiveMom(gs.Image(_pred), strict=False) for _pred in GT_predictions]
+
+    pred_e1_HSM, pred_e2_HSM, pred_R2_HSM = [], [], []
+    GT_pred_e1_HSM, GT_pred_e2_HSM, GT_pred_R2_HSM = [], [], []
+
+    for it in range(len(GT_pred_moments)):
+        if pred_moments[it].moments_status == 0 and GT_pred_moments[it].moments_status == 0:
+
+            pred_e1_HSM.append(pred_moments[it].observed_shape.g1)
+            pred_e2_HSM.append(pred_moments[it].observed_shape.g2)
+            pred_R2_HSM.append(2*(pred_moments[it].moments_sigma**2))
+
+            GT_pred_e1_HSM.append(GT_pred_moments[it].observed_shape.g1)
+            GT_pred_e2_HSM.append(GT_pred_moments[it].observed_shape.g2)
+            GT_pred_R2_HSM.append(2*(GT_pred_moments[it].moments_sigma**2))
+
+
+    pred_e1_HSM = np.array(pred_e1_HSM)
+    pred_e2_HSM = np.array(pred_e2_HSM)
+    pred_R2_HSM = np.array(pred_R2_HSM)
+
+    GT_pred_e1_HSM = np.array(GT_pred_e1_HSM)
+    GT_pred_e2_HSM = np.array(GT_pred_e2_HSM)
+    GT_pred_R2_HSM = np.array(GT_pred_R2_HSM)
 
     # Print shape/size errors
     print('sigma(e1) RMSE = %.4e'%np.sqrt(np.mean((GT_pred_e1_HSM - pred_e1_HSM)**2)))
@@ -440,6 +457,10 @@ def compute_shape_metrics(tf_semiparam_field, GT_tf_semiparam_field, simPSF_np, 
     # Print relative shape/size errors
     print('relative sigma(e1) RMSE = %.4e %%'%(100.* np.sqrt(np.mean((GT_pred_e1_HSM - pred_e1_HSM)**2)) / np.sqrt(np.mean((GT_pred_e1_HSM)**2)) ))
     print('relative sigma(e2) RMSE = %.4e %%'%(100.* np.sqrt(np.mean((GT_pred_e2_HSM - pred_e2_HSM)**2)) / np.sqrt(np.mean((GT_pred_e2_HSM)**2)) ))
+
+    # Print number of stars
+    print('Total number of stars: \t\t%d'%(len(GT_pred_moments)))
+    print('Problematic number of stars: \t%d'%(len(GT_pred_moments) - GT_pred_e1_HSM.shape[0]))
 
     # Re-et the original output_Q and output_dim parameters in the models
     tf_semiparam_field.set_output_Q(output_Q=original_out_Q, output_dim=original_out_dim)
