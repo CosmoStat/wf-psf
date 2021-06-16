@@ -3,7 +3,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Remove apple annoying files
 *.DS_Store
+
+# Avoid uploading heavy data
+*.mat
 
 # C extensions
 *.so

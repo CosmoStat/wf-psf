@@ -8,7 +8,7 @@ from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import PIL
 
-from wf_psf import SimPSFToolkit as simPSF
+from wf_psf.SimPSFToolkit import SimPSFToolkit as simPSF
 
 # Pre-defined colormap
 top = mpl.cm.get_cmap('Oranges_r', 128)

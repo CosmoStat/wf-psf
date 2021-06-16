@@ -151,7 +151,7 @@ class GenPolyFieldPSF(object):
         # Calculate and save the WFE_RMS map of the C_poly values.
         self.WFE_RMS = np.sqrt(np.sum(scaled_Z_est**2, axis=0)).reshape(xv_grid.shape)
 
-    def show_WFE_RMS(self, save_img=False):
+    def show_WFE_RMS(self, save_img=False, save_name='WFE_field_meshdim'):
         """Plot the WFE RMS map."""
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111)
@@ -163,7 +163,7 @@ class GenPolyFieldPSF(object):
         ax1.set_xlabel('x axis')
         ax1.set_ylabel('y axis')
         if save_img:
-            plt.savefig('./WFE_field_meshdim.pdf', bbox_inches='tight')
+            plt.savefig('./' + save_name + '.pdf', bbox_inches='tight')
         plt.show()
 
 
