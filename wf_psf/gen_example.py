@@ -27,7 +27,7 @@ for it in range(45):
 
 
 # All parameters in default value
-sim_PSF_toolkit = SimPSFToolkit(zernikes, max_order=45, max_wfe_rms=0.1,
+sim_PSF_toolkit = simPSF.SimPSFToolkit(zernikes, max_order=45, max_wfe_rms=0.1,
                                 output_dim=64, rand_seed=None, plot_opt=True, oversampling_rate=2,
                                 pix_sampling=12, tel_diameter=1.2, tel_focal_length=24.5,
                                 pupil_diameter=1024, euclid_obsc=True, LP_filter_length=3, verbose=0)

@@ -596,7 +596,7 @@ class SimPSFToolkit(object):
             self.pupil_diameter * self.oversampling_rate * self.tel_focal_length)
 
         if self.verbose > 0:
-            print("Requested wavelength: %.5f \nRequired N: %.2f"%(lambda_obs, req_N))
+            # print("Requested wavelength: %.5f \nRequired N: %.2f"%(lambda_obs, req_N))
             print("Possible wavelength: %.5f \nPossible N: %.2f"%(possible_lambda, possible_N))
 
         return possible_lambda

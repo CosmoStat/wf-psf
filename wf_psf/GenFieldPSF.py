@@ -57,7 +57,7 @@ class GenFieldPSF(object):
             else:
                 rand_seed = 5
             self.sim_psf_toolkit.gen_random_Z_coeffs(max_order=self.max_order, rand_seed=rand_seed)
-            z_coef_5 = sim_PSF_toolkit.normalize_zernikes(
+            z_coef_5 = self.sim_psf_toolkit.normalize_zernikes(
                 self.sim_psf_toolkit.get_z_coeffs(), self.lim_max_wfe_rms)
             self.z_coeffs.append(np.array(z_coef_5)/5)
 
@@ -154,8 +154,8 @@ class GenFieldPSF(object):
 
     def inspect_field_wfe_rms(self, mesh_bins=20, save_img=False):
         """Plot a chart of WFE_RMS as a function of position throughout the field."""
-        x_coord = np.linspace(0,xlim,mesh_bins)
-        y_coord = np.linspace(0,ylim,mesh_bins)
+        x_coord = np.linspace(0, self.xlim, mesh_bins)
+        y_coord = np.linspace(0, self.ylim, mesh_bins)
 
         x_mesh, y_mesh = np.meshgrid(x_coord,y_coord)
 

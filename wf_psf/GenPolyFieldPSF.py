@@ -117,7 +117,7 @@ class GenPolyFieldPSF(object):
 
         ##  Select a random vector of size `max_order` for each position
         # When concatenated into the Z matrix we have:
-        Z = np.random.randn(max_order, len(xv_flat))
+        Z = np.random.randn(self.max_order, len(xv_flat))
         # Normalize so that each position has the lim_max_wfe_rms
         norm_weights = np.sqrt(np.sum(Z**2, axis=1))
         Z /= (norm_weights.reshape((-1,1))/ self.lim_max_wfe_rms)
