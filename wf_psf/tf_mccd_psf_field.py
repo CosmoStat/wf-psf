@@ -3,8 +3,10 @@ import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
 from wf_psf.tf_layers import TF_poly_Z_field, TF_zernike_OPD, TF_batch_poly_PSF
 from wf_psf.tf_layers import TF_NP_MCCD_OPD, TF_NP_MCCD_OPD_v2, TF_NP_GRAPH_OPD
+from wf_psf.tf_layers import TF_batch_mono_PSF
 from wf_psf.graph_utils import GraphBuilder
 from wf_psf.utils import calc_poly_position_mat
+
 
 class TF_SP_MCCD_field(tf.keras.Model):
     """ Semi-parametric MCCD PSF field model!
@@ -172,6 +174,44 @@ class TF_SP_MCCD_field(tf.keras.Model):
 
         return poly_psfs
 
+    def predict_mono_psfs(self, input_positions, lambda_obs, phase_N):
+        """ Predict a set of monochromatic PSF at desired positions.
+
+        input_positions: Tensor(batch_dim x 2)
+
+        lambda_obs: float
+            Observed wavelength in um.
+
+        phase_N: int
+            Required wavefront dimension. Should be calculated with as:
+            ``simPSF_np = wf.SimPSFToolkit(...)``
+            ``phase_N = simPSF_np.feasible_N(lambda_obs)``
+        """
+        # Init the mon_psf_batch
+        mono_psf_batch = tf.zeros_like(self.psf_batch)
+        # Initialise the monochromatic PSF batch calculator
+        tf_batch_mono_psf = TF_batch_mono_PSF(obscurations=self.obscurations,
+                                                    psf_batch=mono_psf_batch,
+                                                    output_Q=self.output_Q,
+                                                    output_dim=self.output_dim)
+        # Set the lambda_obs and the phase_N parameters
+        tf_batch_mono_psf.set_lambda_phaseN(phase_N, lambda_obs)
+
+        # Calculate parametric part
+        zernike_coeffs = self.tf_poly_Z_field(input_positions)
+        param_opd_maps = self.tf_zernike_OPD(zernike_coeffs)
+
+        # Calculate the non parametric part
+        nonparam_opd_maps =  self.tf_NP_mccd_OPD.predict(input_positions)
+
+        # Add the estimations
+        opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
+
+        # Compute the polychromatic PSFs
+        mono_psf_batch = tf_batch_mono_psf(opd_maps)
+
+        return mono_psf_batch
+
     def call(self, inputs):
         """Define the PSF field forward model.
 
@@ -265,6 +305,7 @@ def build_mccd_spatial_dic_v2(obs_stars, obs_pos, x_lims, y_lims,
 
     # Return the poly dictionary and the graph dictionary
     return tf.transpose(tf_Pi, perm=[1, 0]), tf.convert_to_tensor(VT.T, dtype=tf.float32)
+
 
 class TF_SP_graph_field(tf.keras.Model):
     """ Semi-parametric graph-constraint-only PSF field model!
