@@ -106,7 +106,7 @@ def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, test_pos,
 
     # Print RMSE values
     print('Train stars absolute OPD RMSE:\t %.4e'%train_opd_rmse)
-    print('Test stars relative OPD RMSE:\t %.4e %%\n'%(relative_train_opd_rmse*100.))
+    print('Train stars relative OPD RMSE:\t %.4e %%\n'%(relative_train_opd_rmse*100.))
 
     return test_opd_rmse, train_opd_rmse
 
@@ -166,7 +166,7 @@ def compute_opd_metrics_polymodel(tf_semiparam_field, GT_tf_semiparam_field,
 
     # Pritn RMSE values
     print('Train stars OPD RMSE:\t %.4e'%train_opd_rmse)
-    print('Test stars relative OPD RMSE:\t %.4e %%\n'%(relative_train_opd_rmse*100.))
+    print('Train stars relative OPD RMSE:\t %.4e %%\n'%(relative_train_opd_rmse*100.))
 
     return test_opd_rmse, train_opd_rmse
 
@@ -219,7 +219,7 @@ def compute_opd_metrics_param_model(tf_semiparam_field, GT_tf_semiparam_field,
 
     # Print RMSE values
     print('Train stars absolute OPD RMSE:\t %.4e'%train_opd_rmse)
-    print('Test stars relative OPD RMSE:\t %.4e %%\n'%(relative_train_opd_rmse*100.))
+    print('Train stars relative OPD RMSE:\t %.4e %%\n'%(relative_train_opd_rmse*100.))
 
     return test_opd_rmse, train_opd_rmse
 
