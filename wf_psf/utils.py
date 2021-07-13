@@ -5,7 +5,7 @@ from cv2 import resize, INTER_AREA
 import zernike as zk
 
 def generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
-    """Generate the SED elements needed for using the TF_poly_PSF.
+    r"""Generate the SED elements needed for using the TF_poly_PSF.
 
     sim_psf_toolkit: An instance of the SimPSFToolkit class with the correct
     initialization values.
@@ -18,7 +18,7 @@ def generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
 
 
 def generate_packed_elems(SED, sim_psf_toolkit, n_bins=20):
-    """Generate the packed values for using the TF_poly_PSF."""
+    r"""Generate the packed values for using the TF_poly_PSF."""
     feasible_N, feasible_wv, SED_norm = generate_SED_elems(SED, sim_psf_toolkit, n_bins=n_bins)
 
     tf_feasible_N = tf.convert_to_tensor(feasible_N, dtype=tf.float64)
@@ -30,7 +30,7 @@ def generate_packed_elems(SED, sim_psf_toolkit, n_bins=20):
 
 
 def calc_poly_position_mat(pos, x_lims, y_lims, d_max):
-    """ Calculate a matrix with position polynomials.
+    r""" Calculate a matrix with position polynomials.
 
     Scale positions to the square:
     [self.x_lims[0], self.x_lims[1]] x [self.y_lims[0], self.y_lims[1]]
@@ -53,7 +53,7 @@ def calc_poly_position_mat(pos, x_lims, y_lims, d_max):
 
 
 def decimate_im(input_im, decim_f):
-    """Decimate image.
+    r"""Decimate image.
 
     Decimated by a factor of decim_f.
     Based on the PIL library using the default interpolator.
@@ -67,7 +67,7 @@ def decimate_im(input_im, decim_f):
 
 
 def downsample_im(input_im, output_dim):
-    """Downsample image.
+    r"""Downsample image.
 
     Based on opencv function resize.
     [doc](https://docs.opencv.org/2.4/modules/imgproc/doc/geometric_transformations.html#void%20resize(InputArray%20src,%20OutputArray%20dst,%20Size%20dsize,%20double%20fx,%20double%20fy,%20int%20interpolation))
@@ -95,7 +95,7 @@ def downsample_im(input_im, output_dim):
 
 
 def zernike_generator(n_zernikes, wfe_dim):
-    """
+    r"""
     Generate Zernike maps.
 
     Based on the zernike github repository.
@@ -137,3 +137,9 @@ def zernike_generator(n_zernikes, wfe_dim):
         zernikes.append(cart.eval_grid(c, matrix=True))
 
     return zernikes
+
+def add_noise(image, desired_SNR):
+    """ Add noise to an image to obtain a desired SNR. """
+    sigma_noise = np.sqrt((np.sum(image**2))/(desired_SNR * image.shape[0] * image.shape[1]))
+    noisy_image = image + np.random.standard_normal(image.shape) * sigma_noise
+    return noisy_image
