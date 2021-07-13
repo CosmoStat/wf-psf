@@ -23,7 +23,7 @@ SED_path = '/Users/tliaudat/Documents/PhD/codes/WF_PSF/notebooks/explore_SEDs/sa
 # SED_path = '/local/home/tliaudat/data/'
 
 # Output saving path
-output_folder = '/Users/tliaudat/Documents/PhD/codes/WF_PSF/github/wf-psf/psf-generation/scripts/output/'
+output_folder = '/Users/tliaudat/Documents/PhD/codes/WF_PSF/github/wf-psf/data/coherent_euclid_dataset/'
 # output_folder = '/local/home/tliaudat/psf-datasets/'
 
 
@@ -33,11 +33,11 @@ dataset_id_str = '%03d'%(dataset_id)
 
 
 # This list must be in order from bigger to smaller
-# n_star_list = [2000, 1000, 500, 200]
-# n_test_stars = 400  # 20% of the max test stars
+n_star_list = [2000, 1000, 500, 200]
+n_test_stars = 400  # 20% of the max test stars
 
-n_star_list = [50, 40, 30, 20]
-n_test_stars = 10  # 20% of the max test stars
+# n_star_list = [50, 40, 30, 20]
+# n_test_stars = 10  # 20% of the max test stars
 
 
 
