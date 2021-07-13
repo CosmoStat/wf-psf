@@ -345,6 +345,88 @@ class TF_batch_poly_PSF(tf.keras.layers.Layer):
         return poly_psf_batch
 
 
+class TF_batch_mono_PSF(tf.keras.layers.Layer):
+    """Calculate a monochromatic PSF from a batch of OPDs.
+
+    The calculation of the ``phase_N`` variable is done
+    with the SimPSFToolkit class but outside the TF class.
+
+    obscurations: Tensor(pupil_len, pupil_len)
+        Obscurations to apply to the wavefront.
+
+    psf_batch: Tensor(batch_size, output_dim, output_dim)
+        Tensor containing the psfs that will be updated each
+        time a calculation is required.
+        Can be started with zeros.
+
+    output_Q: int
+
+    output_dim: int
+
+    """
+    def __init__(self, obscurations, psf_batch, output_Q,
+        output_dim=64, name='TF_batch_mono_PSF'):
+        super().__init__(name=name)
+
+        self.output_Q = output_Q
+        self.obscurations = obscurations
+        self.output_dim = output_dim
+        self.psf_batch = psf_batch
+
+        self.phase_N = None
+        self.lambda_obs = None
+        self.tf_mono_psf_gen = None
+
+        self.current_opd = None
+
+
+    def calculate_mono_PSF(self, current_opd):
+        """Calculate monochromatic PSF from OPD info.
+        """
+        # Calculate the PSF
+        mono_psf = self.tf_mono_psf_gen.__call__(current_opd[tf.newaxis,:,:])
+        mono_psf = tf.squeeze(mono_psf, axis=0)
+
+        return mono_psf  
+
+    def init_mono_PSF(self):
+        """ Initialise or restart the PSF generator. """
+        self.tf_mono_psf_gen = TF_mono_PSF(self.phase_N,
+                                    self.lambda_obs,
+                                    self.obscurations,
+                                    output_Q=self.output_Q,
+                                    output_dim=self.output_dim)
+
+    def set_lambda_phaseN(self, phase_N=914, lambda_obs=0.7):
+        """ Set the lambda value for monochromatic PSFs and the phaseN. """
+        self.phase_N = phase_N
+        self.lambda_obs = lambda_obs
+        self.init_mono_PSF()
+        
+    def set_output_params(self, output_Q, output_dim):
+        """ Set output patams, Q and dimension. """
+        self.output_Q = output_Q
+        self.output_dim = output_dim
+        self.init_mono_PSF()
+
+    def call(self, opd_batch):
+        """Calculate the batch poly PSFs."""
+
+        if self.phase_N is None:
+            self.set_lambda_phaseN()
+
+        def _calculate_PSF_batch(elems_to_unpack):
+            return tf.map_fn(self.calculate_mono_PSF,
+                             elems_to_unpack,
+                             parallel_iterations=10,
+                             fn_output_signature=tf.float32,
+                             swap_memory=True)
+
+        mono_psf_batch = _calculate_PSF_batch((opd_batch))
+
+        return mono_psf_batch
+
+
 class TF_NP_poly_OPD(tf.keras.layers.Layer):
     """ Non-parametric OPD generation with polynomial variations.
 
