@@ -123,6 +123,26 @@ class TF_PSF_field_model(tf.keras.Model):
 
         return mono_psf_batch
 
+    def predict_opd(self, input_positions):
+        """ Predict the OPD at some positions.
+
+        Parameters
+        ----------
+        input_positions: Tensor(batch_dim x 2)
+            Positions to predict the OPD.
+
+        Returns
+        -------
+        opd_maps : Tensor [batch x opd_dim x opd_dim]
+            OPD at requested positions.
+
+        """
+        # Continue the OPD maps
+        zernike_coeffs = self.tf_poly_Z_field(input_positions)
+        opd_maps = self.tf_zernike_OPD(zernike_coeffs)
+
+        return opd_maps
+
     def call(self, inputs):
         """Define the PSF field forward model.
 
@@ -186,7 +206,7 @@ class TF_SemiParam_field(tf.keras.Model):
     obscurations: Tensor(opd_dim, opd_dim)
         Predefined obscurations of the phase.
     batch_size: int
-        Batch size
+        Batch sizet
     output_Q: float
         Oversampling used. This should match the oversampling Q used to generate
         the diffraction zero padding that is found in the input `packed_SEDs`.
@@ -335,6 +355,30 @@ class TF_SemiParam_field(tf.keras.Model):
         mono_psf_batch = tf_batch_mono_psf(opd_maps)
 
         return mono_psf_batch
+
+    def predict_opd(self, input_positions):
+        """ Predict the OPD at some positions.
+
+        Parameters
+        ----------
+        input_positions: Tensor(batch_dim x 2)
+            Positions to predict the OPD.
+
+        Returns
+        -------
+        opd_maps : Tensor [batch x opd_dim x opd_dim]
+            OPD at requested positions.
+
+        """
+        # Calculate parametric part
+        zernike_coeffs = self.tf_poly_Z_field(input_positions)
+        param_opd_maps = self.tf_zernike_OPD(zernike_coeffs)
+        # Calculate the non parametric part
+        nonparam_opd_maps =  self.tf_np_poly_opd(input_positions)
+        # Add the estimations
+        opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
+
+        return opd_maps
 
     def call(self, inputs):
         """Define the PSF field forward model.

@@ -168,15 +168,22 @@ class TF_SP_MCCD_field(tf.keras.Model):
     def predict_mono_psfs(self, input_positions, lambda_obs, phase_N):
         """ Predict a set of monochromatic PSF at desired positions.
 
-        input_positions: Tensor(batch_dim x 2)
-
+        Parameters
+        ----------
+        input_positions: Tensor(batch x 2)
+            Positions to predict the monochromatic PSFs.
         lambda_obs: float
             Observed wavelength in um.
-
         phase_N: int
             Required wavefront dimension. Should be calculated with as:
             ``simPSF_np = wf.SimPSFToolkit(...)``
             ``phase_N = simPSF_np.feasible_N(lambda_obs)``
+
+        Returns
+        -------
+        mono_psf_batch: Tensor [batch x output_dim x output_dim]
+            Batch of monochromatic PSFs at requested positions and
+            wavelength.
         """
         # Initialise the monochromatic PSF batch calculator
         tf_batch_mono_psf = TF_batch_mono_PSF(obscurations=self.obscurations,
@@ -199,6 +206,32 @@ class TF_SP_MCCD_field(tf.keras.Model):
         mono_psf_batch = tf_batch_mono_psf(opd_maps)
 
         return mono_psf_batch
+
+    def predict_opd(self, input_positions):
+        """ Predict the OPD at some positions.
+
+        Parameters
+        ----------
+        input_positions: Tensor(batch_dim x 2)
+            Positions to predict the OPD.
+
+        Returns
+        -------
+        opd_maps : Tensor [batch x opd_dim x opd_dim]
+            OPD at requested positions.
+
+        """
+        # Calculate parametric part
+        zernike_coeffs = self.tf_poly_Z_field(input_positions)
+        param_opd_maps = self.tf_zernike_OPD(zernike_coeffs)
+
+        # Calculate the non parametric part
+        nonparam_opd_maps =  self.tf_NP_mccd_OPD.predict(input_positions)
+
+        # Add the estimations
+        opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
+
+        return opd_maps
 
     def call(self, inputs):
         """Define the PSF field forward model.
@@ -437,6 +470,32 @@ class TF_SP_graph_field(tf.keras.Model):
         poly_psfs = self.tf_batch_poly_PSF([opd_maps, packed_SEDs])
 
         return poly_psfs
+
+    def predict_opd(self, input_positions):
+        """ Predict the OPD at some positions.
+
+        Parameters
+        ----------
+        input_positions: Tensor(batch_dim x 2)
+            Positions to predict the OPD.
+
+        Returns
+        -------
+        opd_maps : Tensor [batch x opd_dim x opd_dim]
+            OPD at requested positions.
+
+        """
+        # Calculate parametric part
+        zernike_coeffs = self.tf_poly_Z_field(input_positions)
+        param_opd_maps = self.tf_zernike_OPD(zernike_coeffs)
+
+        # Calculate the non parametric part
+        nonparam_opd_maps =  self.tf_NP_mccd_OPD.predict(input_positions)
+
+        # Add the estimations
+        opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
+
+        return opd_maps
 
     def call(self, inputs):
         """Define the PSF field forward model.
