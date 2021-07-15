@@ -6,6 +6,149 @@ from wf_psf.utils import generate_packed_elems
 from wf_psf.tf_psf_field import build_PSF_model
 
 
+def compute_poly_metric(tf_semiparam_field, GT_tf_semiparam_field, simPSF_np,
+                        tf_pos, tf_SEDs, n_bins_lda=20, batch_size=16):
+    """ Calculate metrics for polychromatic reconstructions.
+
+    The ``tf_semiparam_field`` should be the model to evaluate, and the 
+    ``GT_tf_semiparam_field`` should be loaded with the ground truth PSF field.
+
+    Relative values returned in [%] (so multiplied by 100).
+
+    Parameters
+    ----------
+    tf_semiparam_field: PSF field object
+        Trained model to evaluate.
+    GT_tf_semiparam_field: PSF field object
+        Ground truth model to produce GT observations at any position
+        and wavelength.
+    simPSF_np: PSF simulator object
+        Simulation object to be used by ``generate_packed_elems`` function.
+    tf_pos: Tensor or numpy.ndarray [batch x 2] floats
+        Positions to evaluate the model.
+    tf_SEDs: numpy.ndarray [batch x SED_samples x 2]
+        SED samples for the corresponding positions.
+    n_bins_lda: int
+        Number of wavelength bins to use for the polychromatic PSF.
+    batch_size: int
+        Batch size for the PSF calcualtions.
+
+    Returns
+    -------
+    rmse: float
+        RMSE value.
+    rel_rmse: float
+        Relative RMSE value. Values in %.
+    std_rmse: float
+        Sstandard deviation of RMSEs.
+    std_rel_rmse: float
+        Standard deviation of relative RMSEs. Values in %.
+
+    """
+    # Generate SED data list
+    packed_SED_data = [generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_lda)
+                            for _sed in tf_SEDs]
+    tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
+    tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
+    pred_inputs = [tf_pos , tf_packed_SED_data]
+
+    # Model prediction
+    preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
+
+    # GT model prediction
+    GT_preds = GT_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
+
+    # Calculate residuals
+    residuals = np.sqrt(np.mean((GT_preds - preds)**2, axis=(1,2)))
+    GT_star_mean = np.sqrt(np.mean((GT_preds)**2, axis=(1,2)))
+
+    # RMSE calculations
+    rmse = np.mean(residuals)
+    rel_rmse = 100. * np.mean(residuals/GT_star_mean)
+
+    # STD calculations
+    std_rmse = np.std(residuals)
+    std_rel_rmse = 100. * np.std(residuals/GT_star_mean)
+
+    # Print RMSE values
+    print('Absolute RMSE:\t %.4e \t +/- %.4e' % (rmse, std_rmse))
+    print('Relative RMSE:\t %.4e %% \t +/- %.4e %%' % (rel_rmse, std_rel_rmse))
+
+    return rmse, rel_rmse, std_rmse, std_rel_rmse
+
+
+def compute_mono_metric(tf_semiparam_field, GT_tf_semiparam_field, simPSF_np, tf_pos, lambda_list):
+    """ Calculate metrics for monochromatic reconstructions.
+
+    The ``tf_semiparam_field`` should be the model to evaluate, and the 
+    ``GT_tf_semiparam_field`` should be loaded with the ground truth PSF field.
+
+    Relative values returned in [%] (so multiplied by 100).
+
+    Parameters
+    ----------
+    tf_semiparam_field: PSF field object
+        Trained model to evaluate.
+    GT_tf_semiparam_field: PSF field object
+        Ground truth model to produce GT observations at any position
+        and wavelength.
+    simPSF_np: PSF simulator object
+        Simulation object capable of calculating ``phase_N`` values from 
+        wavelength values.
+    tf_pos: list of floats [batch x 2]
+        Positions to evaluate the model.
+    lambda_list: list of floats [batch]
+        List of wavelength values in [um] to evaluate the model.
+
+    Returns
+    -------
+    rmse_lda: list of float
+        List of RMSE as a function of wavelength.
+    rel_rmse_lda: list of float
+        List of relative RMSE as a function of wavelength. Values in %.
+    std_rmse_lda: list of float
+        List of standard deviation of RMSEs as a function of wavelength.
+    std_rel_rmse_lda: list of float
+        List of standard deviation of relative RMSEs as a function of
+        wavelength. Values in %.
+
+    """
+    # Initialise lists
+    rmse_lda = []
+    rel_rmse_lda = []
+    std_rmse_lda = []
+    std_rel_rmse_lda = []
+
+    for it in range(len(lambda_list)):
+        # Set the lambda (wavelength) and the required wavefront N
+        lambda_obs = lambda_list[it]
+        phase_N = simPSF_np.feasible_N(lambda_obs)
+
+
+        # Estimate the monochromatic PSFs
+        GT_mono_psf = GT_tf_semiparam_field.predict_mono_psfs(
+            input_positions=tf_pos,
+            lambda_obs=lambda_obs,
+            phase_N=phase_N)
+        
+        model_mono_psf = tf_semiparam_field.predict_mono_psfs(
+            input_positions=tf_pos,
+            lambda_obs=lambda_obs,
+            phase_N=phase_N)
+        
+        # Calculate residuals
+        residuals = np.sqrt(np.mean((GT_mono_psf - model_mono_psf)**2, axis=(1,2)))
+        GT_star_mean = np.sqrt(np.mean((GT_mono_psf)**2, axis=(1,2)))
+
+        # RMSE calculations
+        rmse_lda.append(np.mean(residuals))
+        rel_rmse_lda.append(100. * np.mean(residuals/GT_star_mean))
+
+        # STD calculations
+        std_rmse_lda.append(np.std(residuals))
+        std_rel_rmse_lda.append(100. * np.std(residuals/GT_star_mean))
+
+    return rmse_lda, rel_rmse_lda, std_rmse_lda, std_rel_rmse_lda
 
 def compute_metrics(tf_semiparam_field, simPSF_np, test_SEDs, train_SEDs,
                     tf_test_pos, tf_train_pos, tf_test_stars, tf_train_stars,
@@ -44,7 +187,6 @@ def compute_metrics(tf_semiparam_field, simPSF_np, test_SEDs, train_SEDs,
     # Print RMSE values
     print('Test stars relative RMSE:\t %.4e %%'%(relative_test_res*100.))
     print('Training stars relative RMSE:\t %.4e %%'%(relative_train_res*100.))
-
 
     return test_res, train_res
 
