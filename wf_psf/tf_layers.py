@@ -340,9 +340,9 @@ class TF_batch_poly_PSF(tf.keras.layers.Layer):
                              fn_output_signature=tf.float32,
                              swap_memory=True)
 
-        poly_psf_batch = _calculate_PSF_batch((opd_batch, packed_SED_data))
+        self.psf_batch = _calculate_PSF_batch((opd_batch, packed_SED_data))
 
-        return poly_psf_batch
+        return self.psf_batch
 
 
 class TF_batch_mono_PSF(tf.keras.layers.Layer):
@@ -364,14 +364,13 @@ class TF_batch_mono_PSF(tf.keras.layers.Layer):
     output_dim: int
 
     """
-    def __init__(self, obscurations, psf_batch, output_Q,
+    def __init__(self, obscurations, output_Q,
         output_dim=64, name='TF_batch_mono_PSF'):
         super().__init__(name=name)
 
         self.output_Q = output_Q
         self.obscurations = obscurations
         self.output_dim = output_dim
-        self.psf_batch = psf_batch
 
         self.phase_N = None
         self.lambda_obs = None
