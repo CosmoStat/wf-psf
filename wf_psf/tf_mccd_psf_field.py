@@ -21,6 +21,12 @@ class TF_SP_MCCD_field(tf.keras.Model):
         Predefined obscurations of the phase.
     batch_size: int
         Batch size
+    obs_pos:
+        TODO ... 
+    spatial_dic:
+        TODO ...
+    output_Q: int
+        Upsampling factor. A value of 1 means the observation resolution.
     d_max_nonparam: int
         Maximum degree of the polynomial for the non-parametric variations.
     output_dim: int
