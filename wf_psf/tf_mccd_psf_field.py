@@ -195,7 +195,7 @@ class TF_SP_MCCD_field(tf.keras.Model):
         # Add the estimations
         opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
 
-        # Compute the polychromatic PSFs
+        # Compute the monochromatic PSFs
         mono_psf_batch = tf_batch_mono_psf(opd_maps)
 
         return mono_psf_batch

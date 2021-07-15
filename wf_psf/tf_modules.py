@@ -215,91 +215,91 @@ class TF_mono_PSF(tf.Module):
         return tf.cast(psf, dtype=opd.dtype)
 
 
-class TF_poly_PSF(tf.Module):
-    """Calculate a polychromatic PSF from an OPD and stored SED values.
+# class TF_poly_PSF(tf.Module):
+#     """Calculate a polychromatic PSF from an OPD and stored SED values.
 
-    The calculation of the packed values with the respective SED is done
-    with the SimPSFToolkit class but outside the TF class.
-
-
-    packed_elems: Tuple of tensors
-        Contains three 1D tensors with the parameters needed for
-        the calculation of each monochromatic PSF.
-
-        packed_elems[0]: phase_N
-        packed_elems[1]: lambda_obs
-        packed_elems[2]: SED_norm_val
-    """
-    def __init__(self, obscurations, packed_elems, output_dim=64, zernike_maps=None, name=None):
-        super().__init__(name=name)
-
-        self.obscurations = obscurations
-        self.output_dim = output_dim
-        self.packed_elems = packed_elems
-        self.zernike_maps = zernike_maps
-
-        self.opd = None
+#     The calculation of the packed values with the respective SED is done
+#     with the SimPSFToolkit class but outside the TF class.
 
 
-    def set_packed_elems(self, new_packed_elems):
-        """Set packed elements."""
-        self.packed_elems = new_packed_elems
+#     packed_elems: Tuple of tensors
+#         Contains three 1D tensors with the parameters needed for
+#         the calculation of each monochromatic PSF.
 
-    def set_zernike_maps(self, zernike_maps):
-        """Set Zernike maps."""
-        self.zernike_maps = zernike_maps
+#         packed_elems[0]: phase_N
+#         packed_elems[1]: lambda_obs
+#         packed_elems[2]: SED_norm_val
+#     """
+#     def __init__(self, obscurations, packed_elems, output_dim=64, zernike_maps=None, name=None):
+#         super().__init__(name=name)
 
-    def calculate_from_zernikes(self, z_coeffs):
-        """Calculate polychromatic PSFs from zernike coefficients.
+#         self.obscurations = obscurations
+#         self.output_dim = output_dim
+#         self.packed_elems = packed_elems
+#         self.zernike_maps = zernike_maps
 
-        Zernike maps required.
-        """
-        tf_zernike_opd_gen = TF_zernike_OPD(self.zernike_maps)
-        # For readability
-        # opd = tf_zernike_opd_gen.__call__(z_coeffs)
-        # poly_psf = self.__call__(opd)
-        # return poly_psf
-
-        return self.__call__(tf_zernike_opd_gen.__call__(z_coeffs))
-
-    def calculate_mono_PSF(self, packed_elems):
-        """Calculate monochromatic PSF from packed elements.
-
-        packed_elems[0]: phase_N
-        packed_elems[1]: lambda_obs
-        packed_elems[2]: SED_norm_val
-        """
-        # Unpack elements
-        phase_N = packed_elems[0]
-        lambda_obs = packed_elems[1]
-        SED_norm_val = packed_elems[2]
-
-        # Build the monochromatic PSF generator
-        tf_mono_psf_gen = TF_mono_PSF(phase_N, lambda_obs, self.obscurations, output_dim=self.output_dim)
-
-        # Calculate the PSF
-        mono_psf = tf_mono_psf_gen.__call__(self.opd)
-
-        # Multiply with the respective normalized SED and return
-        return tf.math.scalar_mul(SED_norm_val, mono_psf)
-
-    def __call__(self, opd):
-
-        # Save the OPD that will be shared by all the monochromatic PSFs
-        self.opd = opd
+#         self.opd = None
 
 
-        # Use tf.function for parallelization over GPU
-        # Not allowed since the dynamic padding for the diffraction does not
-        # work in the @tf.function context
-        # @tf.function
-        def calculate_poly_PSF(elems_to_unpack):
-            return tf.map_fn(self.calculate_mono_PSF,
-                             elems_to_unpack,
-                             parallel_iterations=10,
-                             fn_output_signature=tf.float32)
+#     def set_packed_elems(self, new_packed_elems):
+#         """Set packed elements."""
+#         self.packed_elems = new_packed_elems
 
-        stacked_psfs = calculate_poly_PSF(packed_elems)
-        poly_psf = tf.math.reduce_sum(stacked_psfs, axis=0)
+#     def set_zernike_maps(self, zernike_maps):
+#         """Set Zernike maps."""
+#         self.zernike_maps = zernike_maps
 
-        return poly_psf
+#     def calculate_from_zernikes(self, z_coeffs):
+#         """Calculate polychromatic PSFs from zernike coefficients.
+
+#         Zernike maps required.
+#         """
+#         tf_zernike_opd_gen = TF_zernike_OPD(self.zernike_maps)
+#         # For readability
+#         # opd = tf_zernike_opd_gen.__call__(z_coeffs)
+#         # poly_psf = self.__call__(opd)
+#         # return poly_psf
+
+#         return self.__call__(tf_zernike_opd_gen.__call__(z_coeffs))
+
+#     def calculate_mono_PSF(self, packed_elems):
+#         """Calculate monochromatic PSF from packed elements.
+
+#         packed_elems[0]: phase_N
+#         packed_elems[1]: lambda_obs
+#         packed_elems[2]: SED_norm_val
+#         """
+#         # Unpack elements
+#         phase_N = packed_elems[0]
+#         lambda_obs = packed_elems[1]
+#         SED_norm_val = packed_elems[2]
+
+#         # Build the monochromatic PSF generator
+#         tf_mono_psf_gen = TF_mono_PSF(phase_N, lambda_obs, self.obscurations, output_dim=self.output_dim)
+
+#         # Calculate the PSF
+#         mono_psf = tf_mono_psf_gen.__call__(self.opd)
+
+#         # Multiply with the respective normalized SED and return
+#         return tf.math.scalar_mul(SED_norm_val, mono_psf)
+
+#     def __call__(self, opd):
+
+#         # Save the OPD that will be shared by all the monochromatic PSFs
+#         self.opd = opd
+
+
+#         # Use tf.function for parallelization over GPU
+#         # Not allowed since the dynamic padding for the diffraction does not
+#         # work in the @tf.function context
+#         # @tf.function
+#         def calculate_poly_PSF(elems_to_unpack):
+#             return tf.map_fn(self.calculate_mono_PSF,
+#                              elems_to_unpack,
+#                              parallel_iterations=10,
+#                              fn_output_signature=tf.float32)
+
+#         stacked_psfs = calculate_poly_PSF(packed_elems)
+#         poly_psf = tf.math.reduce_sum(stacked_psfs, axis=0)
+
+#         return poly_psf
