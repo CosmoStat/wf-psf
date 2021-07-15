@@ -150,6 +150,94 @@ def compute_mono_metric(tf_semiparam_field, GT_tf_semiparam_field, simPSF_np, tf
 
     return rmse_lda, rel_rmse_lda, std_rmse_lda, std_rel_rmse_lda
 
+def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, pos,
+                        batch_size=16):
+    """ Compute the OPD metrics.
+    
+    Need to handle a batch size to avoid Out-Of-Memory errors with
+    the GPUs. This is specially due to the fact that the OPD maps
+    have a higher dimensionality than the observed PSFs.
+    
+    Parameters
+    ----------
+    tf_semiparam_field: PSF field object
+        Trained model to evaluate.
+    GT_tf_semiparam_field: PSF field object
+        Ground truth model to produce GT observations at any position
+        and wavelength.
+    pos: numpy.ndarray [batch x 2]
+        Positions at where to predict the OPD maps.
+    batch_size: int
+        Batch size to process the OPD calculations.
+
+    Returns
+    -------
+    rmse: float
+        Absolute RMSE value.
+    rel_rmse: float
+        Relative RMSE value.
+    rmse_std: float
+        Absolute RMSE standard deviation.
+    rel_rmse_std: float
+        Relative RMSE standard deviation.
+
+    """
+    # Get OPD obscurations
+    np_obscurations = np.real(GT_tf_semiparam_field.obscurations.numpy())
+    # Define total number of samples
+    n_samples = pos.shape[0]
+
+    # Initialise batch variables
+    opd_batch = None
+    GT_opd_batch = None
+    counter = 0
+    # Initialise result lists
+    rmse_vals = np.zeros(n_samples)
+    rel_rmse_vals = np.zeros(n_samples)
+    
+    
+    while counter < n_samples:
+        # Calculate the batch end element
+        if counter + batch_size <= n_samples:
+            end_sample = counter + batch_size
+        else:
+            end_sample = n_samples
+
+        # Define the batch positions
+        batch_pos = pos[counter:end_sample, :]
+
+        # We calculate a batch of OPDs
+        opd_batch = tf_semiparam_field.predict_opd(batch_pos)
+        GT_opd_batch = GT_tf_semiparam_field.predict_opd(batch_pos)
+
+        # Compute RMSE with the obscured the OPD
+        res_opd = np.sqrt(np.mean(
+            ((GT_opd_batch.numpy() - opd_batch.numpy()) * np_obscurations)**2,
+            axis=(1,2)))
+        GT_opd_mean = np.sqrt(np.mean(
+            (GT_opd_batch.numpy() * np_obscurations)**2,
+            axis=(1,2)))
+
+        # RMSE calculations
+        rmse_vals[counter:end_sample] = res_opd
+        rel_rmse_vals[counter:end_sample] = 100. * (res_opd/GT_opd_mean)
+
+        # Add the results to the lists
+        counter += batch_size
+
+    # Calculate final values
+    rmse = np.mean(rmse_vals)
+    rel_rmse = np.mean(rel_rmse_vals)
+    rmse_std = np.std(rmse_vals)
+    rel_rmse_std = np.std(rel_rmse_vals)
+
+    # Print RMSE values
+    print('Absolute RMSE:\t %.4e \t +/- %.4e' % (rmse, rmse_std))
+    print('Relative RMSE:\t %.4e %% \t +/- %.4e %%' % (rel_rmse, rel_rmse_std))
+
+    return rmse, rel_rmse, rmse_std, rel_rmse_std
+
+
 def compute_metrics(tf_semiparam_field, simPSF_np, test_SEDs, train_SEDs,
                     tf_test_pos, tf_train_pos, tf_test_stars, tf_train_stars,
                     n_bins_lda, batch_size=16):
@@ -190,7 +278,8 @@ def compute_metrics(tf_semiparam_field, simPSF_np, test_SEDs, train_SEDs,
 
     return test_res, train_res
 
-def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, test_pos,
+
+def compute_opd_metrics_mccd(tf_semiparam_field, GT_tf_semiparam_field, test_pos,
                         train_pos):
     """ Compute the OPD metrics. """
 
