@@ -278,7 +278,6 @@ def compute_metrics(tf_semiparam_field, simPSF_np, test_SEDs, train_SEDs,
 
     return test_res, train_res
 
-
 def compute_opd_metrics_mccd(tf_semiparam_field, GT_tf_semiparam_field, test_pos,
                         train_pos):
     """ Compute the OPD metrics. """
@@ -604,11 +603,38 @@ def plot_imgs(mat, cmap = 'gist_stern', figsize=(20,20)):
     plt.show()
 
 def compute_shape_metrics(tf_semiparam_field, GT_tf_semiparam_field, simPSF_np, SEDs,
-                    tf_pos, n_bins_lda, output_Q=1, output_dim=64, batch_size=16):
+                    tf_pos, n_bins_lda, output_Q=3, output_dim=64, batch_size=16):
     """ Compute the pixel, shape and size RMSE of a PSF model.
 
     This is done at a specific sampling and output image dimension.
     It is done for polychromatic PSFs so SEDs are needed.
+
+    Parameters
+    ----------
+    tf_semiparam_field: PSF field object
+        Trained model to evaluate.
+    GT_tf_semiparam_field: PSF field object
+        Ground truth model to produce GT observations at any position
+        and wavelength.
+    simPSF_np:
+    SEDs: numpy.ndarray [batch x SED_samples x 2]
+        SED samples for the corresponding positions.
+    tf_pos: Tensor [batch x 2]
+        Positions at where to predict the PSFs.
+    n_bins_lda: int
+        Number of wavelength bins to use for the polychromatic PSF.
+    output_Q: int
+        Upsampling factor. A value of 1 means the observation resolution.
+    output_dim: int
+        Output dimension of the square PSF stamps.
+    batch_size: int
+        Batch size to process the PSF estimations.
+
+    Returns
+    -------
+    result_dict: dict
+        Dictionary with all the results.
+
     """
     # Save original output_Q and output_dim
     original_out_Q = tf_semiparam_field.output_Q
@@ -641,15 +667,21 @@ def compute_shape_metrics(tf_semiparam_field, GT_tf_semiparam_field, simPSF_np, 
     GT_predictions = GT_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
 
-    # Calculate absolute RMSE values
-    pixel_residual = np.sqrt(np.mean((GT_predictions - predictions)**2))
+    # Calculate residuals
+    residuals = np.sqrt(np.mean((GT_predictions - predictions)**2, axis=(1,2)))
+    GT_star_mean = np.sqrt(np.mean((GT_predictions)**2, axis=(1,2)))
 
-    # Calculate relative RMSE values
-    relative_pixel_residual = pixel_residual / np.sqrt(np.mean((GT_predictions)**2))
+    # RMSE calculations
+    pix_rmse = np.mean(residuals)
+    rel_pix_rmse = 100. * np.mean(residuals/GT_star_mean)
+
+    # STD calculations
+    pix_rmse_std = np.std(residuals)
+    rel_pix_rmse_std = 100. * np.std(residuals/GT_star_mean)
 
     # Print pixel RMSE values
-    print('\nPixel star absolute RMSE:\t %.4e'%pixel_residual)
-    print('Pixel star relative RMSE:\t %.4e %%\n'%(relative_pixel_residual*100.))
+    print('\nPixel star absolute RMSE:\t %.4e \t +/- %.4e '%(pix_rmse, pix_rmse_std))
+    print('Pixel star relative RMSE:\t %.4e %% \t +/- %.4e %%'%(rel_pix_rmse, rel_pix_rmse_std))
 
     # Measure shapes of the reconstructions
     pred_moments = [gs.hsm.FindAdaptiveMom(gs.Image(_pred), strict=False) for _pred in predictions]
@@ -680,17 +712,43 @@ def compute_shape_metrics(tf_semiparam_field, GT_tf_semiparam_field, simPSF_np, 
     GT_pred_e2_HSM = np.array(GT_pred_e2_HSM)
     GT_pred_R2_HSM = np.array(GT_pred_R2_HSM)
 
+    # Calculate metrics
+
+    # e1
+    e1_res = GT_pred_e1_HSM - pred_e1_HSM
+    e1_res_rel = (GT_pred_e1_HSM - pred_e1_HSM) / GT_pred_e1_HSM
+
+    rmse_e1 = np.sqrt(np.mean(e1_res**2))
+    rel_rmse_e1 = 100.* np.sqrt(np.mean(e1_res_rel**2))
+    std_rmse_e1 = np.std(e1_res)
+    std_rel_rmse_e1 = 100. * np.std(e1_res_rel)
+
+    # e2
+    e2_res = GT_pred_e2_HSM - pred_e2_HSM
+    e2_res_rel = (GT_pred_e2_HSM - pred_e2_HSM) / GT_pred_e2_HSM
+
+    rmse_e2 = np.sqrt(np.mean(e2_res**2))
+    rel_rmse_e2 = 100.* np.sqrt(np.mean(e2_res_rel**2))
+    std_rmse_e2 = np.std(e2_res)
+    std_rel_rmse_e2 = 100. * np.std(e2_res_rel)
+
+    # R2
+    R2_res = GT_pred_R2_HSM - pred_R2_HSM
+
+    rmse_R2_meanR2 = np.sqrt(np.mean(R2_res**2))/np.mean(GT_pred_R2_HSM)
+    std_rmse_R2_meanR2 = np.std(R2_res/GT_pred_R2_HSM)
+
     # Print shape/size errors
-    print('sigma(e1) RMSE = %.4e'%np.sqrt(np.mean((GT_pred_e1_HSM - pred_e1_HSM)**2)))
-    print('sigma(e2) RMSE = %.4e'%np.sqrt(np.mean((GT_pred_e2_HSM - pred_e2_HSM)**2)))
-    print('sigma(R2)/<R2>  = %.4e \n'%(np.sqrt(np.mean((GT_pred_R2_HSM - pred_R2_HSM)**2))/np.mean(GT_pred_R2_HSM)) )
+    print('\nsigma(e1) RMSE =\t\t %.4e \t +/- %.4e '%(rmse_e1, std_rmse_e1))
+    print('sigma(e2) RMSE =\t\t %.4e \t +/- %.4e '%(rmse_e2, std_rmse_e2))
+    print('sigma(R2)/<R2> =\t\t %.4e \t +/- %.4e '%(rmse_R2_meanR2, std_rmse_R2_meanR2))
 
     # Print relative shape/size errors
-    print('relative sigma(e1) RMSE = %.4e %%'%(100.* np.sqrt(np.mean((GT_pred_e1_HSM - pred_e1_HSM)**2)) / np.sqrt(np.mean((GT_pred_e1_HSM)**2)) ))
-    print('relative sigma(e2) RMSE = %.4e %%'%(100.* np.sqrt(np.mean((GT_pred_e2_HSM - pred_e2_HSM)**2)) / np.sqrt(np.mean((GT_pred_e2_HSM)**2)) ))
+    print('\nRelative sigma(e1) RMSE =\t %.4e %% \t +/- %.4e %%' % (rel_rmse_e1, std_rel_rmse_e1))
+    print('Relative sigma(e2) RMSE =\t %.4e %% \t +/- %.4e %%' % (rel_rmse_e2, std_rel_rmse_e2))
 
     # Print number of stars
-    print('Total number of stars: \t\t%d'%(len(GT_pred_moments)))
+    print('\nTotal number of stars: \t\t%d'%(len(GT_pred_moments)))
     print('Problematic number of stars: \t%d'%(len(GT_pred_moments) - GT_pred_e1_HSM.shape[0]))
 
     # Re-et the original output_Q and output_dim parameters in the models
@@ -701,4 +759,17 @@ def compute_shape_metrics(tf_semiparam_field, GT_tf_semiparam_field, simPSF_np, 
     tf_semiparam_field = build_PSF_model(tf_semiparam_field)
     GT_tf_semiparam_field = build_PSF_model(GT_tf_semiparam_field)
 
-    return predictions, GT_predictions
+    # Moment results
+    result_dict = {'pred_e1_HSM': pred_e1_HSM, 'pred_e2_HSM': pred_e2_HSM,
+                   'pred_R2_HSM': pred_R2_HSM, 'GT_pred_e1_HSM': GT_pred_e1_HSM,
+                   'GT_ped_e2_HSM': GT_pred_e2_HSM, 'GT_pred_R2_HSM': GT_pred_R2_HSM,
+                    'rmse_e1': rmse_e1, 'std_rmse_e1': std_rmse_e1,
+                    'rel_rmse_e1': rel_rmse_e1, 'std_rel_rmse_e1': std_rel_rmse_e1,
+                    'rmse_e2': rmse_e2, 'std_rmse_e2': std_rmse_e2,
+                    'rel_rmse_e2': rel_rmse_e2, 'std_rel_rmse_e2': std_rel_rmse_e2,
+                    'rmse_R2_meanR2': rmse_R2_meanR2, 'std_rmse_R2_meanR2': std_rmse_R2_meanR2,
+                    'pix_rmse': pix_rmse, 'pix_rmse_std': pix_rmse_std,
+                   'rel_pix_rmse': rel_pix_rmse, 'rel_pix_rmse_std': rel_pix_rmse_std,
+                    'output_Q': output_Q, 'output_dim': output_dim, 'n_bins_lda': n_bins_lda,}
+
+    return result_dict
