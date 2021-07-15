@@ -52,9 +52,6 @@ class TF_PSF_field_model(tf.keras.Model):
         self.batch_size = batch_size
         self.obscurations = obscurations
         self.output_dim = output_dim
-        self.psf_batch = tf.zeros(
-            (self.batch_size, self.output_dim, self.output_dim),
-            dtype=tf.float32)
 
 
         # Initialize the first layer
@@ -68,7 +65,6 @@ class TF_PSF_field_model(tf.keras.Model):
 
         # Initialize the batch opd to batch polychromatic PSF layer
         self.tf_batch_poly_PSF = TF_batch_poly_PSF(obscurations=self.obscurations,
-                                                    psf_batch=self.psf_batch,
                                                     output_Q=self.output_Q,
                                                     output_dim=self.output_dim)
 
@@ -92,12 +88,8 @@ class TF_PSF_field_model(tf.keras.Model):
         self.output_Q = output_Q
         if output_dim is not None:
             self.output_dim = output_dim
-            self.psf_batch = tf.zeros(
-                (self.batch_size, self.output_dim, self.output_dim),
-                dtype=tf.float32)
         # Reinitialize the PSF batch poly generator
         self.tf_batch_poly_PSF = TF_batch_poly_PSF(obscurations=self.obscurations,
-                                                    psf_batch=self.psf_batch,
                                                     output_Q=self.output_Q,
                                                     output_dim=self.output_dim)
 
@@ -219,9 +211,6 @@ class TF_SemiParam_field(tf.keras.Model):
         self.batch_size = batch_size
         self.obscurations = obscurations
         self.output_dim = output_dim
-        self.psf_batch = tf.zeros(
-            (self.batch_size, self.output_dim, self.output_dim),
-            dtype=tf.float32)
 
 
         # Initialize the first layer
@@ -241,7 +230,6 @@ class TF_SemiParam_field(tf.keras.Model):
 
         # Initialize the batch opd to batch polychromatic PSF layer
         self.tf_batch_poly_PSF = TF_batch_poly_PSF(obscurations=self.obscurations,
-                                                    psf_batch=self.psf_batch,
                                                     output_Q=self.output_Q,
                                                     output_dim=self.output_dim)
 
@@ -278,12 +266,9 @@ class TF_SemiParam_field(tf.keras.Model):
         self.output_Q = output_Q
         if output_dim is not None:
             self.output_dim = output_dim
-            self.psf_batch = tf.zeros(
-                (self.batch_size, self.output_dim, self.output_dim),
-                dtype=tf.float32)
+
         # Reinitialize the PSF batch poly generator
         self.tf_batch_poly_PSF = TF_batch_poly_PSF(obscurations=self.obscurations,
-                                                    psf_batch=self.psf_batch,
                                                     output_Q=self.output_Q,
                                                     output_dim=self.output_dim)
 

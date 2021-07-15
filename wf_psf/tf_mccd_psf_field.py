@@ -354,10 +354,6 @@ class TF_SP_graph_field(tf.keras.Model):
         self.batch_size = batch_size
         self.obscurations = obscurations
         self.output_dim = output_dim
-        self.psf_batch = tf.zeros(
-            (self.batch_size, self.output_dim, self.output_dim),
-            dtype=tf.float32)
-
 
         # Initialize the first layer
         self.tf_poly_Z_field = TF_poly_Z_field(x_lims=self.x_lims,
@@ -378,10 +374,8 @@ class TF_SP_graph_field(tf.keras.Model):
                                              l1_rate=self.l1_rate,
                                              opd_dim=self.opd_dim)
 
-
         # Initialize the batch opd to batch polychromatic PSF layer
         self.tf_batch_poly_PSF = TF_batch_poly_PSF(obscurations=self.obscurations,
-                                                    psf_batch=self.psf_batch,
                                                     output_Q=self.output_Q,
                                                     output_dim=self.output_dim)
 
