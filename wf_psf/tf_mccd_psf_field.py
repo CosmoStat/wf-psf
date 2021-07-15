@@ -187,11 +187,8 @@ class TF_SP_MCCD_field(tf.keras.Model):
             ``simPSF_np = wf.SimPSFToolkit(...)``
             ``phase_N = simPSF_np.feasible_N(lambda_obs)``
         """
-        # Init the mon_psf_batch
-        mono_psf_batch = tf.zeros_like(self.psf_batch)
         # Initialise the monochromatic PSF batch calculator
         tf_batch_mono_psf = TF_batch_mono_PSF(obscurations=self.obscurations,
-                                                    psf_batch=mono_psf_batch,
                                                     output_Q=self.output_Q,
                                                     output_dim=self.output_dim)
         # Set the lambda_obs and the phase_N parameters
