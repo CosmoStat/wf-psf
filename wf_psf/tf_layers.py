@@ -237,7 +237,6 @@ class TF_batch_poly_PSF(tf.keras.layers.Layer):
     with the SimPSFToolkit class but outside the TF class.
 
 
-
     obscurations: Tensor(pupil_len, pupil_len)
         Obscurations to apply to the wavefront.
 
@@ -257,17 +256,16 @@ class TF_batch_poly_PSF(tf.keras.layers.Layer):
 
     psf_batch: Tensor(batch_size, output_dim, output_dim)
         Tensor containing the psfs that will be updated each
-        time a calculation is required.
+        time a calculation is required. REMOVED!
 
     """
-    def __init__(self, obscurations, psf_batch, output_Q,
+    def __init__(self, obscurations, output_Q,
         output_dim=64, name='TF_batch_poly_PSF'):
         super().__init__(name=name)
 
         self.output_Q = output_Q
         self.obscurations = obscurations
         self.output_dim = output_dim
-        self.psf_batch = psf_batch
 
         self.current_opd = None
 
@@ -324,8 +322,6 @@ class TF_batch_poly_PSF(tf.keras.layers.Layer):
 
         return poly_psf
 
-
-
     def call(self, inputs):
         """Calculate the batch poly PSFs."""
 
@@ -340,9 +336,9 @@ class TF_batch_poly_PSF(tf.keras.layers.Layer):
                              fn_output_signature=tf.float32,
                              swap_memory=True)
 
-        self.psf_batch = _calculate_PSF_batch((opd_batch, packed_SED_data))
+        psf_poly_batch = _calculate_PSF_batch((opd_batch, packed_SED_data))
 
-        return self.psf_batch
+        return psf_poly_batch
 
 
 class TF_batch_mono_PSF(tf.keras.layers.Layer):
