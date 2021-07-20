@@ -19,6 +19,8 @@ if device_name != '/device:GPU:0':
 print('Found GPU at: {}'.format(device_name))
 print('tf_version: ' + str(tf.__version__))
 
+# Start measuring elapsed time
+starting_time = time.time()
 
 # # Define saving paths
 model = 'mccd'
@@ -34,7 +36,6 @@ optim_hist_file = '/local/home/tliaudat/checkpoints/optim-hist/'
 saving_optim_hist = dict()
 
 # Input paths
-Zcube_path = '/local/home/tliaudat/data/Zernike45.mat'
 dataset_path = '/local/home/tliaudat/psf-datasets/'
 train_path = 'train_Euclid_res_200_stars_dim256.npy'
 test_path = 'test_Euclid_res_200_stars_dim256.npy'
@@ -69,8 +70,7 @@ graph_features = 10  # Graph-constraint features
 l1_rate = 1e-8  # L1 regularisation
 
 
-# # Prepare the inputs
-#title Input preparation
+## Prepare the inputs
 
 # Generate Zernike maps
 zernikes = wf.utils.zernike_generator(n_zernikes=n_zernikes, wfe_dim=pupil_diameter)
@@ -89,7 +89,7 @@ print('Zernike cube:')
 print(tf_zernike_cube.shape)
 
 
-# Load the dictionaries
+## Load the dictionaries
 train_dataset = np.load(dataset_path + train_path, allow_pickle=True)[()]
 # train_stars = train_dataset['stars']
 # noisy_train_stars = train_dataset['noisy_stars']
@@ -118,7 +118,7 @@ print('Dataset parameters:')
 print(train_parameters)
 
 
-# Generate initializations
+## Generate initializations
 
 # Prepare np input
 simPSF_np = wf.SimPSFToolkit(zernikes, max_order=n_zernikes,
@@ -149,7 +149,29 @@ outputs = tf_noisy_train_stars
 # outputs = tf_train_stars
 
 
-# ## Select the model
+## Prepare validation data inputs
+
+# Let's take a subset of the testing data for the validation
+#  in order to test things faster
+val_SEDs = test_SEDs  # [0:50, :, :]
+tf_val_pos = tf_test_pos  # [0:50, :]
+tf_val_stars = tf_test_stars  # [0:50, :, :]
+
+# Initialize the SED data list
+val_packed_SED_data = [wf.utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_lda)
+                   for _sed in val_SEDs]
+
+# Prepare the inputs for the validation
+tf_val_packed_SED_data = tf.convert_to_tensor(val_packed_SED_data, dtype=tf.float32)
+tf_val_packed_SED_data = tf.transpose(tf_val_packed_SED_data, perm=[0, 2, 1])
+                 
+# Prepare input validation tuple
+val_x_inputs = [tf_val_pos, tf_val_packed_SED_data]
+val_y_inputs = tf_val_stars
+val_data = (val_x_inputs, val_y_inputs)
+
+
+## Select the model
 if model == 'mccd':
     poly_dic, graph_dic = wf.tf_mccd_psf_field.build_mccd_spatial_dic_v2(obs_stars=outputs.numpy(),
                                          obs_pos=tf_train_pos.numpy(),
@@ -201,85 +223,103 @@ elif model == 'param':
                                             y_lims=y_lims)
 
 
-# # Parameter Training
 
-# # Semi-param training
+
+# # Model Training
+
+# Prepare the saving callback
+# Prepare to save the model as a callback
+filepath_chkp_callback = chkp_save_file + 'chkp_callback_' + run_id_name + '_cycle1'
+model_chkp_callback = tf.keras.callbacks.ModelCheckpoint(
+    filepath_chkp_callback,
+    monitor='mean_squared_error', verbose=1, save_best_only=True,
+    save_weights_only=False, mode='min', save_freq='epoch',
+    options=None)
+
 
 print('Starting cycle 1..')
 start_cycle1 = time.time()
 
-# Compute the first training cycle
-tf_semiparam_field, history_param, history_non_param = wf.train_utils.first_train_cycle(
+# n_epochs_param=20, n_epochs_non_param=100
+
+tf_semiparam_field, hist_param, hist_non_param = wf.train_utils.general_train_cycle(
     tf_semiparam_field,
-    inputs, outputs, batch_size,
+    inputs=inputs,
+    outputs=outputs,
+    val_data=val_data,
+    batch_size=batch_size,
     l_rate_param=1e-2, l_rate_non_param=1.0,
-    n_epochs_param=20, n_epochs_non_param=100,
+    n_epochs_param=5, n_epochs_non_param=5,
+    param_optim=None, non_param_optim=None,
+    param_loss=None, non_param_loss=None,
+    param_metrics=None, non_param_metrics=None,
+    param_callback=None, non_param_callback=None,
+    general_callback=[model_chkp_callback],
+    first_run=True,
     verbose=2)
 
+# Save weights
 tf_semiparam_field.save_weights(chkp_save_file + 'chkp_' + run_id_name + '_cycle1')
-
 
 end_cycle1 = time.time()
 print('Cycle1 elapsed time: %f'%(end_cycle1-start_cycle1))
 
 # Save optimisation history in the saving dict
-saving_optim_hist['param_cycle1'] = history_param.history['loss']
-saving_optim_hist['nonparam_cycle1'] = history_non_param.history['loss']
+saving_optim_hist['param_cycle1'] = hist_param.history
+saving_optim_hist['nonparam_cycle1'] = hist_non_param.history
 
 
-# Compute the train/test RMSE values
-print('\nCompute pixel metrics:')
-test_res, train_res = wf.metrics.compute_metrics(tf_semiparam_field, simPSF_np,
-                                      test_SEDs=test_SEDs,
-                                      train_SEDs=train_SEDs,
-                                      tf_test_pos=tf_test_pos,
-                                      tf_test_stars=tf_test_stars,
-                                      tf_train_stars=tf_train_stars,
-                                      tf_train_pos=tf_train_pos,
-                                      n_bins_lda=n_bins_lda,
-                                      batch_size=batch_size)
 
 
+# Prepare to save the model as a callback
+filepath_chkp_callback = chkp_save_file + 'chkp_callback_' + run_id_name + '_cycle2'
+model_chkp_callback = tf.keras.callbacks.ModelCheckpoint(
+    filepath_chkp_callback,
+    monitor='mean_squared_error', verbose=1, save_best_only=True,
+    save_weights_only=False, mode='min', save_freq='epoch',
+    options=None)
 
 print('Starting cycle 2..')
 start_cycle2 = time.time()
 
+# n_epochs_param=20, n_epochs_non_param=80,
+
 # Compute the next cycle
-tf_semiparam_field, history_param, history_non_param = wf.train_utils.train_cycle(
+tf_semiparam_field, hist_param_2, hist_non_param_2 = wf.train_utils.general_train_cycle(
     tf_semiparam_field,
-    inputs, outputs, batch_size,
+    inputs=inputs,
+    outputs=outputs,
+    val_data=val_data,
+    batch_size=batch_size,
     l_rate_param=1e-2, l_rate_non_param=1.0,
-    n_epochs_param=20, n_epochs_non_param=80,
+    n_epochs_param=5, n_epochs_non_param=5,
+    param_optim=None, non_param_optim=None,
+    param_loss=None, non_param_loss=None,
+    param_metrics=None, non_param_metrics=None,
+    param_callback=None, non_param_callback=None,
+    general_callback=[model_chkp_callback],
+    first_run=False,
     verbose=2)
 
+# Save the weights at the end of the second cycle
 tf_semiparam_field.save_weights(chkp_save_file + 'chkp_' + run_id_name + '_cycle2')
-
 
 end_cycle2 = time.time()
 print('Cycle2 elapsed time: %f'%(end_cycle2 - start_cycle2))
 
-
 # Save optimisation history in the saving dict
-saving_optim_hist['param_cycle2'] = history_param.history['loss']
-saving_optim_hist['nonparam_cycle2'] = history_non_param.history['loss']
+saving_optim_hist['param_cycle2'] = hist_param_2.history
+saving_optim_hist['nonparam_cycle2'] = hist_non_param_2.history
 
 # Save optimisation history dictionary
 np.save(optim_hist_file + 'optim_hist_' + run_id_name + '.npy', saving_optim_hist)
 
 
-# Compute the train/test RMSE values
-test_res, train_res = wf.metrics.compute_metrics(tf_semiparam_field, simPSF_np,
-                                                test_SEDs=test_SEDs,
-                                                train_SEDs=train_SEDs,
-                                                tf_test_pos=tf_test_pos,
-                                                tf_test_stars=tf_test_stars,
-                                                tf_train_stars=tf_train_stars,
-                                                tf_train_pos=tf_train_pos,
-                                                n_bins_lda=n_bins_lda,
-                                                batch_size=batch_size)
+## Print final time
+final_time = time.time()
+print('\nTotal elapsed time: %f'%(final_time - starting_time))
 
-
-# Close log file
+## Close log file
 print('\n Good bye..')
 sys.stdout = old_stdout
 log_file.close()

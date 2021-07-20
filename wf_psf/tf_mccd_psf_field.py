@@ -287,7 +287,6 @@ class TF_SP_MCCD_field(tf.keras.Model):
             # Compute predictions
             poly_psfs = self.predict_step(inputs, evaluate_step=True)
 
-
         return poly_psfs
 
 

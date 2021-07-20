@@ -101,7 +101,6 @@ def general_train_cycle(tf_semiparam_field, inputs, outputs,
         else:
             callbacks = general_callback + param_callback
 
-
     # If it is the first run
     if first_run:
         # Set the non-parametric model to zero
