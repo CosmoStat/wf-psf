@@ -13,6 +13,18 @@ class TF_SP_MCCD_field(tf.keras.Model):
 
     Semi parametric model based on the hybrid-MCCD matrix factorization scheme.
 
+    The forward model is different for the training procedure and for the
+    inference procedure. This makes things more complicated and requires several
+    custom functions. 
+    
+    The prediction step is the forward model for the inference while the 
+    ``call(inputs, trainable=True)`` is the forward model for the training
+    procedure. When calling ``call(inputs, trainable=False)`` we are falling
+    back to the predict function for the inference forward model. This is needed
+    in order to handle the calculation of validation metrics on the validation
+    dataset.
+
+
     Parameters
     ----------
     zernike_maps: Tensor(n_batch, opd_dim, opd_dim)
