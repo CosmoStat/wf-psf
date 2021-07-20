@@ -142,16 +142,19 @@ class TF_SP_MCCD_field(tf.keras.Model):
         """ Assign coefficient matrix."""
         self.tf_poly_Z_field.assign_coeff_matrix(coeff_mat)
 
-    def predict_step(self, data):
+    def predict_step(self, data, evaluate_step=False):
         """ Custom predict (inference) step.
 
         It is needed as the non-parametric MCCD part requires a special
         interpolation (different from training).
 
         """
-        # Format input data
-        data = data_adapter.expand_1d(data)
-        input_data, _, _ = data_adapter.unpack_x_y_sample_weight(data)
+        if evaluate_step:
+            input_data = data
+        else:
+            # Format input data
+            data = data_adapter.expand_1d(data)
+            input_data, _, _ = data_adapter.unpack_x_y_sample_weight(data)
 
         # Unpack inputs
         input_positions = input_data[0]
@@ -239,7 +242,7 @@ class TF_SP_MCCD_field(tf.keras.Model):
 
         return opd_maps
 
-    def call(self, inputs):
+    def call(self, inputs, training=True):
         """Define the PSF field forward model.
 
         [1] From positions to Zernike coefficients
@@ -251,17 +254,27 @@ class TF_SP_MCCD_field(tf.keras.Model):
         # Unpack inputs
         input_positions = inputs[0]
         packed_SEDs = inputs[1]
-
+        
         # Forward model
-        # Calculate parametric part
-        zernike_coeffs = self.tf_poly_Z_field(input_positions)
-        param_opd_maps = self.tf_zernike_OPD(zernike_coeffs)
-        # Calculate the non parametric part
-        nonparam_opd_maps =  self.tf_NP_mccd_OPD(input_positions)
-        # Add the estimations
-        opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
-        # Compute the polychromatic PSFs
-        poly_psfs = self.tf_batch_poly_PSF([opd_maps, packed_SEDs])
+        # For the training
+        if training:
+            # Calculate parametric part
+            zernike_coeffs = self.tf_poly_Z_field(input_positions)
+            param_opd_maps = self.tf_zernike_OPD(zernike_coeffs)
+            # Calculate the non parametric part
+            nonparam_opd_maps =  self.tf_NP_mccd_OPD(input_positions)
+            # Add the estimations
+            opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
+            # Compute the polychromatic PSFs
+            poly_psfs = self.tf_batch_poly_PSF([opd_maps, packed_SEDs])
+        
+        # For the inference
+        # This is absolutely needed to compute the metrics on the
+        # validation data.
+        else:
+            # Compute predictions
+            poly_psfs = self.predict_step(inputs, evaluate_step=True)
+
 
         return poly_psfs
 
