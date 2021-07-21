@@ -11,13 +11,8 @@ import time
 
 # Import wavefront code
 import wf_psf as wf
-
 import tensorflow as tf
-device_name = tf.test.gpu_device_name()
-if device_name != '/device:GPU:0':
-    raise SystemError('GPU device not found')
-print('Found GPU at: {}'.format(device_name))
-print('tf_version: ' + str(tf.__version__))
+
 
 # Start measuring elapsed time
 starting_time = time.time()
@@ -27,18 +22,20 @@ model = 'mccd'
 # model = 'poly'
 # model = 'param'
 
-id_name = '_euclid_res_200stars'
-
+id_name = '-coherent_euclid_200stars'
 run_id_name = model + id_name
-log_save_file = '/local/home/tliaudat/checkpoints/log-files/'
-chkp_save_file = '/local/home/tliaudat/checkpoints/chkp/'
-optim_hist_file = '/local/home/tliaudat/checkpoints/optim-hist/'
+
+# Saving paths
+base_path = '/local/home/tliaudat/checkpoints/coherent-dataset/'
+log_save_file = base_path + 'log-files/'
+chkp_save_file = base_path + 'chkp/'
+optim_hist_file = base_path  + 'optim-hist/'
 saving_optim_hist = dict()
 
 # Input paths
-dataset_path = '/local/home/tliaudat/psf-datasets/'
-train_path = 'train_Euclid_res_200_stars_dim256.npy'
-test_path = 'test_Euclid_res_200_stars_dim256.npy'
+dataset_path = '/local/home/tliaudat/github/wf-psf/data/coherent_euclid_dataset/'
+train_path = 'train_Euclid_res_200_TrainStars_id_001.npy'
+test_path = 'test_Euclid_res_id_001.npy'
 
 
 # Save output prints to logfile
@@ -47,6 +44,12 @@ log_file = open(log_save_file + run_id_name + '_output.log','w')
 sys.stdout = log_file
 print('Starting the log file.')
 
+# Check GPU
+device_name = tf.test.gpu_device_name()
+if device_name != '/device:GPU:0':
+    raise SystemError('GPU device not found')
+print('Found GPU at: {}'.format(device_name))
+print('tf_version: ' + str(tf.__version__))
 
 # # Define new model
 
