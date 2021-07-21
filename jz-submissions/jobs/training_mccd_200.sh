@@ -17,7 +17,7 @@
 module purge
 
 # chargement des modules
-module load tensorflow-gpu/py3/2.4.1+nccl-2.8.3-1
+module load tensorflow-gpu/py3/2.4.1
 
 # echo des commandes lancees
 set -x
