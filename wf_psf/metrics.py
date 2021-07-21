@@ -237,7 +237,7 @@ def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, pos,
     return rmse, rel_rmse, rmse_std, rel_rmse_std
 
 def compute_shape_metrics(tf_semiparam_field, GT_tf_semiparam_field, simPSF_np, SEDs,
-                    tf_pos, n_bins_lda, output_Q=3, output_dim=64, batch_size=16):
+                    tf_pos, n_bins_lda, output_Q=1, output_dim=64, batch_size=16):
     """ Compute the pixel, shape and size RMSE of a PSF model.
 
     This is done at a specific sampling and output image dimension.
@@ -258,7 +258,14 @@ def compute_shape_metrics(tf_semiparam_field, GT_tf_semiparam_field, simPSF_np, 
     n_bins_lda: int
         Number of wavelength bins to use for the polychromatic PSF.
     output_Q: int
-        Upsampling factor. A value of 1 means the observation resolution.
+        Downsampling rate to match the specified telescope's sampling. The value
+        of `output_Q` should be equal to `oversampling_rate` in order to have
+        the right pixel sampling corresponding to the telescope characteristics
+        `pix_sampling`, `tel_diameter`, `tel_focal_length`. The final
+        oversampling obtained is `oversampling_rate/output_Q`.
+        Default is `1`, so the output psf will be super-resolved by a factor of
+        `oversampling_rate`. TLDR: better use `1` and measure shapes on the
+        super-resolved PSFs.
     output_dim: int
         Output dimension of the square PSF stamps.
     batch_size: int
