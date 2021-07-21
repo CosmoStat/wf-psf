@@ -38,7 +38,13 @@ class TF_SP_MCCD_field(tf.keras.Model):
     spatial_dic:
         TODO ...
     output_Q: int
-        Upsampling factor. A value of 1 means the observation resolution.
+        Downsampling rate to match the specified telescope's sampling. The value
+        of `output_Q` should be equal to `oversampling_rate` in order to have
+        the right pixel sampling corresponding to the telescope characteristics
+        `pix_sampling`, `tel_diameter`, `tel_focal_length`. The final
+        oversampling obtained is `oversampling_rate/output_Q`.
+        Default is `1`, so the output psf will be super-resolved by a factor of
+        `oversampling_rate`.
     d_max_nonparam: int
         Maximum degree of the polynomial for the non-parametric variations.
     output_dim: int
