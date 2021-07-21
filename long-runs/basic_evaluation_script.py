@@ -24,13 +24,14 @@ id_name = '_euclid_res_200stars'
 run_id_name = model + id_name
 
 # Saving folder
-log_save_file = '/local/home/tliaudat/checkpoints/log-files/'
-model_folder = '/local/home/tliaudat/checkpoints/chkp/'
+log_save_file = '/local/home/tliaudat/checkpoints/coherent-dataset/log-files/'
+model_folder = '/local/home/tliaudat/checkpoints/coherent-dataset/chkp/'
 
 # Input paths
-dataset_path = '/local/home/tliaudat/psf-datasets/'
-train_path = 'train_Euclid_res_200_stars_dim256.npy'
-test_path = 'test_Euclid_res_200_stars_dim256.npy'
+dataset_path = '/local/home/tliaudat/github/wf-psf/data/coherent_euclid_dataset/'
+train_path = 'train_Euclid_res_200_TrainStars_id_001.npy'
+test_path = 'test_Euclid_res_id_001.npy'
+
 
 # Saving path
 saving_path = '/local/home/tliaudat/checkpoints/coherent-dataset/metrics/'

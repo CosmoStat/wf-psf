@@ -22,6 +22,8 @@ print('tf_version: ' + str(tf.__version__))
 
 
 # # Define saving paths
+base_path = '/local/home/tliaudat/checkpoints/coherent-dataset/'
+
 id_name = '_euclid_res_200stars'
 
 model = 'mccd'
@@ -29,16 +31,15 @@ model = 'mccd'
 # model = 'param'
 
 run_id_name = model + id_name
-log_save_file = '/local/home/tliaudat/checkpoints/log-files/'
-chkp_save_file = '/local/home/tliaudat/checkpoints/chkp/'
-optim_hist_file = '/local/home/tliaudat/checkpoints/optim-hist/'
+log_save_file = base_path + 'log-files/'
+chkp_save_file = base_path + 'chkp/'
+optim_hist_file = base_path + 'optim-hist/'
 saving_optim_hist = dict()
 
 # Input paths
-Zcube_path = '/local/home/tliaudat/data/Zernike45.mat'
-dataset_path = '/local/home/tliaudat/psf-datasets/'
-train_path = 'train_Euclid_res_200_stars_dim256.npy'
-test_path = 'test_Euclid_res_200_stars_dim256.npy'
+dataset_path = '/local/home/tliaudat/github/wf-psf/data/coherent_euclid_dataset/'
+train_path = 'train_Euclid_res_200_TrainStars_id_001.npy'
+test_path = 'test_Euclid_res_id_001.npy'
 
 
 # Save output prints to logfile
@@ -51,11 +52,10 @@ print('Starting the log file.')
 # # Define new model
 
 # Decimation factor for Zernike polynomials
-decim_f = 4  # Original shape (1024x1024)
 n_zernikes = 15
 
 # Some parameters
-pupil_diameter = 1024 // decim_f
+pupil_diameter = 256
 n_bins_lda = 20
 
 output_Q = 3.
@@ -74,13 +74,8 @@ l1_rate = 1e-8  # L1 regularisation
 # # Prepare the inputs
 #title Input preparation
 
-Zcube = sio.loadmat(Zcube_path)
-zernikes = []
-zernike_shape = int(1024/decim_f)
-
-
-for it in range(n_zernikes):
-    zernikes.append(wf.utils.downsample_im(Zcube['Zpols'][0,it][5], zernike_shape))
+# Generate Zernike maps
+zernikes = wf.utils.zernike_generator(n_zernikes=n_zernikes, wfe_dim=pupil_diameter)
 
 # Now as cubes
 np_zernike_cube = np.zeros((len(zernikes), zernikes[0].shape[0], zernikes[0].shape[1]))
@@ -94,8 +89,6 @@ tf_zernike_cube = tf.convert_to_tensor(np_zernike_cube, dtype=tf.float32)
 
 print('Zernike cube:')
 print(tf_zernike_cube.shape)
-
-del Zcube
 
 
 # Load the dictionaries
@@ -295,15 +288,12 @@ test_res, train_res = wf.metrics.compute_metrics(tf_semiparam_field, simPSF_np,
 
 # Preparate the GT model
 
-Zcube = sio.loadmat(Zcube_path)
-zernikes = []
 # Decimation factor for Zernike polynomials
-decim_f = 4  # Original shape (1024x1024)
 n_zernikes_bis = 45
 
-for it in range(n_zernikes_bis):
-    zernike_map = wf.utils.downsample_im(Zcube['Zpols'][0,it][5], 1024//decim_f)
-    zernikes.append(zernike_map)
+# Generate Zernike maps
+zernikes = wf.utils.zernike_generator(n_zernikes=n_zernikes_bis, wfe_dim=pupil_diameter)
+
 
 # Now as cubes
 np_zernike_cube = np.zeros((len(zernikes), zernikes[0].shape[0], zernikes[0].shape[1]))
