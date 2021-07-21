@@ -18,8 +18,8 @@ import tensorflow as tf
 starting_time = time.time()
 
 # # Define saving paths
-model = 'mccd'
-# model = 'poly'
+# model = 'mccd'
+model = 'poly'
 # model = 'param'
 
 id_name = '-coherent_euclid_200stars'
