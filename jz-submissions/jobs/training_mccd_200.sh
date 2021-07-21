@@ -7,7 +7,7 @@
 #SBATCH --cpus-per-task=10           # nombre de coeurs CPU par tache (un quart du noeud ici)
 # /!\ Attention, "multithread" fait reference a l'hyperthreading dans la terminologie Slurm
 #SBATCH --hint=nomultithread         # hyperthreading desactive
-#SBATCH --time=80:00:00              # temps d'execution maximum demande (HH:MM:SS)
+#SBATCH --time=20:00:00              # temps d'execution maximum demande (HH:MM:SS)
 #SBATCH --output=train_mccd200%j.out  # nom du fichier de sortie
 #SBATCH --error=train_mccd200%j.err   # nom du fichier d'erreur (ici commun avec la sortie)
 #SBATCH -A xdy@gpu                   # specify the project
