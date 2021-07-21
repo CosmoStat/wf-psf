@@ -23,9 +23,11 @@ model = 'mccd'
 id_name = '-coherent_euclid_200stars'
 run_id_name = model + id_name
 
-# Saving folder
+# folder paths
 log_save_file = '/local/home/tliaudat/checkpoints/coherent-dataset/log-files/'
 model_folder = '/local/home/tliaudat/checkpoints/coherent-dataset/chkp/'
+
+weights_paths = model_folder + 'chkp_' + run_id_name + '_cycle2'
 
 # Input paths
 dataset_path = '/local/home/tliaudat/github/wf-psf/data/coherent_euclid_dataset/'
@@ -184,7 +186,7 @@ elif model == 'param':
 
 
 ## Load the model's weights
-tf_semiparam_field.load_weights(model_folder + run_id_name)
+tf_semiparam_field.load_weights(weights_paths)
 
 
 ## Prepare ground truth model

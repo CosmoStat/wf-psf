@@ -76,10 +76,10 @@ l1_rate = 1e-8  # L1 regularisation
 l_rate_param = [1e-2, 1e-2]
 l_rate_non_param = [1.0, 1.0]
 
-# n_epochs_param = [20, 20]
-# n_epochs_non_param = [100, 80]
-n_epochs_param = [5, 5]
-n_epochs_non_param = [5, 5]
+n_epochs_param = [20, 20]
+n_epochs_non_param = [100, 80]
+# n_epochs_param = [5, 5]
+# n_epochs_non_param = [5, 5]
 
 
 ## Prepare the inputs
