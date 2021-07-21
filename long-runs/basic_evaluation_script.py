@@ -20,7 +20,7 @@ model = 'mccd'
 # model = 'poly'
 # model = 'param'
 
-id_name = '_euclid_res_200stars'
+id_name = '-coherent_euclid_200stars'
 run_id_name = model + id_name
 
 # Saving folder
