@@ -18,11 +18,11 @@ import tensorflow_addons as tfa
 starting_time = time.time()
 
 # # Define saving paths
-model = 'mccd'
+# model = 'mccd'
 # model = 'poly'
-# model = 'param'
+model = 'param'
 
-id_name = '-coherent_euclid_2000stars'
+id_name = '-coherent_euclid_200stars'
 run_id_name = model + id_name
 
 # Saving paths
@@ -36,7 +36,7 @@ chkp_save_file = '/gpfsscratch/rech/xdy/ulx23va/wf-outputs/chkp/'
 
 # Input paths
 dataset_path = '/gpfswork/rech/xdy/ulx23va/repo/wf-psf/data/coherent_euclid_dataset/'
-train_path = 'train_Euclid_res_2000_TrainStars_id_001.npy'
+train_path = 'train_Euclid_res_200_TrainStars_id_001.npy'
 test_path = 'test_Euclid_res_id_001.npy'
 
 

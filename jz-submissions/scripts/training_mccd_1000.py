@@ -12,7 +12,7 @@ import time
 # Import wavefront code
 import wf_psf as wf
 import tensorflow as tf
-
+import tensorflow_addons as tfa
 
 # Start measuring elapsed time
 starting_time = time.time()
@@ -76,10 +76,10 @@ l1_rate = 1e-8  # L1 regularisation
 
 # Learning rates and number of epochs
 l_rate_param = [1e-2, 1e-2]
-l_rate_non_param = [1.0, 1.0]
+l_rate_non_param = [1e-1, 1e-1]
 
 n_epochs_param = [20, 20]
-n_epochs_non_param = [100, 80]
+n_epochs_non_param = [100, 120]
 
 
 ## Prepare the inputs
@@ -94,7 +94,6 @@ for it in range(len(zernikes)):
     np_zernike_cube[it,:,:] = zernikes[it]
 
 np_zernike_cube[np.isnan(np_zernike_cube)] = 0
-
 tf_zernike_cube = tf.convert_to_tensor(np_zernike_cube, dtype=tf.float32)
 
 print('Zernike cube:')
@@ -248,6 +247,9 @@ model_chkp_callback = tf.keras.callbacks.ModelCheckpoint(
     save_weights_only=False, mode='min', save_freq='epoch',
     options=None)
 
+# Prepare the optimisers
+param_optim = tfa.optimizers.RectifiedAdam(lr=l_rate_param[0])
+non_param_optim = tfa.optimizers.RectifiedAdam(lr=l_rate_non_param[0])
 
 print('Starting cycle 1..')
 start_cycle1 = time.time()
@@ -262,7 +264,8 @@ tf_semiparam_field, hist_param, hist_non_param = wf.train_utils.general_train_cy
     l_rate_non_param=l_rate_non_param[0],
     n_epochs_param=n_epochs_param[0],
     n_epochs_non_param=n_epochs_non_param[0],
-    param_optim=None, non_param_optim=None,
+    param_optim=param_optim,
+    non_param_optim=non_param_optim,
     param_loss=None, non_param_loss=None,
     param_metrics=None, non_param_metrics=None,
     param_callback=None, non_param_callback=None,
@@ -271,7 +274,7 @@ tf_semiparam_field, hist_param, hist_non_param = wf.train_utils.general_train_cy
     verbose=2)
 
 # Save weights
-tf_semiparam_field.save_weights(model_save_file + 'chkp_' + run_id_name + '_cycle1')
+tf_semiparam_field.save_weights(chkp_save_file + 'chkp_' + run_id_name + '_cycle1')
 
 end_cycle1 = time.time()
 print('Cycle1 elapsed time: %f'%(end_cycle1-start_cycle1))
@@ -291,6 +294,10 @@ model_chkp_callback = tf.keras.callbacks.ModelCheckpoint(
     save_weights_only=False, mode='min', save_freq='epoch',
     options=None)
 
+# Prepare the optimisers
+param_optim = tfa.optimizers.RectifiedAdam(lr=l_rate_param[1])
+non_param_optim = tfa.optimizers.RectifiedAdam(lr=l_rate_non_param[1])
+
 print('Starting cycle 2..')
 start_cycle2 = time.time()
 
@@ -305,7 +312,8 @@ tf_semiparam_field, hist_param_2, hist_non_param_2 = wf.train_utils.general_trai
     l_rate_non_param=l_rate_non_param[1],
     n_epochs_param=n_epochs_param[1],
     n_epochs_non_param=n_epochs_non_param[1],
-    param_optim=None, non_param_optim=None,
+    param_optim=param_optim,
+    non_param_optim=non_param_optim,
     param_loss=None, non_param_loss=None,
     param_metrics=None, non_param_metrics=None,
     param_callback=None, non_param_callback=None,
@@ -314,7 +322,7 @@ tf_semiparam_field, hist_param_2, hist_non_param_2 = wf.train_utils.general_trai
     verbose=2)
 
 # Save the weights at the end of the second cycle
-tf_semiparam_field.save_weights(model_save_file + 'chkp_' + run_id_name + '_cycle2')
+tf_semiparam_field.save_weights(chkp_save_file + 'chkp_' + run_id_name + '_cycle2')
 
 end_cycle2 = time.time()
 print('Cycle2 elapsed time: %f'%(end_cycle2 - start_cycle2))

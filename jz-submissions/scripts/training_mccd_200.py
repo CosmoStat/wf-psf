@@ -12,7 +12,7 @@ import time
 # Import wavefront code
 import wf_psf as wf
 import tensorflow as tf
-
+import tensorflow_addons as tfa
 
 # Start measuring elapsed time
 starting_time = time.time()
@@ -76,10 +76,10 @@ l1_rate = 1e-8  # L1 regularisation
 
 # Learning rates and number of epochs
 l_rate_param = [1e-2, 1e-2]
-l_rate_non_param = [1.0, 1.0]
+l_rate_non_param = [1e-1, 1e-1]
 
 n_epochs_param = [20, 20]
-n_epochs_non_param = [100, 80]
+n_epochs_non_param = [100, 120]
 
 
 ## Prepare the inputs
@@ -248,6 +248,9 @@ model_chkp_callback = tf.keras.callbacks.ModelCheckpoint(
     save_weights_only=False, mode='min', save_freq='epoch',
     options=None)
 
+# Prepare the optimisers
+param_optim = tfa.optimizers.RectifiedAdam(lr=l_rate_param[0])
+non_param_optim = tfa.optimizers.RectifiedAdam(lr=l_rate_non_param[0])
 
 print('Starting cycle 1..')
 start_cycle1 = time.time()
@@ -262,7 +265,8 @@ tf_semiparam_field, hist_param, hist_non_param = wf.train_utils.general_train_cy
     l_rate_non_param=l_rate_non_param[0],
     n_epochs_param=n_epochs_param[0],
     n_epochs_non_param=n_epochs_non_param[0],
-    param_optim=None, non_param_optim=None,
+    param_optim=param_optim,
+    non_param_optim=non_param_optim,
     param_loss=None, non_param_loss=None,
     param_metrics=None, non_param_metrics=None,
     param_callback=None, non_param_callback=None,
@@ -291,6 +295,10 @@ model_chkp_callback = tf.keras.callbacks.ModelCheckpoint(
     save_weights_only=False, mode='min', save_freq='epoch',
     options=None)
 
+# Prepare the optimisers
+param_optim = tfa.optimizers.RectifiedAdam(lr=l_rate_param[1])
+non_param_optim = tfa.optimizers.RectifiedAdam(lr=l_rate_non_param[1])
+
 print('Starting cycle 2..')
 start_cycle2 = time.time()
 
@@ -305,7 +313,8 @@ tf_semiparam_field, hist_param_2, hist_non_param_2 = wf.train_utils.general_trai
     l_rate_non_param=l_rate_non_param[1],
     n_epochs_param=n_epochs_param[1],
     n_epochs_non_param=n_epochs_non_param[1],
-    param_optim=None, non_param_optim=None,
+    param_optim=param_optim,
+    non_param_optim=non_param_optim,
     param_loss=None, non_param_loss=None,
     param_metrics=None, non_param_metrics=None,
     param_callback=None, non_param_callback=None,
