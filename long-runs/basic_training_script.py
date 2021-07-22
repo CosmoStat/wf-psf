@@ -27,14 +27,16 @@ id_name = '-coherent_euclid_200stars'
 run_id_name = model + id_name
 
 # Saving paths
-base_path = '/local/home/tliaudat/checkpoints/coherent-dataset/'
+base_path = '/gpfswork/rech/xdy/ulx23va/wf-outputs/'
 log_save_file = base_path + 'log-files/'
-chkp_save_file = base_path + 'chkp/'
+model_save_file= base_path + 'chkp/'
 optim_hist_file = base_path  + 'optim-hist/'
 saving_optim_hist = dict()
 
+chkp_save_file = '/gpfsscratch/rech/xdy/ulx23va/wf-outputs/chkp/'
+
 # Input paths
-dataset_path = '/local/home/tliaudat/github/wf-psf/data/coherent_euclid_dataset/'
+dataset_path = '/gpfswork/rech/xdy/ulx23va/repo/wf-psf/data/coherent_euclid_dataset/'
 train_path = 'train_Euclid_res_200_TrainStars_id_001.npy'
 test_path = 'test_Euclid_res_id_001.npy'
 
@@ -273,7 +275,7 @@ tf_semiparam_field, hist_param, hist_non_param = wf.train_utils.general_train_cy
     verbose=2)
 
 # Save weights
-tf_semiparam_field.save_weights(chkp_save_file + 'chkp_' + run_id_name + '_cycle1')
+tf_semiparam_field.save_weights(model_save_file + 'chkp_' + run_id_name + '_cycle1')
 
 end_cycle1 = time.time()
 print('Cycle1 elapsed time: %f'%(end_cycle1-start_cycle1))
@@ -321,7 +323,7 @@ tf_semiparam_field, hist_param_2, hist_non_param_2 = wf.train_utils.general_trai
     verbose=2)
 
 # Save the weights at the end of the second cycle
-tf_semiparam_field.save_weights(chkp_save_file + 'chkp_' + run_id_name + '_cycle2')
+tf_semiparam_field.save_weights(model_save_file + 'chkp_' + run_id_name + '_cycle2')
 
 end_cycle2 = time.time()
 print('Cycle2 elapsed time: %f'%(end_cycle2 - start_cycle2))

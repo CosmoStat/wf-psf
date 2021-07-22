@@ -274,7 +274,7 @@ tf_semiparam_field, hist_param, hist_non_param = wf.train_utils.general_train_cy
     verbose=2)
 
 # Save weights
-tf_semiparam_field.save_weights(chkp_save_file + 'chkp_' + run_id_name + '_cycle1')
+tf_semiparam_field.save_weights(model_save_file + 'chkp_' + run_id_name + '_cycle1')
 
 end_cycle1 = time.time()
 print('Cycle1 elapsed time: %f'%(end_cycle1-start_cycle1))
@@ -322,7 +322,7 @@ tf_semiparam_field, hist_param_2, hist_non_param_2 = wf.train_utils.general_trai
     verbose=2)
 
 # Save the weights at the end of the second cycle
-tf_semiparam_field.save_weights(chkp_save_file + 'chkp_' + run_id_name + '_cycle2')
+tf_semiparam_field.save_weights(model_save_file + 'chkp_' + run_id_name + '_cycle2')
 
 end_cycle2 = time.time()
 print('Cycle2 elapsed time: %f'%(end_cycle2 - start_cycle2))
