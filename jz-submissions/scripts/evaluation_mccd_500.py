@@ -24,7 +24,7 @@ id_name = '-coherent_euclid_500stars'
 run_id_name = model + id_name
 
 # folder paths
-log_save_file = '/gpfswork/rech/xdy/ulx23va/wf-outputs//log-files/'
+log_save_file = '/gpfswork/rech/xdy/ulx23va/wf-outputs/log-files/'
 model_folder = '/gpfswork/rech/xdy/ulx23va/wf-outputs/chkp/'
 
 weights_paths = model_folder + 'chkp_' + run_id_name + '_cycle2'
