@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=2c_poly_eval      # nom du job
+#SBATCH --job-name=2c_poly_v2_eval      # nom du job
 ##SBATCH --partition=gpu_p2          # de-commente pour la partition gpu_p2
 #SBATCH --ntasks=1                   # nombre total de tache MPI (= nombre total de GPU)
 #SBATCH --ntasks-per-node=1          # nombre de tache MPI par noeud (= nombre de GPU par noeud)
@@ -8,8 +8,8 @@
 # /!\ Attention, "multithread" fait reference a l'hyperthreading dans la terminologie Slurm
 #SBATCH --hint=nomultithread         # hyperthreading desactive
 #SBATCH --time=20:00:00              # temps d'execution maximum demande (HH:MM:SS)
-#SBATCH --output=2c_poly_eval%j.out  # nom du fichier de sortie
-#SBATCH --error=2c_poly_eval%j.err   # nom du fichier d'erreur (ici commun avec la sortie)
+#SBATCH --output=2c_poly_v2_eval%j.out  # nom du fichier de sortie
+#SBATCH --error=2c_poly_v2_eval%j.err   # nom du fichier d'erreur (ici commun avec la sortie)
 #SBATCH -A xdy@gpu                   # specify the project
 ##SBATCH --qos=qos_gpu-dev            # using the dev queue, as this is only for profiling
 

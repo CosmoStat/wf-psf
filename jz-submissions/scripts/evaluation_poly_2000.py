@@ -20,7 +20,7 @@ starting_time = time.time()
 model = 'poly'
 # model = 'param'
 
-id_name = '-coherent_euclid_2000stars'
+id_name = '_v2-coherent_euclid_2000stars'
 run_id_name = model + id_name
 
 # folder paths
@@ -52,7 +52,7 @@ oversampling_rate = 3.
 batch_size = 16
 output_dim = 32
 d_max = 2
-d_max_nonparam = 3  # polynomial-constraint features
+d_max_nonparam = 5  # polynomial-constraint features
 x_lims = [0, 1e3]
 y_lims = [0, 1e3]
 graph_features = 10  # Graph-constraint features
