@@ -76,7 +76,8 @@ def compute_poly_metric(tf_semiparam_field, GT_tf_semiparam_field, simPSF_np,
 
     return rmse, rel_rmse, std_rmse, std_rel_rmse
 
-def compute_mono_metric(tf_semiparam_field, GT_tf_semiparam_field, simPSF_np, tf_pos, lambda_list):
+def compute_mono_metric(tf_semiparam_field, GT_tf_semiparam_field, simPSF_np, tf_pos,
+                        lambda_list, batch_size=32):
     """ Calculate metrics for monochromatic reconstructions.
 
     The ``tf_semiparam_field`` should be the model to evaluate, and the 
@@ -96,8 +97,10 @@ def compute_mono_metric(tf_semiparam_field, GT_tf_semiparam_field, simPSF_np, tf
         wavelength values.
     tf_pos: list of floats [batch x 2]
         Positions to evaluate the model.
-    lambda_list: list of floats [batch]
+    lambda_list: list of floats [wavelength_values]
         List of wavelength values in [um] to evaluate the model.
+    batch_size: int
+        Batch size to process the monochromatic PSF calculations.
 
     Returns
     -------
@@ -117,27 +120,55 @@ def compute_mono_metric(tf_semiparam_field, GT_tf_semiparam_field, simPSF_np, tf
     rel_rmse_lda = []
     std_rmse_lda = []
     std_rel_rmse_lda = []
+    
+    total_samples = tf_pos.shape[0]
 
+
+    # Main loop for each wavelength
     for it in range(len(lambda_list)):
         # Set the lambda (wavelength) and the required wavefront N
         lambda_obs = lambda_list[it]
         phase_N = simPSF_np.feasible_N(lambda_obs)
-
-
-        # Estimate the monochromatic PSFs
-        GT_mono_psf = GT_tf_semiparam_field.predict_mono_psfs(
-            input_positions=tf_pos,
-            lambda_obs=lambda_obs,
-            phase_N=phase_N)
         
-        model_mono_psf = tf_semiparam_field.predict_mono_psfs(
-            input_positions=tf_pos,
-            lambda_obs=lambda_obs,
-            phase_N=phase_N)
+        residuals = np.zeros((total_samples))
+        GT_star_mean = np.zeros((total_samples))
+
+        # Total number of epochs
+        n_epochs = int(np.ceil(total_samples/batch_size))
+        ep_low_lim = 0
+        for ep in range(n_epochs):
+            
+            # Define the upper limit
+            if ep_low_lim + batch_size >= total_samples:
+                ep_up_lim = total_samples
+            else:
+                ep_up_lim = ep_low_lim + batch_size
+            # Extract the batch
+            batch_pos = tf_pos[ep_low_lim:ep_up_lim, :]
+            
+            
+            # Estimate the monochromatic PSFs
+            GT_mono_psf = GT_tf_semiparam_field.predict_mono_psfs(
+                input_positions=batch_pos,
+                lambda_obs=lambda_obs,
+                phase_N=phase_N)
+            
+            model_mono_psf = tf_semiparam_field.predict_mono_psfs(
+                input_positions=batch_pos,
+                lambda_obs=lambda_obs,
+                phase_N=phase_N)
         
+            num_pixels = GT_mono_psf.shape[1] * GT_mono_psf.shape[2]
+            
+            residuals[ep_low_lim:ep_up_lim] = np.sum((GT_mono_psf - model_mono_psf)**2, axis=(1,2)) / num_pixels
+            GT_star_mean[ep_low_lim:ep_up_lim] = np.sum((GT_mono_psf)**2, axis=(1,2)) / num_pixels
+            
+            # Increase lower limit
+            ep_low_lim += batch_size
+
         # Calculate residuals
-        residuals = np.sqrt(np.mean((GT_mono_psf - model_mono_psf)**2, axis=(1,2)))
-        GT_star_mean = np.sqrt(np.mean((GT_mono_psf)**2, axis=(1,2)))
+        residuals = np.sqrt(residuals)
+        GT_star_mean = np.sqrt(GT_star_mean)
 
         # RMSE calculations
         rmse_lda.append(np.mean(residuals))
