@@ -188,7 +188,73 @@ def general_train_cycle(tf_semiparam_field, inputs, outputs,
     return tf_semiparam_field, hist_param, hist_non_param
 
 
-def first_train_cycle(tf_semiparam_field, inputs, outputs, batch_size,
+def param_train_cycle(tf_semiparam_field,
+                      inputs,
+                      outputs,
+                      val_data,
+                      batch_size,
+                      l_rate,
+                      n_epochs, 
+                      param_optim=None,
+                      param_loss=None, 
+                      param_metrics=None, 
+                      param_callback=None, 
+                      general_callback=None,
+                      verbose=1):
+    """ Training cycle for parametric model.
+    
+    """
+   # Define Loss
+    if param_loss is None:
+        loss = tf.keras.losses.MeanSquaredError()
+    else:
+        loss = param_loss
+
+    # Define optimiser
+    if param_optim is None:
+        optimizer = tf.keras.optimizers.Adam(
+            learning_rate=l_rate, beta_1=0.9, beta_2=0.999,
+            epsilon=1e-07, amsgrad=False)
+    else:
+        optimizer = param_optim
+
+    # Define metrics
+    if param_metrics is None:
+        metrics = [tf.keras.metrics.MeanSquaredError()]
+    else:
+        metrics = param_metrics
+
+    # Define callbacks
+    if param_callback is None and general_callback is None:
+        callbacks = None
+    else:
+        if general_callback is None:
+            callbacks = param_callback
+        elif param_callback is None:
+            callbacks = general_callback
+        else:
+            callbacks = general_callback + param_callback        
+    
+    # Compile the model for the first optimisation
+    tf_semiparam_field = build_PSF_model(tf_semiparam_field,
+                                         optimizer=optimizer,
+                                         loss=loss,
+                                         metrics=metrics)
+
+    # Train the parametric part
+    print('Starting parametric update..')
+    hist_param = tf_semiparam_field.fit(x = inputs,
+                                        y = outputs,
+                                        batch_size = batch_size,
+                                        epochs = n_epochs,
+                                        validation_data = val_data,
+                                        callbacks = callbacks,
+                                        verbose = verbose)
+    
+    return tf_semiparam_field, hist_param
+
+
+def OLD_first_train_cycle(tf_semiparam_field, inputs, outputs, batch_size,
                       l_rate_param, l_rate_non_param,
                       n_epochs_param, n_epochs_non_param,
                       param_optim=None, non_param_optim=None,
@@ -290,7 +356,7 @@ def first_train_cycle(tf_semiparam_field, inputs, outputs, batch_size,
     return tf_semiparam_field, history_param, history_non_param
 
 
-def train_cycle(tf_semiparam_field, inputs, outputs, batch_size,
+def OLD_train_cycle(tf_semiparam_field, inputs, outputs, batch_size,
                 l_rate_param, l_rate_non_param,
                 n_epochs_param, n_epochs_non_param,
                 param_optim=None, non_param_optim=None,
