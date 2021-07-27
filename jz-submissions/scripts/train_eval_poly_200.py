@@ -2,8 +2,11 @@
 # coding: utf-8
 
 # PSF modelling and evaluation
+import os
+os.environ['XLA_FLAGS']='--xla_gpu_cuda_data_dir=/gpfslocalsys/cuda/10.2'
+from absl import app
+from absl import flags
 
-# Import packages
 import sys
 import numpy as np
 import time
@@ -11,12 +14,6 @@ import wf_psf as wf
 import tensorflow as tf
 import tensorflow_addons as tfa
 
-from absl import app
-from absl import flags
-
-
-# Define flags
-FLAGS = flags.FLAGS
 
 ## Training flags
 # Model definition
@@ -62,6 +59,8 @@ flags.DEFINE_string("saved_cycle", "cycle2", "Saved cycle to use for the evaluat
 flags.DEFINE_integer("GT_n_zernikes", 45, "Zernike polynomial modes to use on the ground truth model parametric part.")
 flags.DEFINE_integer("eval_batch_size", 16, "Batch size to use for the evaluation.")
 
+# Define flags
+FLAGS = flags.FLAGS
 
 
 def train_model():
@@ -695,7 +694,6 @@ def evaluate_model():
     log_file.close()
 
 
-    
 
 def main(_):
     train_model()
