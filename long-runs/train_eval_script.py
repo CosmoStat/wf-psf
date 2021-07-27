@@ -296,7 +296,7 @@ def train_model():
 
     if FLAGS.total_cycles >= 2:
         # Prepare to save the model as a callback
-        filepath_chkp_callback = FLAGS.chkp_save_file + 'chkp_callback_' + run_id_name + '_cycle2'
+        filepath_chkp_callback = FLAGS.chkp_save_path + 'chkp_callback_' + run_id_name + '_cycle2'
         model_chkp_callback = tf.keras.callbacks.ModelCheckpoint(
             filepath_chkp_callback,
             monitor='mean_squared_error', verbose=1, save_best_only=True,
