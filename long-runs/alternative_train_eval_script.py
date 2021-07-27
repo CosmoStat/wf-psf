@@ -201,8 +201,8 @@ import click
 
 def main(**args):
     print(args)
-    # train_model(**args)
-    # evaluate_model(**args)
+    train_model(**args)
+    evaluate_model(**args)
 
 
 def train_model(**args):
