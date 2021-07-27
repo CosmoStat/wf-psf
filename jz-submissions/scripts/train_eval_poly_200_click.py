@@ -200,6 +200,7 @@ import click
     help="Batch size to use for the evaluation.")
 
 def main(**args):
+    print(args)
     train_model(**args)
     evaluate_model(**args)
 
