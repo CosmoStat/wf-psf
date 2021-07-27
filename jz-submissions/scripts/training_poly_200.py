@@ -22,7 +22,7 @@ starting_time = time.time()
 model = 'poly'
 # model = 'param'
 
-id_name = '_v2-coherent_euclid_200stars'
+id_name = '_test-coherent_euclid_200stars'
 run_id_name = model + id_name
 
 # Saving paths
