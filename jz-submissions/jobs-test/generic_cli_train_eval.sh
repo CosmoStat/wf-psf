@@ -30,5 +30,5 @@ srun python -u ./../../long-runs/alternative_train_eval_script.py \
     --train_dataset_file train_Euclid_res_2000_TrainStars_id_001.npy
     --n_epochs_param 2 2 \
     --n_epochs_non_param 2 2 \
-    --id_name _test-coherent_euclid_2000stars
-    --d_max_nonparam 5
+    --id_name _test-coherent_euclid_2000stars \
+    --d_max_nonparam 5 \
