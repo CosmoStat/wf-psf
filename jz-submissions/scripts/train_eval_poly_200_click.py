@@ -18,6 +18,8 @@ import click
 
 @click.command()
 
+@click.command()
+
 ## Training options
 # Model definition
 @click.option(
@@ -189,7 +191,7 @@ import click
     help="Saved cycle to use for the evaluation. Can be 'cycle1' or 'cycle2'.")
 # Evaluation parameters
 @click.option(
-    "--GT_n_zernikes",
+    "--gt_n_zernikes",
     default=45,
     type=int,
     help="Zernike polynomial modes to use on the ground truth model parametric part.")
@@ -200,7 +202,6 @@ import click
     help="Batch size to use for the evaluation.")
 
 def main(**args):
-    print(args)
     train_model(**args)
     evaluate_model(**args)
 
@@ -656,7 +657,7 @@ def evaluate_model(**args):
 
     ## Prepare ground truth model
     # Generate Zernike maps
-    zernikes = wf.utils.zernike_generator(n_zernikes=args['GT_n_zernikes'], wfe_dim=args['pupil_diameter'])
+    zernikes = wf.utils.zernike_generator(n_zernikes=args['gt_n_zernikes'], wfe_dim=args['pupil_diameter'])
     # Now as cubes
     np_zernike_cube = np.zeros((len(zernikes), zernikes[0].shape[0], zernikes[0].shape[1]))
     for it in range(len(zernikes)):
@@ -673,7 +674,7 @@ def evaluate_model(**args):
         output_Q=args['output_q'],
         d_max_nonparam=args['d_max_nonparam'],
         output_dim=args['output_dim'],
-        n_zernikes=args['GT_n_zernikes'],
+        n_zernikes=args['gt_n_zernikes'],
         d_max=args['d_max'],
         x_lims=args['x_lims'],
         y_lims=args['y_lims'])
@@ -839,3 +840,4 @@ def evaluate_model(**args):
 
 if __name__ == "__main__":
   main()
+
