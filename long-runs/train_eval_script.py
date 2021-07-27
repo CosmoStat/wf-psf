@@ -104,7 +104,7 @@ def train_model():
 
 
     ## Load the dictionaries
-    train_dataset = np.load(FLAGS.dataset_path + FLAGS.train_path, allow_pickle=True)[()]
+    train_dataset = np.load(FLAGS.dataset_folder + FLAGS.train_dataset_file, allow_pickle=True)[()]
     # train_stars = train_dataset['stars']
     # noisy_train_stars = train_dataset['noisy_stars']
     # train_pos = train_dataset['positions']
@@ -113,7 +113,7 @@ def train_model():
     train_C_poly = train_dataset['C_poly']
     train_parameters = train_dataset['parameters']
 
-    test_dataset = np.load(FLAGS.dataset_path + FLAGS.test_path, allow_pickle=True)[()]
+    test_dataset = np.load(FLAGS.dataset_folder + FLAGS.test_dataset_file, allow_pickle=True)[()]
     # test_stars = test_dataset['stars']
     # test_pos = test_dataset['positions']
     test_SEDs = test_dataset['SEDs']
@@ -404,7 +404,7 @@ def evaluate_model():
 
 
     ## Load datasets
-    train_dataset = np.load(FLAGS.dataset_path + FLAGS.train_path, allow_pickle=True)[()]
+    train_dataset = np.load(FLAGS.dataset_folder + FLAGS.train_dataset_file, allow_pickle=True)[()]
     # train_stars = train_dataset['stars']
     # noisy_train_stars = train_dataset['noisy_stars']
     # train_pos = train_dataset['positions']
@@ -413,7 +413,7 @@ def evaluate_model():
     train_C_poly = train_dataset['C_poly']
     train_parameters = train_dataset['parameters']
 
-    test_dataset = np.load(FLAGS.dataset_path + FLAGS.test_path, allow_pickle=True)[()]
+    test_dataset = np.load(FLAGS.dataset_folder + FLAGS.test_dataset_file, allow_pickle=True)[()]
     # test_stars = test_dataset['stars']
     # test_pos = test_dataset['positions']
     test_SEDs = test_dataset['SEDs']
