@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
-
-# PSF modelling and evaluation
 import os
-os.environ['XLA_FLAGS']='--xla_gpu_cuda_data_dir=/gpfslocalsys/cuda/10.2'
+# This line is for running on Jean Zay
+os.environ['XLA_FLAGS']='--xla_gpu_cuda_data_dir=/gpfslocalsys/cuda/10.1.2'
+# PSF modelling and evaluation
 from absl import app
 from absl import flags
 
@@ -11,7 +11,9 @@ import sys
 import numpy as np
 import time
 import wf_psf as wf
-import tensorflow as tf
+import tensorflow.compat.v2 as tf
+tf.enable_v2_behavior()
+# import tensorflow as tf
 import tensorflow_addons as tfa
 
 
