@@ -228,6 +228,7 @@ elif model == 'param':
     tf_semiparam_field = wf.tf_psf_field.TF_PSF_field_model(zernike_maps=tf_zernike_cube,
                                             obscurations=tf_obscurations,
                                             batch_size=batch_size,
+                                            output_Q=output_Q,
                                             output_dim=output_dim,
                                             n_zernikes=n_zernikes,
                                             d_max=d_max,
