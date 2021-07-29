@@ -121,6 +121,7 @@ def general_train_cycle(tf_semiparam_field, inputs, outputs,
         scaled_w = (w  - np.min(w))/(np.max(w) - np.min(w)) # Transform to [0,1]
         scaled_w = scaled_w * (max_w - min_w) + min_w  # Transform to [min_w, max_w]
         scaled_w = scaled_w + (1 - np.mean(scaled_w))  # Adjust the mean to 1
+        scaled_w[scaled_w < min_w] = min_w
         # Save the weights
         sample_weight = scaled_w
     else:
@@ -282,6 +283,7 @@ def param_train_cycle(tf_semiparam_field,
         scaled_w = (w  - np.min(w))/(np.max(w) - np.min(w)) # Transform to [0,1]
         scaled_w = scaled_w * (max_w - min_w) + min_w  # Transform to [min_w, max_w]
         scaled_w = scaled_w + (1 - np.mean(scaled_w))  # Adjust the mean to 1
+        scaled_w[scaled_w < min_w] = min_w
         # Save the weights
         sample_weight = scaled_w
     else:
