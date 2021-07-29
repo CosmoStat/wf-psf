@@ -143,3 +143,52 @@ def add_noise(image, desired_SNR):
     sigma_noise = np.sqrt((np.sum(image**2))/(desired_SNR * image.shape[0] * image.shape[1]))
     noisy_image = image + np.random.standard_normal(image.shape) * sigma_noise
     return noisy_image
+
+
+class NoiseEstimator(object):
+    """ Noise estimator.
+
+    Parameters
+    ----------
+    img_dim: tuple of int
+        Image size
+    win_rad: int
+        window radius in pixels
+
+    """
+    def __init__(self, img_dim, win_rad):
+        self.img_dim = img_dim
+        self.win_rad = win_rad
+        self.window = None
+
+        self._init_window()
+
+    def _init_window(self):
+        # Calculate window function for estimating the noise
+        # We couldn't use Galsim to estimate the moments, so we chose to work
+        # with the real center of the image (25.5,25.5)
+        # instead of using the real centroid. Also, we use 13 instead of
+        # 5 * obs_sigma, so that we are sure to cut all the flux from the star
+        self.window = np.ones(self.img_dim, dtype=bool)
+
+        mid_x = self.img_dim[0] / 2
+        mid_y = self.img_dim[1] / 2
+
+        for _x in range(self.img_dim[0]):
+            for _y in range(self.img_dim[1]):
+                if np.sqrt((_x - mid_x)**2 + (_y - mid_y)**2) <= self.win_rad:
+                    self.window[_x, _y] = False
+
+    @staticmethod
+    def sigma_mad(x):
+        r"""Compute an estimation of the standard deviation
+        of a Gaussian distribution using the robust
+        MAD (Median Absolute Deviation) estimator."""
+        return 1.4826 * np.median(np.abs(x - np.median(x)))
+
+    def estimate_noise(self, image):
+        r"""Estimate the noise level of the image."""
+
+        # Calculate noise std dev
+        return self.sigma_mad(image[self.window])
+
