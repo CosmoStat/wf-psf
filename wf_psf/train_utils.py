@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from wf_psf.tf_psf_field import build_PSF_model
-
+from wf_psf.utils import NoiseEstimator
 
 
 class L1ParamScheduler(tf.keras.callbacks.Callback):
@@ -44,6 +44,7 @@ def general_train_cycle(tf_semiparam_field, inputs, outputs,
                 param_metrics=None, non_param_metrics=None,
                 param_callback=None, non_param_callback=None,
                 general_callback=None, first_run=False,
+                use_sample_weights=False,
                 verbose=1):
     """ Function to do a BCD iteration on the model.
     
@@ -101,6 +102,30 @@ def general_train_cycle(tf_semiparam_field, inputs, outputs,
         else:
             callbacks = general_callback + param_callback
 
+    # Calculate sample weights 
+    if use_sample_weights:
+        # Generate standard deviation estimator
+        img_dim = (outputs.shape[1], outputs.shape[2])
+        win_rad = np.ceil(outputs.shape[1] / 3.33)
+        std_est = NoiseEstimator(img_dim=img_dim, win_rad=win_rad)
+        # Estimate noise std_dev
+        imgs_std = np.array([std_est.estimate_noise(_im) for _im in  outputs])
+        # Calculate weights
+        variances = imgs_std**2
+        # Parameters
+        max_w = 2.
+        min_w = 0.1
+        # Epsilon is to avoid outliers
+        epsilon = np.median(variances) * 0.1
+        w = 1/(variances + epsilon)
+        scaled_w = (w  - np.min(w))/(np.max(w) - np.min(w)) # Transform to [0,1]
+        scaled_w = scaled_w * (max_w - min_w) + min_w  # Transform to [min_w, max_w]
+        scaled_w = scaled_w + (1 - np.mean(scaled_w))  # Adjust the mean to 1
+        # Save the weights
+        sample_weight = scaled_w
+    else:
+        sample_weight = None
+
     # If it is the first run
     if first_run:
         # Set the non-parametric model to zero
@@ -124,6 +149,7 @@ def general_train_cycle(tf_semiparam_field, inputs, outputs,
                                         epochs = n_epochs_param,
                                         validation_data = val_data,
                                         callbacks = callbacks,
+                                        sample_weight = sample_weight,
                                         verbose = verbose)
 
     ## Non parametric train
@@ -183,6 +209,7 @@ def general_train_cycle(tf_semiparam_field, inputs, outputs,
                                             epochs = n_epochs_non_param,
                                             validation_data = val_data,
                                             callbacks = callbacks,
+                                            sample_weight = sample_weight,
                                             verbose = verbose)
 
     return tf_semiparam_field, hist_param, hist_non_param
@@ -200,6 +227,7 @@ def param_train_cycle(tf_semiparam_field,
                       param_metrics=None, 
                       param_callback=None, 
                       general_callback=None,
+                      use_sample_weights=False,
                       verbose=1):
     """ Training cycle for parametric model.
     
@@ -233,7 +261,31 @@ def param_train_cycle(tf_semiparam_field,
         elif param_callback is None:
             callbacks = general_callback
         else:
-            callbacks = general_callback + param_callback        
+            callbacks = general_callback + param_callback
+
+        # Calculate sample weights 
+    if use_sample_weights:
+        # Generate standard deviation estimator
+        img_dim = (outputs.shape[1], outputs.shape[2])
+        win_rad = np.ceil(outputs.shape[1] / 3.33)
+        std_est = NoiseEstimator(img_dim=img_dim, win_rad=win_rad)
+        # Estimate noise std_dev
+        imgs_std = np.array([std_est.estimate_noise(_im) for _im in  outputs])
+        # Calculate weights
+        variances = imgs_std**2
+        # Parameters
+        max_w = 2.
+        min_w = 0.1
+        # Epsilon is to avoid outliers
+        epsilon = np.median(variances) * 0.1
+        w = 1/(variances + epsilon)
+        scaled_w = (w  - np.min(w))/(np.max(w) - np.min(w)) # Transform to [0,1]
+        scaled_w = scaled_w * (max_w - min_w) + min_w  # Transform to [min_w, max_w]
+        scaled_w = scaled_w + (1 - np.mean(scaled_w))  # Adjust the mean to 1
+        # Save the weights
+        sample_weight = scaled_w
+    else:
+        sample_weight = None     
     
     # Compile the model for the first optimisation
     tf_semiparam_field = build_PSF_model(tf_semiparam_field,
@@ -249,6 +301,7 @@ def param_train_cycle(tf_semiparam_field,
                                         epochs = n_epochs,
                                         validation_data = val_data,
                                         callbacks = callbacks,
+                                        sample_weight = sample_weight,
                                         verbose = verbose)
     
     return tf_semiparam_field, hist_param

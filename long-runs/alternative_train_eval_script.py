@@ -135,6 +135,11 @@ import click
     default=1e-8,
     type=float,
     help="L1 regularisation parameter for the non-parametric part.")
+@click.option(
+    "--use_sample_weights",
+    default=False,
+    type=bool,
+    help="Boolean to define if we use sample weights based on the noise standard deviation estimation.")
 # Training parameters
 @click.option(
     "--batch_size",
@@ -402,6 +407,7 @@ def train_model(**args):
             param_metrics=None, 
             param_callback=None, 
             general_callback=[model_chkp_callback],
+            use_sample_weights=args['use_sample_weights'],
             verbose=2)
 
     else:
@@ -422,6 +428,7 @@ def train_model(**args):
             param_callback=None, non_param_callback=None,
             general_callback=[model_chkp_callback],
             first_run=True,
+            use_sample_weights=args['use_sample_weights'],
             verbose=2)
 
     # Save weights
@@ -467,6 +474,7 @@ def train_model(**args):
                 param_metrics=None, 
                 param_callback=None, 
                 general_callback=[model_chkp_callback],
+                use_sample_weights=args['use_sample_weights'],
                 verbose=2)
         else:
             # Compute the next cycle
@@ -487,6 +495,7 @@ def train_model(**args):
                 param_callback=None, non_param_callback=None,
                 general_callback=[model_chkp_callback],
                 first_run=False,
+                use_sample_weights=args['use_sample_weights'],
                 verbose=2)
 
         # Save the weights at the end of the second cycle
