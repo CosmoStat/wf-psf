@@ -26,7 +26,7 @@ set -x
 
 opt[0]="--id_name _sample_weights_2c_ --train_dataset_file train_Euclid_res_200_TrainStars_id_001.npy --n_epochs_param 30 30 --n_epochs_non_param 250 250 --l_rate_param 0.01 0.001 --l_rate_non_param 0.1 0.01"
 opt[1]="--id_name _sample_weights_5c_ --train_dataset_file train_Euclid_res_500_TrainStars_id_001.npy --n_epochs_param 20 20 --n_epochs_non_param 100 120 --l_rate_param 0.01 0.01 --l_rate_non_param 0.1 0.1"
-opt[2]="--id_name _sample_weights_2k_ --train_dataset_file train_Euclid_res_1000_TrainStars_id_001.npy --n_epochs_param 20 20 --n_epochs_non_param 150 100 --l_rate_param 0.01 0.001 --l_rate_non_param 0.1 0.01"
+opt[2]="--id_name _sample_weights_2k_ --train_dataset_file train_Euclid_res_2000_TrainStars_id_001.npy --n_epochs_param 20 20 --n_epochs_non_param 150 100 --l_rate_param 0.01 0.001 --l_rate_non_param 0.1 0.01"
 
 cd $WORK/repo/wf-psf/jz-submissions/slurm-logs/
 
