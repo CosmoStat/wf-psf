@@ -261,7 +261,7 @@ def train_model(**args):
     # train_pos = train_dataset['positions']
     train_SEDs = train_dataset['SEDs']
     # train_zernike_coef = train_dataset['zernike_coef']
-    train_C_poly = train_dataset['C_poly']
+    # train_C_poly = train_dataset['C_poly']
     train_parameters = train_dataset['parameters']
 
     test_dataset = np.load(args['dataset_folder'] + args['test_dataset_file'], allow_pickle=True)[()]
@@ -272,7 +272,7 @@ def train_model(**args):
 
     # Convert to tensor
     tf_noisy_train_stars = tf.convert_to_tensor(train_dataset['noisy_stars'], dtype=tf.float32)
-    tf_train_stars = tf.convert_to_tensor(train_dataset['stars'], dtype=tf.float32)
+    # tf_train_stars = tf.convert_to_tensor(train_dataset['stars'], dtype=tf.float32)
     tf_train_pos = tf.convert_to_tensor(train_dataset['positions'], dtype=tf.float32)
     tf_test_stars = tf.convert_to_tensor(test_dataset['stars'], dtype=tf.float32)
     tf_test_pos = tf.convert_to_tensor(test_dataset['positions'], dtype=tf.float32)
@@ -283,9 +283,14 @@ def train_model(**args):
 
     ## Generate initializations
     # Prepare np input
-    simPSF_np = wf.SimPSFToolkit(zernikes, max_order=args['n_zernikes'],
-                                    pupil_diameter=args['pupil_diameter'], output_dim=args['output_dim'],
-                                    oversampling_rate=args['oversampling_rate'], output_Q=args['output_q'])
+    simPSF_np = wf.SimPSFToolkit(
+        zernikes,
+        max_order=args['n_zernikes'],
+        pupil_diameter=args['pupil_diameter'],
+        output_dim=args['output_dim'],
+        oversampling_rate=args['oversampling_rate'],
+        output_Q=args['output_q']
+    )
     simPSF_np.gen_random_Z_coeffs(max_order=args['n_zernikes'])
     z_coeffs = simPSF_np.normalize_zernikes(simPSF_np.get_z_coeffs(), simPSF_np.max_wfe_rms)
     simPSF_np.set_z_coeffs(z_coeffs)
@@ -294,8 +299,14 @@ def train_model(**args):
     obscurations = simPSF_np.generate_pupil_obscurations(N_pix=args['pupil_diameter'], N_filter=2)
     tf_obscurations = tf.convert_to_tensor(obscurations, dtype=tf.complex64)
     # Initialize the SED data list
-    packed_SED_data = [wf.utils.generate_packed_elems(_sed, simPSF_np, n_bins=args['n_bins_lda'])
-                    for _sed in train_SEDs]
+    packed_SED_data = [
+        wf.utils.generate_packed_elems(
+            _sed,
+            simPSF_np,
+            n_bins=args['n_bins_lda']
+        )
+        for _sed in train_SEDs
+    ]
 
 
     # Prepare the inputs for the training
@@ -315,8 +326,14 @@ def train_model(**args):
     tf_val_stars = tf_test_stars
 
     # Initialize the SED data list
-    val_packed_SED_data = [wf.utils.generate_packed_elems(_sed, simPSF_np, n_bins=args['n_bins_lda'])
-                    for _sed in val_SEDs]
+    val_packed_SED_data = [
+        wf.utils.generate_packed_elems(
+            _sed,
+            simPSF_np,
+            n_bins=args['n_bins_lda']
+        )
+        for _sed in val_SEDs
+    ]
 
     # Prepare the inputs for the validation
     tf_val_packed_SED_data = tf.convert_to_tensor(val_packed_SED_data, dtype=tf.float32)
@@ -330,57 +347,65 @@ def train_model(**args):
 
     ## Select the model
     if args['model'] == 'mccd':
-        poly_dic, graph_dic = wf.tf_mccd_psf_field.build_mccd_spatial_dic_v2(obs_stars=outputs.numpy(),
-                                            obs_pos=tf_train_pos.numpy(),
-                                            x_lims=args['x_lims'],
-                                            y_lims=args['y_lims'],
-                                            d_max=args['d_max_nonparam'],
-                                            graph_features=args['graph_features'])
+        poly_dic, graph_dic = wf.tf_mccd_psf_field.build_mccd_spatial_dic_v2(
+            obs_stars=outputs.numpy(),
+            obs_pos=tf_train_pos.numpy(),
+            x_lims=args['x_lims'],
+            y_lims=args['y_lims'],
+            d_max=args['d_max_nonparam'],
+            graph_features=args['graph_features']
+        )
 
         spatial_dic = [poly_dic, graph_dic]
 
         # Initialize the model
-        tf_semiparam_field = wf.tf_mccd_psf_field.TF_SP_MCCD_field(zernike_maps=tf_zernike_cube,
-                                                                    obscurations=tf_obscurations,
-                                                                    batch_size=args['batch_size'],
-                                                                    obs_pos=tf_train_pos,
-                                                                    spatial_dic=spatial_dic,
-                                                                    output_Q=args['output_q'],
-                                                                    d_max_nonparam=args['d_max_nonparam'],
-                                                                    graph_features=args['graph_features'],
-                                                                    l1_rate=args['l1_rate'],
-                                                                    output_dim=args['output_dim'],
-                                                                    n_zernikes=args['n_zernikes'],
-                                                                    d_max=args['d_max'],
-                                                                    x_lims=args['x_lims'],
-                                                                    y_lims=args['y_lims'])
+        tf_semiparam_field = wf.tf_mccd_psf_field.TF_SP_MCCD_field(
+            zernike_maps=tf_zernike_cube,
+            obscurations=tf_obscurations,
+            batch_size=args['batch_size'],
+            obs_pos=tf_train_pos,
+            spatial_dic=spatial_dic,
+            output_Q=args['output_q'],
+            d_max_nonparam=args['d_max_nonparam'],
+            graph_features=args['graph_features'],
+            l1_rate=args['l1_rate'],
+            output_dim=args['output_dim'],
+            n_zernikes=args['n_zernikes'],
+            d_max=args['d_max'],
+            x_lims=args['x_lims'],
+            y_lims=args['y_lims']
+        )
 
     elif args['model'] == 'poly':
         # Initialize the model
         tf_semiparam_field = wf.tf_alt_psf_models.TF_SemiParam_field_l2_OPD(
-                                                zernike_maps=tf_zernike_cube,
-                                                obscurations=tf_obscurations,
-                                                batch_size=args['batch_size'],
-                                                output_Q=args['output_q'],
-                                                d_max_nonparam=args['d_max_nonparam'],
-                                                l2_param=args['l2_param'],
-                                                output_dim=args['output_dim'],
-                                                n_zernikes=args['n_zernikes'],
-                                                d_max=args['d_max'],
-                                                x_lims=args['x_lims'],
-                                                y_lims=args['y_lims'])
+            zernike_maps=tf_zernike_cube,
+            obscurations=tf_obscurations,
+            batch_size=args['batch_size'],
+            output_Q=args['output_q'],
+            d_max_nonparam=args['d_max_nonparam'],
+            l2_param=args['l2_param'],
+            output_dim=args['output_dim'],
+            n_zernikes=args['n_zernikes'],
+            d_max=args['d_max'],
+            x_lims=args['x_lims'],
+            y_lims=args['y_lims']
+        )
 
     elif args['model'] == 'param':
         # Initialize the model
-        tf_semiparam_field = wf.tf_psf_field.TF_PSF_field_model(zernike_maps=tf_zernike_cube,
-                                                obscurations=tf_obscurations,
-                                                batch_size=args['batch_size'],
-                                                output_Q=args['output_q'],
-                                                output_dim=args['output_dim'],
-                                                n_zernikes=args['n_zernikes'],
-                                                d_max=args['d_max'],
-                                                x_lims=args['x_lims'],
-                                                y_lims=args['y_lims'])
+        tf_semiparam_field = wf.tf_alt_psf_models.TF_PSF_field_model_l2_OPD(
+            zernike_maps=tf_zernike_cube,
+            obscurations=tf_obscurations,
+            batch_size=args['batch_size'],
+            output_Q=args['output_q'],
+            l2_param=args['l2_param'],
+            output_dim=args['output_dim'],
+            n_zernikes=args['n_zernikes'],
+            d_max=args['d_max'],
+            x_lims=args['x_lims'],
+            y_lims=args['y_lims']
+        )
 
 
     # # Model Training
@@ -389,9 +414,14 @@ def train_model(**args):
     filepath_chkp_callback = args['chkp_save_path'] + 'chkp_callback_' + run_id_name + '_cycle1'
     model_chkp_callback = tf.keras.callbacks.ModelCheckpoint(
         filepath_chkp_callback,
-        monitor='mean_squared_error', verbose=1, save_best_only=True,
-        save_weights_only=False, mode='min', save_freq='epoch',
-        options=None)
+        monitor='mean_squared_error',
+        verbose=1,
+        save_best_only=True,
+        save_weights_only=False,
+        mode='min',
+        save_freq='epoch',
+        options=None
+    )
 
     # Prepare the optimisers
     param_optim = tfa.optimizers.RectifiedAdam(lr=args['l_rate_param'][0])
@@ -414,7 +444,8 @@ def train_model(**args):
             param_metrics=None, 
             param_callback=None, 
             general_callback=[model_chkp_callback],
-            verbose=2)
+            verbose=2
+        )
 
     else:
         tf_semiparam_field, hist_param, hist_non_param = wf.train_utils.general_train_cycle(
@@ -434,7 +465,8 @@ def train_model(**args):
             param_callback=None, non_param_callback=None,
             general_callback=[model_chkp_callback],
             first_run=True,
-            verbose=2)
+            verbose=2
+        )
 
     # Save weights
     tf_semiparam_field.save_weights(model_save_file + 'chkp_' + run_id_name + '_cycle1')
@@ -452,9 +484,14 @@ def train_model(**args):
         filepath_chkp_callback = args['chkp_save_path'] + 'chkp_callback_' + run_id_name + '_cycle2'
         model_chkp_callback = tf.keras.callbacks.ModelCheckpoint(
             filepath_chkp_callback,
-            monitor='mean_squared_error', verbose=1, save_best_only=True,
-            save_weights_only=False, mode='min', save_freq='epoch',
-            options=None)
+            monitor='mean_squared_error',
+            verbose=1,
+            save_best_only=True,
+            save_weights_only=False,
+            mode='min',
+            save_freq='epoch',
+            options=None
+        )
 
         # Prepare the optimisers
         param_optim = tfa.optimizers.RectifiedAdam(lr=args['l_rate_param'][1])
@@ -479,7 +516,8 @@ def train_model(**args):
                 param_metrics=None, 
                 param_callback=None, 
                 general_callback=[model_chkp_callback],
-                verbose=2)
+                verbose=2
+            )
         else:
             # Compute the next cycle
             tf_semiparam_field, hist_param_2, hist_non_param_2 = wf.train_utils.general_train_cycle(
@@ -499,7 +537,8 @@ def train_model(**args):
                 param_callback=None, non_param_callback=None,
                 general_callback=[model_chkp_callback],
                 first_run=False,
-                verbose=2)
+                verbose=2
+            )
 
         # Save the weights at the end of the second cycle
         tf_semiparam_field.save_weights(model_save_file + 'chkp_' + run_id_name + '_cycle2')
@@ -596,9 +635,14 @@ def evaluate_model(**args):
     tf_zernike_cube = tf.convert_to_tensor(np_zernike_cube, dtype=tf.float32)
 
     # Prepare np input
-    simPSF_np = wf.SimPSFToolkit(zernikes, max_order=args['n_zernikes'],
-                                    pupil_diameter=args['pupil_diameter'], output_dim=args['output_dim'],
-                                    oversampling_rate=args['oversampling_rate'], output_Q=args['output_q'])
+    simPSF_np = wf.SimPSFToolkit(
+        zernikes,
+        max_order=args['n_zernikes'],
+        pupil_diameter=args['pupil_diameter'],
+        output_dim=args['output_dim'],
+        oversampling_rate=args['oversampling_rate'],
+        output_Q=args['output_q']
+    )
     simPSF_np.gen_random_Z_coeffs(max_order=args['n_zernikes'])
     z_coeffs = simPSF_np.normalize_zernikes(simPSF_np.get_z_coeffs(), simPSF_np.max_wfe_rms)
     simPSF_np.set_z_coeffs(z_coeffs)
@@ -615,57 +659,64 @@ def evaluate_model(**args):
     ## Create the model
     ## Select the model
     if args['model'] == 'mccd':
-        poly_dic, graph_dic = wf.tf_mccd_psf_field.build_mccd_spatial_dic_v2(obs_stars=outputs.numpy(),
-                                            obs_pos=tf_train_pos.numpy(),
-                                            x_lims=args['x_lims'],
-                                            y_lims=args['y_lims'],
-                                            d_max=args['d_max_nonparam'],
-                                            graph_features=args['graph_features'])
+        poly_dic, graph_dic = wf.tf_mccd_psf_field.build_mccd_spatial_dic_v2(
+            obs_stars=outputs.numpy(),
+            obs_pos=tf_train_pos.numpy(),
+            x_lims=args['x_lims'],
+            y_lims=args['y_lims'],
+            d_max=args['d_max_nonparam'],
+            graph_features=args['graph_features']
+        )
 
         spatial_dic = [poly_dic, graph_dic]
 
        # Initialize the model
-        tf_semiparam_field = wf.tf_mccd_psf_field.TF_SP_MCCD_field(zernike_maps=tf_zernike_cube,
-                                                                    obscurations=tf_obscurations,
-                                                                    batch_size=args['batch_size'],
-                                                                    obs_pos=tf_train_pos,
-                                                                    spatial_dic=spatial_dic,
-                                                                    output_Q=args['output_q'],
-                                                                    d_max_nonparam=args['d_max_nonparam'],
-                                                                    graph_features=args['graph_features'],
-                                                                    l1_rate=args['l1_rate'],
-                                                                    output_dim=args['output_dim'],
-                                                                    n_zernikes=args['n_zernikes'],
-                                                                    d_max=args['d_max'],
-                                                                    x_lims=args['x_lims'],
-                                                                    y_lims=args['y_lims'])
+        tf_semiparam_field = wf.tf_mccd_psf_field.TF_SP_MCCD_field(
+            zernike_maps=tf_zernike_cube,
+            obscurations=tf_obscurations,
+            batch_size=args['batch_size'],
+            obs_pos=tf_train_pos,
+            spatial_dic=spatial_dic,
+            output_Q=args['output_q'],
+            d_max_nonparam=args['d_max_nonparam'],
+            graph_features=args['graph_features'],
+            l1_rate=args['l1_rate'],
+            output_dim=args['output_dim'],
+            n_zernikes=args['n_zernikes'],
+            d_max=args['d_max'],
+            x_lims=args['x_lims'],
+            y_lims=args['y_lims']
+        )
 
     elif args['model'] == 'poly':
         # Initialize the model
         tf_semiparam_field = wf.tf_alt_psf_models.TF_SemiParam_field_l2_OPD(
-                                                zernike_maps=tf_zernike_cube,
-                                                obscurations=tf_obscurations,
-                                                batch_size=args['batch_size'],
-                                                output_Q=args['output_q'],
-                                                d_max_nonparam=args['d_max_nonparam'],
-                                                l2_param=args['l2_param'],
-                                                output_dim=args['output_dim'],
-                                                n_zernikes=args['n_zernikes'],
-                                                d_max=args['d_max'],
-                                                x_lims=args['x_lims'],
-                                                y_lims=args['y_lims'])
+            zernike_maps=tf_zernike_cube,
+            obscurations=tf_obscurations,
+            batch_size=args['batch_size'],
+            output_Q=args['output_q'],
+            d_max_nonparam=args['d_max_nonparam'],
+            l2_param=args['l2_param'],
+            output_dim=args['output_dim'],
+            n_zernikes=args['n_zernikes'],
+            d_max=args['d_max'],
+            x_lims=args['x_lims'],
+            y_lims=args['y_lims']
+        )
 
     elif args['model'] == 'param':
         # Initialize the model
-        tf_semiparam_field = wf.tf_psf_field.TF_PSF_field_model(zernike_maps=tf_zernike_cube,
-                                                obscurations=tf_obscurations,
-                                                batch_size=args['batch_size'],
-                                                output_Q=args['output_q'],
-                                                output_dim=args['output_dim'],
-                                                n_zernikes=args['n_zernikes'],
-                                                d_max=args['d_max'],
-                                                x_lims=args['x_lims'],
-                                                y_lims=args['y_lims'])
+        tf_semiparam_field = wf.tf_psf_field.TF_PSF_field_model(
+            zernike_maps=tf_zernike_cube,
+            obscurations=tf_obscurations,
+            batch_size=args['batch_size'],
+            output_Q=args['output_q'],
+            output_dim=args['output_dim'],
+            n_zernikes=args['n_zernikes'],
+            d_max=args['d_max'],
+            x_lims=args['x_lims'],
+            y_lims=args['y_lims']
+        )
 
     ## Load the model's weights
     tf_semiparam_field.load_weights(weights_paths)
@@ -692,12 +743,14 @@ def evaluate_model(**args):
         n_zernikes=args['gt_n_zernikes'],
         d_max=args['d_max'],
         x_lims=args['x_lims'],
-        y_lims=args['y_lims'])
+        y_lims=args['y_lims']
+    )
 
     # For the Ground truth model
     GT_tf_semiparam_field.tf_poly_Z_field.assign_coeff_matrix(train_C_poly)
     _ = GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat.assign(
-        np.zeros_like(GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat))
+        np.zeros_like(GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat)
+    )
 
 
     ## Metric evaluation on the test dataset
@@ -711,13 +764,15 @@ def evaluate_model(**args):
         tf_pos=tf_test_pos,
         tf_SEDs=test_SEDs,
         n_bins_lda=args['n_bins_lda'],
-        batch_size=args['eval_batch_size'])
+        batch_size=args['eval_batch_size']
+    )
 
-    poly_metric = {'rmse': rmse,
-                'rel_rmse': rel_rmse,
-                'std_rmse': std_rmse,
-                'std_rel_rmse': std_rel_rmse
-                }
+    poly_metric = {
+        'rmse': rmse,
+        'rel_rmse': rel_rmse,
+        'std_rmse': std_rmse,
+        'std_rel_rmse': std_rel_rmse
+    }
 
     # Monochromatic star reconstructions
     lambda_list = np.arange(0.55, 0.9, 0.01)  # 10nm separation
@@ -726,26 +781,30 @@ def evaluate_model(**args):
         GT_tf_semiparam_field=GT_tf_semiparam_field,
         simPSF_np=simPSF_np,
         tf_pos=tf_test_pos,
-        lambda_list=lambda_list)
+        lambda_list=lambda_list
+    )
 
-    mono_metric = {'rmse_lda': rmse_lda,
-                'rel_rmse_lda': rel_rmse_lda,
-                'std_rmse_lda': std_rmse_lda,
-                'std_rel_rmse_lda': std_rel_rmse_lda
-                }
+    mono_metric = {
+        'rmse_lda': rmse_lda,
+        'rel_rmse_lda': rel_rmse_lda,
+        'std_rmse_lda': std_rmse_lda,
+        'std_rel_rmse_lda': std_rel_rmse_lda
+    }
 
     # OPD metrics
     rmse_opd, rel_rmse_opd, rmse_std_opd, rel_rmse_std_opd = wf.metrics.compute_opd_metrics(
         tf_semiparam_field=tf_semiparam_field,
         GT_tf_semiparam_field=GT_tf_semiparam_field,
         pos=tf_test_pos,
-        batch_size=args['eval_batch_size'])
+        batch_size=args['eval_batch_size']
+    )
 
-    opd_metric = { 'rmse_opd': rmse_opd,
-                'rel_rmse_opd': rel_rmse_opd,
-                'rmse_std_opd': rmse_std_opd,
-                'rel_rmse_std_opd': rel_rmse_std_opd
-                }
+    opd_metric = {
+        'rmse_opd': rmse_opd,
+        'rel_rmse_opd': rel_rmse_opd,
+        'rmse_std_opd': rmse_std_opd,
+        'rel_rmse_std_opd': rel_rmse_std_opd
+    }
 
     # Shape metrics
     shape_results_dict = wf.metrics.compute_shape_metrics(
@@ -757,14 +816,16 @@ def evaluate_model(**args):
         n_bins_lda=args['n_bins_lda'],
         output_Q=1,
         output_dim=64,
-        batch_size=args['eval_batch_size'])
+        batch_size=args['eval_batch_size']
+    )
 
     # Save metrics
-    test_metrics = {'poly_metric': poly_metric,
-                    'mono_metric': mono_metric,
-                    'opd_metric': opd_metric,
-                    'shape_results_dict': shape_results_dict
-                }
+    test_metrics = {
+        'poly_metric': poly_metric,
+        'mono_metric': mono_metric,
+        'opd_metric': opd_metric,
+        'shape_results_dict': shape_results_dict
+    }
 
 
     ## Metric evaluation on the train dataset
@@ -778,13 +839,15 @@ def evaluate_model(**args):
         tf_pos=tf_train_pos,
         tf_SEDs=train_SEDs,
         n_bins_lda=args['n_bins_lda'],
-        batch_size=args['eval_batch_size'])
+        batch_size=args['eval_batch_size']
+    )
 
-    train_poly_metric = {'rmse': rmse,
-                'rel_rmse': rel_rmse,
-                'std_rmse': std_rmse,
-                'std_rel_rmse': std_rel_rmse
-                }
+    train_poly_metric = {
+        'rmse': rmse,
+        'rel_rmse': rel_rmse,
+        'std_rmse': std_rmse,
+        'std_rel_rmse': std_rel_rmse
+    }
 
     # Monochromatic star reconstructions
     lambda_list = np.arange(0.55, 0.9, 0.01)    # 10nm separation
@@ -793,26 +856,30 @@ def evaluate_model(**args):
         GT_tf_semiparam_field=GT_tf_semiparam_field,
         simPSF_np=simPSF_np,
         tf_pos=tf_train_pos,
-        lambda_list=lambda_list)
+        lambda_list=lambda_list
+    )
 
-    train_mono_metric = {'rmse_lda': rmse_lda,
-                'rel_rmse_lda': rel_rmse_lda,
-                'std_rmse_lda': std_rmse_lda,
-                'std_rel_rmse_lda': std_rel_rmse_lda
-                }
+    train_mono_metric = {
+        'rmse_lda': rmse_lda,
+        'rel_rmse_lda': rel_rmse_lda,
+        'std_rmse_lda': std_rmse_lda,
+        'std_rel_rmse_lda': std_rel_rmse_lda
+    }
 
     # OPD metrics
     rmse_opd, rel_rmse_opd, rmse_std_opd, rel_rmse_std_opd = wf.metrics.compute_opd_metrics(
         tf_semiparam_field=tf_semiparam_field,
         GT_tf_semiparam_field=GT_tf_semiparam_field,
         pos=tf_train_pos,
-        batch_size=args['eval_batch_size'])
+        batch_size=args['eval_batch_size']
+    )
 
-    train_opd_metric = { 'rmse_opd': rmse_opd,
-                'rel_rmse_opd': rel_rmse_opd,
-                'rmse_std_opd': rmse_std_opd,
-                'rel_rmse_std_opd': rel_rmse_std_opd
-                }
+    train_opd_metric = {
+        'rmse_opd': rmse_opd,
+        'rel_rmse_opd': rel_rmse_opd,
+        'rmse_std_opd': rmse_std_opd,
+        'rel_rmse_std_opd': rel_rmse_std_opd
+    }
 
     # Shape metrics
     train_shape_results_dict = wf.metrics.compute_shape_metrics(
@@ -824,20 +891,23 @@ def evaluate_model(**args):
         n_bins_lda=args['n_bins_lda'],
         output_Q=1,
         output_dim=64,
-        batch_size=args['eval_batch_size'])
+        batch_size=args['eval_batch_size']
+    )
 
     # Save metrics into dictionary
-    train_metrics = {'poly_metric': train_poly_metric,
-                    'mono_metric': train_mono_metric,
-                    'opd_metric': train_opd_metric,
-                    'shape_results_dict': train_shape_results_dict
-                    }
+    train_metrics = {
+        'poly_metric': train_poly_metric,
+        'mono_metric': train_mono_metric,
+        'opd_metric': train_opd_metric,
+        'shape_results_dict': train_shape_results_dict
+    }
 
 
     ## Save results
-    metrics = {'test_metrics': test_metrics,
-               'train_metrics': train_metrics
-              }
+    metrics = {
+        'test_metrics': test_metrics,
+        'train_metrics': train_metrics
+    }
     output_path = args['metric_base_path'] + 'metrics-' + run_id_name
     np.save(output_path, metrics, allow_pickle=True)
 
@@ -850,7 +920,6 @@ def evaluate_model(**args):
     print('\n Good bye..')
     sys.stdout = old_stdout
     log_file.close()
-
 
 
 if __name__ == "__main__":
