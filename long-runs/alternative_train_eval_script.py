@@ -204,6 +204,13 @@ import click
     type=int,
     help="Batch size to use for the evaluation.")
 
+## Specific parameters
+@click.option(
+    "--l2_param",
+    default=0.,
+    type=float,
+    help="Parameter for the l2 loss of the OPD.")
+
 def main(**args):
     print(args)
     train_model(**args)
@@ -256,7 +263,7 @@ def train_model(**args):
     # train_pos = train_dataset['positions']
     train_SEDs = train_dataset['SEDs']
     # train_zernike_coef = train_dataset['zernike_coef']
-    train_C_poly = train_dataset['C_poly']
+    # train_C_poly = train_dataset['C_poly']
     train_parameters = train_dataset['parameters']
 
     test_dataset = np.load(args['dataset_folder'] + args['test_dataset_file'], allow_pickle=True)[()]
@@ -267,7 +274,7 @@ def train_model(**args):
 
     # Convert to tensor
     tf_noisy_train_stars = tf.convert_to_tensor(train_dataset['noisy_stars'], dtype=tf.float32)
-    tf_train_stars = tf.convert_to_tensor(train_dataset['stars'], dtype=tf.float32)
+    # tf_train_stars = tf.convert_to_tensor(train_dataset['stars'], dtype=tf.float32)
     tf_train_pos = tf.convert_to_tensor(train_dataset['positions'], dtype=tf.float32)
     tf_test_stars = tf.convert_to_tensor(test_dataset['stars'], dtype=tf.float32)
     tf_test_pos = tf.convert_to_tensor(test_dataset['positions'], dtype=tf.float32)
@@ -357,6 +364,7 @@ def train_model(**args):
                                                 batch_size=args['batch_size'],
                                                 output_Q=args['output_q'],
                                                 d_max_nonparam=args['d_max_nonparam'],
+                                                l2_param=args['l2_param'],
                                                 output_dim=args['output_dim'],
                                                 n_zernikes=args['n_zernikes'],
                                                 d_max=args['d_max'],
@@ -369,6 +377,7 @@ def train_model(**args):
                                                 obscurations=tf_obscurations,
                                                 batch_size=args['batch_size'],
                                                 output_Q=args['output_q'],
+                                                l2_param=args['l2_param'],
                                                 output_dim=args['output_dim'],
                                                 n_zernikes=args['n_zernikes'],
                                                 d_max=args['d_max'],
@@ -642,6 +651,7 @@ def evaluate_model(**args):
                                                 batch_size=args['batch_size'],
                                                 output_Q=args['output_q'],
                                                 d_max_nonparam=args['d_max_nonparam'],
+                                                l2_param=args['l2_param'],
                                                 output_dim=args['output_dim'],
                                                 n_zernikes=args['n_zernikes'],
                                                 d_max=args['d_max'],
@@ -654,6 +664,7 @@ def evaluate_model(**args):
                                                 obscurations=tf_obscurations,
                                                 batch_size=args['batch_size'],
                                                 output_Q=args['output_q'],
+                                                l2_param=args['l2_param'],
                                                 output_dim=args['output_dim'],
                                                 n_zernikes=args['n_zernikes'],
                                                 d_max=args['d_max'],
