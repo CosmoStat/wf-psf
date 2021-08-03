@@ -33,7 +33,7 @@ opt[3]="--id_name _testing_auto_2k --train_dataset_file train_Euclid_res_200_Tra
 cd $WORK/repo/wf-psf/jz-submissions/slurm-logs/
 
 srun python -u ./../../long-runs/train_eval_plot_script_click.py \
-    --model poly \
+    --model param \
     --d_max_nonparam 5 \
     --n_epochs_param 2 2 \
     --n_epochs_non_param 2 2 \
@@ -47,4 +47,5 @@ srun python -u ./../../long-runs/train_eval_plot_script_click.py \
     --base_id_name _testing_auto_ \
     --suffix_id_name 2c --suffix_id_name 5c --suffix_id_name 1k --suffix_id_name 2k \
     --star_numbers 200 --star_numbers 500 --star_numbers 1000 --star_numbers 2000 \
+    --plots_folder plots/testing_plot_folder/ \
     ${opt[$SLURM_ARRAY_TASK_ID]} \
