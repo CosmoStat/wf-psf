@@ -778,7 +778,8 @@ def plot_metrics(**args):
             for _path in model_paths
         ]
     except FileNotFoundError:
-        print('I am not the last job for plotting the performance metrics.')
+        print('The required file for the plots was not found.')
+        print('Probably I am not the last job for plotting the performance metrics.')
         return 0
 
     for plot_dataset in ['test', 'train']:
@@ -1037,7 +1038,8 @@ def plot_optimisation_metrics(**args):
             for _path in model_paths
         ]
     except FileNotFoundError:
-        print('I am not the last job for plotting the optimisation metrics.')
+        print('The required file for the plots was not found.')
+        print('Probably I am not the last job for plotting the optimisation metrics.')
         return 0
 
     ## Plot the first parametric cycle
