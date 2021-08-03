@@ -26,9 +26,9 @@ class TF_PSF_field_model(tf.keras.Model):
         original instrument sampling depend on the division `input_Q/output_Q`.
         It is not recommended to use `output_Q < 1`.
         Although it works with float values it is better to use integer values.
-    l2_param: float, bool
-        Parameter going with the l2 loss on the opd. If it is `False`the loss
-        is not added.
+    l2_param: float
+        Parameter going with the l2 loss on the opd. If it is `0.` the loss
+        is not added. Default is `0.`.
     output_dim: int
         Output dimension of the PSF stamps.
     n_zernikes: int
@@ -50,7 +50,7 @@ class TF_PSF_field_model(tf.keras.Model):
         obscurations,
         batch_size,
         output_Q,
-        l2_param=False,
+        l2_param=0.,
         output_dim=64,
         n_zernikes=45,
         d_max=2,
@@ -105,11 +105,8 @@ class TF_PSF_field_model(tf.keras.Model):
 
         # Depending on the parameter we define the forward model
         # This is, we add or not the L2 loss to the OPD.
-        if type(self.l2_param) == bool:
-            if self.l2_param == True:
-                raise ValueError
-            else:
-                self.call = self.call_basic
+        if self.l2_param == 0.:
+            self.call = self.call_basic
         else:
             self.call = self.call_l2_opd_loss
 
@@ -252,9 +249,9 @@ class TF_SemiParam_field(tf.keras.Model):
         Although it works with float values it is better to use integer values.
     d_max_nonparam: int
         Maximum degree of the polynomial for the non-parametric variations.
-    l2_param: float, bool
-        Parameter going with the l2 loss on the opd. If it is `False`the loss
-        is not added.
+    l2_param: float
+        Parameter going with the l2 loss on the opd. If it is `0.` the loss
+        is not added. Default is `0.`.
     output_dim: int
         Output dimension of the PSF stamps.
     n_zernikes: int
@@ -277,7 +274,7 @@ class TF_SemiParam_field(tf.keras.Model):
         batch_size,
         output_Q,
         d_max_nonparam=3,
-        l2_param=False,
+        l2_param=0.,
         output_dim=64,
         n_zernikes=45,
         d_max=2,
@@ -345,11 +342,8 @@ class TF_SemiParam_field(tf.keras.Model):
 
         # Depending on the parameter we define the forward model
         # This is, we add or not the L2 loss to the OPD.
-        if type(self.l2_param) == bool:
-            if self.l2_param == True:
-                raise ValueError
-            else:
-                self.call = self.call_basic
+        if self.l2_param == 0.:
+            self.call = self.call_basic
         else:
             self.call = self.call_l2_opd_loss
 
