@@ -189,6 +189,9 @@ class TF_SemiParam_field(tf.keras.Model):
         Although it works with float values it is better to use integer values.
     d_max_nonparam: int
         Maximum degree of the polynomial for the non-parametric variations.
+    l2_param: float, bool
+        Parameter going with the l2 loss on the opd. If it is `False`the loss
+        is not added.
     output_dim: int
         Output dimension of the PSF stamps.
     n_zernikes: int
@@ -204,10 +207,22 @@ class TF_SemiParam_field(tf.keras.Model):
         field model.
 
     """
-    def __init__(self, zernike_maps, obscurations, batch_size, output_Q,
+    def __init__(
+        self,
+        zernike_maps,
+        obscurations,
+        batch_size,
+        output_Q,
         d_max_nonparam=3,
-        output_dim=64, n_zernikes=45, d_max=2, x_lims=[0, 1e3], y_lims=[0, 1e3],
-        coeff_mat=None, name='TF_SemiParam_field'):
+        l2_param=False,
+        output_dim=64,
+        n_zernikes=45,
+        d_max=2,
+        x_lims=[0, 1e3],
+        y_lims=[0, 1e3],
+        coeff_mat=None,
+        name='TF_SemiParam_field'
+    ):
         super(TF_SemiParam_field, self).__init__()
 
         # Inputs: oversampling used
@@ -232,30 +247,48 @@ class TF_SemiParam_field(tf.keras.Model):
         self.obscurations = obscurations
         self.output_dim = output_dim
 
+        # Inputs: Loss
+        self.l2_param = l2_param
 
         # Initialize the first layer
-        self.tf_poly_Z_field = TF_poly_Z_field(x_lims=self.x_lims,
-                                                y_lims=self.y_lims,
-                                                n_zernikes=self.n_zernikes,
-                                                d_max=self.d_max)
+        self.tf_poly_Z_field = TF_poly_Z_field(
+            x_lims=self.x_lims,
+            y_lims=self.y_lims,
+            n_zernikes=self.n_zernikes,
+            d_max=self.d_max
+        )
 
         # Initialize the zernike to OPD layer
         self.tf_zernike_OPD = TF_zernike_OPD(zernike_maps=zernike_maps)
 
         # Initialize the non-parametric layer
-        self.tf_np_poly_opd = TF_NP_poly_OPD(x_lims=self.x_lims,
-                                             y_lims=self.y_lims,
-                                             d_max=self.d_max_nonparam,
-                                             opd_dim=self.opd_dim)
+        self.tf_np_poly_opd = TF_NP_poly_OPD(
+            x_lims=self.x_lims,
+            y_lims=self.y_lims,
+            d_max=self.d_max_nonparam,
+            opd_dim=self.opd_dim
+        )
 
         # Initialize the batch opd to batch polychromatic PSF layer
-        self.tf_batch_poly_PSF = TF_batch_poly_PSF(obscurations=self.obscurations,
-                                                    output_Q=self.output_Q,
-                                                    output_dim=self.output_dim)
+        self.tf_batch_poly_PSF = TF_batch_poly_PSF(
+            obscurations=self.obscurations,
+            output_Q=self.output_Q,
+            output_dim=self.output_dim
+        )
 
         # Initialize the model parameters with non-default value
         if coeff_mat is not None:
             self.assign_coeff_matrix(coeff_mat)
+
+        # Depending on the parameter we define the forward model
+        # This is, we add or not the L2 loss to the OPD.
+        if type(self.l2_param) == bool:
+            if self.l2_param == True:
+                raise ValueError
+            else:
+                self.call = self.call_basic
+        else:
+            self.call = self.call_l2_opd_loss
 
     def get_coeff_matrix(self):
         """ Get coefficient matrix."""
@@ -350,7 +383,7 @@ class TF_SemiParam_field(tf.keras.Model):
 
         return opd_maps
 
-    def call(self, inputs):
+    def call_basic(self, inputs):
         """Define the PSF field forward model.
 
         [1] From positions to Zernike coefficients
@@ -376,6 +409,33 @@ class TF_SemiParam_field(tf.keras.Model):
 
         return poly_psfs
 
+    def call_l2_opd_loss(self, inputs):
+        """Define the PSF field forward model.
+
+        [1] From positions to Zernike coefficients
+        [2] From Zernike coefficients to OPD maps
+        [3] From OPD maps and SED info to polychromatic PSFs
+
+        OPD: Optical Path Differences
+        """
+        # Unpack inputs
+        input_positions = inputs[0]
+        packed_SEDs = inputs[1]
+
+        # Forward model
+        # Calculate parametric part
+        zernike_coeffs = self.tf_poly_Z_field(input_positions)
+        param_opd_maps = self.tf_zernike_OPD(zernike_coeffs)
+        # Calculate the non parametric part
+        nonparam_opd_maps =  self.tf_np_poly_opd(input_positions)
+        # Add the estimations
+        opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
+        # Add l2 loss on the OPD
+        self.add_loss(self.l2_param * tf.math.reduce_sum(tf.math.square(opd_maps)))
+        # Compute the polychromatic PSFs
+        poly_psfs = self.tf_batch_poly_PSF([opd_maps, packed_SEDs])
+
+        return poly_psfs
 
 
 def build_PSF_model(model_inst, optimizer=None, loss=None,
