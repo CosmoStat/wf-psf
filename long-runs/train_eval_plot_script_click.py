@@ -212,25 +212,27 @@ import click
     "--base_id_name",
     default="-coherent_euclid_",
     type=str,
-    help="Base id_name before dataset suffix are added.")
+    help="Plot parameter. Base id_name before dataset suffix are added.")
 @click.option(
     "--suffix_id_name",
-    default=["2c_", "5c_"],
+    default=["2c", "5c"],
     multiple=True,
     type=str,
-    help="Suffix needed to recreate the different id names.")
+    help="Plot parameter. Suffix needed to recreate the different id names.")
 @click.option(
     "--star_numbers",
     default=[200, 500],
     multiple=True,
     type=int,
-    help="Training star number of the different models evaluated. Needs to correspond with the `suffix_id_name`.")
+    help="Plot parameter. Training star number of the different models evaluated. Needs to correspond with the `suffix_id_name`.")
 
 
 def main(**args):
     print(args)
     wf.script_utils.train_model(**args)
     wf.script_utils.evaluate_model(**args)
+    wf.script_utils.plot_metrics(**args)
+    wf.script_utils.plot_optimisation_metrics(**args)
 
 
 if __name__ == "__main__":
