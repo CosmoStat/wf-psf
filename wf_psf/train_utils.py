@@ -112,18 +112,29 @@ def general_train_cycle(tf_semiparam_field, inputs, outputs,
         imgs_std = np.array([std_est.estimate_noise(_im) for _im in  outputs])
         # Calculate weights
         variances = imgs_std**2
-        # Parameters
-        max_w = 2.
-        min_w = 0.1
-        # Epsilon is to avoid outliers
-        epsilon = np.median(variances) * 0.1
-        w = 1/(variances + epsilon)
-        scaled_w = (w  - np.min(w))/(np.max(w) - np.min(w)) # Transform to [0,1]
-        scaled_w = scaled_w * (max_w - min_w) + min_w  # Transform to [min_w, max_w]
-        scaled_w = scaled_w + (1 - np.mean(scaled_w))  # Adjust the mean to 1
-        scaled_w[scaled_w < min_w] = min_w
-        # Save the weights
-        sample_weight = scaled_w
+
+        # Define sample weight strategy
+        strategy_opt = 1
+
+        if strategy_opt == 0:
+            # Parameters
+            max_w = 2.
+            min_w = 0.1
+            # Epsilon is to avoid outliers
+            epsilon = np.median(variances) * 0.1
+            w = 1/(variances + epsilon)
+            scaled_w = (w  - np.min(w))/(np.max(w) - np.min(w)) # Transform to [0,1]
+            scaled_w = scaled_w * (max_w - min_w) + min_w  # Transform to [min_w, max_w]
+            scaled_w = scaled_w + (1 - np.mean(scaled_w))  # Adjust the mean to 1
+            scaled_w[scaled_w < min_w] = min_w
+            # Save the weights
+            sample_weight = scaled_w
+        
+        elif strategy_opt == 1:
+            # Use inverse variance for weights
+            # Then scale the values by the median
+            sample_weight = 1 / variances
+            sample_weight /= np.median(sample_weight)
     else:
         sample_weight = None
 
@@ -296,7 +307,6 @@ def param_train_cycle(tf_semiparam_field,
             # Then scale the values by the median
             sample_weight = 1 / variances
             sample_weight /= np.median(sample_weight)
-
 
     else:
         sample_weight = None     
