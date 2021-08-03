@@ -14,7 +14,11 @@ import wf_psf.metrics as wf_metrics
 import wf_psf.train_utils as wf_train_utils
 
 def train_model(**args):
-    """ Train the model defined in the  """
+    r""" Train the PSF model.
+    
+    For parameters check the training script click help.
+
+    """
     # Start measuring elapsed time
     starting_time = time.time()
 
@@ -373,7 +377,11 @@ def train_model(**args):
 
 
 def evaluate_model(**args):
-    """ Evaluate the trained model."""
+    r""" Evaluate the trained model.
+    
+    For parameters check the training script click help.
+
+    """
     # Start measuring elapsed time
     starting_time = time.time()
 
