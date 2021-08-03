@@ -103,12 +103,12 @@ class TF_PSF_field_model(tf.keras.Model):
         if coeff_mat is not None:
             self.assign_coeff_matrix(coeff_mat)
 
-        # Depending on the parameter we define the forward model
-        # This is, we add or not the L2 loss to the OPD.
-        if self.l2_param == 0.:
-            self.call = self.call_basic
-        else:
-            self.call = self.call_l2_opd_loss
+        # # Depending on the parameter we define the forward model
+        # # This is, we add or not the L2 loss to the OPD.
+        # if self.l2_param == 0.:
+        #     self.call = self.call_basic
+        # else:
+        #     self.call = self.call_l2_opd_loss
 
     def get_coeff_matrix(self):
         """ Get coefficient matrix."""
@@ -181,27 +181,7 @@ class TF_PSF_field_model(tf.keras.Model):
 
         return opd_maps
 
-    def call_basic(self, inputs):
-        """Define the PSF field forward model.
-
-        [1] From positions to Zernike coefficients
-        [2] From Zernike coefficients to OPD maps
-        [3] From OPD maps and SED info to polychromatic PSFs
-
-        OPD: Optical Path Differences
-        """
-        # Unpack inputs
-        input_positions = inputs[0]
-        packed_SEDs = inputs[1]
-
-        # Continue the forward model
-        zernike_coeffs = self.tf_poly_Z_field(input_positions)
-        opd_maps = self.tf_zernike_OPD(zernike_coeffs)
-        poly_psfs = self.tf_batch_poly_PSF([opd_maps, packed_SEDs])
-
-        return poly_psfs
-
-    def call_l2_opd_loss(self, inputs):
+    def call(self, inputs):
         """Define the PSF field forward model.
 
         [1] From positions to Zernike coefficients
@@ -439,32 +419,6 @@ class TF_SemiParam_field(tf.keras.Model):
         opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
 
         return opd_maps
-
-    # def call_basic(self, inputs):
-    #     """Define the PSF field forward model.
-
-    #     [1] From positions to Zernike coefficients
-    #     [2] From Zernike coefficients to OPD maps
-    #     [3] From OPD maps and SED info to polychromatic PSFs
-
-    #     OPD: Optical Path Differences
-    #     """
-    #     # Unpack inputs
-    #     input_positions = inputs[0]
-    #     packed_SEDs = inputs[1]
-
-    #     # Forward model
-    #     # Calculate parametric part
-    #     zernike_coeffs = self.tf_poly_Z_field(input_positions)
-    #     param_opd_maps = self.tf_zernike_OPD(zernike_coeffs)
-    #     # Calculate the non parametric part
-    #     nonparam_opd_maps =  self.tf_np_poly_opd(input_positions)
-    #     # Add the estimations
-    #     opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
-    #     # Compute the polychromatic PSFs
-    #     poly_psfs = self.tf_batch_poly_PSF([opd_maps, packed_SEDs])
-
-    #     return poly_psfs
 
     def call(self, inputs):
         """Define the PSF field forward model.
