@@ -14,8 +14,11 @@ from .utils import *
 from .metrics import *
 from .train_utils import *
 
+from .script_utils import *
+
 __all__ = []  # List of submodules
 __all__ += ['SimPSFToolkit', 'GenPolyFieldPSF']
 __all__ += ['tf_layers', 'tf_modules', 'tf_psf_field', 'tf_mccd_psf_field']
 __all__ += ['graph_utils', 'utils', 'metrics', 'train_utils']
 __all__ += ['tf_alt_psf_models']
+__all__ += ['script_utils']
