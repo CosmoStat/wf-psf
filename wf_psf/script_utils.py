@@ -12,6 +12,14 @@ import wf_psf.tf_psf_field as tf_psf_field
 import wf_psf.metrics as wf_metrics
 import wf_psf.train_utils as wf_train_utils
 
+try:
+    import matplotlib.pyplot as plt
+    import matplotlib as mpl
+    import matplotlib.ticker as mtick
+    import seaborn as sns
+except:
+    print('\nProblem importing plotting packages: matplotlib and seaborn.\n')
+
 def train_model(**args):
     r""" Train the PSF model.
     
@@ -739,28 +747,7 @@ def evaluate_model(**args):
 def plot_metrics(**args):
     r""" Plot model results.
     """
-    import matplotlib.pyplot as plt
-    import matplotlib as mpl
-    import matplotlib.ticker as mtick
-    import seaborn as sns
-
-    # Define plot paramters
-    plot_style = {
-        'figure.figsize': (12,8),
-        'figure.dpi': 200,
-        'figure.autolayout':True,
-        'lines.linewidth': 2,
-        'lines.linestyle': '-',
-        'lines.marker': 'o',
-        'lines.markersize': 10,
-        'legend.fontsize': 20,
-        'legend.loc': 'best',
-        'axes.titlesize': 24,
-        'font.size': 16
-    }
-    mpl.rcParams.update(plot_style)
-    # Use seaborn style
-    sns.set()
+    define_plot_style()
 
     plot_saving_path = args['base_path'] + args['plots_folder']
 
@@ -775,9 +762,12 @@ def plot_metrics(**args):
     # Define the number of datasets to test
     n_datasets = len(args['suffix_id_name'])
 
+    # Run id without suffix
+    run_id_no_suff = args['model'] + args['base_id_name']
+
     # Define the metric data paths
     model_paths = [
-        args['metric_base_path'] + 'metrics-' + args['base_id_name'] + _suff + '.npy'  
+        args['metric_base_path'] + 'metrics-' + run_id_no_suff + _suff + '.npy'  
         for _suff in args['suffix_id_name']
     ]
     # Load metrics
@@ -787,7 +777,7 @@ def plot_metrics(**args):
     ]
 
     for plot_dataset in ['test', 'train']:
-        
+
         ## Polychromatic results
         res = extract_poly_results(metrics, test_train=plot_dataset)
         model_polyc_rmse = res[0]
@@ -801,14 +791,14 @@ def plot_metrics(**args):
             x = star_list,
             y = model_polyc_rmse,
             yerr = model_polyc_std_rmse,
-            label=args['base_id_name'],
+            label=run_id_no_suff,
             alpha=0.75
         )
         plt.minorticks_on()
         ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
         ax1.legend()
         ax1.set_title(
-            'Stars ' + plot_dataset + '\n' + args['base_id_name'] + '.\nPolychromatic pixel RMSE @ Euclid resolution'
+            'Stars ' + plot_dataset + '\n' + run_id_no_suff + '.\nPolychromatic pixel RMSE @ Euclid resolution'
         )
         ax1.set_xlabel('Number of stars')
         ax1.set_ylabel('Absolute error')
@@ -818,7 +808,7 @@ def plot_metrics(**args):
         ax2.set_ylabel('Relative error [%]')  
         ax2.grid(False)
         plt.savefig(
-            plot_saving_path + plot_dataset + '-metrics-' + args['base_id_name'] + '_polyc_pixel_RMSE.png'
+            plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_polyc_pixel_RMSE.png'
         )
         plt.show()
 
@@ -831,14 +821,14 @@ def plot_metrics(**args):
                 x = lambda_list,
                 y = metrics[it]['test_metrics']['mono_metric']['rmse_lda'],
                 yerr = metrics[it]['test_metrics']['mono_metric']['std_rmse_lda'],
-                label=args['suffix_id_name'][it],
+                label=args['model'] + args['suffix_id_name'][it],
                 alpha=0.75
             )
         plt.minorticks_on()
         ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
         ax1.legend()
         ax1.set_title(
-            'Stars ' + plot_dataset + '\n' + args['base_id_name'] + '.\nMonochromatic pixel RMSE @ Euclid resolution'
+            'Stars ' + plot_dataset + '\n' + run_id_no_suff + '.\nMonochromatic pixel RMSE @ Euclid resolution'
         )
         ax1.set_xlabel('Wavelength [um]')
         ax1.set_ylabel('Absolute error')
@@ -854,7 +844,7 @@ def plot_metrics(**args):
         ax2.set_ylabel('Relative error [%]')  
         ax2.grid(False)
         plt.savefig(
-            plot_saving_path + plot_dataset + '-metrics-' + args['base_id_name'] + '_monochrom_pixel_RMSE.png'
+            plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_monochrom_pixel_RMSE.png'
         )
         plt.show()
 
@@ -872,14 +862,14 @@ def plot_metrics(**args):
             x=star_list,
             y=model_opd_rmse,
             yerr=model_opd_std_rmse,
-            label=args['base_id_name'],
+            label=run_id_no_suff,
             alpha=0.75
         )
         plt.minorticks_on()
         ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
         ax1.legend()
         ax1.set_title(
-            'Stars ' + plot_dataset + '\n' + args['base_id_name'] + '.\nOPD RMSE'
+            'Stars ' + plot_dataset + '\n' + run_id_no_suff + '.\nOPD RMSE'
             )
         ax1.set_xlabel('Number of stars')
         ax1.set_ylabel('Absolute error')
@@ -890,7 +880,7 @@ def plot_metrics(**args):
         ax2.set_ylabel('Relative error [%]')  
         ax2.grid(False)
         plt.savefig(
-            plot_saving_path + plot_dataset + '-metrics-' + args['base_id_name'] + '_OPD_RMSE.png'
+            plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_OPD_RMSE.png'
         )
         plt.show()
 
@@ -919,21 +909,21 @@ def plot_metrics(**args):
             x=star_list,
             y=model_e1_rmse,
             yerr=model_e1_std_rmse,
-            label='e1 ' + args['base_id_name'],
+            label='e1 ' + run_id_no_suff,
             alpha=0.75
         )
         ax1.errorbar(
             x=star_list,
             y=model_e2_rmse,
             yerr=model_e2_std_rmse,
-            label='e2 ' + args['base_id_name'],
+            label='e2 ' + run_id_no_suff,
             alpha=0.75
         )
         plt.minorticks_on()
         ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
         ax1.legend()
         ax1.set_title(
-            'Stars ' + plot_dataset + '\n' + args['base_id_name'] + '\ne1, e2 RMSE @ 3x Euclid resolution'
+            'Stars ' + plot_dataset + '\n' + run_id_no_suff + '\ne1, e2 RMSE @ 3x Euclid resolution'
         )
         ax1.set_xlabel('Number of stars')
         ax1.set_ylabel('Absolute error')
@@ -945,7 +935,7 @@ def plot_metrics(**args):
         ax2.set_ylabel('Times over Euclid req.')  
         ax2.grid(False)
         plt.savefig(
-            plot_saving_path + plot_dataset + '-metrics-' + args['base_id_name'] + '_shape_e1_e2_RMSE.png'
+            plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_shape_e1_e2_RMSE.png'
         )
         plt.show()
 
@@ -956,14 +946,14 @@ def plot_metrics(**args):
             x=star_list,
             y=model_rmse_R2_meanR2,
             yerr=model_std_rmse_R2_meanR2,
-            label='R2 ' + args['base_id_name'],
+            label='R2 ' + run_id_no_suff,
             alpha=0.75
         )
         plt.minorticks_on()
         ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
         ax1.legend()
         ax1.set_title(
-            'Stars ' + plot_dataset + '\n' + args['base_id_name'] + '\nR2/<R2> RMSE @ 3x Euclid resolution'
+            'Stars ' + plot_dataset + '\n' + run_id_no_suff + '\nR2/<R2> RMSE @ 3x Euclid resolution'
         )
         ax1.set_xlabel('Number of stars')
         ax1.set_ylabel('Absolute error')
@@ -974,7 +964,7 @@ def plot_metrics(**args):
         ax2.set_ylabel('Times over Euclid req.')  
         ax2.grid(False)
         plt.savefig(
-            plot_saving_path + plot_dataset + '-metrics-' + args['base_id_name'] + '_shape_R2_RMSE.png'
+            plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_shape_R2_RMSE.png'
         )
         plt.show()
 
@@ -992,31 +982,213 @@ def plot_metrics(**args):
             x=star_list,
             y=model_polyc_shpix_rmse,
             yerr=model_polyc_shpix_std_rmse,
-            label=args['base_id_name'],
+            label=run_id_no_suff,
             alpha=0.75
         )
         plt.minorticks_on()
         ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
         ax1.legend()
         ax1.set_title(
-            'Stars ' + plot_dataset + '\n' + args['base_id_name'] + '\nPixel RMSE @ 3x Euclid resolution'
+            'Stars ' + plot_dataset + '\n' + run_id_no_suff + '\nPixel RMSE @ 3x Euclid resolution'
         )
         ax1.set_xlabel('Number of stars')
         ax1.set_ylabel('Absolute error')
 
         ax2 = ax1.twinx()
-        kwargs = dict(linewidth=2,linestyle='dashed',markersize=8,marker='^', alpha=0.5)
+        kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
         ax2.plot(star_list, model_polyc_shpix_rel_rmse, **kwargs)
         ax2.set_ylabel('Relative error [%]')   
         ax2.grid(False)
         plt.savefig(
-            plot_saving_path + plot_dataset + '-metrics-' + args['base_id_name'] + '_poly_pixel_3xResolution_RMSE.png'
+            plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_poly_pixel_3xResolution_RMSE.png'
+        )
+        plt.show()
+
+
+def plot_optimisation_metrics(**args):
+    r""" Plot optimisation results.
+    """
+    define_plot_style()
+
+    # Define saving path
+    plot_saving_path = args['base_path'] + args['plots_folder']
+
+    # Define the number of datasets to test
+    n_datasets = len(args['suffix_id_name'])
+
+    optim_hist_file = args['base_path']  + args['optim_hist_folder']
+    run_id_no_suff = args['model'] + args['base_id_name']
+
+    # Define the metric data paths
+    model_paths = [
+        optim_hist_file + 'optim_hist_' + run_id_no_suff + _suff + '.npy'  
+        for _suff in args['suffix_id_name']
+    ]
+
+    # Load metrics
+    metrics = [
+        np.load(_path, allow_pickle=True)[()]
+        for _path in model_paths
+    ]
+
+    ## Plot the first parametric cycle
+    cycle_str = 'param_cycle1'
+    metric_str = 'mean_squared_error'
+    val_mertric_str = 'val_mean_squared_error'
+
+    fig = plt.figure(figsize=(12,8))
+    ax1 = fig.add_subplot(111)
+    for it in range(n_datasets):
+        ax1.plot(
+            metrics[0][cycle_str][metric_str],
+            label=args['model'] + args['suffix_id_name'][it],
+            alpha=0.75
+        )
+    plt.yscale('log')
+    plt.minorticks_on()
+    ax1.legend()
+    ax1.set_title(
+        'Parametric cycle 1.\n' + run_id_no_suff + '_' + cycle_str
+        )
+    ax1.set_xlabel('Number of epoch')
+    ax1.set_ylabel('Training MSE')
+
+    ax2 = ax1.twinx()
+    kwargs = dict(linewidth=2, linestyle='dashed', markersize=2, marker='^', alpha=0.5)
+    for it in range(n_datasets):
+        ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
+    ax2.set_ylabel('Validation MSE')  
+    ax2.grid(False)
+    plt.savefig(
+        plot_saving_path + 'optim_' + run_id_no_suff + '_' + cycle_str + '.png'
+    )
+    plt.show()
+
+    # Plot the first non-parametric cycle
+    if args['model'] != 'param':
+        cycle_str = 'nonparam_cycle1'
+        metric_str = 'mean_squared_error'
+        val_mertric_str = 'val_mean_squared_error'
+
+        fig = plt.figure(figsize=(12,8))
+        ax1 = fig.add_subplot(111)
+        for it in range(n_datasets):
+            ax1.plot(
+                metrics[it][cycle_str][metric_str],
+                label=args['model'] + args['suffix_id_name'][it],
+                alpha=0.75
+            )
+        plt.yscale('log')
+        plt.minorticks_on()
+        ax1.legend()
+        ax1.set_title(
+            'Non-parametric cycle 1.\n' + run_id_no_suff + '_' + cycle_str
+        )
+        ax1.set_xlabel('Number of epoch')
+        ax1.set_ylabel('Training MSE')
+
+        ax2 = ax1.twinx()
+        kwargs = dict(linewidth=2, linestyle='dashed', markersize=2, marker='^', alpha=0.5)
+        for it in range(n_datasets):
+            ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
+        ax2.set_ylabel('Validation MSE')  
+        ax2.grid(False)
+        plt.savefig(
+            plot_saving_path + 'optim_' + run_id_no_suff + '_' + cycle_str + '.png'
+        )
+        plt.show()
+
+
+    ## Plot the second parametric cycle
+    if cycle_str in metrics[0]:
+        cycle_str = 'param_cycle2'
+        metric_str = 'mean_squared_error'
+        val_mertric_str = 'val_mean_squared_error'
+
+        fig = plt.figure(figsize=(12,8))
+        ax1 = fig.add_subplot(111)
+        for it in range(n_datasets):
+            ax1.plot(
+                metrics[it][cycle_str][metric_str],
+                label=args['model'] + args['suffix_id_name'][it],
+                alpha=0.75
+            )
+        plt.yscale('log')
+        plt.minorticks_on()
+        ax1.legend()
+        ax1.set_title(
+            'Parametric cycle 2.\n' + run_id_no_suff + '_' + cycle_str
+        )
+        ax1.set_xlabel('Number of epoch')
+        ax1.set_ylabel('Training MSE')
+
+        ax2 = ax1.twinx()
+        kwargs = dict(linewidth=2, linestyle='dashed', markersize=2, marker='^', alpha=0.5)
+        for it in range(n_datasets):
+            ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
+        ax2.set_ylabel('Validation MSE')  
+        ax2.grid(False)
+        plt.savefig(
+            plot_saving_path + 'optim_' + run_id_no_suff + '_' + cycle_str + '.png'
+        )
+        plt.show()
+
+
+    ## Plot the second non-parametric cycle
+    if cycle_str in metrics[0]:
+        cycle_str = 'nonparam_cycle2'
+        metric_str = 'mean_squared_error'
+        val_mertric_str = 'val_mean_squared_error'
+
+        fig = plt.figure(figsize=(12,8))
+        ax1 = fig.add_subplot(111)
+        for it in range(n_datasets):
+            ax1.plot(
+                metrics[it][cycle_str][metric_str],
+                label=args['model'] + args['suffix_id_name'][it],
+                alpha=0.75
+            )
+        plt.yscale('log')
+        plt.minorticks_on()
+        ax1.legend()
+        ax1.set_title(
+            'Non-parametric cycle 2.\n' + run_id_no_suff + '_' + cycle_str
+        )
+        ax1.set_xlabel('Number of epoch')
+        ax1.set_ylabel('Training MSE')
+
+        ax2 = ax1.twinx()
+        kwargs = dict(linewidth=2, linestyle='dashed', markersize=2, marker='^', alpha=0.5)
+        for it in range(n_datasets):
+            ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
+
+        ax2.set_ylabel('Validation MSE')  
+        ax2.grid(False)
+        plt.savefig(
+            plot_saving_path + 'optim_' + run_id_no_suff + '_' + cycle_str + '.png'
         )
         plt.show()
 
 
 
-
+def define_plot_style():
+    # Define plot paramters
+    plot_style = {
+        'figure.figsize': (12,8),
+        'figure.dpi': 200,
+        'figure.autolayout':True,
+        'lines.linewidth': 2,
+        'lines.linestyle': '-',
+        'lines.marker': 'o',
+        'lines.markersize': 10,
+        'legend.fontsize': 20,
+        'legend.loc': 'best',
+        'axes.titlesize': 24,
+        'font.size': 16
+    }
+    mpl.rcParams.update(plot_style)
+    # Use seaborn style
+    sns.set()
 
 
 def extract_poly_results(metrics_dicts, test_train='test'): 
