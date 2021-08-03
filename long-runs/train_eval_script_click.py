@@ -49,6 +49,11 @@ import click
     default="/gpfsscratch/rech/xdy/ulx23va/wf-outputs/chkp/",
     type=str,
     help="Path to save model checkpoints during training.")
+@click.option(
+    "--plots_folder",
+    default="plots/",
+    type=str,
+    help="Folder name to save the generated plots.")
 # Input dataset paths
 @click.option(
     "--dataset_folder",
@@ -196,13 +201,31 @@ import click
     default=16,
     type=int,
     help="Batch size to use for the evaluation.")
-
 ## Specific parameters
 @click.option(
     "--l2_param",
     default=0.,
     type=float,
     help="Parameter for the l2 loss of the OPD.")
+## Plot parameters
+@click.option(
+    "--base_id_name",
+    default="-coherent_euclid_",
+    type=str,
+    help="Base id_name before dataset suffix are added.")
+@click.option(
+    "--suffix_id_name",
+    default=["2c_", "5c_"],
+    multiple=True,
+    type=str,
+    help="Suffix needed to recreate the different id names.")
+@click.option(
+    "--star_numbers",
+    default=[200, 500],
+    multiple=True,
+    type=int,
+    help="Training star number of the different models evaluated. Needs to correspond with the `suffix_id_name`.")
+
 
 def main(**args):
     print(args)
