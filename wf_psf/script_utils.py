@@ -2,7 +2,6 @@
 import sys
 import numpy as np
 import time
-# import wf_psf as wf
 import tensorflow as tf
 import tensorflow_addons as tfa
 
@@ -736,3 +735,407 @@ def evaluate_model(**args):
     sys.stdout = old_stdout
     log_file.close()
 
+
+def plot_metrics(**args):
+    r""" Plot model results.
+    """
+    import matplotlib.pyplot as plt
+    import matplotlib as mpl
+    import matplotlib.ticker as mtick
+    import seaborn as sns
+
+    # Define plot paramters
+    plot_style = {
+        'figure.figsize': (12,8),
+        'figure.dpi': 200,
+        'figure.autolayout':True,
+        'lines.linewidth': 2,
+        'lines.linestyle': '-',
+        'lines.marker': 'o',
+        'lines.markersize': 10,
+        'legend.fontsize': 20,
+        'legend.loc': 'best',
+        'axes.titlesize': 24,
+        'font.size': 16
+    }
+    mpl.rcParams.update(plot_style)
+    # Use seaborn style
+    sns.set()
+
+    plot_saving_path = args['base_path'] + args['plots_folder']
+
+    # Define common data
+    # Common data
+    lambda_list = np.arange(0.55, 0.9, 0.01)
+    star_list = np.array(args['star_numbers'])
+    e1_req_euclid = 2e-04
+    e2_req_euclid = 2e-04
+    R2_req_euclid = 1e-03
+
+    # Define the number of datasets to test
+    n_datasets = len(args['suffix_id_name'])
+
+    # Define the metric data paths
+    model_paths = [
+        args['metric_base_path'] + 'metrics-' + args['base_id_name'] + _suff + '.npy'  
+        for _suff in args['suffix_id_name']
+    ]
+    # Load metrics
+    metrics = [
+        np.load(_path, allow_pickle=True)[()]
+        for _path in model_paths
+    ]
+
+    for plot_dataset in ['test', 'train']:
+        
+        ## Polychromatic results
+        res = extract_poly_results(metrics, test_train=plot_dataset)
+        model_polyc_rmse = res[0]
+        model_polyc_std_rmse = res[1]
+        model_polyc_rel_rmse = res[2]
+        model_polyc_std_rel_rmse = res[3]
+
+        fig = plt.figure(figsize=(12,8))
+        ax1 = fig.add_subplot(111)
+        ax1.errorbar(
+            x = star_list,
+            y = model_polyc_rmse,
+            yerr = model_polyc_std_rmse,
+            label=args['base_id_name'],
+            alpha=0.75
+        )
+        plt.minorticks_on()
+        ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
+        ax1.legend()
+        ax1.set_title(
+            'Stars ' + plot_dataset + '\n' + args['base_id_name'] + '.\nPolychromatic pixel RMSE @ Euclid resolution'
+        )
+        ax1.set_xlabel('Number of stars')
+        ax1.set_ylabel('Absolute error')
+        ax2 = ax1.twinx()
+        kwargs = dict(linewidth=2, linestyle='dashed', markersize=4, marker='^', alpha=0.5)
+        ax2.plot(star_list, model_polyc_rel_rmse, **kwargs)
+        ax2.set_ylabel('Relative error [%]')  
+        ax2.grid(False)
+        plt.savefig(
+            plot_saving_path + plot_dataset + '-metrics-' + args['base_id_name'] + '_polyc_pixel_RMSE.png'
+        )
+        plt.show()
+
+
+        ## Monochromatic 
+        fig = plt.figure(figsize=(12,8))
+        ax1 = fig.add_subplot(111)
+        for it in range(n_datasets):
+            ax1.errorbar(
+                x = lambda_list,
+                y = metrics[it]['test_metrics']['mono_metric']['rmse_lda'],
+                yerr = metrics[it]['test_metrics']['mono_metric']['std_rmse_lda'],
+                label=args['suffix_id_name'][it],
+                alpha=0.75
+            )
+        plt.minorticks_on()
+        ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
+        ax1.legend()
+        ax1.set_title(
+            'Stars ' + plot_dataset + '\n' + args['base_id_name'] + '.\nMonochromatic pixel RMSE @ Euclid resolution'
+        )
+        ax1.set_xlabel('Wavelength [um]')
+        ax1.set_ylabel('Absolute error')
+
+        ax2 = ax1.twinx()
+        kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+        for it in range(n_datasets):
+            ax2.plot(
+                lambda_list,
+                metrics[it]['test_metrics']['mono_metric']['rel_rmse_lda'],
+                **kwargs
+            )
+        ax2.set_ylabel('Relative error [%]')  
+        ax2.grid(False)
+        plt.savefig(
+            plot_saving_path + plot_dataset + '-metrics-' + args['base_id_name'] + '_monochrom_pixel_RMSE.png'
+        )
+        plt.show()
+
+
+        ## OPD results
+        res = extract_opd_results(metrics, test_train=plot_dataset)
+        model_opd_rmse = res[0]
+        model_opd_std_rmse = res[1]
+        model_opd_rel_rmse = res[2]
+        model_opd_std_rel_rmse = res[3]
+
+        fig = plt.figure(figsize=(12,8))
+        ax1 = fig.add_subplot(111)
+        ax1.errorbar(
+            x=star_list,
+            y=model_opd_rmse,
+            yerr=model_opd_std_rmse,
+            label=args['base_id_name'],
+            alpha=0.75
+        )
+        plt.minorticks_on()
+        ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
+        ax1.legend()
+        ax1.set_title(
+            'Stars ' + plot_dataset + '\n' + args['base_id_name'] + '.\nOPD RMSE'
+            )
+        ax1.set_xlabel('Number of stars')
+        ax1.set_ylabel('Absolute error')
+
+        ax2 = ax1.twinx()
+        kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+        ax2.plot(star_list, model_opd_rel_rmse, **kwargs)
+        ax2.set_ylabel('Relative error [%]')  
+        ax2.grid(False)
+        plt.savefig(
+            plot_saving_path + plot_dataset + '-metrics-' + args['base_id_name'] + '_OPD_RMSE.png'
+        )
+        plt.show()
+
+        ## Shape results
+        model_e1, model_e2, model_R2 = extract_shape_results(metrics, test_train=plot_dataset)
+        model_e1_rmse =             model_e1[0]
+        model_e1_std_rmse =         model_e1[1]
+        model_e1_rel_rmse =         model_e1[2]
+        model_e1_std_rel_rmse =     model_e1[3]
+        model_e2_rmse =             model_e2[0]
+        model_e2_std_rmse =         model_e2[1]
+        model_e2_rel_rmse =         model_e2[2]
+        model_e2_std_rel_rmse =     model_e2[3]
+        model_rmse_R2_meanR2 =      model_R2[0]
+        model_std_rmse_R2_meanR2 =  model_R2[1]
+
+        # Compute Euclid relative error values
+        model_e1_rel_euclid = model_e1_rmse / e1_req_euclid
+        model_e2_rel_euclid = model_e2_rmse / e2_req_euclid
+        model_R2_rel_euclid = model_rmse_R2_meanR2 / R2_req_euclid
+
+        # Plot e1 and e2
+        fig = plt.figure(figsize=(12,8))
+        ax1 = fig.add_subplot(111)
+        ax1.errorbar(
+            x=star_list,
+            y=model_e1_rmse,
+            yerr=model_e1_std_rmse,
+            label='e1 ' + args['base_id_name'],
+            alpha=0.75
+        )
+        ax1.errorbar(
+            x=star_list,
+            y=model_e2_rmse,
+            yerr=model_e2_std_rmse,
+            label='e2 ' + args['base_id_name'],
+            alpha=0.75
+        )
+        plt.minorticks_on()
+        ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
+        ax1.legend()
+        ax1.set_title(
+            'Stars ' + plot_dataset + '\n' + args['base_id_name'] + '\ne1, e2 RMSE @ 3x Euclid resolution'
+        )
+        ax1.set_xlabel('Number of stars')
+        ax1.set_ylabel('Absolute error')
+
+        ax2 = ax1.twinx()
+        kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+        ax2.plot(star_list, model_e1_rel_euclid, **kwargs)
+        ax2.plot(star_list, model_e2_rel_euclid, **kwargs)
+        ax2.set_ylabel('Times over Euclid req.')  
+        ax2.grid(False)
+        plt.savefig(
+            plot_saving_path + plot_dataset + '-metrics-' + args['base_id_name'] + '_shape_e1_e2_RMSE.png'
+        )
+        plt.show()
+
+        # Plot R2
+        fig = plt.figure(figsize=(12,8))
+        ax1 = fig.add_subplot(111)
+        ax1.errorbar(
+            x=star_list,
+            y=model_rmse_R2_meanR2,
+            yerr=model_std_rmse_R2_meanR2,
+            label='R2 ' + args['base_id_name'],
+            alpha=0.75
+        )
+        plt.minorticks_on()
+        ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
+        ax1.legend()
+        ax1.set_title(
+            'Stars ' + plot_dataset + '\n' + args['base_id_name'] + '\nR2/<R2> RMSE @ 3x Euclid resolution'
+        )
+        ax1.set_xlabel('Number of stars')
+        ax1.set_ylabel('Absolute error')
+
+        ax2 = ax1.twinx()
+        kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+        ax2.plot(star_list, model_R2_rel_euclid, **kwargs)
+        ax2.set_ylabel('Times over Euclid req.')  
+        ax2.grid(False)
+        plt.savefig(
+            plot_saving_path + plot_dataset + '-metrics-' + args['base_id_name'] + '_shape_R2_RMSE.png'
+        )
+        plt.show()
+
+
+        ## Polychromatic pixel residual at shape measurement resolution
+        res = extract_shape_pix_results(metrics, test_train=plot_dataset)
+        model_polyc_shpix_rmse = res[0]
+        model_polyc_shpix_std_rmse = res[1]
+        model_polyc_shpix_rel_rmse = res[2]
+        model_polyc_shpix_std_rel_rmse = res[3]
+
+        fig = plt.figure(figsize=(12,8))
+        ax1 = fig.add_subplot(111)
+        ax1.errorbar(
+            x=star_list,
+            y=model_polyc_shpix_rmse,
+            yerr=model_polyc_shpix_std_rmse,
+            label=args['base_id_name'],
+            alpha=0.75
+        )
+        plt.minorticks_on()
+        ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
+        ax1.legend()
+        ax1.set_title(
+            'Stars ' + plot_dataset + '\n' + args['base_id_name'] + '\nPixel RMSE @ 3x Euclid resolution'
+        )
+        ax1.set_xlabel('Number of stars')
+        ax1.set_ylabel('Absolute error')
+
+        ax2 = ax1.twinx()
+        kwargs = dict(linewidth=2,linestyle='dashed',markersize=8,marker='^', alpha=0.5)
+        ax2.plot(star_list, model_polyc_shpix_rel_rmse, **kwargs)
+        ax2.set_ylabel('Relative error [%]')   
+        ax2.grid(False)
+        plt.savefig(
+            plot_saving_path + plot_dataset + '-metrics-' + args['base_id_name'] + '_poly_pixel_3xResolution_RMSE.png'
+        )
+        plt.show()
+
+
+
+
+
+
+def extract_poly_results(metrics_dicts, test_train='test'): 
+    
+    if test_train == 'test':
+        first_key = 'test_metrics'
+    elif test_train == 'train':
+        first_key = 'train_metrics' 
+    else:
+        raise ValueError
+        
+    n_dicts = len(metrics_dicts)
+    
+    polyc_rmse = np.zeros(n_dicts)
+    polyc_std_rmse = np.zeros(n_dicts)
+    polyc_rel_rmse = np.zeros(n_dicts)
+    polyc_std_rel_rmse = np.zeros(n_dicts)
+    
+    for it in range(n_dicts):
+        polyc_rmse[it] = metrics_dicts[it][first_key]['poly_metric']['rmse']
+        polyc_std_rmse[it] = metrics_dicts[it][first_key]['poly_metric']['std_rmse']
+        polyc_rel_rmse[it] = metrics_dicts[it][first_key]['poly_metric']['rel_rmse']
+        polyc_std_rel_rmse[it] = metrics_dicts[it][first_key]['poly_metric']['std_rel_rmse']
+
+    return polyc_rmse, polyc_std_rmse, polyc_rel_rmse, polyc_std_rel_rmse
+    
+
+def extract_opd_results(metrics_dicts, test_train='test'): 
+    
+    if test_train == 'test':
+        first_key = 'test_metrics'
+    elif test_train == 'train':
+        first_key = 'train_metrics' 
+    else:
+        raise ValueError
+        
+    n_dicts = len(metrics_dicts)
+    
+    opd_rmse = np.zeros(n_dicts)
+    opd_std_rmse = np.zeros(n_dicts)
+    opd_rel_rmse = np.zeros(n_dicts)
+    opd_std_rel_rmse = np.zeros(n_dicts)
+    
+    for it in range(n_dicts):
+        opd_rmse[it] = metrics_dicts[it][first_key]['opd_metric']['rmse_opd']
+        opd_std_rmse[it] = metrics_dicts[it][first_key]['opd_metric']['rmse_std_opd']
+        opd_rel_rmse[it] = metrics_dicts[it][first_key]['opd_metric']['rel_rmse_opd']
+        opd_std_rel_rmse[it] = metrics_dicts[it][first_key]['opd_metric']['rel_rmse_std_opd']
+
+    
+    return opd_rmse, opd_std_rmse, opd_rel_rmse, opd_std_rel_rmse
+
+
+def extract_shape_results(metrics_dicts, test_train='test'): 
+
+    if test_train == 'test':
+        first_key = 'test_metrics'
+    elif test_train == 'train':
+        first_key = 'train_metrics' 
+    else:
+        raise ValueError
+        
+    n_dicts = len(metrics_dicts)
+    
+    e1_rmse = np.zeros(n_dicts)
+    e1_std_rmse = np.zeros(n_dicts)
+    e1_rel_rmse = np.zeros(n_dicts)
+    e1_std_rel_rmse = np.zeros(n_dicts)
+    
+    e2_rmse = np.zeros(n_dicts)
+    e2_std_rmse = np.zeros(n_dicts)
+    e2_rel_rmse = np.zeros(n_dicts)
+    e2_std_rel_rmse = np.zeros(n_dicts)
+    
+    rmse_R2_meanR2 = np.zeros(n_dicts)
+    std_rmse_R2_meanR2 = np.zeros(n_dicts)
+    
+    for it in range(n_dicts):
+        e1_rmse[it] = metrics_dicts[it][first_key]['shape_results_dict']['rmse_e1']
+        e1_std_rmse[it] = metrics_dicts[it][first_key]['shape_results_dict']['std_rmse_e1']
+        e1_rel_rmse[it] = metrics_dicts[it][first_key]['shape_results_dict']['rel_rmse_e1']
+        e1_std_rel_rmse[it] = metrics_dicts[it][first_key]['shape_results_dict']['std_rel_rmse_e1']
+        
+        e2_rmse[it] = metrics_dicts[it][first_key]['shape_results_dict']['rmse_e2']
+        e2_std_rmse[it] = metrics_dicts[it][first_key]['shape_results_dict']['std_rmse_e2']
+        e2_rel_rmse[it] = metrics_dicts[it][first_key]['shape_results_dict']['rel_rmse_e2']
+        e2_std_rel_rmse[it] = metrics_dicts[it][first_key]['shape_results_dict']['std_rel_rmse_e2']
+        
+        rmse_R2_meanR2[it] = metrics_dicts[it][first_key]['shape_results_dict']['rmse_R2_meanR2']
+        std_rmse_R2_meanR2[it] = metrics_dicts[it][first_key]['shape_results_dict']['std_rmse_R2_meanR2']
+
+    e1 = [e1_rmse, e1_std_rmse, e1_rel_rmse, e1_std_rel_rmse]
+    e2 = [e2_rmse, e2_std_rmse, e2_rel_rmse, e2_std_rel_rmse]
+    R2 = [rmse_R2_meanR2, std_rmse_R2_meanR2]
+    
+    return e1, e2, R2
+       
+
+def extract_shape_pix_results(metrics_dicts, test_train='test'): 
+    
+    if test_train == 'test':
+        first_key = 'test_metrics'
+    elif test_train == 'train':
+        first_key = 'train_metrics' 
+    else:
+        raise ValueError
+        
+    n_dicts = len(metrics_dicts)
+    
+    polyc_rmse = np.zeros(n_dicts)
+    polyc_std_rmse = np.zeros(n_dicts)
+    polyc_rel_rmse = np.zeros(n_dicts)
+    polyc_std_rel_rmse = np.zeros(n_dicts)
+    
+    for it in range(n_dicts):
+        polyc_rmse[it] = metrics_dicts[it][first_key]['shape_results_dict']['pix_rmse']
+        polyc_std_rmse[it] = metrics_dicts[it][first_key]['shape_results_dict']['pix_rmse_std']
+        polyc_rel_rmse[it] = metrics_dicts[it][first_key]['shape_results_dict']['rel_pix_rmse']
+        polyc_std_rel_rmse[it] = metrics_dicts[it][first_key]['shape_results_dict']['rel_pix_rmse_std']
+
+    
+    return polyc_rmse, polyc_std_rmse, polyc_rel_rmse, polyc_std_rel_rmse
