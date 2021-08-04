@@ -1051,7 +1051,7 @@ def plot_optimisation_metrics(**args):
     ax1 = fig.add_subplot(111)
     for it in range(n_datasets):
         ax1.plot(
-            metrics[0][cycle_str][metric_str],
+            metrics[it][cycle_str][metric_str],
             label=args['model'] + args['suffix_id_name'][it],
             alpha=0.75
         )
