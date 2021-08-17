@@ -312,10 +312,10 @@ class TF_SP_MCCD_field(tf.keras.Model):
             param_opd_maps = self.tf_zernike_OPD(zernike_coeffs)
             # Calculate the non parametric part
             nonparam_opd_maps =  self.tf_NP_mccd_OPD(input_positions)
+            # Add l2 loss on the parmetric OPD
+            self.add_loss(self.l2_param * tf.math.reduce_sum(tf.math.square(nonparam_opd_maps)))
             # Add the estimations
             opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
-            # Add l2 loss on the OPD
-            self.add_loss(self.l2_param * tf.math.reduce_sum(tf.math.square(opd_maps)))
             # Compute the polychromatic PSFs
             poly_psfs = self.tf_batch_poly_PSF([opd_maps, packed_SEDs])
         
