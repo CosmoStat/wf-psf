@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Log files from slurm
+*.err
+*.out
+
 # Remove apple annoying files
 *.DS_Store
 
