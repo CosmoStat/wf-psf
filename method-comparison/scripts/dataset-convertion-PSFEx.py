@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 from astropy.io import fits
 import mccd
 
+python_var_tuple = platform.python_version_tuple()
+
 # Sextractor parameters
 exec_path = 'sex'
 config_files_dir = '/Users/tliaudat/Documents/PhD/codes/WF_PSF/github/wf-psf/method-comparison/config_files/'
@@ -30,6 +32,7 @@ dataset_path = '/Users/tliaudat/Documents/PhD/codes/WF_PSF/github/wf-psf/data/co
 loc2glob = mccd.mccd_utils.Loc2Glob_EUCLID_sim()
 euclid_CCD_n = loc2glob.ccd_tot  # 36
 image_size = 32
+verbose = 0
 
 
 separator = '-'
@@ -200,15 +203,24 @@ for catalog_id, train_bool in zip(catalog_ids, train_cat):
                 output_file_path
             )
         )
+        
         # For >=python3.7
-        if platform.python_version_tuple()[0] ==3 and platform.python_version_tuple()[1] >= 7:
+        if int(python_var_tuple[0]) == 3 and int(python_var_tuple[1]) >= 7:
             process_output = subprocess.run(command_line_base, shell=True, check=True, capture_output=True)
-            # Uncomment to print sextractor output
-            # print('STDERR:\n', process_output.stderr.decode("utf-8"))
-            # print('STDOUT:\n', process_output.stdout.decode("utf-8"))
-        elif platform.python_version_tuple()[0] ==3 and platform.python_version_tuple()[1] < 7:
+            if verbose > 0:
+                print('STDERR:\n', process_output.stderr.decode("utf-8"))
+                print('STDOUT:\n', process_output.stdout.decode("utf-8"))
+        elif int(python_var_tuple[0]) == 3 and int(python_var_tuple[1]) < 7:
             # For python3.6
-            process_output = subprocess.run(command_line_base, shell=True, check=True)
+            process_output = subprocess.run(
+                command_line_base,
+                shell=True,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT
+            )
+            if verbose > 0:
+                print('STDOUT:\n', process_output.stdout.decode("utf-8"))
 
         sexcat = fits.open(output_file_path, memmap=False)
         print(
@@ -225,3 +237,4 @@ for catalog_id, train_bool in zip(catalog_ids, train_cat):
         os.remove(sex_im_savepath)
     if os.path.isfile(sex_pos_savepath):
         os.remove(sex_pos_savepath)    
+
