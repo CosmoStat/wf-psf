@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Remove method comparison data
+method-comparison/compatible-datasets/*
+
 # Log files from slurm
 *.err
 *.out
@@ -12,6 +15,9 @@ __pycache__/
 
 # Avoid uploading heavy data
 *.mat
+
+# For vscode related files
+.vscode/*
 
 # C extensions
 *.so
