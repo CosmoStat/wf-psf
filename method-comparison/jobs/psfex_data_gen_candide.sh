@@ -24,7 +24,7 @@ source activate new_shapepipe
 
 cd /home/tliaudat/github/wf-psf/
 
-python ./method-comparison/scripts/dataset-convertion-PSFEx.py \
+python ./method-comparison/scripts/dataset-conversion-PSFEx.py \
     --base_repo_path /home/tliaudat/github/wf-psf/ \
     --sex_exec_path sex \
     --psfex_saving_path /n05data/tliaudat/wf_exps/datasets/psfex/ \

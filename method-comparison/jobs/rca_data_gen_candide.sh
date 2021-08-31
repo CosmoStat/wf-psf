@@ -24,7 +24,7 @@ source activate new_shapepipe
 
 cd /home/tliaudat/github/wf-psf/
 
-python ./method-comparison/scripts/dataset-convertion-RCA.py \
+python ./method-comparison/scripts/dataset-conversion-RCA.py \
     --base_repo_path /home/tliaudat/github/wf-psf/ \
     --rca_saving_path /n05data/tliaudat/wf_exps/datasets/rca/ \
 

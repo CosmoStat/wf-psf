@@ -24,7 +24,7 @@ source activate new_shapepipe
 
 cd /home/tliaudat/github/wf-psf/
 
-python ./method-comparison/scripts/dataset-convertion-MCCD.py \
+python ./method-comparison/scripts/dataset-conversion-MCCD.py \
     --rca_data_path /n05data/tliaudat/wf_exps/datasets/rca/ \
     --mccd_saving_path /n05data/tliaudat/wf_exps/datasets/mccd/ \
 
