@@ -30,8 +30,8 @@ import click
     help="Sampling step in pixel units. PSFEx variable.")
 @click.option(
     "--psf_size",
-    default="32,32",
-    type=str,
+    default=32,
+    type=int,
     help="Image size of the PSF model. PSFEx variable.")
 @click.option(
     "--run_id",
@@ -119,7 +119,7 @@ def psfex_procedure(**args):
                     outcat_name,
                     args['psfvar_degrees'],
                     args['psf_sampling'],
-                    args['psf_size']
+                    '%2d,%2d'%(args['psf_size'], args['psf_size'])
                 )
             )
 
