@@ -8,7 +8,7 @@
 #PBS -M tobias.liaudat@cea.fr
 #PBS -m ea
 # Set a name for the job
-#PBS -N rca_data_gen
+#PBS -N mccd_data_gen
 # Join output and errors in one file
 #PBS -j oe
 # Set maximum computing time (e.g. 5min)
@@ -24,9 +24,9 @@ source activate new_shapepipe
 
 cd /home/tliaudat/github/wf-psf/
 
-python ./method-comparison/scripts/dataset-convertion-RCA.py \
-    --base_repo_path /home/tliaudat/github/wf-psf/ \
-    --rca_saving_path /n05data/tliaudat/wf_exps/datasets/rca/ \
+python ./method-comparison/scripts/dataset-convertion-MCCD.py \
+    --rca_data_path /n05data/tliaudat/wf_exps/datasets/rca/ \
+    --mccd_saving_path /n05data/tliaudat/wf_exps/datasets/mccd/ \
 
 
 # Return exit code
