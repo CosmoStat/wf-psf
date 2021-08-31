@@ -54,7 +54,11 @@ CHECKIMAGE_NAME #proto.fits #,samp.fits,resi.fits,snap.fits,basis.fits
 VERBOSE_TYPE    NORMAL          # can be QUIET,NORMAL,LOG or FULL
 WRITE_XML       N               # Write XML file (Y/N)?
 XML_NAME        psfex.xml       # Filename for XML output
-NTHREADS        0               # Number of simultaneous threads for
+NTHREADS        1               # Number of simultaneous threads for
                                 # the SMP version of PSFEx
                                 # 0 = automatic
- 
+
+#----------------------------- Output catalogs -------------------------------
+
+OUTCAT_TYPE        FITS_LDAC         # NONE, ASCII_HEAD, ASCII, FITS_LDAC
+# OUTCAT_NAME        psfex_out.cat  # Output catalog filename
