@@ -35,7 +35,7 @@ import click
     help="Image size of the PSF model. PSFEx variable.")
 @click.option(
     "--run_id",
-    default="psfex_model",
+    default="psfex_SR_model",
     type=str,
     help="Id used for the saved models and validations.")
 @click.option(
@@ -113,7 +113,7 @@ def psfex_SR_procedure(**args):
 
 
     # Iteration parameters
-    catalog_ids = [200, 500, 1000, 2000]  # [200]
+    catalog_ids = [500] # [200, 500, 1000, 2000]  # [200]
     
     metrics_list = []
 
