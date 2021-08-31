@@ -8,6 +8,7 @@ import numpy as np
 from astropy.io import fits
 import mccd
 from joblib import Parallel, delayed, parallel_backend, cpu_count
+from wf_psf import method_comp_utils as comp_utils
 
 import click
 @click.command()
@@ -63,113 +64,6 @@ def main(**args):
     print(args)
     # PSFEx SMP can be controlled directly from its config file
     psfex_procedure(**args)
-
-def interpsfex(dotpsfpath, pos):
-    """Use PSFEx generated model to perform spatial PSF interpolation.
-        Parameters
-        ----------
-        dotpsfpath : string
-            Path to .psf file (PSFEx output).
-        pos : np.ndaray
-            Positions where the PSF model should be evaluated.
-        Returns
-        -------
-        PSFs : np.ndarray
-            Each row is the PSF imagette at the corresponding asked position.
-    """
-
-    if not os.path.exists(dotpsfpath):
-        return None
-
-    # read PSF model and extract basis and polynomial degree and scale position
-    PSF_model = fits.open(dotpsfpath)[1]
-
-    PSF_basis = np.array(PSF_model.data)[0][0]
-    try:
-        deg = PSF_model.header['POLDEG1']
-    except KeyError:
-        # constant PSF model
-        return PSF_basis[0, :, :]
-
-    # scale coordinates
-    x_interp, x_scale = (PSF_model.header['POLZERO1'],
-                         PSF_model.header['POLSCAL1'])
-    y_interp, y_scale = (PSF_model.header['POLZERO2'],
-                         PSF_model.header['POLSCAL2'])
-    xs, ys = (pos[:, 0] - x_interp) / x_scale, (pos[:, 1] - y_interp) / y_scale
-
-    # compute polynomial coefficients
-    coeffs = np.array([[x**i for i in range(deg+1)] for x in xs])
-    cross_coeffs = np.array([np.concatenate([[(x ** j) * (y ** i)
-                                              for j in range(deg - i + 1)]
-                                             for i in range(1, deg + 1)])
-                             for x, y in zip(xs, ys)])
-    coeffs = np.hstack((coeffs, cross_coeffs))
-
-    # compute interpolated PSF
-    PSFs = np.array([np.sum([coeff * atom for coeff, atom in
-                     zip(coeffs_posi, PSF_basis)], axis=0)
-                     for coeffs_posi in coeffs])
-
-    return PSFs
-
-def validation_stars(dotpsfpath, test_stars, test_pos, psf_size=1.25):
-    """ Match PSF model to stars - in flux, shift and pixel sampling - for validation tests.
-    Returns both the matched PSFs' stamps.
-
-    Parameters
-    ----------
-    dotpsfpath: str
-        Path to the .psf model output of PSFEx.
-    test_stars: np.ndarray
-        Star stamps to be used for comparison with the PSF model.
-    test_pos: np.ndarray
-        Their corresponding positions.
-    psf_size: float
-        PSF size in sigma format.
-    """
-    
-    sigmas = np.ones((test_pos.shape[0],)) * psf_size
-        
-    cents = [
-        mccd.utils.CentroidEstimator(test_stars[it, :, :], sig=sigmas[it])
-        for it in range(test_stars.shape[0])
-    ]
-    # Calculate shifts
-    test_shifts = np.array([ce.return_shifts() for ce in cents])
-    # Calculate fluxes
-    test_fluxes = mccd.utils.flux_estimate_stack(mccd.utils.rca_format(test_stars), sigmas=sigmas)
-
-
-    # Interpolate PSFs
-    interp_psfs = interpsfex(dotpsfpath, test_pos)
-    
-    # Estimate shift kernels
-    lanc_rad = np.ceil(3. * np.max(sigmas)).astype(int)
-    shift_kernels, _ = mccd.utils.shift_ker_stack(
-        test_shifts,
-        upfact=1,
-        lanc_rad=lanc_rad
-    )
-    
-    # Degrade PSFs
-    interp_psfs = np.array([
-        mccd.utils.degradation_op(
-            interp_psfs[j, :, :],
-            shift_kernels[:, :, j],
-            D=1
-        )
-        for j in range(test_pos.shape[0])
-    ])
-
-    # Optimised fulx matching
-    norm_factor = np.array([
-        np.sum(_star * _psf) / np.sum(_psf * _psf)
-        for _star, _psf in zip(test_stars, interp_psfs)
-    ]).reshape(-1, 1, 1)
-    interp_psfs *= norm_factor
-            
-    return interp_psfs
 
 
 def psfex_procedure(**args):
@@ -261,7 +155,7 @@ def psfex_procedure(**args):
                     test_catalog[2].data['YWIN_IMAGE']
                 ]).T
 
-                matched_psfs = validation_stars(
+                matched_psfs = comp_utils.validation_stars(
                     psf_model_path,
                     test_stars=test_stars,
                     test_pos=test_pos
