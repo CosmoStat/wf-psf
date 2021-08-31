@@ -18,6 +18,21 @@ import click
     type=str,
     help="PSFEx configuration file path.")
 @click.option(
+    "--psfvar_degrees",
+    default=2,
+    type=int,
+    help="Polynomial degree for each group. PSFEx variable.")
+@click.option(
+    "--psf_sampling",
+    default=1.,
+    type=float,
+    help="Sampling step in pixel units. PSFEx variable.")
+@click.option(
+    "--psf_size",
+    default="32,32",
+    type=str,
+    help="Image size of the PSF model. PSFEx variable.")
+@click.option(
     "--run_id",
     default="psfex_model",
     type=str,
@@ -202,12 +217,15 @@ def psfex_procedure(**args):
 
             # Define psfex command line
             command_line_base = (
-                '{0} {1} -c {2} -PSF_DIR {3} -OUTCAT_NAME {4}'.format(
+                '{0} {1} -c {2} -PSF_DIR {3} -OUTCAT_NAME {4} -PSFVAR_DEGREES {5} -PSF_SAMPLING {6} -PSF_SIZE {7}'.format(
                     psfex_exec_path,
                     train_file_path,
                     psfex_config_path,
                     model_save_dir_path,
-                    outcat_name
+                    outcat_name,
+                    args['psfvar_degrees'],
+                    args['psf_sampling'],
+                    args['psf_size']
                 )
             )
 

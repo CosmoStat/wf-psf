@@ -6,9 +6,9 @@
  
 BASIS_TYPE      PIXEL #_AUTO      # NONE, PIXEL, GAUSS-LAGUERRE or FILE
 BASIS_NUMBER    25              # Basis number or parameter
-PSF_SAMPLING    1.               # Sampling step in pixel units (0.0 = auto)
+# PSF_SAMPLING    1.               # Sampling step in pixel units (0.0 = auto)
 PSF_ACCURACY    0.01            # Accuracy to expect from PSF "pixel" values
-PSF_SIZE        32,32           # Image size of the PSF model
+# PSF_SIZE        32,32           # Image size of the PSF model
  
 #------------------------- Point source measurements -------------------------
  
@@ -20,7 +20,7 @@ PHOTFLUXERR_KEY FLUXERR_AUTO # Catalogue parameter for photometric error
  
 PSFVAR_KEYS     XWIN_IMAGE,YWIN_IMAGE # Catalogue or FITS (preceded by :) params
 PSFVAR_GROUPS   1,1             # Group tag for each context key
-PSFVAR_DEGREES  2              # Polynom degree for each group
+# PSFVAR_DEGREES  2              # Polynom degree for each group
 PSFVAR_NSNAP    12              # Number of PSF snapshots per axis
  
 #----------------------------- Sample selection ------------------------------
