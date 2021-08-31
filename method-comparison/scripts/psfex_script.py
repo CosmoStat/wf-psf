@@ -14,11 +14,6 @@ import click
 @click.command()
 
 @click.option(
-    "--config_file",
-    default="/Users/tliaudat/Documents/PhD/codes/WF_PSF/github/wf-psf/method-comparison/config_files/new_default.psfex",
-    type=str,
-    help="PSFEx configuration file path.")
-@click.option(
     "--psfvar_degrees",
     default=2,
     type=int,
@@ -49,10 +44,15 @@ import click
     type=str,
     help="Path of the wf-psf repository.")
 @click.option(
+    "--dataset_path",
+    default="/Users/tliaudat/Documents/PhD/codes/WF_PSF/github/wf-psf/method-comparison/compatible-datasets/psfex/",
+    type=str,
+    help="Path to the directory with the PSFEx datasets. Should include the directories /test and /train.")
+@click.option(
     "--saving_dir",
     default="/Users/tliaudat/Documents/PhD/codes/WF_PSF/comparison-PSF-methods/outputs/psfex/",
     type=str,
-    help="Path to the saving directory.")
+    help="Path to the saving directory. Should include the directories /models, /validation and /metrics.")
 @click.option(
     "--verbose",
     default=1,
@@ -72,14 +72,14 @@ def psfex_procedure(**args):
 
     # Model parameters
     run_id = args['run_id']
-    psfex_config_path = args['config_file']
+    psfex_config_path = args['repo_base_path'] + 'method-comparison/config_files/new_default.psfex'
     psfex_exec_path = args['exec_path']
 
     # Load data
     saving_base_path = args['saving_dir']
 
-    input_train_dir = args['repo_base_path'] + 'method-comparison/compatible-datasets/psfex/train/'
-    input_test_dir = args['repo_base_path'] + 'method-comparison/compatible-datasets/psfex/test/'
+    input_train_dir = args['dataset_path'] + 'train/'
+    input_test_dir = args['dataset_path'] + 'test/'
 
     model_save_dir_path = saving_base_path + 'models/'
     val_save_dir_path = saving_base_path + 'validation/'
