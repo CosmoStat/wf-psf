@@ -12,12 +12,12 @@ import click
     "--rca_data_path",
     default="/Users/tliaudat/Documents/PhD/codes/WF_PSF/github/wf-psf/method-comparison/compatible-datasets/rca/",
     type=str,
-    help="Base wf-psf repository path.")
+    help="RCA dataset directory path. Should have /test and /train folders inside.")
 @click.option(
     "--mccd_saving_path",
     default="/Users/tliaudat/Documents/PhD/codes/WF_PSF/github/wf-psf/method-comparison/compatible-datasets/mccd/",
     type=str,
-    help="MCCD dataset saving path. Should have /test and /train folders inside.")
+    help="MCCD dataset directory saving path. Should have /test and /train folders inside.")
 
 
 def main(**args):
