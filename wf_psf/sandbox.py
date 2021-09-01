@@ -588,6 +588,7 @@ def step_update_strategy(step, params):
 # my_lr_schedule = MyLRSchedule(step_update_strategy, my_params)
 
 # Not to loose this lines of code..
+'''
 def GT_model():
     # Preparate the GT model
 
@@ -632,3 +633,4 @@ def GT_model():
     # For the Ground truth model
     GT_tf_semiparam_field.tf_poly_Z_field.assign_coeff_matrix(train_C_poly)
     _ = GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat.assign(np.zeros_like(GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat))
+'''
