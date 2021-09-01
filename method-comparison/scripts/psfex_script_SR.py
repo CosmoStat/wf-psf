@@ -208,7 +208,7 @@ def psfex_SR_procedure(**args):
         # Calcualte pixel and shape errors
         metrics_dic = comp_utils.shape_pix_metrics(exp_psfs, exp_stars)
         # Add dictionary to saving list
-        metrics_list.apend(metrics_dic)
+        metrics_list.append(metrics_dic)
 
     # Save the metrics
     metrics_dict = {
