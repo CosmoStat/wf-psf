@@ -14,11 +14,6 @@ import click
 @click.command()
 
 @click.option(
-    "--config_file",
-    default="/Users/tliaudat/Documents/PhD/codes/WF_PSF/github/wf-psf/method-comparison/config_files/new_default.psfex",
-    type=str,
-    help="PSFEx configuration file path.")
-@click.option(
     "--psfvar_degrees",
     default=2,
     type=int,
@@ -72,14 +67,13 @@ def psfex_SR_procedure(**args):
 
     # Model parameters
     run_id = args['run_id']
-    psfex_config_path = args['config_file']
+    psfex_config_path = args['repo_base_path'] + 'method-comparison/config_files/new_default.psfex'
     psfex_exec_path = args['exec_path']
 
     # Load data
     saving_base_path = args['saving_dir']
 
     input_train_dir = args['repo_base_path'] + 'method-comparison/compatible-datasets/psfex/train/'
-    input_test_dir = args['repo_base_path'] + 'method-comparison/compatible-datasets/psfex/test/'
 
     model_save_dir_path = saving_base_path + 'models/'
     val_save_dir_path = saving_base_path + 'validation/'
@@ -113,7 +107,7 @@ def psfex_SR_procedure(**args):
 
 
     # Iteration parameters
-    catalog_ids = [500] # [200, 500, 1000, 2000]  # [200]
+    catalog_ids = [200, 500, 1000, 2000]  # [200]
     
     metrics_list = []
 
