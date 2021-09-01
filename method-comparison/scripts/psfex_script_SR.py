@@ -44,6 +44,11 @@ import click
     type=str,
     help="Path of the wf-psf repository.")
 @click.option(
+    "--dataset_path",
+    default="/Users/tliaudat/Documents/PhD/codes/WF_PSF/github/wf-psf/method-comparison/compatible-datasets/psfex/",
+    type=str,
+    help="Path to the directory with the PSFEx datasets. Should include the directory /train.")
+@click.option(
     "--saving_dir",
     default="/Users/tliaudat/Documents/PhD/codes/WF_PSF/comparison-PSF-methods/outputs/psfex_SR/",
     type=str,
@@ -73,7 +78,7 @@ def psfex_SR_procedure(**args):
     # Load data
     saving_base_path = args['saving_dir']
 
-    input_train_dir = args['repo_base_path'] + 'method-comparison/compatible-datasets/psfex/train/'
+    input_train_dir = args['dataset_path'] + 'train/'
 
     model_save_dir_path = saving_base_path + 'models/'
     val_save_dir_path = saving_base_path + 'validation/'
