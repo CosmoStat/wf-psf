@@ -24,10 +24,13 @@ source activate new_shapepipe
 cd /home/tliaudat/github/mccd_develop/mccd/wf_exps/log_files/
 
 python ./../scripts/rca_script.py \
-    --run_id true_rca_n12_up1_k3 \
+    --run_id rca_shifts_n12_up1_k3 \
     --n_comp 12 \
     --upfact 1 \
     --ksig 3. \
+    --saving_dir /n05data/tliaudat/wf_exps/outputs/rca_shifts/ \
+    --input_data_dir /n05data/tliaudat/wf_exps/datasets/rca_shifts/ \
+
 
 # Return exit code
 exit 0
