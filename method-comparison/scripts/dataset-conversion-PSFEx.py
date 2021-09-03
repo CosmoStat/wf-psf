@@ -29,6 +29,16 @@ import click
     type=str,
     help="PSFEx dataset directory saving path. Should have /test, /train and /tmp folders inside.")
 @click.option(
+    "--rca_input_path",
+    default="/Users/tliaudat/Documents/PhD/codes/WF_PSF/github/wf-psf/method-comparison/compatible-datasets/rca/",
+    type=str,
+    help="[optional] RCA dataset path. To be used to add the intra pixel shifts.")
+@click.option(
+    "--psf_size",
+    default=1.25,
+    type=float,
+    help="PSF/star size in sigma.")
+@click.option(
     "--verbose",
     default=0,
     type=int,
@@ -45,6 +55,8 @@ def main(**args):
 def psfex_dataset_conversion(**args):
 
     python_var_tuple = platform.python_version_tuple()
+
+    psf_size = args['psf_size']
 
     # Sextractor parameters
     exec_path = args['sex_exec_path']
@@ -127,7 +139,72 @@ def psfex_dataset_conversion(**args):
             x_loc = local_pos[ccd_mask, 0]
             y_loc = local_pos[ccd_mask, 1]
             obs_stars = data_stars[ccd_mask, :, :]
-            # GT_stars = train_stars[ccd_mask, :, :]
+            GT_stars = dataset['stars'][ccd_mask, :, :]
+
+            # Try to add the intra pixel shift if available
+            try:
+                # First recover the corresponding shifts
+                if train_bool:
+                    rca_cat_id = catalog_id
+                else:
+                    rca_cat_id = catalog_ids[0]
+                rca_data_dir = args['rca_input_path'] + folder_path
+                rca_cat = fits.open(
+                    rca_data_dir + save_name + '-%07d-%02d.fits'%(rca_cat_id, ccd_it),
+                    memmap=False
+                )
+                rand_shifts = rca_cat[1].data['SHIFTS']
+
+                # Get the noise realisation
+                if train_bool:
+                    noise_realisations = obs_stars - GT_stars
+
+                # Let's add intra-pixel shifts
+                # First we calculate the shift needed to center the stars to the 
+                # postage stamp centroid
+                cents = [mccd.utils.CentroidEstimator(star, sig=psf_size) for star in GT_stars]
+                req_shifts = np.array([ce.return_shifts() for ce in cents])
+
+                # This is required as we shift the star to the postage stamp centroid
+                # and not the other way around
+                req_shifts *= -1
+
+                shift_kernels, _ = mccd.utils.shift_ker_stack(
+                    shifts=req_shifts,
+                    upfact=1,
+                    lanc_rad=4
+                )
+                shift_kernels = mccd.utils.reg_format(shift_kernels)
+                shifted_stars = np.array([
+                    mccd.utils.degradation_op(star, ker, D=1)
+                    for star, ker in zip(GT_stars, shift_kernels)
+                ])
+                # Now we have the centred stars, we can proced to add a random intra-pixel shift.
+                # We do it in two step to avoid having a possible large shift
+
+                # We already recovered the random shifts from the RCA catalog
+                # We generate the shift kernels
+                shift_kernels, _ = mccd.utils.shift_ker_stack(
+                    shifts=rand_shifts,
+                    upfact=1,
+                    lanc_rad=4
+                )
+                # Change to regular format (first dimension is the batch)
+                shift_kernels = mccd.utils.reg_format(shift_kernels)
+                # Shift the noiseless images and add the noise realisation
+                shifted_stars = np.array([
+                    mccd.utils.degradation_op(star, ker, D=1)
+                    for star, ker in zip(shifted_stars, shift_kernels)
+                ])
+                # If there are the training stars we add the noise realisation
+                if save_name == 'train_stars':
+                    shifted_stars += noise_realisations
+
+                # Now let's save the obs stars
+                obs_stars = shifted_stars
+
+            except:
+                continue
 
             # Check the borders
             for k in range(x_loc.shape[0]):
