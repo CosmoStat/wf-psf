@@ -24,10 +24,12 @@ source activate new_shapepipe
 cd /home/tliaudat/github/wf-psf/method-comparison/scripts/
 
 python ./rca_script.py \
-    --run_id true_rca_n16_up1_k3 \
+    --run_id rca_shifts_n16_up1_k3 \
     --n_comp 16 \
     --upfact 1 \
     --ksig 3. \
+    --saving_dir /n05data/tliaudat/wf_exps/outputs/rca_shifts/ \
+    --input_data_dir /n05data/tliaudat/wf_exps/datasets/rca_shifts/ \
 
 # Return exit code
 exit 0

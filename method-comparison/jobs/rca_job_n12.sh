@@ -21,9 +21,9 @@ module load intelpython/3-2020.1
 module load intel/19.0/2
 source activate new_shapepipe
 
-cd /home/tliaudat/github/mccd_develop/mccd/wf_exps/log_files/
+cd /home/tliaudat/github/wf-psf/method-comparison/scripts/
 
-python ./../scripts/rca_script.py \
+python ./rca_script.py \
     --run_id rca_shifts_n12_up1_k3 \
     --n_comp 12 \
     --upfact 1 \

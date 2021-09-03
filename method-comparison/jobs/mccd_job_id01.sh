@@ -21,10 +21,10 @@ module load intelpython/3-2020.1
 module load intel/19.0/2
 source activate new_shapepipe
 
-cd /home/tliaudat/github/mccd_develop/mccd/wf_exps/log_files/
+cd /home/tliaudat/github/wf-psf/method-comparison/scripts/
 
-python ./../scripts/mccd_script.py \
-    --config_file /home/tliaudat/github/mccd_develop/mccd/wf_exps/config_files/config_MCCD_wf_exp_id01.ini
+python ./mccd_script.py \
+    --config_file /home/tliaudat/github/wf-psf/method-comparison/config_files/mccd_configs/config_MCCD_wf_exp_id01.ini
 
 
 # Return exit code
