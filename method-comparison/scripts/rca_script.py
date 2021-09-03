@@ -28,6 +28,17 @@ import click
     default="rca",
     type=str,
     help="Id used for the saved models and validations.")
+@click.option(
+    "--saving_dir",
+    default="/n05data/tliaudat/wf_exps/outputs/rca/",
+    type=str,
+    help="Path to the saving directory. Should include the directories /models, /validation and /metrics.")
+@click.option(
+    "--input_data_dir",
+    default="/n05data/tliaudat/wf_exps/datasets/rca_shifts/",
+    type=str,
+    help="Input dataset directory. Should have /train and /test directories.")
+
 
 def main(**args):
     print(args)
@@ -46,9 +57,8 @@ def rca_procedure(**args):
 
 
     # Load data
-    repo_base_path = '/home/tliaudat/github/mccd_develop/mccd/'
-    saving_base_path = '/n05data/tliaudat/wf_exps/outputs/rca/'
-    input_base_path = repo_base_path + 'wf_exps/data/rca/'
+    saving_base_path = args['saving_dir']
+    input_base_path = args['input_data_dir']
     model_save_dir_path = saving_base_path + 'models/'
     val_save_dir_path = saving_base_path + 'validation/'
     metrics_save_dir_path = saving_base_path + 'metrics/'
@@ -71,7 +81,7 @@ def rca_procedure(**args):
 
             ## Training
             # Train data
-            train_file_name = 'all_stars/train_stars-%07d-%02d.fits'%(catalog_id, ccd_it)
+            train_file_name = 'train/train_stars-%07d-%02d.fits'%(catalog_id, ccd_it)
             train_catalog = fits.open(input_base_path + train_file_name)
 
             # Prepare input data
@@ -110,7 +120,7 @@ def rca_procedure(**args):
 
             ## Validation
             # Test data
-            test_file_name = 'test_stars/test_stars-%07d-%02d.fits'%(catalog_id, ccd_it)
+            test_file_name = 'test/test_stars-%07d-%02d.fits'%(catalog_id, ccd_it)
             test_catalog = fits.open(input_base_path + test_file_name)
 
             test_stars = rca.utils.rca_format(
