@@ -8,7 +8,7 @@
 #PBS -M tobias.liaudat@cea.fr
 #PBS -m ea
 # Set a name for the job
-#PBS -N psfex_run_d4
+#PBS -N psfex_run_d4_shifts
 # Join output and errors in one file
 #PBS -j oe
 # Set maximum computing time (e.g. 5min)
@@ -26,8 +26,8 @@ cd /home/tliaudat/github/wf-psf/
 
 python ./method-comparison/scripts/psfex_script.py \
     --repo_base_path /home/tliaudat/github/wf-psf/ \
-    --saving_dir /n05data/tliaudat/wf_exps/outputs/psfex_d4/ \
-    --dataset_path /n05data/tliaudat/wf_exps/datasets/psfex/ \
+    --saving_dir /n05data/tliaudat/wf_exps/outputs/psfex_d4_shifts/ \
+    --dataset_path /n05data/tliaudat/wf_exps/datasets/psfex_shifts/ \
     --psfvar_degrees 4 \
     --psf_sampling 1. \
     --psf_size 32 \

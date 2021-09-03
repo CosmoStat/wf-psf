@@ -14,7 +14,7 @@
 # Set maximum computing time (e.g. 5min)
 #PBS -l walltime=99:00:00
 # Request number of cores
-#PBS -l nodes=n01:ppn=04
+#PBS -l nodes=n01:ppn=02
 
 # Activate conda environment
 module load intelpython/3-2020.1
