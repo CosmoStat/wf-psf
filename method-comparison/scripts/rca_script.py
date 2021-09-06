@@ -29,6 +29,16 @@ import click
     type=str,
     help="Id used for the saved models and validations.")
 @click.option(
+    "--psf_size",
+    default=1.25,
+    type=float,
+    help="PSF size in the type of the psf_size_type parameter.")
+@click.option(
+    "--psf_size_type",
+    default="sigma",
+    type=str,
+    help="PSF size type.")
+@click.option(
     "--saving_dir",
     default="/n05data/tliaudat/wf_exps/outputs/rca/",
     type=str,
@@ -110,8 +120,8 @@ def rca_procedure(**args):
             _, _ = rca_inst.fit(
                 obs_stars,
                 obs_pos,
-                psf_size=1.,
-                psf_size_type='sigma'
+                psf_size=args['psf_size'],
+                psf_size_type=args['psf_size_type']
             )
             # Save model
             save_path = model_save_dir_path + run_id + '_fitted_model-%07d-%02d.npy'%(catalog_id, ccd_it)
