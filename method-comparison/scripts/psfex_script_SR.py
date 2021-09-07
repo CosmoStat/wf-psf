@@ -183,7 +183,8 @@ def psfex_SR_procedure(**args):
                 # Match PSFs, flux and intrapixel shifts
                 matched_psfs = comp_utils.match_psfs(
                     interp_psfs,
-                    test_stars=ccd_test_stars
+                    test_stars=ccd_test_stars,
+                    psf_size=1.25 / args['psf_sampling']
                 )
 
                 # Save validation PSFs and Ground truth stars

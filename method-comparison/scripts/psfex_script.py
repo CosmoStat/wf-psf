@@ -155,10 +155,14 @@ def psfex_procedure(**args):
                     test_catalog[2].data['YWIN_IMAGE']
                 ]).T
 
+                # Interpolate PSFs
+                interp_psfs = comp_utils.interpsfex(psf_model_path, test_pos)
+
+                # Match PSFs, flux and intrapixel shifts
                 matched_psfs = comp_utils.validation_stars(
-                    psf_model_path,
+                    interp_psfs,
                     test_stars=test_stars,
-                    test_pos=test_pos
+                    psf_size=1.25 / args['psf_sampling']
                 )
 
 
