@@ -109,6 +109,13 @@ def match_psfs(interp_psfs, test_stars, psf_size=1.25):
             
     return interp_psfs
 
+def crop_at_center(img, output_size):
+    """" Crop image to a desired output size."""
+    x = img.shape[0]
+    y = img.shape[1]
+    startx = x // 2 - (output_size[0] // 2)
+    starty = y // 2 - (output_size[1] // 2)    
+    return img[startx:startx + output_size[0], starty:starty + output_size[1]]
 
 def calc_shapes(matched_psfs, test_stars):
     # Measure shapes of the reconstructions
