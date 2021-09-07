@@ -178,10 +178,12 @@ def psfex_SR_procedure(**args):
                 psf_model_path = model_save_dir_path + 'train_stars_psfex-%07d-%02d.psf'%(catalog_id, ccd_it)
 
                 # Interpolate PSFs
-                matched_psfs = comp_utils.validation_stars(
-                    psf_model_path,
-                    test_stars=ccd_test_stars,
-                    test_pos=ccd_test_pos
+                interp_psfs = comp_utils.interpsfex(psf_model_path, ccd_test_pos)
+
+                # Match PSFs, flux and intrapixel shifts
+                matched_psfs = comp_utils.match_psfs(
+                    interp_psfs,
+                    test_stars=ccd_test_stars
                 )
 
                 # Save validation PSFs and Ground truth stars

@@ -59,23 +59,21 @@ def interpsfex(dotpsfpath, pos):
     return PSFs
 
 
-def validation_stars(dotpsfpath, test_stars, test_pos, psf_size=1.25):
+def match_psfs(interp_psfs, test_stars, psf_size=1.25):
     """ Match PSF model to stars - in flux, shift and pixel sampling - for validation tests.
     Returns both the matched PSFs' stamps.
 
     Parameters
     ----------
-    dotpsfpath: str
-        Path to the .psf model output of PSFEx.
+    interp_psfs: np.ndarray
+        PSFs stamps to be matched.
     test_stars: np.ndarray
         Star stamps to be used for comparison with the PSF model.
-    test_pos: np.ndarray
-        Their corresponding positions.
     psf_size: float
         PSF size in sigma format.
     """
     
-    sigmas = np.ones((test_pos.shape[0],)) * psf_size
+    sigmas = np.ones((test_stars.shape[0],)) * psf_size
         
     cents = [
         mccd.utils.CentroidEstimator(test_stars[it, :, :], sig=sigmas[it])
@@ -83,9 +81,6 @@ def validation_stars(dotpsfpath, test_stars, test_pos, psf_size=1.25):
     ]
     # Calculate shifts
     test_shifts = np.array([ce.return_shifts() for ce in cents])
-
-    # Interpolate PSFs
-    interp_psfs = interpsfex(dotpsfpath, test_pos)
     
     # Estimate shift kernels
     lanc_rad = np.ceil(3. * np.max(sigmas)).astype(int)
@@ -102,7 +97,7 @@ def validation_stars(dotpsfpath, test_stars, test_pos, psf_size=1.25):
             shift_kernels[:, :, j],
             D=1
         )
-        for j in range(test_pos.shape[0])
+        for j in range(test_stars.shape[0])
     ])
 
     # Optimised fulx matching
