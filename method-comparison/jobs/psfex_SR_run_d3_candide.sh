@@ -26,7 +26,7 @@ cd /home/tliaudat/github/wf-psf/
 
 python ./method-comparison/scripts/psfex_script_SR.py \
     --repo_base_path /home/tliaudat/github/wf-psf/ \
-    --saving_dir /n05data/tliaudat/wf_exps/outputs/psfex_SR_d3_shifts/ \
+    --saving_dir /n05data/tliaudat/wf_exps/test_outputs/psfex_SR_d3_shifts/ \
     --dataset_path /n05data/tliaudat/wf_exps/datasets/psfex_shifts/ \
     --psfvar_degrees 3 \
     --psf_sampling 0.33 \
