@@ -151,7 +151,7 @@ def rca_procedure(**args):
             val_dict = {
                 'PSF_VIGNETS': interp_psfs,
                 'PSF_UPFACT1': interp_psfs_upfact1,
-                'GT_VIGNET': test_catalog[1].data['GT_VIGNET'],
+                'GT_VIGNET': test_catalog[1].data['VIGNET'],
                 'POS': test_pos,
             }
             val_save_name = run_id + '_validation-%07d-%02d.npy'%(catalog_id, ccd_it)
@@ -159,7 +159,7 @@ def rca_procedure(**args):
 
             # Add images to lists
             psf_interp_list.append(np.copy(interp_psfs))
-            star_list.append(np.copy(test_catalog[1].data['GT_VIGNET']))
+            star_list.append(np.copy(test_catalog[1].data['VIGNET']))
 
         # Calculate RMSE metric on all the CCDs
         exp_psfs = np.concatenate(psf_interp_list)
