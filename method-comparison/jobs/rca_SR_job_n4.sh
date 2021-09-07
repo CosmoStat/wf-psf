@@ -8,7 +8,7 @@
 #PBS -M tobias.liaudat@cea.fr
 #PBS -m ea
 # Set a name for the job
-#PBS -N rca_wf_exp_n4_shifts
+#PBS -N rca_SR_n4
 # Join output and errors in one file
 #PBS -j oe
 # Set maximum computing time (e.g. 5min)
@@ -23,6 +23,11 @@ module load intel/19.0/2
 source activate new_shapepipe
 
 cd /home/tliaudat/github/wf-psf/method-comparison/scripts/
+
+# Just 1 for OMP_NUM_THREADS for this Python script
+export OMP_NUM_THREADS=1
+# And let the low-level threading use all of the requested cores
+export OPENBLAS_NUM_THREADS=$NSLOTS
 
 python ./rca_script_SR.py \
     --saving_dir /n05data/tliaudat/wf_exps/outputs/rca_shifts/ \

@@ -23,6 +23,11 @@ source activate new_shapepipe
 
 cd /home/tliaudat/github/wf-psf/method-comparison/scripts/
 
+# Just 1 for OMP_NUM_THREADS for this Python script
+export OMP_NUM_THREADS=1
+# And let the low-level threading use all of the requested cores
+export OPENBLAS_NUM_THREADS=$NSLOTS
+
 python ./rca_script.py \
     --run_id rca_shifts_n4_up3_k3 \
     --n_comp 4 \
