@@ -1,7 +1,7 @@
 #!/bin/python
 
+import traceback
 import numpy as np
-from astropy.io import fits
 import mccd
 from wf_psf import method_comp_utils as comp_utils
 from joblib import Parallel, delayed, parallel_backend, cpu_count
@@ -110,52 +110,58 @@ def mccd_procedure(**args):
 
         # Iterate over the ccds
         for ccd_it in range(ccd_tot):
-            # Extract test catalog
-            # Build CCD mask
-            ccd_mask = (ccd_n_list == ccd_it)
 
-            # Extract elements from selected CCD
-            x_loc = local_pos[ccd_mask, 0].reshape(-1, 1)
-            y_loc = local_pos[ccd_mask, 1].reshape(-1, 1)
+            try:
+                # Extract test catalog
+                # Build CCD mask
+                ccd_mask = (ccd_n_list == ccd_it)
 
-            ccd_test_pos = np.concatenate((x_loc, y_loc), axis=1)
-            ccd_test_stars = GT_predictions[ccd_mask, :, :]
+                # Extract elements from selected CCD
+                x_loc = local_pos[ccd_mask, 0].reshape(-1, 1)
+                y_loc = local_pos[ccd_mask, 1].reshape(-1, 1)
 
-            # Recover the PSFs from the model
-            interp_psfs_SR = run_mccd.recover_MCCD_PSFs(
-                fit_model_path,
-                positions=ccd_test_pos,
-                ccd_id=ccd_it,
-                local_pos=True,
-                upfact=upfact
-            )
+                ccd_test_pos = np.concatenate((x_loc, y_loc), axis=1)
+                ccd_test_stars = GT_predictions[ccd_mask, :, :]
 
-            # Match SR psfs to SR stars
-            # Crop to output dim
-            interp_psfs_SR = np.array([
-                comp_utils.crop_at_center(_psf_SR, output_dim) for _psf_SR in interp_psfs_SR
-            ])
+                # Recover the PSFs from the model
+                interp_psfs_SR = run_mccd.recover_MCCD_PSFs(
+                    fit_model_path,
+                    positions=ccd_test_pos,
+                    ccd_id=ccd_it,
+                    local_pos=True,
+                    upfact=upfact
+                )
 
-            # Match to SR stars
-            matched_SR_psfs = comp_utils.match_psfs(
-                interp_psfs_SR,
-                ccd_test_stars,
-                psf_size=1.25 * (fit_upfact / upfact)
-            )
+                # Match SR psfs to SR stars
+                # Crop to output dim
+                interp_psfs_SR = np.array([
+                    comp_utils.crop_at_center(_psf_SR, output_dim) for _psf_SR in interp_psfs_SR
+                ])
 
-            # Save validation PSFs and Ground truth stars
-            val_dict = {
-                'PSF_VIGNETS_SR': matched_SR_psfs,
-                'GT_VIGNET': ccd_test_stars,
-                'POS_LOCAL': ccd_test_pos,
-                'CCD_ID': np.ones(ccd_test_pos.shape[0]) * ccd_it,
-            }
-            val_save_name = run_id + '_validation-%07d-%02d.npy'%(catalog_id, ccd_it)
-            np.save(val_output_dir + val_save_name, val_dict, allow_pickle=True)
+                # Match to SR stars
+                matched_SR_psfs = comp_utils.match_psfs(
+                    interp_psfs_SR,
+                    ccd_test_stars,
+                    psf_size=1.25 * (fit_upfact / upfact)
+                )
 
-            # Add images to lists
-            psf_SR_list.append(np.copy(matched_SR_psfs))
-            star_list.append(np.copy(ccd_test_stars))
+                # Save validation PSFs and Ground truth stars
+                val_dict = {
+                    'PSF_VIGNETS_SR': matched_SR_psfs,
+                    'GT_VIGNET': ccd_test_stars,
+                    'POS_LOCAL': ccd_test_pos,
+                    'CCD_ID': np.ones(ccd_test_pos.shape[0]) * ccd_it,
+                }
+                val_save_name = run_id + '_validation-%07d-%02d.npy'%(catalog_id, ccd_it)
+                np.save(val_output_dir + val_save_name, val_dict, allow_pickle=True)
+
+                # Add images to lists
+                psf_SR_list.append(np.copy(matched_SR_psfs))
+                star_list.append(np.copy(ccd_test_stars))
+
+            except Exception:
+                traceback.print_exc()
+                print('Problem with catalog: train_stars_psfex-%07d-%02d.psf'%(catalog_id, ccd_it))
 
         
         # Concatenate all the test stars in one array
