@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='wf-psf',
-      version='0.0.1',
+      version='1.1.0',
       description='Differentiable wavefront-based PSF modelling',
       url='https://github.com/tobias-liaudat/wf-psf',
       author='Tobias Liaudat',
