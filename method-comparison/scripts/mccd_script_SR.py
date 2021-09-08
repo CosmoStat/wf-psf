@@ -99,7 +99,7 @@ def mccd_procedure(**args):
         # Fitted model path
         fit_model_path = fit_model_input_dir + \
             run_mccd.fitting_model_saving_name + run_mccd.separator + \
-            catalog_id + '.npy'
+            '%07d'%catalog_id + '.npy'
 
         mccd_inst = mccd.mccd_quickload(fit_model_path)
         fit_upfact = mccd_inst.upfact
