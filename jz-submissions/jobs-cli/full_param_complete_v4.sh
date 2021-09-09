@@ -1,4 +1,4 @@
-_v2#!/bin/bash
+#!/bin/bash
 #SBATCH --job-name=param_complete_v4    # nom du job
 ##SBATCH --partition=gpu_p2          # de-commente pour la partition gpu_p2
 #SBATCH --ntasks=1                   # nombre total de tache MPI (= nombre total de GPU)
