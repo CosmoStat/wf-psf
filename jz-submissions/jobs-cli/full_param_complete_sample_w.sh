@@ -24,10 +24,10 @@ module load tensorflow-gpu/py3/2.4.1
 # echo des commandes lancees
 set -x
 
-opt[0]="--id_name _complete_2c --train_dataset_file train_Euclid_res_200_TrainStars_id_001.npy --n_epochs_param 40 40 --l_rate_param 0.005 0.001"
-opt[1]="--id_name _complete_5c --train_dataset_file train_Euclid_res_500_TrainStars_id_001.npy --n_epochs_param 30 30 --l_rate_param 0.005 0.001"
-opt[2]="--id_name _complete_1k --train_dataset_file train_Euclid_res_1000_TrainStars_id_001.npy --n_epochs_param 30 30 --l_rate_param 0.005 0.001"
-opt[3]="--id_name _complete_2k --train_dataset_file train_Euclid_res_2000_TrainStars_id_001.npy --n_epochs_param 20 20 --l_rate_param 0.005 0.001"
+opt[0]="--id_name _complete_sample_w_2c --train_dataset_file train_Euclid_res_200_TrainStars_id_001.npy --n_epochs_param 40 40 --l_rate_param 0.005 0.001"
+opt[1]="--id_name _complete_sample_w_5c --train_dataset_file train_Euclid_res_500_TrainStars_id_001.npy --n_epochs_param 30 30 --l_rate_param 0.005 0.001"
+opt[2]="--id_name _complete_sample_w_1k --train_dataset_file train_Euclid_res_1000_TrainStars_id_001.npy --n_epochs_param 30 30 --l_rate_param 0.005 0.001"
+opt[3]="--id_name _complete_sample_w_2k --train_dataset_file train_Euclid_res_2000_TrainStars_id_001.npy --n_epochs_param 20 20 --l_rate_param 0.005 0.001"
 
 
 cd $WORK/repo/wf-psf/long-runs/
