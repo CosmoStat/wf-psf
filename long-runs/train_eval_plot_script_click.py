@@ -26,7 +26,7 @@ import click
 # Saving paths
 @click.option(
     "--base_path",
-    default="/gpfswork/rech/xdy/ulx23va/wf-outputs/",
+    default="/gpfswork/rech/ynx/ulx23va/wf-outputs/",
     type=str,
     help="Base path for saving files.")
 @click.option(
@@ -46,7 +46,7 @@ import click
     help="Folder name to save optimisation history files.")
 @click.option(
     "--chkp_save_path",
-    default="/gpfsscratch/rech/xdy/ulx23va/wf-outputs/chkp/",
+    default="/gpfsscratch/rech/ynx/ulx23va/wf-outputs/chkp/",
     type=str,
     help="Path to save model checkpoints during training.")
 @click.option(
@@ -57,7 +57,7 @@ import click
 # Input dataset paths
 @click.option(
     "--dataset_folder",
-    default="/gpfswork/rech/xdy/ulx23va/repo/wf-psf/data/coherent_euclid_dataset/",
+    default="/gpfswork/rech/ynx/ulx23va/repo/wf-psf/data/coherent_euclid_dataset/",
     type=str,
     help="Folder path of datasets.")
 @click.option(
@@ -177,7 +177,7 @@ import click
 # Saving paths
 @click.option(
     "--metric_base_path",
-    default="/gpfswork/rech/xdy/ulx23va/wf-outputs/metrics/",
+    default="/gpfswork/rech/ynx/ulx23va/wf-outputs/metrics/",
     type=str,
     help="Base path for saving metric files.")
 @click.option(
