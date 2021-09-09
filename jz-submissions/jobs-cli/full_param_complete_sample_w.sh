@@ -32,7 +32,7 @@ opt[3]="--id_name _complete_2k --train_dataset_file train_Euclid_res_2000_TrainS
 
 cd $WORK/repo/wf-psf/long-runs/
 
-srun python -u ./long-runs/train_eval_plot_script_click.py \
+srun python -u ./train_eval_plot_script_click.py \
     --model param \
     --n_zernikes 45 \
     --saved_model_type checkpoint \
