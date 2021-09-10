@@ -11,7 +11,7 @@
 #SBATCH --time=20:00:00              # temps d'execution maximum demande (HH:MM:SS)
 #SBATCH --output=param_complete_v3_%j.out  # nom du fichier de sortie
 #SBATCH --error=param_complete_v3_%j.err   # nom du fichier d'erreur (ici commun avec la sortie)
-#SBATCH -A xdy@gpu                   # specify the project
+#SBATCH -A ynx@gpu                   # specify the project
 ##SBATCH --qos=qos_gpu-dev            # using the dev queue, as this is only for profiling
 #SBATCH --array=0-3
 
