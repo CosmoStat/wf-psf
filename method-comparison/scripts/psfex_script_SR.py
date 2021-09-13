@@ -8,7 +8,7 @@ import traceback
 import numpy as np
 import mccd
 from wf_psf import method_comp_utils as comp_utils
-from wf_psf import utils as utils
+from wf_psf import metrics as metrics
 from joblib import Parallel, delayed, parallel_backend, cpu_count
 
 import click
@@ -89,7 +89,7 @@ def psfex_SR_procedure(**args):
         raise NotImplementedError("The psf_sampling should be 0.33, meaning x3 Euclid resolution.")
 
     test_wf_file_path = args['repo_base_path'] + 'data/coherent_euclid_dataset/test_Euclid_res_id_001.npy'
-    GT_predictions, wf_test_pos = utils.gen_GT_wf_model(
+    GT_predictions, wf_test_pos = metrics.gen_GT_wf_model(
         test_wf_file_path,
         pred_output_Q=1,
         pred_output_dim=args['psf_size']
