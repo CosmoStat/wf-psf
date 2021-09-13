@@ -60,7 +60,7 @@ def mccd_procedure(**args):
 
     # Generate GT SR psfs
     test_wf_file_path = args['repo_base_path'] + 'data/coherent_euclid_dataset/test_Euclid_res_id_001.npy'
-    GT_predictions, wf_test_pos = metrics.gen_GT_wf_model(
+    GT_predictions, wf_test_pos, _ = metrics.gen_GT_wf_model(
         test_wf_file_path,
         pred_output_Q=1,
         pred_output_dim=args['psf_out_dim']

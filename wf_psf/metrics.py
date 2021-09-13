@@ -546,7 +546,7 @@ def gen_GT_wf_model(test_wf_file_path, pred_output_Q=1, pred_output_dim=64):
     # Ground Truth model
     GT_predictions = GT_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
-    return GT_predictions, wf_test_pos
+    return GT_predictions, wf_test_pos, GT_tf_semiparam_field
 
 
 ## Below this line there are DEPRECATED functions
