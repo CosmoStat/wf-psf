@@ -529,9 +529,18 @@ class TF_NP_MCCD_OPD_v2(tf.keras.layers.Layer):
         Dimension of the OPD maps. Same as pupil diameter.
 
     """
-    def __init__(self, obs_pos, spatial_dic, x_lims, y_lims, d_max=2,
-                graph_features=6, l1_rate=1e-5, opd_dim=256,
-                name='TF_NP_MCCD_OPD_v2'):
+    def __init__(
+        self,
+        obs_pos,
+        spatial_dic,
+        x_lims,
+        y_lims,
+        d_max=2,
+        graph_features=6,
+        l1_rate=1e-5,
+        opd_dim=256,
+        name='TF_NP_MCCD_OPD_v2'
+    ):
         super().__init__(name=name)
         # Parameters
         self.x_lims = x_lims
@@ -567,51 +576,74 @@ class TF_NP_MCCD_OPD_v2(tf.keras.layers.Layer):
         # S initialization
         random_init = tf.random_uniform_initializer(minval=-0.001, maxval=0.001)
         self.S_poly = tf.Variable(
-            initial_value=random_init(shape=[self.poly_features,
-                                             self.opd_dim,
-                                             self.opd_dim]),
+            initial_value=random_init(
+                shape=[self.poly_features, self.opd_dim, self.opd_dim]
+            ),
             trainable=True,
-            dtype=tf.float32)
+            dtype=tf.float32
+        )
         self.S_graph = tf.Variable(
-            initial_value=random_init(shape=[self.graph_features,
-                                             self.opd_dim,
-                                             self.opd_dim]),
+            initial_value=random_init(
+                shape=[self.graph_features, self.opd_dim, self.opd_dim]
+            ),
             trainable=True,
-            dtype=tf.float32)
+            dtype=tf.float32
+        )
 
         # Alpha initialization
         self.alpha_poly = tf.Variable(
-            initial_value=tf.eye(num_rows=self.poly_features,
-                                 num_columns=self.poly_features),
+            initial_value=tf.eye(
+                num_rows=self.poly_features,
+                num_columns=self.poly_features
+            ),
             trainable=True,
-            dtype=tf.float32)
+            dtype=tf.float32
+        )
         self.alpha_graph = tf.Variable(
-            initial_value=tf.eye(num_rows=self.n_graph_elems,
-                                 num_columns=self.graph_features),
+            initial_value=tf.eye(
+                num_rows=self.n_graph_elems,
+                num_columns=self.graph_features
+            ),
             trainable=True,
-            dtype=tf.float32)
+            dtype=tf.float32
+        )
 
     def set_alpha_zero(self):
         """ Set alpha matrix to zero."""
-        _ = self.alpha_poly.assign(tf.zeros_like(self.alpha_poly,
-                                                dtype=tf.float32))
-        _ = self.alpha_graph.assign(tf.zeros_like(self.alpha_graph,
-                                                dtype=tf.float32))
+        _ = self.alpha_poly.assign(
+            tf.zeros_like(self.alpha_poly, dtype=tf.float32)
+        )
+        _ = self.alpha_graph.assign(
+            tf.zeros_like(self.alpha_graph, dtype=tf.float32)
+        )
 
     def set_alpha_identity(self):
         """ Set alpha matrix to the identity."""
-        _ = self.alpha_poly.assign(tf.eye(num_rows=self.poly_features,
-                                         num_columns=self.poly_features,
-                                         dtype=tf.float32))
-        _ = self.alpha_graph.assign(tf.eye(num_rows=self.n_graph_elems,
-                                         num_columns=self.graph_features,
-                                         dtype=tf.float32))
+        _ = self.alpha_poly.assign(
+            tf.eye(
+                num_rows=self.poly_features,
+                num_columns=self.poly_features,
+                dtype=tf.float32
+                )
+            )
+        _ = self.alpha_graph.assign(
+            tf.eye(
+                num_rows=self.n_graph_elems,
+                num_columns=self.graph_features,
+                dtype=tf.float32
+                )
+            )
 
     def predict(self, positions):
         """ Prediction step."""
         ## Polynomial part
         # Calculate the Pi matrix
-        poly_mat = calc_poly_position_mat(positions, self.x_lims, self.y_lims, self.d_max)
+        poly_mat = calc_poly_position_mat(
+            positions,
+            self.x_lims,
+            self.y_lims,
+            self.d_max
+        )
         # We need to transpose it here to have the batch dimension at first
         A_poly = tf.linalg.matmul(tf.transpose(poly_mat, perm=[1,0]), self.alpha_poly)
         interp_poly_opd = tf.tensordot(A_poly, self.S_poly, axes=1)
@@ -623,11 +655,12 @@ class TF_NP_MCCD_OPD_v2(tf.keras.layers.Layer):
         # All tensors need to expand one dimension to fulfil requirement in
         # the tfa's interpolate_spline function
         A_interp_graph = tfa.image.interpolate_spline(
-                        train_points=tf.expand_dims(self.obs_pos, axis=0),
-                        train_values=tf.expand_dims(A_graph_train, axis=0),
-                        query_points=tf.expand_dims(positions, axis=0),
-                        order=2,
-                        regularization_weight=0.0)
+            train_points=tf.expand_dims(self.obs_pos, axis=0),
+            train_values=tf.expand_dims(A_graph_train, axis=0),
+            query_points=tf.expand_dims(positions, axis=0),
+            order=2,
+            regularization_weight=0.0
+        )
 
         # Remove extra dimension required by tfa's interpolate_spline
         A_interp_graph = tf.squeeze(A_interp_graph, axis=0)
@@ -654,7 +687,12 @@ class TF_NP_MCCD_OPD_v2(tf.keras.layers.Layer):
         # self.add_loss(self.l1_rate * tf.math.reduce_sum(tf.math.abs(self.alpha_graph)))
         # Try Lp norm with p=1.1
         p=1.1
-        self.add_loss(self.l1_rate * tf.math.pow(tf.math.reduce_sum(tf.math.pow(tf.math.abs(self.alpha_graph), p)), 1/p))
+        self.add_loss(
+            self.l1_rate * tf.math.pow(
+                tf.math.reduce_sum(tf.math.pow(tf.math.abs(self.alpha_graph), p)),
+                1/p
+            )
+        )
 
         def calc_index(idx_pos):
             return tf.where(tf.equal(self.obs_pos, idx_pos))[0,0]
@@ -708,9 +746,17 @@ class TF_NP_GRAPH_OPD(tf.keras.layers.Layer):
         Dimension of the OPD maps. Same as pupil diameter.
 
     """
-    def __init__(self, obs_pos, spatial_dic, x_lims, y_lims, d_max=2,
-                graph_features=6, l1_rate=1e-5, opd_dim=256,
-                name='TF_NP_GRAPH_OPD'):
+    def __init__(
+        self,
+        obs_pos,
+        spatial_dic,
+        x_lims,
+        y_lims,
+        graph_features=6,
+        l1_rate=1e-5,
+        opd_dim=256,
+        name='TF_NP_GRAPH_OPD'
+    ):
         super().__init__(name=name)
         # Parameters
         self.x_lims = x_lims
@@ -743,29 +789,38 @@ class TF_NP_GRAPH_OPD(tf.keras.layers.Layer):
         random_init = tf.random_uniform_initializer(minval=-0.001, maxval=0.001)
 
         self.S_graph = tf.Variable(
-            initial_value=random_init(shape=[self.graph_features,
-                                             self.opd_dim,
-                                             self.opd_dim]),
+            initial_value=random_init(
+                shape=[self.graph_features, self.opd_dim, self.opd_dim]
+            ),
             trainable=True,
-            dtype=tf.float32)
+            dtype=tf.float32
+        )
 
         # Alpha initialization
         self.alpha_graph = tf.Variable(
-            initial_value=tf.eye(num_rows=self.n_graph_elems,
-                                 num_columns=self.graph_features),
+            initial_value=tf.eye(
+                num_rows=self.n_graph_elems,
+                num_columns=self.graph_features
+            ),
             trainable=True,
-            dtype=tf.float32)
+            dtype=tf.float32
+        )
 
     def set_alpha_zero(self):
         """ Set alpha matrix to zero."""
-        _ = self.alpha_graph.assign(tf.zeros_like(self.alpha_graph,
-                                                dtype=tf.float32))
+        _ = self.alpha_graph.assign(
+            tf.zeros_like(self.alpha_graph, dtype=tf.float32)
+        )
 
     def set_alpha_identity(self):
         """ Set alpha matrix to the identity."""
-        _ = self.alpha_graph.assign(tf.eye(num_rows=self.n_graph_elems,
-                                         num_columns=self.graph_features,
-                                         dtype=tf.float32))
+        _ = self.alpha_graph.assign(
+            tf.eye(
+                num_rows=self.n_graph_elems,
+                num_columns=self.graph_features,
+                dtype=tf.float32
+            )
+        )
 
     def predict(self, positions):
         """ Prediction step."""
@@ -777,11 +832,12 @@ class TF_NP_GRAPH_OPD(tf.keras.layers.Layer):
         # All tensors need to expand one dimension to fulfil requirement in
         # the tfa's interpolate_spline function
         A_interp_graph = tfa.image.interpolate_spline(
-                        train_points=tf.expand_dims(self.obs_pos, axis=0),
-                        train_values=tf.expand_dims(A_graph_train, axis=0),
-                        query_points=tf.expand_dims(positions, axis=0),
-                        order=2,
-                        regularization_weight=0.0)
+            train_points=tf.expand_dims(self.obs_pos, axis=0),
+            train_values=tf.expand_dims(A_graph_train, axis=0),
+            query_points=tf.expand_dims(positions, axis=0),
+            order=2,
+            regularization_weight=0.0
+        )
 
         # Remove extra dimension required by tfa's interpolate_spline
         A_interp_graph = tf.squeeze(A_interp_graph, axis=0)
@@ -805,10 +861,17 @@ class TF_NP_GRAPH_OPD(tf.keras.layers.Layer):
         opd_maps: Tensor(batch, opd_dim, opd_dim)
         """
         # Add L1 loss of the graph alpha matrix
-        self.add_loss(self.l1_rate * tf.math.reduce_sum(tf.math.abs(self.alpha_graph)))
+        # self.add_loss(
+        #     self.l1_rate * tf.math.reduce_sum(tf.math.abs(self.alpha_graph))
+        # )
         # Try Lp norm with p=1.1
-        # p=1.1
-        # self.add_loss(self.l1_rate * tf.math.pow(tf.math.reduce_sum(tf.math.pow(tf.math.abs(self.alpha_graph), p)), 1/p))
+        p=1.1
+        self.add_loss(
+          self.l1_rate * tf.math.pow(
+              tf.math.reduce_sum(tf.math.pow(tf.math.abs(self.alpha_graph), p)),
+              1/p
+            )
+        )
 
         def calc_index(idx_pos):
             return tf.where(tf.equal(self.obs_pos, idx_pos))[0,0]
