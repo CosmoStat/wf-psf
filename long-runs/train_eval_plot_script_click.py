@@ -17,7 +17,7 @@ import click
     "--model",
     default="poly",
     type=str,
-    help="Model type. Options are: 'mccd', 'poly, 'param'.")
+    help="Model type. Options are: 'mccd', 'mccd', 'poly, 'param'.")
 @click.option(
     "--id_name",
     default="-coherent_euclid_200stars",

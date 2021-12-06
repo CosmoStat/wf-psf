@@ -155,7 +155,7 @@ def train_model(**args):
 
 
     ## Select the model
-    if args['model'] == 'mccd':
+    if args['model'] == 'mccd' or args['model'] == 'graph':
         poly_dic, graph_dic = tf_mccd_psf_field.build_mccd_spatial_dic_v2(
             obs_stars=outputs.numpy(),
             obs_pos=tf_train_pos.numpy(),
@@ -164,30 +164,49 @@ def train_model(**args):
             d_max=args['d_max_nonparam'],
             graph_features=args['graph_features']
         )
-
         spatial_dic = [poly_dic, graph_dic]
 
-        # Initialize the model
-        tf_semiparam_field = tf_mccd_psf_field.TF_SP_MCCD_field(
-            zernike_maps=tf_zernike_cube,
-            obscurations=tf_obscurations,
-            batch_size=args['batch_size'],
-            obs_pos=tf_train_pos,
-            spatial_dic=spatial_dic,
-            output_Q=args['output_q'],
-            l2_param=args['l2_param'],
-            d_max_nonparam=args['d_max_nonparam'],
-            graph_features=args['graph_features'],
-            l1_rate=args['l1_rate'],
-            output_dim=args['output_dim'],
-            n_zernikes=args['n_zernikes'],
-            d_max=args['d_max'],
-            x_lims=args['x_lims'],
-            y_lims=args['y_lims']
-        )
+        if args['model'] == 'mccd':
+            # Initialize the model
+            tf_semiparam_field = tf_mccd_psf_field.TF_SP_MCCD_field(
+                zernike_maps=tf_zernike_cube,
+                obscurations=tf_obscurations,
+                batch_size=args['batch_size'],
+                obs_pos=tf_train_pos,
+                spatial_dic=spatial_dic,
+                output_Q=args['output_q'],
+                l2_param=args['l2_param'],
+                d_max_nonparam=args['d_max_nonparam'],
+                graph_features=args['graph_features'],
+                l1_rate=args['l1_rate'],
+                output_dim=args['output_dim'],
+                n_zernikes=args['n_zernikes'],
+                d_max=args['d_max'],
+                x_lims=args['x_lims'],
+                y_lims=args['y_lims']
+            )
+
+        elif args['model'] == 'graph':
+            # Initialize the model
+            tf_semiparam_field = tf_mccd_psf_field.TF_SP_graph_field(
+                zernike_maps=tf_zernike_cube,
+                obscurations=tf_obscurations,
+                batch_size=args['batch_size'],
+                obs_pos=tf_train_pos,
+                spatial_dic=spatial_dic,
+                output_Q=args['output_q'],
+                l2_param=args['l2_param'],
+                graph_features=args['graph_features'],
+                l1_rate=args['l1_rate'],
+                output_dim=args['output_dim'],
+                n_zernikes=args['n_zernikes'],
+                d_max=args['d_max'],
+                x_lims=args['x_lims'],
+                y_lims=args['y_lims']
+            )  
 
     elif args['model'] == 'poly':
-        # # Initialize the model
+        # Initialize the model
         tf_semiparam_field = tf_psf_field.TF_SemiParam_field(
             zernike_maps=tf_zernike_cube,
             obscurations=tf_obscurations,
@@ -480,7 +499,7 @@ def evaluate_model(**args):
 
     ## Create the model
     ## Select the model
-    if args['model'] == 'mccd':
+    if args['model'] == 'mccd' or args['model'] == 'graph':
         poly_dic, graph_dic = tf_mccd_psf_field.build_mccd_spatial_dic_v2(
             obs_stars=outputs.numpy(),
             obs_pos=tf_train_pos.numpy(),
@@ -489,30 +508,49 @@ def evaluate_model(**args):
             d_max=args['d_max_nonparam'],
             graph_features=args['graph_features']
         )
-
         spatial_dic = [poly_dic, graph_dic]
 
-       # Initialize the model
-        tf_semiparam_field = tf_mccd_psf_field.TF_SP_MCCD_field(
-            zernike_maps=tf_zernike_cube,
-            obscurations=tf_obscurations,
-            batch_size=args['batch_size'],
-            obs_pos=tf_train_pos,
-            spatial_dic=spatial_dic,
-            output_Q=args['output_q'],
-            l2_param=args['l2_param'],
-            d_max_nonparam=args['d_max_nonparam'],
-            graph_features=args['graph_features'],
-            l1_rate=args['l1_rate'],
-            output_dim=args['output_dim'],
-            n_zernikes=args['n_zernikes'],
-            d_max=args['d_max'],
-            x_lims=args['x_lims'],
-            y_lims=args['y_lims']
-        )
+        if args['model'] == 'mccd':
+            # Initialize the model
+            tf_semiparam_field = tf_mccd_psf_field.TF_SP_MCCD_field(
+                zernike_maps=tf_zernike_cube,
+                obscurations=tf_obscurations,
+                batch_size=args['batch_size'],
+                obs_pos=tf_train_pos,
+                spatial_dic=spatial_dic,
+                output_Q=args['output_q'],
+                l2_param=args['l2_param'],
+                d_max_nonparam=args['d_max_nonparam'],
+                graph_features=args['graph_features'],
+                l1_rate=args['l1_rate'],
+                output_dim=args['output_dim'],
+                n_zernikes=args['n_zernikes'],
+                d_max=args['d_max'],
+                x_lims=args['x_lims'],
+                y_lims=args['y_lims']
+            )
+
+        elif args['model'] == 'graph':
+            # Initialize the model
+            tf_semiparam_field = tf_mccd_psf_field.TF_SP_graph_field(
+                zernike_maps=tf_zernike_cube,
+                obscurations=tf_obscurations,
+                batch_size=args['batch_size'],
+                obs_pos=tf_train_pos,
+                spatial_dic=spatial_dic,
+                output_Q=args['output_q'],
+                l2_param=args['l2_param'],
+                graph_features=args['graph_features'],
+                l1_rate=args['l1_rate'],
+                output_dim=args['output_dim'],
+                n_zernikes=args['n_zernikes'],
+                d_max=args['d_max'],
+                x_lims=args['x_lims'],
+                y_lims=args['y_lims']
+            )  
 
     elif args['model'] == 'poly':
-        # # Initialize the model
+        # Initialize the model
         tf_semiparam_field = tf_psf_field.TF_SemiParam_field(
             zernike_maps=tf_zernike_cube,
             obscurations=tf_obscurations,
