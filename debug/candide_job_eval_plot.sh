@@ -28,7 +28,7 @@ module load tensorflow/2.4
 cd /home/tliaudat/github/wf-psf/debug
 
 # Run scripts
-python  helper_eval_plot_script.py
+python  candide_helper_eval_plot_script.py
 
 # Return exit code
 exit 0
