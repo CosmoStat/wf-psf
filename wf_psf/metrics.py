@@ -190,6 +190,10 @@ def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, pos,
     the GPUs. This is specially due to the fact that the OPD maps
     have a higher dimensionality than the observed PSFs.
     
+    The OPD RMSE is computed after having removed the mean from the
+    different reconstructions. It is computed only on the 
+    non-obscured elements from the OPD.
+
     Parameters
     ----------
     tf_semiparam_field: PSF field object
@@ -237,19 +241,27 @@ def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, pos,
 
         # Define the batch positions
         batch_pos = pos[counter:end_sample, :]
-
         # We calculate a batch of OPDs
-        opd_batch = tf_semiparam_field.predict_opd(batch_pos)
-        GT_opd_batch = GT_tf_semiparam_field.predict_opd(batch_pos)
-
-        # Compute RMSE with the obscured the OPD
-        res_opd = np.sqrt(np.mean(
-            ((GT_opd_batch.numpy() - opd_batch.numpy()) * np_obscurations)**2,
-            axis=(1,2)))
-        GT_opd_mean = np.sqrt(np.mean(
-            (GT_opd_batch.numpy() * np_obscurations)**2,
-            axis=(1,2)))
-
+        opd_batch = tf_semiparam_field.predict_opd(batch_pos).numpy()
+        GT_opd_batch = GT_tf_semiparam_field.predict_opd(batch_pos).numpy()
+        # Remove the mean of the OPD
+        opd_batch -= np.mean(opd_batch, axis=(1,2)).reshape(-1,1,1)
+        GT_opd_batch -= np.mean(GT_opd_batch, axis=(1,2)).reshape(-1,1,1)
+        # Obscure the OPDs
+        opd_batch *= np_obscurations
+        GT_opd_batch *= np_obscurations
+        # Generate obscuration mask
+        obsc_mask = np_obscurations>0
+        nb_mask_elems = np.sum(obsc_mask)
+        # Compute the OPD RMSE with the masked obscurations
+        res_opd = np.sqrt(np.array([
+            np.sum((im1[obsc_mask] - im2[obsc_mask])**2) / nb_mask_elems 
+            for im1,im2 in zip(opd_batch, GT_opd_batch)
+        ]))
+        GT_opd_mean = np.sqrt(np.array([
+            np.sum(im2[obsc_mask]**2)/nb_mask_elems 
+            for im2 in GT_opd_batch
+        ]))
         # RMSE calculations
         rmse_vals[counter:end_sample] = res_opd
         rel_rmse_vals[counter:end_sample] = 100. * (res_opd/GT_opd_mean)
