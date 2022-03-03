@@ -7,12 +7,11 @@ from wf_psf.utils import NoiseEstimator
 class L1ParamScheduler(tf.keras.callbacks.Callback):
     """L1 rate scheduler which sets the L1 rate according to schedule.
 
-  Arguments:
+    Arguments:
       l1_schedule_rule: a function that takes an epoch index
           (integer, indexed from 0) and current l1_rate
           as inputs and returns a new l1_rate as output (float).
-  """
-
+    """
     def __init__(self, l1_schedule_rule):
         super(L1ParamScheduler, self).__init__()
         self.l1_schedule_rule = l1_schedule_rule
@@ -26,6 +25,7 @@ class L1ParamScheduler(tf.keras.callbacks.Callback):
         self.model.set_l1_rate(scheduled_l1_rate)
         # tf.keras.backend.set_value(self.model.optimizer.lr, scheduled_lr)
 
+
 def l1_schedule_rule(epoch_n, l1_rate):
     if epoch_n!= 0 and epoch_n%10 == 0:
         scheduled_l1_rate = l1_rate/2
@@ -35,17 +35,29 @@ def l1_schedule_rule(epoch_n, l1_rate):
         return l1_rate
 
 
-def general_train_cycle(tf_semiparam_field, inputs, outputs,
-                val_data, batch_size,
-                l_rate_param, l_rate_non_param,
-                n_epochs_param, n_epochs_non_param,
-                param_optim=None, non_param_optim=None,
-                param_loss=None, non_param_loss=None,
-                param_metrics=None, non_param_metrics=None,
-                param_callback=None, non_param_callback=None,
-                general_callback=None, first_run=False,
-                use_sample_weights=False,
-                verbose=1):
+def general_train_cycle(
+    tf_semiparam_field,
+    inputs,
+    outputs,
+    val_data,
+    batch_size,
+    l_rate_param,
+    l_rate_non_param,
+    n_epochs_param,
+    n_epochs_non_param,
+    param_optim=None,
+    non_param_optim=None,
+    param_loss=None,
+    non_param_loss=None,
+    param_metrics=None,
+    non_param_metrics=None,
+    param_callback=None,
+    non_param_callback=None,
+    general_callback=None,
+    first_run=False,
+    use_sample_weights=False,
+    verbose=1
+):
     """ Function to do a BCD iteration on the model.
     
     Define the model optimisation.
@@ -80,8 +92,12 @@ def general_train_cycle(tf_semiparam_field, inputs, outputs,
     # Define optimiser
     if param_optim is None:
         optimizer = tf.keras.optimizers.Adam(
-            learning_rate=l_rate_param, beta_1=0.9, beta_2=0.999,
-            epsilon=1e-07, amsgrad=False)
+            learning_rate=l_rate_param,
+            beta_1=0.9,
+            beta_2=0.999,
+            epsilon=1e-07,
+            amsgrad=False
+        )
     else:
         optimizer = param_optim
 
@@ -148,21 +164,25 @@ def general_train_cycle(tf_semiparam_field, inputs, outputs,
     tf_semiparam_field.set_trainable_layers(param_bool=True, nonparam_bool=False)
 
     # Compile the model for the first optimisation
-    tf_semiparam_field = build_PSF_model(tf_semiparam_field,
-                                         optimizer=optimizer,
-                                         loss=loss,
-                                         metrics=metrics)
+    tf_semiparam_field = build_PSF_model(
+        tf_semiparam_field,
+        optimizer=optimizer,
+        loss=loss,
+        metrics=metrics
+    )
 
     # Train the parametric part
     print('Starting parametric update..')
-    hist_param = tf_semiparam_field.fit(x = inputs,
-                                        y = outputs,
-                                        batch_size = batch_size,
-                                        epochs = n_epochs_param,
-                                        validation_data = val_data,
-                                        callbacks = callbacks,
-                                        sample_weight = sample_weight,
-                                        verbose = verbose)
+    hist_param = tf_semiparam_field.fit(
+        x = inputs,
+        y = outputs,
+        batch_size = batch_size,
+        epochs = n_epochs_param,
+        validation_data = val_data,
+        callbacks = callbacks,
+        sample_weight = sample_weight,
+        verbose = verbose
+    )
 
     ## Non parametric train
 
@@ -208,39 +228,45 @@ def general_train_cycle(tf_semiparam_field, inputs, outputs,
             callbacks = general_callback + non_param_callback
 
     # Compile the model again for the second optimisation
-    tf_semiparam_field = build_PSF_model(tf_semiparam_field,
-                                         optimizer=optimizer,
-                                         loss=loss,
-                                         metrics=metrics)
+    tf_semiparam_field = build_PSF_model(
+        tf_semiparam_field,
+        optimizer=optimizer,
+        loss=loss,
+        metrics=metrics
+    )
 
     # Train the parametric part
     print('Starting non-parametric update..')
-    hist_non_param = tf_semiparam_field.fit(x = inputs,
-                                            y = outputs,
-                                            batch_size = batch_size,
-                                            epochs = n_epochs_non_param,
-                                            validation_data = val_data,
-                                            callbacks = callbacks,
-                                            sample_weight = sample_weight,
-                                            verbose = verbose)
+    hist_non_param = tf_semiparam_field.fit(
+        x = inputs,
+        y = outputs,
+        batch_size = batch_size,
+        epochs = n_epochs_non_param,
+        validation_data = val_data,
+        callbacks = callbacks,
+        sample_weight = sample_weight,
+        verbose = verbose
+    )
 
     return tf_semiparam_field, hist_param, hist_non_param
 
 
-def param_train_cycle(tf_semiparam_field,
-                      inputs,
-                      outputs,
-                      val_data,
-                      batch_size,
-                      l_rate,
-                      n_epochs, 
-                      param_optim=None,
-                      param_loss=None, 
-                      param_metrics=None, 
-                      param_callback=None, 
-                      general_callback=None,
-                      use_sample_weights=False,
-                      verbose=1):
+def param_train_cycle(
+    tf_semiparam_field,
+    inputs,
+    outputs,
+    val_data,
+    batch_size,
+    l_rate,
+    n_epochs, 
+    param_optim=None,
+    param_loss=None, 
+    param_metrics=None, 
+    param_callback=None, 
+    general_callback=None,
+    use_sample_weights=False,
+    verbose=1
+):
     """ Training cycle for parametric model.
     
     """
@@ -253,8 +279,12 @@ def param_train_cycle(tf_semiparam_field,
     # Define optimiser
     if param_optim is None:
         optimizer = tf.keras.optimizers.Adam(
-            learning_rate=l_rate, beta_1=0.9, beta_2=0.999,
-            epsilon=1e-07, amsgrad=False)
+            learning_rate=l_rate,
+            beta_1=0.9,
+            beta_2=0.999,
+            epsilon=1e-07,
+            amsgrad=False
+        )
     else:
         optimizer = param_optim
 
@@ -312,21 +342,25 @@ def param_train_cycle(tf_semiparam_field,
         sample_weight = None     
     
     # Compile the model for the first optimisation
-    tf_semiparam_field = build_PSF_model(tf_semiparam_field,
-                                         optimizer=optimizer,
-                                         loss=loss,
-                                         metrics=metrics)
+    tf_semiparam_field = build_PSF_model(
+        tf_semiparam_field,
+        optimizer=optimizer,
+        loss=loss,
+        metrics=metrics
+    )
 
     # Train the parametric part
     print('Starting parametric update..')
-    hist_param = tf_semiparam_field.fit(x = inputs,
-                                        y = outputs,
-                                        batch_size = batch_size,
-                                        epochs = n_epochs,
-                                        validation_data = val_data,
-                                        callbacks = callbacks,
-                                        sample_weight = sample_weight,
-                                        verbose = verbose)
+    hist_param = tf_semiparam_field.fit(
+        x = inputs,
+        y = outputs,
+        batch_size = batch_size,
+        epochs = n_epochs,
+        validation_data = val_data,
+        callbacks = callbacks,
+        sample_weight = sample_weight,
+        verbose = verbose
+    )
     
     return tf_semiparam_field, hist_param
 
