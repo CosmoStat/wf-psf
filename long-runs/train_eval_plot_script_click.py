@@ -11,6 +11,22 @@ import click
 
 @click.command()
 
+## Script options
+@click.option(
+    "--train_opt",
+    default=True,
+    type=bool,
+    help="Train the model.")
+@click.option(
+    "--eval_opt",
+    default=True,
+    type=bool,
+    help="Evaluate the model.")
+@click.option(
+    "--plot_opt",
+    default=True,
+    type=bool,
+    help="Plot the model results")
 ## Training options
 # Model definition
 @click.option(
@@ -229,11 +245,13 @@ import click
 
 def main(**args):
     print(args)
-    wf.script_utils.train_model(**args)
-    wf.script_utils.evaluate_model(**args)
-    wf.script_utils.plot_metrics(**args)
-    wf.script_utils.plot_optimisation_metrics(**args)
-
+    if args['train_opt']:
+        wf.script_utils.train_model(**args)
+    if args['eval_opt']:
+        wf.script_utils.evaluate_model(**args)
+    if args['plot_opt']:
+        wf.script_utils.plot_metrics(**args)
+        wf.script_utils.plot_optimisation_metrics(**args)
 
 if __name__ == "__main__":
   main()
