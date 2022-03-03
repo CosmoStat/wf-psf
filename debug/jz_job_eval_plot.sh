@@ -1,34 +1,29 @@
 #!/bin/bash
+#SBATCH --job-name=rerun_metrics    # nom du job
+##SBATCH --partition=gpu_p2          # de-commente pour la partition gpu_p2
+#SBATCH --ntasks=1                   # nombre total de tache MPI (= nombre total de GPU)
+#SBATCH --ntasks-per-node=1          # nombre de tache MPI par noeud (= nombre de GPU par noeud)
+#SBATCH --gres=gpu:1                 # nombre de GPU par n?~Sud (max 8 avec gpu_p2)
+#SBATCH --cpus-per-task=10           # nombre de coeurs CPU par tache (un quart du noeud ici)
+#SBATCH -C v100-32g 
+# /!\ Attention, "multithread" fait reference a l'hyperthreading dans la terminologie Slurm
+#SBATCH --hint=nomultithread         # hyperthreading desactive
+#SBATCH --time=20:00:00              # temps d'execution maximum demande (HH:MM:SS)
+#SBATCH --output=rerun_metrics%j.out  # nom du fichier de sortie
+#SBATCH --error=rerun_metrics%j.err   # nom du fichier d'erreur (ici commun avec la sortie)
+#SBATCH -A ynx@gpu                   # specify the project
+##SBATCH --qos=qos_gpu-dev            # using the dev queue, as this is only for profiling
+##SBATCH --array=0-3
 
-##########################
-# SMP Script for CANDIDE #
-##########################
-# Receive email when job finishes or aborts
-#PBS -M tobias.liaudat@cea.fr
-#PBS -m ea
-# Set a name for the job
-#PBS -N re_eval_wf_psf
-# Join output and errors in one file
-#PBS -j oe
-# Set maximum computing time (e.g. 5min)
-#PBS -l walltime=95:00:00
-# Request number of cores
-#PBS -l nodes=n03:ppn=4:hasgpu
-
-# Full path to environment
-export SPENV="$HOME/.conda/envs/shapepipe"
-export CONFDIR="$HOME/github/aziz_repos/deep_mccd"
-
-# Activate conda environment
+# nettoyage des modules charges en interactif et herites par defaut
 module purge
-module load tensorflow/2.4
-# module load intel/19.0/2
-# source activate shapepipe
 
-cd /home/tliaudat/github/wf-psf/debug
+# chargement des modules
+module load tensorflow-gpu/py3/2.4.1
 
-# Run scripts
-python  candide_helper_eval_plot_script.py
+# echo des commandes lancees
+set -x
 
-# Return exit code
-exit 0
+cd $WORK/repo/wf-psf/debug/
+
+srun python -u ./jz_helper_eval_plot_script.py 
