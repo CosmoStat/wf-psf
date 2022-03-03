@@ -1,9 +1,11 @@
 import numpy as np
 import tensorflow as tf
 import PIL
-from cv2 import resize, INTER_AREA
 import zernike as zk
-
+try:
+    from cv2 import resize, INTER_AREA
+except:
+    print('Problem importing opencv..')
 
 def generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
     r"""Generate the SED elements needed for using the TF_poly_PSF.
