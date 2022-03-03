@@ -10,6 +10,12 @@ try:
     from cv2 import resize, INTER_AREA
 except:
     print('Problem importing opencv..')
+    try:
+        from skimage.transform import downscale_local_mean
+        print('Falling back to skimage.')
+    except:
+        print('Problem importing skimage..')
+
 
 class SimPSFToolkit(object):
     """Simulate PSFs.
@@ -169,9 +175,19 @@ class SimPSFToolkit(object):
         psf = psf[start:stop, start:stop]
 
         # Downsample the image depending on `self.output_Q`
-        psf = resize(src=psf,
-                     dsize=(int(output_dim), int(output_dim)),
-                     interpolation=INTER_AREA)
+        try:
+            psf = resize(
+                src=psf,
+                dsize=(int(output_dim), int(output_dim)),
+                interpolation=INTER_AREA
+            )
+        except:
+            f_x = (psf.shape[0] / output_dim).astype(int)
+            f_y = (psf.shape[1] / output_dim).astype(int)
+            psf = downscale_local_mean(
+                image=psf,
+                factors=[f_x, f_y],
+            )
 
         return psf
 
