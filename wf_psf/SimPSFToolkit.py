@@ -13,6 +13,7 @@ except:
     try:
         from skimage.transform import downscale_local_mean
         print('Falling back to skimage.')
+        print('Only integer downsampling allowed with this method.')
     except:
         print('Problem importing skimage..')
 
@@ -182,11 +183,11 @@ class SimPSFToolkit(object):
                 interpolation=INTER_AREA
             )
         except:
-            f_x = (psf.shape[0] / output_dim).astype(int)
-            f_y = (psf.shape[1] / output_dim).astype(int)
+            f_x = int(psf.shape[0] / output_dim)
+            f_y = int(psf.shape[1] / output_dim)
             psf = downscale_local_mean(
                 image=psf,
-                factors=[f_x, f_y],
+                factors=(f_x, f_y),
             )
 
         return psf
