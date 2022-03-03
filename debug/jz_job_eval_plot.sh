@@ -24,6 +24,4 @@ module load tensorflow-gpu/py3/2.4.1
 # echo des commandes lancees
 set -x
 
-cd $WORK/repo/wf-psf/debug/
-
-srun python -u ./jz_helper_eval_plot_script.py 
+srun python -u $WORK/repo/wf-psf/debug/jz_helper_eval_plot_script.py 
