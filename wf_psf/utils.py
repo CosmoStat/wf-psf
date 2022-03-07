@@ -7,6 +7,22 @@ try:
 except:
     print('Problem importing opencv..')
 
+def scale_to_range(input_array, old_range, new_range):
+    # Scale to [0,1]
+    input_array = (input_array - old_range[0]) / (old_range[1] - old_range[0])
+    # Scale to new_range
+    input_array = input_array * (new_range[1] - new_range[0]) + new_range[0]
+    return input_array
+
+def calc_wfe(zernike_basis, zks):
+    wfe = np.einsum('ijk,ijk->jk', zernike_basis, zks.reshape(-1,1,1))
+    return wfe
+
+def calc_wfe_rms(zernike_basis, zks, pupil_mask):
+    wfe = calc_wfe(zernike_basis, zks)
+    wfe_rms = np.sqrt(np.mean((wfe[pupil_mask] - np.mean(wfe[pupil_mask]))**2))
+    return wfe_rms
+
 def generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
     r"""Generate the SED elements needed for using the TF_poly_PSF.
 
