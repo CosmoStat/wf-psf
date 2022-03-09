@@ -7,6 +7,7 @@ try:
 except:
     print('Problem importing opencv..')
 
+
 def scale_to_range(input_array, old_range, new_range):
     # Scale to [0,1]
     input_array = (input_array - old_range[0]) / (old_range[1] - old_range[0])
@@ -14,14 +15,17 @@ def scale_to_range(input_array, old_range, new_range):
     input_array = input_array * (new_range[1] - new_range[0]) + new_range[0]
     return input_array
 
+
 def calc_wfe(zernike_basis, zks):
-    wfe = np.einsum('ijk,ijk->jk', zernike_basis, zks.reshape(-1,1,1))
+    wfe = np.einsum('ijk,ijk->jk', zernike_basis, zks.reshape(-1, 1, 1))
     return wfe
+
 
 def calc_wfe_rms(zernike_basis, zks, pupil_mask):
     wfe = calc_wfe(zernike_basis, zks)
     wfe_rms = np.sqrt(np.mean((wfe[pupil_mask] - np.mean(wfe[pupil_mask]))**2))
     return wfe_rms
+
 
 def generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
     r"""Generate the SED elements needed for using the TF_poly_PSF.
@@ -31,7 +35,7 @@ def generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
     """
 
     feasible_wv, SED_norm = sim_psf_toolkit.calc_SED_wave_values(SED, n_bins)
-    feasible_N = np.array([sim_psf_toolkit.feasible_N(_wv)  for _wv in feasible_wv])
+    feasible_N = np.array([sim_psf_toolkit.feasible_N(_wv) for _wv in feasible_wv])
 
     return feasible_N, feasible_wv, SED_norm
 
@@ -56,9 +60,9 @@ def calc_poly_position_mat(pos, x_lims, y_lims, d_max):
     to the square [-1,1] x [-1,1]
     """
     # Scale positions
-    scaled_pos_x = (pos[:,0] - x_lims[0]) / (x_lims[1] - x_lims[0])
+    scaled_pos_x = (pos[:, 0] - x_lims[0]) / (x_lims[1] - x_lims[0])
     scaled_pos_x = (scaled_pos_x - 0.5) * 2
-    scaled_pos_y = (pos[:,1] - y_lims[0]) / (y_lims[1] - y_lims[0])
+    scaled_pos_y = (pos[:, 1] - y_lims[0]) / (y_lims[1] - y_lims[0])
     scaled_pos_y = (scaled_pos_y - 0.5) * 2
 
     poly_list = []
@@ -66,7 +70,7 @@ def calc_poly_position_mat(pos, x_lims, y_lims, d_max):
     for d in range(d_max + 1):
         row_idx = d * (d + 1) // 2
         for p in range(d + 1):
-            poly_list.append(scaled_pos_x ** (d - p) * scaled_pos_y ** p)
+            poly_list.append(scaled_pos_x**(d - p) * scaled_pos_y**p)
 
     return tf.convert_to_tensor(poly_list, dtype=tf.float32)
 
@@ -133,14 +137,14 @@ def zernike_generator(n_zernikes, wfe_dim):
         List containing the Zernike modes.
         The values outside the unit circle are filled with NaNs.
     """
-    # Calculate which n (from the (n,m) Zernike convention) we need 
-    # so that we have the desired total number of Zernike coefficients 
-    min_n = (-3 + np.sqrt(1+8*n_zernikes) )/2
+    # Calculate which n (from the (n,m) Zernike convention) we need
+    # so that we have the desired total number of Zernike coefficients
+    min_n = (-3 + np.sqrt(1 + 8 * n_zernikes)) / 2
     n = int(np.ceil(min_n))
 
     # Initialize the zernike generator
     cart = zk.RZern(n)
-    # Create a [-1,1] mesh 
+    # Create a [-1,1] mesh
     ddx = np.linspace(-1.0, 1.0, wfe_dim)
     ddy = np.linspace(-1.0, 1.0, wfe_dim)
     xv, yv = np.meshgrid(ddx, ddy)
@@ -160,7 +164,7 @@ def zernike_generator(n_zernikes, wfe_dim):
 
 def add_noise(image, desired_SNR):
     """ Add noise to an image to obtain a desired SNR. """
-    sigma_noise = np.sqrt((np.sum(image**2))/(desired_SNR * image.shape[0] * image.shape[1]))
+    sigma_noise = np.sqrt((np.sum(image**2)) / (desired_SNR * image.shape[0] * image.shape[1]))
     noisy_image = image + np.random.standard_normal(image.shape) * sigma_noise
     return noisy_image
 
@@ -176,6 +180,7 @@ class NoiseEstimator(object):
         window radius in pixels
 
     """
+
     def __init__(self, img_dim, win_rad):
         self.img_dim = img_dim
         self.win_rad = win_rad
@@ -211,4 +216,3 @@ class NoiseEstimator(object):
 
         # Calculate noise std dev
         return self.sigma_mad(image[self.window])
-

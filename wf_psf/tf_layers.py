@@ -19,6 +19,7 @@ class TF_poly_Z_field(tf.keras.layers.Layer):
         Max degree of polynomial determining the FoV variations.
 
     """
+
     def __init__(self, x_lims, y_lims, n_zernikes=45, d_max=2, name='TF_poly_Z_field'):
         super().__init__(name=name)
 
@@ -31,10 +32,9 @@ class TF_poly_Z_field(tf.keras.layers.Layer):
 
         self.init_coeff_matrix()
 
-
     def get_poly_coefficients_shape(self):
         """ Return the shape of the coefficient matrix."""
-        return (self.n_zernikes, int((self.d_max+1)*(self.d_max+2)/2))
+        return (self.n_zernikes, int((self.d_max + 1) * (self.d_max + 2) / 2))
 
     def assign_coeff_matrix(self, coeff_mat):
         """ Assign coefficient matrix."""
@@ -50,7 +50,8 @@ class TF_poly_Z_field(tf.keras.layers.Layer):
         self.coeff_mat = tf.Variable(
             initial_value=coef_init(self.get_poly_coefficients_shape()),
             trainable=True,
-            dtype=tf.float32)
+            dtype=tf.float32
+        )
 
     def call(self, positions):
         """ Calculate the zernike coefficients for a given position.
@@ -89,6 +90,7 @@ class TF_zernike_OPD(tf.keras.layers.Layer):
     opd: Tensor (batch_size, x_dim, y_dim)
 
     """
+
     def __init__(self, zernike_maps, name='TF_zernike_OPD'):
         super().__init__(name=name)
 
@@ -131,8 +133,8 @@ class TF_batch_poly_PSF(tf.keras.layers.Layer):
         time a calculation is required. REMOVED!
 
     """
-    def __init__(self, obscurations, output_Q,
-        output_dim=64, name='TF_batch_poly_PSF'):
+
+    def __init__(self, obscurations, output_Q, output_dim=64, name='TF_batch_poly_PSF'):
         super().__init__(name=name)
 
         self.output_Q = output_Q
@@ -140,7 +142,6 @@ class TF_batch_poly_PSF(tf.keras.layers.Layer):
         self.output_dim = output_dim
 
         self.current_opd = None
-
 
     def calculate_mono_PSF(self, packed_elems):
         """Calculate monochromatic PSF from packed elements.
@@ -154,13 +155,14 @@ class TF_batch_poly_PSF(tf.keras.layers.Layer):
         lambda_obs = packed_elems[1]
         SED_norm_val = packed_elems[2]
 
-
         # Build the monochromatic PSF generator
-        tf_mono_psf_gen = TF_mono_PSF(phase_N,
-                                      lambda_obs,
-                                      self.obscurations,
-                                      output_Q=self.output_Q,
-                                      output_dim=self.output_dim)
+        tf_mono_psf_gen = TF_mono_PSF(
+            phase_N,
+            lambda_obs,
+            self.obscurations,
+            output_Q=self.output_Q,
+            output_dim=self.output_dim
+        )
 
         # Calculate the PSF
         mono_psf = tf_mono_psf_gen.__call__(self.current_opd)
@@ -170,19 +172,20 @@ class TF_batch_poly_PSF(tf.keras.layers.Layer):
         # Multiply with the respective normalized SED and return
         return tf.math.scalar_mul(SED_norm_val, mono_psf)
 
-
     def calculate_poly_PSF(self, packed_elems):
         """Calculate a polychromatic PSF."""
 
-        self.current_opd = packed_elems[0][tf.newaxis,:,:]
+        self.current_opd = packed_elems[0][tf.newaxis, :, :]
         SED_pack_data = packed_elems[1]
 
         def _calculate_poly_PSF(elems_to_unpack):
-            return tf.map_fn(self.calculate_mono_PSF,
-                             elems_to_unpack,
-                             parallel_iterations=10,
-                             fn_output_signature=tf.float32,
-                             swap_memory=True)
+            return tf.map_fn(
+                self.calculate_mono_PSF,
+                elems_to_unpack,
+                parallel_iterations=10,
+                fn_output_signature=tf.float32,
+                swap_memory=True
+            )
 
         # Readability
         # stacked_psfs = _calculate_poly_PSF(packed_elems)
@@ -202,11 +205,13 @@ class TF_batch_poly_PSF(tf.keras.layers.Layer):
         packed_SED_data = inputs[1]
 
         def _calculate_PSF_batch(elems_to_unpack):
-            return tf.map_fn(self.calculate_poly_PSF,
-                             elems_to_unpack,
-                             parallel_iterations=10,
-                             fn_output_signature=tf.float32,
-                             swap_memory=True)
+            return tf.map_fn(
+                self.calculate_poly_PSF,
+                elems_to_unpack,
+                parallel_iterations=10,
+                fn_output_signature=tf.float32,
+                swap_memory=True
+            )
 
         psf_poly_batch = _calculate_PSF_batch((opd_batch, packed_SED_data))
 
@@ -233,8 +238,8 @@ class TF_batch_mono_PSF(tf.keras.layers.Layer):
         Output PSF stamp dimension.
     
     """
-    def __init__(self, obscurations, output_Q,
-        output_dim=64, name='TF_batch_mono_PSF'):
+
+    def __init__(self, obscurations, output_Q, output_dim=64, name='TF_batch_mono_PSF'):
         super().__init__(name=name)
 
         self.output_Q = output_Q
@@ -247,30 +252,31 @@ class TF_batch_mono_PSF(tf.keras.layers.Layer):
 
         self.current_opd = None
 
-
     def calculate_mono_PSF(self, current_opd):
         """Calculate monochromatic PSF from OPD info.
         """
         # Calculate the PSF
-        mono_psf = self.tf_mono_psf_gen.__call__(current_opd[tf.newaxis,:,:])
+        mono_psf = self.tf_mono_psf_gen.__call__(current_opd[tf.newaxis, :, :])
         mono_psf = tf.squeeze(mono_psf, axis=0)
 
-        return mono_psf  
+        return mono_psf
 
     def init_mono_PSF(self):
         """ Initialise or restart the PSF generator. """
-        self.tf_mono_psf_gen = TF_mono_PSF(self.phase_N,
-                                    self.lambda_obs,
-                                    self.obscurations,
-                                    output_Q=self.output_Q,
-                                    output_dim=self.output_dim)
+        self.tf_mono_psf_gen = TF_mono_PSF(
+            self.phase_N,
+            self.lambda_obs,
+            self.obscurations,
+            output_Q=self.output_Q,
+            output_dim=self.output_dim
+        )
 
     def set_lambda_phaseN(self, phase_N=914, lambda_obs=0.7):
         """ Set the lambda value for monochromatic PSFs and the phaseN. """
         self.phase_N = phase_N
         self.lambda_obs = lambda_obs
         self.init_mono_PSF()
-        
+
     def set_output_params(self, output_Q, output_dim):
         """ Set output patams, Q and dimension. """
         self.output_Q = output_Q
@@ -284,11 +290,13 @@ class TF_batch_mono_PSF(tf.keras.layers.Layer):
             self.set_lambda_phaseN()
 
         def _calculate_PSF_batch(elems_to_unpack):
-            return tf.map_fn(self.calculate_mono_PSF,
-                             elems_to_unpack,
-                             parallel_iterations=10,
-                             fn_output_signature=tf.float32,
-                             swap_memory=True)
+            return tf.map_fn(
+                self.calculate_mono_PSF,
+                elems_to_unpack,
+                parallel_iterations=10,
+                fn_output_signature=tf.float32,
+                swap_memory=True
+            )
 
         mono_psf_batch = _calculate_PSF_batch((opd_batch))
 
@@ -311,6 +319,7 @@ class TF_NP_poly_OPD(tf.keras.layers.Layer):
         Dimension of the OPD maps. Same as pupil diameter.
 
     """
+
     def __init__(self, x_lims, y_lims, d_max=3, opd_dim=256, name='TF_NP_poly_OPD'):
         super().__init__(name=name)
         # Parameters
@@ -319,13 +328,12 @@ class TF_NP_poly_OPD(tf.keras.layers.Layer):
         self.d_max = d_max
         self.opd_dim = opd_dim
 
-        self.n_poly = int((self.d_max+1)*(self.d_max+2)/2)
+        self.n_poly = int((self.d_max + 1) * (self.d_max + 2) / 2)
 
         # Variables
         self.S_mat = None
         self.alpha_mat = None
         self.init_vars()
-
 
     def init_vars(self):
         """ Initialize trainable variables.
@@ -337,18 +345,17 @@ class TF_NP_poly_OPD(tf.keras.layers.Layer):
         self.S_mat = tf.Variable(
             initial_value=random_init(shape=[self.n_poly, self.opd_dim, self.opd_dim]),
             trainable=True,
-            dtype=tf.float32)
+            dtype=tf.float32
+        )
 
         # Alpha initialization
         self.alpha_mat = tf.Variable(
-            initial_value=tf.eye(self.n_poly),
-            trainable=True,
-            dtype=tf.float32)
+            initial_value=tf.eye(self.n_poly), trainable=True, dtype=tf.float32
+        )
 
     def set_alpha_zero(self):
         """ Set alpha matrix to zero."""
-        _ = self.alpha_mat.assign(tf.zeros_like(self.alpha_mat,
-                                                dtype=tf.float32))
+        _ = self.alpha_mat.assign(tf.zeros_like(self.alpha_mat, dtype=tf.float32))
 
     def set_alpha_identity(self):
         """ Set alpha matrix to the identity."""
@@ -371,7 +378,7 @@ class TF_NP_poly_OPD(tf.keras.layers.Layer):
         # Calculate the Pi matrix
         poly_mat = calc_poly_position_mat(positions, self.x_lims, self.y_lims, self.d_max)
         # We need to transpose it here to have the batch dimension at first
-        poly_mat = tf.transpose(poly_mat, perm=[1,0])
+        poly_mat = tf.transpose(poly_mat, perm=[1, 0])
 
         inter_res = tf.linalg.matmul(poly_mat, self.alpha_mat)
 
@@ -407,6 +414,7 @@ class TF_NP_MCCD_OPD_v2(tf.keras.layers.Layer):
         Dimension of the OPD maps. Same as pupil diameter.
 
     """
+
     def __init__(
         self,
         obs_pos,
@@ -435,7 +443,7 @@ class TF_NP_MCCD_OPD_v2(tf.keras.layers.Layer):
 
         self.n_stars = self.poly_dic.shape[0]
         self.n_graph_elems = self.graph_dic.shape[1]
-        self.poly_features = int((self.d_max+1)*(self.d_max+2)/2)
+        self.poly_features = int((self.d_max + 1) * (self.d_max + 2) / 2)
         self.graph_features = graph_features
 
         # Variables
@@ -445,7 +453,6 @@ class TF_NP_MCCD_OPD_v2(tf.keras.layers.Layer):
         self.alpha_graph = None
         self.init_vars()
 
-
     def init_vars(self):
         """ Initialize trainable variables.
 
@@ -454,76 +461,49 @@ class TF_NP_MCCD_OPD_v2(tf.keras.layers.Layer):
         # S initialization
         random_init = tf.random_uniform_initializer(minval=-0.001, maxval=0.001)
         self.S_poly = tf.Variable(
-            initial_value=random_init(
-                shape=[self.poly_features, self.opd_dim, self.opd_dim]
-            ),
+            initial_value=random_init(shape=[self.poly_features, self.opd_dim, self.opd_dim]),
             trainable=True,
             dtype=tf.float32
         )
         self.S_graph = tf.Variable(
-            initial_value=random_init(
-                shape=[self.graph_features, self.opd_dim, self.opd_dim]
-            ),
+            initial_value=random_init(shape=[self.graph_features, self.opd_dim, self.opd_dim]),
             trainable=True,
             dtype=tf.float32
         )
 
         # Alpha initialization
         self.alpha_poly = tf.Variable(
-            initial_value=tf.eye(
-                num_rows=self.poly_features,
-                num_columns=self.poly_features
-            ),
+            initial_value=tf.eye(num_rows=self.poly_features, num_columns=self.poly_features),
             trainable=True,
             dtype=tf.float32
         )
         self.alpha_graph = tf.Variable(
-            initial_value=tf.eye(
-                num_rows=self.n_graph_elems,
-                num_columns=self.graph_features
-            ),
+            initial_value=tf.eye(num_rows=self.n_graph_elems, num_columns=self.graph_features),
             trainable=True,
             dtype=tf.float32
         )
 
     def set_alpha_zero(self):
         """ Set alpha matrix to zero."""
-        _ = self.alpha_poly.assign(
-            tf.zeros_like(self.alpha_poly, dtype=tf.float32)
-        )
-        _ = self.alpha_graph.assign(
-            tf.zeros_like(self.alpha_graph, dtype=tf.float32)
-        )
+        _ = self.alpha_poly.assign(tf.zeros_like(self.alpha_poly, dtype=tf.float32))
+        _ = self.alpha_graph.assign(tf.zeros_like(self.alpha_graph, dtype=tf.float32))
 
     def set_alpha_identity(self):
         """ Set alpha matrix to the identity."""
         _ = self.alpha_poly.assign(
-            tf.eye(
-                num_rows=self.poly_features,
-                num_columns=self.poly_features,
-                dtype=tf.float32
-                )
-            )
+            tf.eye(num_rows=self.poly_features, num_columns=self.poly_features, dtype=tf.float32)
+        )
         _ = self.alpha_graph.assign(
-            tf.eye(
-                num_rows=self.n_graph_elems,
-                num_columns=self.graph_features,
-                dtype=tf.float32
-                )
-            )
+            tf.eye(num_rows=self.n_graph_elems, num_columns=self.graph_features, dtype=tf.float32)
+        )
 
     def predict(self, positions):
         """ Prediction step."""
         ## Polynomial part
         # Calculate the Pi matrix
-        poly_mat = calc_poly_position_mat(
-            positions,
-            self.x_lims,
-            self.y_lims,
-            self.d_max
-        )
+        poly_mat = calc_poly_position_mat(positions, self.x_lims, self.y_lims, self.d_max)
         # We need to transpose it here to have the batch dimension at first
-        A_poly = tf.linalg.matmul(tf.transpose(poly_mat, perm=[1,0]), self.alpha_poly)
+        A_poly = tf.linalg.matmul(tf.transpose(poly_mat, perm=[1, 0]), self.alpha_poly)
         interp_poly_opd = tf.tensordot(A_poly, self.S_poly, axes=1)
 
         ## Graph part
@@ -546,7 +526,6 @@ class TF_NP_MCCD_OPD_v2(tf.keras.layers.Layer):
 
         return tf.math.add(interp_poly_opd, interp_graph_opd)
 
-
     def call(self, positions):
         """ Calculate the OPD maps for the given positions.
 
@@ -564,20 +543,17 @@ class TF_NP_MCCD_OPD_v2(tf.keras.layers.Layer):
         # Add L1 loss of the graph alpha matrix
         # self.add_loss(self.l1_rate * tf.math.reduce_sum(tf.math.abs(self.alpha_graph)))
         # Try Lp norm with p=1.1
-        p=1.1
+        p = 1.1
         self.add_loss(
-            self.l1_rate * tf.math.pow(
-                tf.math.reduce_sum(tf.math.pow(tf.math.abs(self.alpha_graph), p)),
-                1/p
-            )
+            self.l1_rate *
+            tf.math.pow(tf.math.reduce_sum(tf.math.pow(tf.math.abs(self.alpha_graph), p)), 1 / p)
         )
 
         def calc_index(idx_pos):
-            return tf.where(tf.equal(self.obs_pos, idx_pos))[0,0]
+            return tf.where(tf.equal(self.obs_pos, idx_pos))[0, 0]
 
         # Calculate the indices of the input batch
         indices = tf.map_fn(calc_index, positions, fn_output_signature=tf.int64)
-
 
         # Recover the spatial dict from the batch indexes
         # Matrix multiplication dict*alpha
@@ -624,6 +600,7 @@ class TF_NP_GRAPH_OPD(tf.keras.layers.Layer):
         Dimension of the OPD maps. Same as pupil diameter.
 
     """
+
     def __init__(
         self,
         obs_pos,
@@ -657,7 +634,6 @@ class TF_NP_GRAPH_OPD(tf.keras.layers.Layer):
         self.alpha_graph = None
         self.init_vars()
 
-
     def init_vars(self):
         """ Initialize trainable variables.
 
@@ -667,37 +643,26 @@ class TF_NP_GRAPH_OPD(tf.keras.layers.Layer):
         random_init = tf.random_uniform_initializer(minval=-0.001, maxval=0.001)
 
         self.S_graph = tf.Variable(
-            initial_value=random_init(
-                shape=[self.graph_features, self.opd_dim, self.opd_dim]
-            ),
+            initial_value=random_init(shape=[self.graph_features, self.opd_dim, self.opd_dim]),
             trainable=True,
             dtype=tf.float32
         )
 
         # Alpha initialization
         self.alpha_graph = tf.Variable(
-            initial_value=tf.eye(
-                num_rows=self.n_graph_elems,
-                num_columns=self.graph_features
-            ),
+            initial_value=tf.eye(num_rows=self.n_graph_elems, num_columns=self.graph_features),
             trainable=True,
             dtype=tf.float32
         )
 
     def set_alpha_zero(self):
         """ Set alpha matrix to zero."""
-        _ = self.alpha_graph.assign(
-            tf.zeros_like(self.alpha_graph, dtype=tf.float32)
-        )
+        _ = self.alpha_graph.assign(tf.zeros_like(self.alpha_graph, dtype=tf.float32))
 
     def set_alpha_identity(self):
         """ Set alpha matrix to the identity."""
         _ = self.alpha_graph.assign(
-            tf.eye(
-                num_rows=self.n_graph_elems,
-                num_columns=self.graph_features,
-                dtype=tf.float32
-            )
+            tf.eye(num_rows=self.n_graph_elems, num_columns=self.graph_features, dtype=tf.float32)
         )
 
     def predict(self, positions):
@@ -723,7 +688,6 @@ class TF_NP_GRAPH_OPD(tf.keras.layers.Layer):
 
         return interp_graph_opd
 
-
     def call(self, positions):
         """ Calculate the OPD maps for the given positions.
 
@@ -743,20 +707,17 @@ class TF_NP_GRAPH_OPD(tf.keras.layers.Layer):
         #     self.l1_rate * tf.math.reduce_sum(tf.math.abs(self.alpha_graph))
         # )
         # Try Lp norm with p=1.1
-        p=1.1
+        p = 1.1
         self.add_loss(
-          self.l1_rate * tf.math.pow(
-              tf.math.reduce_sum(tf.math.pow(tf.math.abs(self.alpha_graph), p)),
-              1/p
-            )
+            self.l1_rate *
+            tf.math.pow(tf.math.reduce_sum(tf.math.pow(tf.math.abs(self.alpha_graph), p)), 1 / p)
         )
 
         def calc_index(idx_pos):
-            return tf.where(tf.equal(self.obs_pos, idx_pos))[0,0]
+            return tf.where(tf.equal(self.obs_pos, idx_pos))[0, 0]
 
         # Calculate the indices of the input batch
         indices = tf.map_fn(calc_index, positions, fn_output_signature=tf.int64)
-
 
         # Recover the spatial dict from the batch indexes
         # Matrix multiplication dict*alpha
@@ -800,8 +761,8 @@ class OLD_TF_batch_poly_PSF(tf.keras.layers.Layer):
         time a calculation is required.
 
     """
-    def __init__(self, obscurations, psf_batch,
-        output_dim=64, name='TF_batch_poly_PSF'):
+
+    def __init__(self, obscurations, psf_batch, output_dim=64, name='TF_batch_poly_PSF'):
         super().__init__(name=name)
 
         self.obscurations = obscurations
@@ -809,7 +770,6 @@ class OLD_TF_batch_poly_PSF(tf.keras.layers.Layer):
         self.psf_batch = psf_batch
 
         self.current_opd = None
-
 
     def set_psf_batch(self, psf_batch):
         """Set poly PSF batch."""
@@ -828,17 +788,15 @@ class OLD_TF_batch_poly_PSF(tf.keras.layers.Layer):
         SED_norm_val = packed_elems[2]
 
         # Build the monochromatic PSF generator
-        tf_mono_psf_gen = TF_mono_PSF(phase_N,
-                                      lambda_obs,
-                                      self.obscurations,
-                                      output_dim=self.output_dim)
+        tf_mono_psf_gen = TF_mono_PSF(
+            phase_N, lambda_obs, self.obscurations, output_dim=self.output_dim
+        )
 
         # Calculate the PSF
         mono_psf = tf_mono_psf_gen.__call__(self.current_opd)
 
         # Multiply with the respective normalized SED and return
         return tf.math.scalar_mul(SED_norm_val, mono_psf)
-
 
     def calculate_poly_PSF(self, packed_elems):
         """Calculate a polychromatic PSF."""
@@ -847,11 +805,13 @@ class OLD_TF_batch_poly_PSF(tf.keras.layers.Layer):
         print(packed_elems.dtype)
 
         def _calculate_poly_PSF(elems_to_unpack):
-            return tf.map_fn(self.calculate_mono_PSF,
-                             elems_to_unpack,
-                             parallel_iterations=10,
-                             fn_output_signature=tf.float32,
-                             swap_memory=True)
+            return tf.map_fn(
+                self.calculate_mono_PSF,
+                elems_to_unpack,
+                parallel_iterations=10,
+                fn_output_signature=tf.float32,
+                swap_memory=True
+            )
 
         # Readability
         # stacked_psfs = _calculate_poly_PSF(packed_elems)
@@ -875,7 +835,7 @@ class OLD_TF_batch_poly_PSF(tf.keras.layers.Layer):
         def while_body(it):
             # Extract the required data of _it_
             packed_elems = packed_SED_data[it]
-            self.current_opd = opd_batch[it][tf.newaxis,:,:]
+            self.current_opd = opd_batch[it][tf.newaxis, :, :]
 
             # Calculate the _it_ poly PSF
             poly_psf = self.calculate_poly_PSF(packed_elems)
@@ -883,14 +843,15 @@ class OLD_TF_batch_poly_PSF(tf.keras.layers.Layer):
             # Update the poly PSF tensor with the result
             # Slice update of a tensor
             # See tf doc of _tensor_scatter_nd_update_ to understand
-            indices = tf.reshape(it, shape=(1,1))
+            indices = tf.reshape(it, shape=(1, 1))
             # self.psf_batch = tf.tensor_scatter_nd_update(self.psf_batch, indices, poly_psf)
 
             # increment i
             return [tf.add(it, 1)]
 
         # Loop over the PSF batches
-        r = tf.while_loop(while_condition, while_body, [it],
-                          swap_memory=True, parallel_iterations=10)
+        r = tf.while_loop(
+            while_condition, while_body, [it], swap_memory=True, parallel_iterations=10
+        )
 
         return self.psf_batch

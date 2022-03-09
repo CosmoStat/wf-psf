@@ -12,6 +12,7 @@ class L1ParamScheduler(tf.keras.callbacks.Callback):
           (integer, indexed from 0) and current l1_rate
           as inputs and returns a new l1_rate as output (float).
     """
+
     def __init__(self, l1_schedule_rule):
         super(L1ParamScheduler, self).__init__()
         self.l1_schedule_rule = l1_schedule_rule
@@ -27,8 +28,8 @@ class L1ParamScheduler(tf.keras.callbacks.Callback):
 
 
 def l1_schedule_rule(epoch_n, l1_rate):
-    if epoch_n!= 0 and epoch_n%10 == 0:
-        scheduled_l1_rate = l1_rate/2
+    if epoch_n != 0 and epoch_n % 10 == 0:
+        scheduled_l1_rate = l1_rate / 2
         print("\nEpoch %05d: L1 rate is %0.4e." % (epoch_n, scheduled_l1_rate))
         return scheduled_l1_rate
     else:
@@ -92,11 +93,7 @@ def general_train_cycle(
     # Define optimiser
     if param_optim is None:
         optimizer = tf.keras.optimizers.Adam(
-            learning_rate=l_rate_param,
-            beta_1=0.9,
-            beta_2=0.999,
-            epsilon=1e-07,
-            amsgrad=False
+            learning_rate=l_rate_param, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=False
         )
     else:
         optimizer = param_optim
@@ -118,14 +115,14 @@ def general_train_cycle(
         else:
             callbacks = general_callback + param_callback
 
-    # Calculate sample weights 
+    # Calculate sample weights
     if use_sample_weights:
         # Generate standard deviation estimator
         img_dim = (outputs.shape[1], outputs.shape[2])
         win_rad = np.ceil(outputs.shape[1] / 3.33)
         std_est = NoiseEstimator(img_dim=img_dim, win_rad=win_rad)
         # Estimate noise std_dev
-        imgs_std = np.array([std_est.estimate_noise(_im) for _im in  outputs])
+        imgs_std = np.array([std_est.estimate_noise(_im) for _im in outputs])
         # Calculate weights
         variances = imgs_std**2
 
@@ -138,14 +135,14 @@ def general_train_cycle(
             min_w = 0.1
             # Epsilon is to avoid outliers
             epsilon = np.median(variances) * 0.1
-            w = 1/(variances + epsilon)
-            scaled_w = (w  - np.min(w))/(np.max(w) - np.min(w)) # Transform to [0,1]
+            w = 1 / (variances + epsilon)
+            scaled_w = (w - np.min(w)) / (np.max(w) - np.min(w))  # Transform to [0,1]
             scaled_w = scaled_w * (max_w - min_w) + min_w  # Transform to [min_w, max_w]
             scaled_w = scaled_w + (1 - np.mean(scaled_w))  # Adjust the mean to 1
             scaled_w[scaled_w < min_w] = min_w
             # Save the weights
             sample_weight = scaled_w
-        
+
         elif strategy_opt == 1:
             # Use inverse variance for weights
             # Then scale the values by the median
@@ -165,23 +162,20 @@ def general_train_cycle(
 
     # Compile the model for the first optimisation
     tf_semiparam_field = build_PSF_model(
-        tf_semiparam_field,
-        optimizer=optimizer,
-        loss=loss,
-        metrics=metrics
+        tf_semiparam_field, optimizer=optimizer, loss=loss, metrics=metrics
     )
 
     # Train the parametric part
     print('Starting parametric update..')
     hist_param = tf_semiparam_field.fit(
-        x = inputs,
-        y = outputs,
-        batch_size = batch_size,
-        epochs = n_epochs_param,
-        validation_data = val_data,
-        callbacks = callbacks,
-        sample_weight = sample_weight,
-        verbose = verbose
+        x=inputs,
+        y=outputs,
+        batch_size=batch_size,
+        epochs=n_epochs_param,
+        validation_data=val_data,
+        callbacks=callbacks,
+        sample_weight=sample_weight,
+        verbose=verbose
     )
 
     ## Non parametric train
@@ -195,7 +189,6 @@ def general_train_cycle(
     # Set the non parametric layer to non trainable
     tf_semiparam_field.set_trainable_layers(param_bool=False, nonparam_bool=True)
 
-
     # Define Loss
     if non_param_loss is None:
         loss = tf.keras.losses.MeanSquaredError()
@@ -205,8 +198,8 @@ def general_train_cycle(
     # Define optimiser
     if non_param_optim is None:
         optimizer = tf.keras.optimizers.Adam(
-            learning_rate=l_rate_non_param, beta_1=0.9, beta_2=0.999,
-            epsilon=1e-07, amsgrad=False)
+            learning_rate=l_rate_non_param, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=False
+        )
     else:
         optimizer = non_param_optim
 
@@ -229,23 +222,20 @@ def general_train_cycle(
 
     # Compile the model again for the second optimisation
     tf_semiparam_field = build_PSF_model(
-        tf_semiparam_field,
-        optimizer=optimizer,
-        loss=loss,
-        metrics=metrics
+        tf_semiparam_field, optimizer=optimizer, loss=loss, metrics=metrics
     )
 
     # Train the parametric part
     print('Starting non-parametric update..')
     hist_non_param = tf_semiparam_field.fit(
-        x = inputs,
-        y = outputs,
-        batch_size = batch_size,
-        epochs = n_epochs_non_param,
-        validation_data = val_data,
-        callbacks = callbacks,
-        sample_weight = sample_weight,
-        verbose = verbose
+        x=inputs,
+        y=outputs,
+        batch_size=batch_size,
+        epochs=n_epochs_non_param,
+        validation_data=val_data,
+        callbacks=callbacks,
+        sample_weight=sample_weight,
+        verbose=verbose
     )
 
     return tf_semiparam_field, hist_param, hist_non_param
@@ -258,11 +248,11 @@ def param_train_cycle(
     val_data,
     batch_size,
     l_rate,
-    n_epochs, 
+    n_epochs,
     param_optim=None,
-    param_loss=None, 
-    param_metrics=None, 
-    param_callback=None, 
+    param_loss=None,
+    param_metrics=None,
+    param_callback=None,
     general_callback=None,
     use_sample_weights=False,
     verbose=1
@@ -270,7 +260,7 @@ def param_train_cycle(
     """ Training cycle for parametric model.
     
     """
-   # Define Loss
+    # Define Loss
     if param_loss is None:
         loss = tf.keras.losses.MeanSquaredError()
     else:
@@ -279,11 +269,7 @@ def param_train_cycle(
     # Define optimiser
     if param_optim is None:
         optimizer = tf.keras.optimizers.Adam(
-            learning_rate=l_rate,
-            beta_1=0.9,
-            beta_2=0.999,
-            epsilon=1e-07,
-            amsgrad=False
+            learning_rate=l_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=False
         )
     else:
         optimizer = param_optim
@@ -305,14 +291,14 @@ def param_train_cycle(
         else:
             callbacks = general_callback + param_callback
 
-        # Calculate sample weights 
+        # Calculate sample weights
     if use_sample_weights:
         # Generate standard deviation estimator
         img_dim = (outputs.shape[1], outputs.shape[2])
         win_rad = np.ceil(outputs.shape[1] / 3.33)
         std_est = NoiseEstimator(img_dim=img_dim, win_rad=win_rad)
         # Estimate noise std_dev
-        imgs_std = np.array([std_est.estimate_noise(_im) for _im in  outputs])
+        imgs_std = np.array([std_est.estimate_noise(_im) for _im in outputs])
         # Calculate weights
         variances = imgs_std**2
 
@@ -324,14 +310,14 @@ def param_train_cycle(
             min_w = 0.1
             # Epsilon is to avoid outliers
             epsilon = np.median(variances) * 0.1
-            w = 1/(variances + epsilon)
-            scaled_w = (w  - np.min(w))/(np.max(w) - np.min(w)) # Transform to [0,1]
+            w = 1 / (variances + epsilon)
+            scaled_w = (w - np.min(w)) / (np.max(w) - np.min(w))  # Transform to [0,1]
             scaled_w = scaled_w * (max_w - min_w) + min_w  # Transform to [min_w, max_w]
             scaled_w = scaled_w + (1 - np.mean(scaled_w))  # Adjust the mean to 1
             scaled_w[scaled_w < min_w] = min_w
             # Save the weights
             sample_weight = scaled_w
-        
+
         elif strategy_opt == 1:
             # Use inverse variance for weights
             # Then scale the values by the median
@@ -339,29 +325,24 @@ def param_train_cycle(
             sample_weight /= np.median(sample_weight)
 
     else:
-        sample_weight = None     
-    
+        sample_weight = None
+
     # Compile the model for the first optimisation
     tf_semiparam_field = build_PSF_model(
-        tf_semiparam_field,
-        optimizer=optimizer,
-        loss=loss,
-        metrics=metrics
+        tf_semiparam_field, optimizer=optimizer, loss=loss, metrics=metrics
     )
 
     # Train the parametric part
     print('Starting parametric update..')
     hist_param = tf_semiparam_field.fit(
-        x = inputs,
-        y = outputs,
-        batch_size = batch_size,
-        epochs = n_epochs,
-        validation_data = val_data,
-        callbacks = callbacks,
-        sample_weight = sample_weight,
-        verbose = verbose
+        x=inputs,
+        y=outputs,
+        batch_size=batch_size,
+        epochs=n_epochs,
+        validation_data=val_data,
+        callbacks=callbacks,
+        sample_weight=sample_weight,
+        verbose=verbose
     )
-    
+
     return tf_semiparam_field, hist_param
-
-

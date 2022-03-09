@@ -76,12 +76,24 @@ class SimPSFToolkit(object):
 
     """
 
-    def __init__(self, zernike_maps, max_order=45, max_wfe_rms=0.1,
-                 output_dim=64, rand_seed=None, plot_opt=False,
-                 oversampling_rate=3., output_Q=1,
-                 pix_sampling=12, tel_diameter=1.2, tel_focal_length=24.5,
-                 pupil_diameter=1024, euclid_obsc=True, LP_filter_length=3,
-                 verbose=0):
+    def __init__(
+        self,
+        zernike_maps,
+        max_order=45,
+        max_wfe_rms=0.1,
+        output_dim=64,
+        rand_seed=None,
+        plot_opt=False,
+        oversampling_rate=3.,
+        output_Q=1,
+        pix_sampling=12,
+        tel_diameter=1.2,
+        tel_focal_length=24.5,
+        pupil_diameter=1024,
+        euclid_obsc=True,
+        LP_filter_length=3,
+        verbose=0
+    ):
         # Input attributes
         self.max_order = max_order
         self.rand_seed = rand_seed
@@ -90,7 +102,6 @@ class SimPSFToolkit(object):
         self.max_wfe_rms = max_wfe_rms  # In [um]
         self.output_dim = output_dim  # In pixels per dimension
         self.verbose = verbose
-
 
         # Telescope characteristics
         self.oversampling_rate = oversampling_rate  # dimensionless
@@ -113,10 +124,11 @@ class SimPSFToolkit(object):
 
         # Generate obscurations
         if euclid_obsc:
-            self.obscurations = self.generate_pupil_obscurations(N_pix=pupil_diameter, N_filter=LP_filter_length)
+            self.obscurations = self.generate_pupil_obscurations(
+                N_pix=pupil_diameter, N_filter=LP_filter_length
+            )
         else:
             self.obscurations = np.ones((pupil_diameter, pupil_diameter))
-
 
     @staticmethod
     def _OLD_fft_diffraction_op(wf, pupil_mask, pad_factor=2, match_shapes=True):
@@ -136,10 +148,11 @@ class SimPSFToolkit(object):
             A real 2D array corresponding to the PSF.
 
         """
-        start = (wf.shape[0]*pad_factor)//2 - wf.shape[0]//2
-        stop = (wf.shape[0]*pad_factor)//2 + wf.shape[0]//2
+        start = (wf.shape[0] * pad_factor) // 2 - wf.shape[0] // 2
+        stop = (wf.shape[0] * pad_factor) // 2 + wf.shape[0] // 2
 
-        padded_wf = np.zeros((wf.shape[0]*pad_factor, wf.shape[1]*pad_factor), dtype=np.complex128)
+        padded_wf = np.zeros((wf.shape[0] * pad_factor, wf.shape[1] * pad_factor),
+                             dtype=np.complex128)
 
         padded_wf[start:stop, start:stop][pupil_mask] = wf[pupil_mask]
 
@@ -150,13 +163,12 @@ class SimPSFToolkit(object):
 
         if match_shapes:
             # Return the psf with its original shape without the padding factor
-            x_dif = int((psf.shape[0]/pad_factor)//2)
-            y_dif = int((psf.shape[1]/pad_factor)//2)
+            x_dif = int((psf.shape[0] / pad_factor) // 2)
+            y_dif = int((psf.shape[1] / pad_factor) // 2)
 
-            return psf[x_dif :psf.shape[0]-x_dif, y_dif :psf.shape[1]-y_dif]
+            return psf[x_dif:psf.shape[0] - x_dif, y_dif:psf.shape[1] - y_dif]
         else:
             return psf
-
 
     @staticmethod
     def fft_diffract(wf, output_Q, output_dim=64):
@@ -165,9 +177,9 @@ class SimPSFToolkit(object):
         psf = np.abs(fft_wf)**2
 
         # Calculate crop dimensions
-        if output_dim*output_Q < psf.shape[0]:
-            start = int(psf.shape[0]//2-(output_dim*output_Q)//2)
-            stop = int(psf.shape[0]//2+(output_dim*output_Q)//2)
+        if output_dim * output_Q < psf.shape[0]:
+            start = int(psf.shape[0] // 2 - (output_dim * output_Q) // 2)
+            stop = int(psf.shape[0] // 2 + (output_dim * output_Q) // 2)
         else:
             start = int(0)
             stop = psf.shape[0]
@@ -178,9 +190,7 @@ class SimPSFToolkit(object):
         # Downsample the image depending on `self.output_Q`
         try:
             psf = resize(
-                src=psf,
-                dsize=(int(output_dim), int(output_dim)),
-                interpolation=INTER_AREA
+                src=psf, dsize=(int(output_dim), int(output_dim)), interpolation=INTER_AREA
             )
         except:
             f_x = int(psf.shape[0] / output_dim)
@@ -217,9 +227,9 @@ class SimPSFToolkit(object):
         AS_centre = [0, 0]
         M1_centre = [0, 51]
 
-        sp1_angle = 106.78 - 90 # [degrees]
-        sp2_angle = 50.11 - 90 # [degrees]
-        sp3_angle = -10.76 - 90 # [degrees]
+        sp1_angle = 106.78 - 90  # [degrees]
+        sp2_angle = 50.11 - 90  # [degrees]
+        sp3_angle = -10.76 - 90  # [degrees]
 
         sp1_x_pos = 260  # [mm]
         sp1_y_pos = 240  # [mm]
@@ -228,57 +238,56 @@ class SimPSFToolkit(object):
         sp3_x_pos = 70  # [mm]
         sp3_y_pos = -330  # [mm]
 
-
         # Build pupil plane
         pupil_plane = np.ones((N_pix, N_pix))
 
         # coordinates of map in [mm]
-        W, H  = np.meshgrid(np.linspace(-AS_diam//2, AS_diam//2, N_pix), np.linspace(-AS_diam//2, AS_diam//2, N_pix))
-
+        W, H = np.meshgrid(
+            np.linspace(-AS_diam // 2, AS_diam // 2, N_pix),
+            np.linspace(-AS_diam // 2, AS_diam // 2, N_pix)
+        )
 
         ### Calculate the Aperture stop and draw it ###
-        aperture_stop_mask = np.sqrt((W - AS_centre[0])**2 + (H - AS_centre[1])**2) <= (AS_diam/2)
+        aperture_stop_mask = np.sqrt((W - AS_centre[0])**2 + (H - AS_centre[1])**2) <= (AS_diam / 2)
         pupil_plane[~aperture_stop_mask] = 0
 
-
         ### Calculate the M1/M2 obscurations and draw them ###
-        M1_mask = np.sqrt((W - M1_centre[0])**2 + (H - M1_centre[1])**2) <= (M1_diam/2)
+        M1_mask = np.sqrt((W - M1_centre[0])**2 + (H - M1_centre[1])**2) <= (M1_diam / 2)
         pupil_plane[M1_mask] = 0
-
 
         ### Calculate the spiders and draw them ###
 
         # Spider 1
-        sp1_a = np.tan(sp1_angle*(np.pi/180))
-        sp1_b = sp1_y_pos - sp1_a*sp1_x_pos
+        sp1_a = np.tan(sp1_angle * (np.pi / 180))
+        sp1_b = sp1_y_pos - sp1_a * sp1_x_pos
 
-        sp1_mask_1 = sp1_a*W + sp1_b - sp_width/2 * np.sqrt(1 + sp1_a**2) < H
-        sp1_mask_2 = sp1_a*W + sp1_b + sp_width/2 * np.sqrt(1 + sp1_a**2) > H
+        sp1_mask_1 = sp1_a * W + sp1_b - sp_width / 2 * np.sqrt(1 + sp1_a**2) < H
+        sp1_mask_2 = sp1_a * W + sp1_b + sp_width / 2 * np.sqrt(1 + sp1_a**2) > H
         sp1_mask = np.logical_and(sp1_mask_1, sp1_mask_2)
 
-        sp1_length_mask = np.sqrt((W - sp1_x_pos)**2 + (H - sp1_y_pos)**2) <= (sp_lenght/2)
+        sp1_length_mask = np.sqrt((W - sp1_x_pos)**2 + (H - sp1_y_pos)**2) <= (sp_lenght / 2)
         sp1_mask = np.logical_and(sp1_mask, sp1_length_mask)
 
         # Spider 2
-        sp2_a = np.tan(sp2_angle*(np.pi/180))
-        sp2_b = sp2_y_pos - sp2_a*sp2_x_pos
+        sp2_a = np.tan(sp2_angle * (np.pi / 180))
+        sp2_b = sp2_y_pos - sp2_a * sp2_x_pos
 
-        sp2_mask_1 = sp2_a*W + sp2_b - sp_width/2 * np.sqrt(1 + sp2_a**2) < H
-        sp2_mask_2 = sp2_a*W + sp2_b + sp_width/2 * np.sqrt(1 + sp2_a**2) > H
+        sp2_mask_1 = sp2_a * W + sp2_b - sp_width / 2 * np.sqrt(1 + sp2_a**2) < H
+        sp2_mask_2 = sp2_a * W + sp2_b + sp_width / 2 * np.sqrt(1 + sp2_a**2) > H
         sp2_mask = np.logical_and(sp2_mask_1, sp2_mask_2)
 
-        sp2_length_mask = np.sqrt((W - sp2_x_pos)**2 + (H - sp2_y_pos)**2) <= (sp_lenght/2)
+        sp2_length_mask = np.sqrt((W - sp2_x_pos)**2 + (H - sp2_y_pos)**2) <= (sp_lenght / 2)
         sp2_mask = np.logical_and(sp2_mask, sp2_length_mask)
 
         # Spider 3
-        sp3_a = np.tan(sp3_angle*(np.pi/180))
-        sp3_b = sp3_y_pos - sp3_a*sp3_x_pos
+        sp3_a = np.tan(sp3_angle * (np.pi / 180))
+        sp3_b = sp3_y_pos - sp3_a * sp3_x_pos
 
-        sp3_mask_1 = sp3_a*W + sp3_b - sp_width/2 * np.sqrt(1 + sp3_a**2) < H
-        sp3_mask_2 = sp3_a*W + sp3_b + sp_width/2 * np.sqrt(1 + sp3_a**2) > H
+        sp3_mask_1 = sp3_a * W + sp3_b - sp_width / 2 * np.sqrt(1 + sp3_a**2) < H
+        sp3_mask_2 = sp3_a * W + sp3_b + sp_width / 2 * np.sqrt(1 + sp3_a**2) > H
         sp3_mask = np.logical_and(sp3_mask_1, sp3_mask_2)
 
-        sp3_length_mask = np.sqrt((W - sp3_x_pos)**2 + (H - sp3_y_pos)**2) <= (sp_lenght/2)
+        sp3_length_mask = np.sqrt((W - sp3_x_pos)**2 + (H - sp3_y_pos)**2) <= (sp_lenght / 2)
         sp3_mask = np.logical_and(sp3_mask, sp3_length_mask)
 
         # Draw the three spider arms
@@ -286,28 +295,26 @@ class SimPSFToolkit(object):
         pupil_plane[sp2_mask] = 0
         pupil_plane[sp3_mask] = 0
 
-
         ### Low-pass filter the image ###
         top_hat_filter = np.ones((N_filter, N_filter))
 
         pupil_plane = spsig.convolve2d(
-        pupil_plane, top_hat_filter, boundary='fill', mode='same', fillvalue=0)
+            pupil_plane, top_hat_filter, boundary='fill', mode='same', fillvalue=0
+        )
 
         pupil_plane /= np.sum(top_hat_filter)
 
         return pupil_plane
 
-
     @staticmethod
     def crop_img(to_crop_img, ref_im):
-        cent_x = int(to_crop_img.shape[0]//2)
-        cent_y = int(to_crop_img.shape[1]//2)
+        cent_x = int(to_crop_img.shape[0] // 2)
+        cent_y = int(to_crop_img.shape[1] // 2)
 
-        delta_x = int(ref_im.shape[0]//2)
-        delta_y = int(ref_im.shape[1]//2)
+        delta_x = int(ref_im.shape[0] // 2)
+        delta_y = int(ref_im.shape[1] // 2)
 
-        return to_crop_img[ cent_x-delta_x : cent_x+delta_x , cent_y-delta_y : cent_y+delta_y ]
-
+        return to_crop_img[cent_x - delta_x:cent_x + delta_x, cent_y - delta_y:cent_y + delta_y]
 
     @staticmethod
     def decimate_im(input_im, decim_f):
@@ -324,58 +331,58 @@ class SimPSFToolkit(object):
 
         return np.array(im_resized)
 
-
     @staticmethod
     def get_radial_idx(max_order=45):
-        it=1
+        it = 1
         radial_idxs = []
 
-        while(len(radial_idxs)<=max_order):
+        while (len(radial_idxs) <= max_order):
             for _it in range(it):
-                radial_idxs.append(it-1)
+                radial_idxs.append(it - 1)
 
-            it+=1
+            it += 1
 
         return np.array(radial_idxs)
 
-
     @staticmethod
     def psf_plotter(psf, lambda_obs=0.000, cmap='gist_stern', save_img=False):
-        fig = plt.figure(figsize=(18,10))
+        fig = plt.figure(figsize=(18, 10))
 
         ax1 = fig.add_subplot(131)
         im1 = ax1.imshow(psf, cmap=cmap, interpolation='None')
         divider = make_axes_locatable(ax1)
         cax = divider.append_axes('right', size='5%', pad=0.05)
         fig.colorbar(im1, cax=cax, orientation='vertical')
-        ax1.set_xticks([]);ax1.set_yticks([])
-        ax1.set_title('PSF (lambda=%.3f [um])'%(lambda_obs))
+        ax1.set_xticks([])
+        ax1.set_yticks([])
+        ax1.set_title('PSF (lambda=%.3f [um])' % (lambda_obs))
 
         ax2 = fig.add_subplot(132)
         im2 = ax2.imshow(np.sqrt(abs(psf)), cmap=cmap, interpolation='None')
         divider2 = make_axes_locatable(ax2)
         cax2 = divider2.append_axes('right', size='5%', pad=0.05)
         fig.colorbar(im2, cax=cax2, orientation='vertical')
-        ax2.set_title('sqrt PSF (lambda=%.3f [um])'%(lambda_obs))
-        ax2.set_xticks([]);ax2.set_yticks([])
+        ax2.set_title('sqrt PSF (lambda=%.3f [um])' % (lambda_obs))
+        ax2.set_xticks([])
+        ax2.set_yticks([])
 
         ax3 = fig.add_subplot(133)
         im3 = ax3.imshow(np.log(abs(psf)), cmap=cmap, interpolation='None')
         divider3 = make_axes_locatable(ax3)
         cax3 = divider3.append_axes('right', size='5%', pad=0.05)
         fig.colorbar(im3, cax=cax3, orientation='vertical')
-        ax3.set_title('log PSF (lambda=%.3f [um])'%(lambda_obs))
-        ax3.set_xticks([]);ax3.set_yticks([])
+        ax3.set_title('log PSF (lambda=%.3f [um])' % (lambda_obs))
+        ax3.set_xticks([])
+        ax3.set_yticks([])
 
         if save_img:
-            plt.savefig('./PSF_lambda_%.3f.pdf'%lambda_obs, bbox_inches='tight')
+            plt.savefig('./PSF_lambda_%.3f.pdf' % lambda_obs, bbox_inches='tight')
 
         plt.show()
 
-
     @staticmethod
     def opd_phase_plotter(pupil_mask, opd, phase, lambda_obs, cmap='viridis', save_img=False):
-        fig = plt.figure(figsize=(18,10))
+        fig = plt.figure(figsize=(18, 10))
 
         ax1 = fig.add_subplot(131)
         im1 = ax1.imshow(pupil_mask, interpolation='None')
@@ -383,7 +390,8 @@ class SimPSFToolkit(object):
         cax = divider.append_axes('right', size='5%', pad=0.05)
         fig.colorbar(im1, cax=cax, orientation='vertical')
         ax1.set_title('Pupil mask')
-        ax1.set_xticks([]);ax1.set_yticks([])
+        ax1.set_xticks([])
+        ax1.set_yticks([])
 
         vmax = np.max(abs(opd))
         ax2 = fig.add_subplot(132)
@@ -392,7 +400,8 @@ class SimPSFToolkit(object):
         cax2 = divider2.append_axes('right', size='5%', pad=0.05)
         fig.colorbar(im2, cax=cax2, orientation='vertical')
         ax2.set_title('OPD [um]')
-        ax2.set_xticks([]);ax2.set_yticks([])
+        ax2.set_xticks([])
+        ax2.set_yticks([])
 
         vmax = np.max(abs(np.angle(phase)))
         ax3 = fig.add_subplot(133)
@@ -400,14 +409,14 @@ class SimPSFToolkit(object):
         divider3 = make_axes_locatable(ax3)
         cax3 = divider3.append_axes('right', size='5%', pad=0.05)
         fig.colorbar(im3, cax=cax3, orientation='vertical')
-        ax3.set_title('W phase [rad](wv=%.2f[um])'%(lambda_obs))
-        ax3.set_xticks([]);ax3.set_yticks([])
+        ax3.set_title('W phase [rad](wv=%.2f[um])' % (lambda_obs))
+        ax3.set_xticks([])
+        ax3.set_yticks([])
 
         if save_img:
-            plt.savefig('./OPD_lambda_%.3f.pdf'%lambda_obs, bbox_inches='tight')
+            plt.savefig('./OPD_lambda_%.3f.pdf' % lambda_obs, bbox_inches='tight')
 
         plt.show()
-
 
     def get_psf(self):
         if self.psf is not None:
@@ -415,23 +424,20 @@ class SimPSFToolkit(object):
         else:
             print('No PSF has been computed yet.')
 
-
     def plot_psf(self, cmap='gist_stern', save_img=False):
         if self.psf is not None:
-            self.psf_plotter(self.psf,self.lambda_obs, cmap, save_img)
+            self.psf_plotter(self.psf, self.lambda_obs, cmap, save_img)
         else:
             print('No PSF has been computed yet.')
 
-
     def plot_opd_phase(self, cmap='viridis', save_img=False):
         if self.opd is not None:
-            self.opd_phase_plotter(self.pupil_mask*self.obscurations,
-                                   self.opd*self.obscurations,
-                                   self.phase, self.lambda_obs,
-                                   cmap, save_img)
+            self.opd_phase_plotter(
+                self.pupil_mask * self.obscurations, self.opd * self.obscurations, self.phase,
+                self.lambda_obs, cmap, save_img
+            )
         else:
             print('No WF has been computed yet.')
-
 
     def gen_random_Z_coeffs(self, max_order=45, rand_seed=None):
         """ Generate a random set of Zernike coefficients.
@@ -462,15 +468,14 @@ class SimPSFToolkit(object):
         z_coeffs = []
 
         for it in range(max_order):
-            z_coeffs.append((np.random.rand()-0.5)*2./rad_idx[it])
+            z_coeffs.append((np.random.rand() - 0.5) * 2. / rad_idx[it])
 
         self.z_coeffs = z_coeffs
-
 
     def plot_z_coeffs(self, save_img=False):
         """Plot random Zernike coefficients."""
         if self.z_coeffs is not None:
-            fig = plt.figure(figsize=(12,6))
+            fig = plt.figure(figsize=(12, 6))
             ax1 = fig.add_subplot(111)
             im1 = ax1.bar(np.arange(len(self.z_coeffs)), np.array(self.z_coeffs))
             ax1.set_xlabel('Zernike coefficients')
@@ -483,7 +488,6 @@ class SimPSFToolkit(object):
         else:
             print('Random coeffs not generated.')
 
-
     def get_z_coeffs(self):
         """Get random coefficients"""
         if self.z_coeffs is not None:
@@ -491,14 +495,12 @@ class SimPSFToolkit(object):
         else:
             print('Random coeffs not generated.')
 
-
     def set_z_coeffs(self, z_coeffs):
         """Set zernike coefficients."""
         if len(z_coeffs) == self.max_order:
             self.z_coeffs = z_coeffs
         else:
-            print('Zernike coefficients should be of length %d'%(self.max_order))
-
+            print('Zernike coefficients should be of length %d' % (self.max_order))
 
     def normalize_zernikes(self, z_coeffs=None, max_wfe_rms=None):
         """Normalize zernike coefficients."""
@@ -510,7 +512,7 @@ class SimPSFToolkit(object):
         mult_factor = max_wfe_rms / wfe_rms
 
         # Normalize Zernike coefficients and return them
-        z_coeffs = [_z*mult_factor for _z in z_coeffs]
+        z_coeffs = [_z * mult_factor for _z in z_coeffs]
 
         return z_coeffs
 
@@ -526,13 +528,13 @@ class SimPSFToolkit(object):
         # Create the phase with the Zernike basis
         opd = 0
         for it in range(self.max_order):
-            opd += self.zernike_maps[it]*z_coeffs[it]
+            opd += self.zernike_maps[it] * z_coeffs[it]
 
         # Proyect obscurations on to the OPD
         opd *= self.obscurations
 
         # Calculate normalization factor
-        wfe_rms = np.sqrt(np.mean((opd[self.pupil_mask] -np.mean(opd[self.pupil_mask]))**2))
+        wfe_rms = np.sqrt(np.mean((opd[self.pupil_mask] - np.mean(opd[self.pupil_mask]))**2))
 
         return wfe_rms
 
@@ -547,11 +549,13 @@ class SimPSFToolkit(object):
 
         return max_wfe_rms - wfe_rms
 
-
     def generate_mono_PSF(self, lambda_obs=0.725, regen_sample=False, get_psf=False):
         """Generate monochromatic PSF."""
-        if lambda_obs<0.55*0.9 or lambda_obs>0.9*1.1:
-            print('WARNING: requested wavelength %.4f um is not in VIS passband [0.55,0.9]um'%(lambda_obs))
+        if lambda_obs < 0.55 * 0.9 or lambda_obs > 0.9 * 1.1:
+            print(
+                'WARNING: requested wavelength %.4f um is not in VIS passband [0.55,0.9]um' %
+                (lambda_obs)
+            )
         self.lambda_obs = lambda_obs
 
         # Calculate the OPD from the Zernike coefficients
@@ -580,15 +584,13 @@ class SimPSFToolkit(object):
             # Get the stored Zernike coefficients
             z_coeffs = self.get_z_coeffs()
 
-
         # Create the phase with the Zernike basis
         opd = 0
         for it in range(self.max_order):
-            opd += self.zernike_maps[it]*z_coeffs[it]
+            opd += self.zernike_maps[it] * z_coeffs[it]
 
         # Save the wavefront
         self.opd = opd
-
 
     def diffract_phase(self, lambda_obs=None):
         """Diffract the phase map."""
@@ -598,8 +600,8 @@ class SimPSFToolkit(object):
                 lambda_obs = 0.8
             else:
                 lambda_obs = self.lambda_obs
-        elif lambda_obs<0.55*0.99 or lambda_obs>0.9*1.01:
-            print('WARNING: wavelength %.4f is not in VIS passband [0.55,0.9]um'%(lambda_obs))
+        elif lambda_obs < 0.55 * 0.99 or lambda_obs > 0.9 * 1.01:
+            print('WARNING: wavelength %.4f is not in VIS passband [0.55,0.9]um' % (lambda_obs))
 
         # Calculate the feasible lambda closest to lambda_obs
         possible_lambda = self.feasible_wavelength(lambda_obs)
@@ -612,24 +614,24 @@ class SimPSFToolkit(object):
 
         # Generate the full phase and
         # Add zeros to the phase to have the correct fourier sampling
-        start = possible_N//2 - self.opd.shape[0]//2
-        stop = possible_N//2 + self.opd.shape[0]//2
+        start = possible_N // 2 - self.opd.shape[0] // 2
+        stop = possible_N // 2 + self.opd.shape[0] // 2
 
         self.phase = np.zeros((possible_N, possible_N), dtype=np.complex128)
-        self.phase[start:stop, start:stop][self.pupil_mask] = np.exp(
-            2j*np.pi*self.opd[self.pupil_mask]/self.lambda_obs)
+        self.phase[start:stop,
+                   start:stop][self.pupil_mask
+                              ] = np.exp(2j * np.pi * self.opd[self.pupil_mask] / self.lambda_obs)
 
         # Project obscurations to the phase
         self.phase[start:stop, start:stop] *= self.obscurations
 
         # FFT-diffract the phase (wavefront) and then crop to desired dimension
-        self.psf = self.fft_diffract(wf=self.phase,
-                                     output_Q=self.output_Q,
-                                     output_dim=self.output_dim)
+        self.psf = self.fft_diffract(
+            wf=self.phase, output_Q=self.output_Q, output_dim=self.output_dim
+        )
 
         # Normalize psf
         self.psf /= np.sum(self.psf)
-
 
     def feasible_N(self, lambda_obs):
         """Calculate the feasible N for a lambda_obs diffraction.
@@ -637,11 +639,12 @@ class SimPSFToolkit(object):
         Input wavelength must be in [um].
         """
         # Calculate the required N for the input lambda_obs
-        req_N = (
-            self.oversampling_rate * self.pupil_diameter * lambda_obs * self.tel_focal_length)/ (
-            self.tel_diameter * self.pix_sampling)
+        req_N = (self.oversampling_rate * self.pupil_diameter * lambda_obs *
+                 self.tel_focal_length) / (
+                     self.tel_diameter * self.pix_sampling
+                 )
         # Recalculate the req_N into a possible value (a pair integer)
-        possible_N = int((req_N//2)*2)
+        possible_N = int((req_N // 2) * 2)
 
         return possible_N
 
@@ -654,16 +657,15 @@ class SimPSFToolkit(object):
         possible_N = self.feasible_N(lambda_obs)
 
         # Recalculate the corresponding the wavelength
-        possible_lambda = (
-            possible_N * self.tel_diameter * self.pix_sampling) / (
-            self.pupil_diameter * self.oversampling_rate * self.tel_focal_length)
+        possible_lambda = (possible_N * self.tel_diameter * self.pix_sampling) / (
+            self.pupil_diameter * self.oversampling_rate * self.tel_focal_length
+        )
 
         if self.verbose > 0:
             # print("Requested wavelength: %.5f \nRequired N: %.2f"%(lambda_obs, req_N))
-            print("Possible wavelength: %.5f \nPossible N: %.2f"%(possible_lambda, possible_N))
+            print("Possible wavelength: %.5f \nPossible N: %.2f" % (possible_lambda, possible_N))
 
         return possible_lambda
-
 
     @staticmethod
     def gen_SED_interp(SED, n_bins=35, interp_kind='cubic'):
@@ -677,10 +679,10 @@ class SimPSFToolkit(object):
         wvlength = np.linspace(wv_min, wv_max, num=n_bins, endpoint=True)
 
         SED_interp = sinterp.interp1d(
-            SED[:,0], SED[:,1], kind=interp_kind, bounds_error=False, fill_value="extrapolate")
+            SED[:, 0], SED[:, 1], kind=interp_kind, bounds_error=False, fill_value="extrapolate"
+        )
 
         return wvlength, SED_interp
-
 
     def calc_SED_wave_values(self, SED, n_bins=35):
         """Calculate feasible wavelength and SED values.
@@ -691,7 +693,7 @@ class SimPSFToolkit(object):
         wvlength, SED_interp = self.gen_SED_interp(SED, n_bins)
 
         # Convert wavelength from [nm] to [um]
-        wvlength_um = wvlength/1e3
+        wvlength_um = wvlength / 1e3
 
         # Calculate feasible wavelengths (in [um])
         verbose = self.verbose
@@ -700,11 +702,10 @@ class SimPSFToolkit(object):
         self.verbose = verbose
 
         # Interpolate and normalize SED
-        SED_norm = SED_interp(feasible_wv*1e3)  # Interpolation is done in [nm]
+        SED_norm = SED_interp(feasible_wv * 1e3)  # Interpolation is done in [nm]
         SED_norm /= np.sum(SED_norm)
 
         return feasible_wv, SED_norm
-
 
     def generate_poly_PSF(self, SED, n_bins=35):
         """Generate polychromatic PSF with a specific SED.
@@ -721,10 +722,12 @@ class SimPSFToolkit(object):
             # Plot input SEDs and interpolated SEDs
             wvlength, SED_interp = self.gen_SED_interp(SED, n_bins)
 
-            fig = plt.figure(figsize=(14,8))
+            fig = plt.figure(figsize=(14, 8))
             ax1 = fig.add_subplot(111)
-            ax1.plot(SED[:,0],SED[:,1], label='Input SED')
-            ax1.scatter(feasible_wv*1e3, SED_interp(feasible_wv*1e3), label='Interpolated', c='red')
+            ax1.plot(SED[:, 0], SED[:, 1], label='Input SED')
+            ax1.scatter(
+                feasible_wv * 1e3, SED_interp(feasible_wv * 1e3), label='Interpolated', c='red'
+            )
             ax1.set_xlabel('wavelength [nm]')
             ax1.set_ylabel('SED(wavelength)')
             ax1.set_title('SED')
@@ -737,7 +740,7 @@ class SimPSFToolkit(object):
         # Generate the required monochromatic PSFs
         for it in range(feasible_wv.shape[0]):
             self.generate_mono_PSF(lambda_obs=feasible_wv[it])
-            stacked_psf += self.get_psf()*SED_norm[it]
+            stacked_psf += self.get_psf() * SED_norm[it]
 
         self.poly_psf = stacked_psf
 

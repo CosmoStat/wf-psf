@@ -7,9 +7,19 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 class GenPolyFieldPSF(object):
     """Generate PSF field with polynomial vairiations of Zernike coefficients."""
-    def __init__(self, sim_psf_toolkit, d_max=2, grid_points=[4, 4], max_order=45,
-                 x_lims=[0, 1e3], y_lims=[0, 1e3], n_bins=35,
-                 lim_max_wfe_rms=None, verbose=False):
+
+    def __init__(
+        self,
+        sim_psf_toolkit,
+        d_max=2,
+        grid_points=[4, 4],
+        max_order=45,
+        x_lims=[0, 1e3],
+        y_lims=[0, 1e3],
+        n_bins=35,
+        lim_max_wfe_rms=None,
+        verbose=False
+    ):
         # Input attributes
         self.sim_psf_toolkit = sim_psf_toolkit
         self.max_order = max_order
@@ -30,7 +40,6 @@ class GenPolyFieldPSF(object):
 
         # Build coefficient polynomial matric
         self.build_poly_coefficients()
-
 
     def scale_positions(self, xv_flat, yv_flat):
         # Scale positions to the square [-1,1] x [-1,1]
@@ -63,7 +72,7 @@ class GenPolyFieldPSF(object):
         for d in range(self.d_max + 1):
             row_idx = d * (d + 1) // 2
             for p in range(d + 1):
-                Pi[row_idx + p, :] = scaled_x ** (d - p) * scaled_y ** p
+                Pi[row_idx + p, :] = scaled_x**(d - p) * scaled_y**p
 
         return Pi
 
@@ -81,7 +90,6 @@ class GenPolyFieldPSF(object):
         Pi_samples = self.poly_mat_gen(xv_flat, yv_flat)
 
         return self.C_poly @ Pi_samples
-
 
     def build_poly_coefficients(self):
         """Build a polynomial coefficient matrix."""
@@ -110,17 +118,17 @@ class GenPolyFieldPSF(object):
         xv_flat = xv.flatten()
         yv_flat = yv.flatten()
         # Check the limits
-        xv_flat[xv_flat>self.x_lims[1]] = self.x_lims[1]
-        xv_flat[xv_flat<self.x_lims[0]] = self.x_lims[0]
-        yv_flat[yv_flat>self.y_lims[1]] = self.y_lims[1]
-        yv_flat[yv_flat<self.y_lims[0]] = self.y_lims[0]
+        xv_flat[xv_flat > self.x_lims[1]] = self.x_lims[1]
+        xv_flat[xv_flat < self.x_lims[0]] = self.x_lims[0]
+        yv_flat[yv_flat > self.y_lims[1]] = self.y_lims[1]
+        yv_flat[yv_flat < self.y_lims[0]] = self.y_lims[0]
 
         ##  Select a random vector of size `max_order` for each position
         # When concatenated into the Z matrix we have:
         Z = np.random.randn(self.max_order, len(xv_flat))
         # Normalize so that each position has the lim_max_wfe_rms
         norm_weights = np.sqrt(np.sum(Z**2, axis=1))
-        Z /= (norm_weights.reshape((-1,1))/ self.lim_max_wfe_rms)
+        Z /= (norm_weights.reshape((-1, 1)) / self.lim_max_wfe_rms)
 
         ## Generate position polynomial matrix
         Pi = self.poly_mat_gen(xv_flat, yv_flat)
@@ -143,7 +151,7 @@ class GenPolyFieldPSF(object):
         calc_wfe = np.sqrt(np.sum(Z_est**2, axis=0))
         # Due to the polynomnial behaviour we will set the mean WFE_RMS over the field of view to be 80% of
         # the maximum allowed WFE_RMS per position.
-        scale_factor = (0.8*self.lim_max_wfe_rms)/np.mean(calc_wfe)
+        scale_factor = (0.8 * self.lim_max_wfe_rms) / np.mean(calc_wfe)
         self.C_poly *= scale_factor
 
         # Recalculate the Z coefficients
@@ -166,7 +174,6 @@ class GenPolyFieldPSF(object):
             plt.savefig('./' + save_name + '.pdf', bbox_inches='tight')
         plt.show()
 
-
     def calc_zernike(self, xv_flat, yv_flat):
         """ Calculate Zernikes for a specific position.
 
@@ -175,22 +182,27 @@ class GenPolyFieldPSF(object):
         (x_norm,y_norm) need to be in [-1, +1] x [-1, +1]
         """
         # Check limits
-        x_check = np.sum(xv_flat >= self.x_lims[1]*1.1) + np.sum(xv_flat <= self.x_lims[0]*1.1)
-        y_check = np.sum(yv_flat >= self.y_lims[1]*1.1) + np.sum(yv_flat <= self.y_lims[0]*1.1)
+        x_check = np.sum(xv_flat >= self.x_lims[1] * 1.1) + np.sum(xv_flat <= self.x_lims[0] * 1.1)
+        y_check = np.sum(yv_flat >= self.y_lims[1] * 1.1) + np.sum(yv_flat <= self.y_lims[0] * 1.1)
 
         if self.verbose and x_check > 0:
-            print('WARNING! x value is outside the limits [%f, %f]'%(self.x_lims[0], self.x_lims[1]))
+            print(
+                'WARNING! x value is outside the limits [%f, %f]' %
+                (self.x_lims[0], self.x_lims[1])
+            )
             print(xv_flat)
             print(x_check)
         if self.verbose and y_check > 0:
-            print('WARNING! y value is outside the limits [%f, %f]'%(self.y_lims[0], self.y_lims[1]))
+            print(
+                'WARNING! y value is outside the limits [%f, %f]' %
+                (self.y_lims[0], self.y_lims[1])
+            )
             print(yv_flat)
             print(y_check)
 
         # Return Zernikes
         # The position scaling is done inside zernike_poly_gen
         return self.zernike_poly_gen(xv_flat, yv_flat)
-
 
     def get_mono_PSF(self, xv_flat, yv_flat, lambda_obs=0.725):
         """ Calculate monochromatic PSF at a specific position and wavelength.
@@ -203,7 +215,6 @@ class GenPolyFieldPSF(object):
         self.sim_psf_toolkit.generate_mono_PSF(lambda_obs=lambda_obs, regen_sample=False)
         # Return the generated PSF
         return self.sim_psf_toolkit.get_psf()
-
 
     def get_poly_PSF(self, xv_flat, yv_flat, SED):
         """ Calculate polychromatic PSF for a specific position and SED.

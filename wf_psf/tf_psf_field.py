@@ -3,6 +3,7 @@ import tensorflow as tf
 from wf_psf.tf_layers import TF_poly_Z_field, TF_zernike_OPD, TF_batch_poly_PSF
 from wf_psf.tf_layers import TF_NP_poly_OPD, TF_batch_mono_PSF
 
+
 class TF_PSF_field_model(tf.keras.Model):
     """ Parametric PSF field model!
 
@@ -44,6 +45,7 @@ class TF_PSF_field_model(tf.keras.Model):
         field model.
 
     """
+
     def __init__(
         self,
         zernike_maps,
@@ -83,10 +85,7 @@ class TF_PSF_field_model(tf.keras.Model):
 
         # Initialize the first layer
         self.tf_poly_Z_field = TF_poly_Z_field(
-            x_lims=self.x_lims,
-            y_lims=self.y_lims,
-            n_zernikes=self.n_zernikes,
-            d_max=self.d_max
+            x_lims=self.x_lims, y_lims=self.y_lims, n_zernikes=self.n_zernikes, d_max=self.d_max
         )
 
         # Initialize the zernike to OPD layer
@@ -94,9 +93,7 @@ class TF_PSF_field_model(tf.keras.Model):
 
         # Initialize the batch opd to batch polychromatic PSF layer
         self.tf_batch_poly_PSF = TF_batch_poly_PSF(
-            obscurations=self.obscurations,
-            output_Q=self.output_Q,
-            output_dim=self.output_dim
+            obscurations=self.obscurations, output_Q=self.output_Q, output_dim=self.output_dim
         )
 
         # Initialize the model parameters with non-default value
@@ -127,9 +124,9 @@ class TF_PSF_field_model(tf.keras.Model):
         if output_dim is not None:
             self.output_dim = output_dim
         # Reinitialize the PSF batch poly generator
-        self.tf_batch_poly_PSF = TF_batch_poly_PSF(obscurations=self.obscurations,
-                                                    output_Q=self.output_Q,
-                                                    output_dim=self.output_dim)
+        self.tf_batch_poly_PSF = TF_batch_poly_PSF(
+            obscurations=self.obscurations, output_Q=self.output_Q, output_dim=self.output_dim
+        )
 
     def predict_mono_psfs(self, input_positions, lambda_obs, phase_N):
         """ Predict a set of monochromatic PSF at desired positions.
@@ -146,9 +143,9 @@ class TF_PSF_field_model(tf.keras.Model):
         """
 
         # Initialise the monochromatic PSF batch calculator
-        tf_batch_mono_psf = TF_batch_mono_PSF(obscurations=self.obscurations,
-                                                    output_Q=self.output_Q,
-                                                    output_dim=self.output_dim)
+        tf_batch_mono_psf = TF_batch_mono_PSF(
+            obscurations=self.obscurations, output_Q=self.output_Q, output_dim=self.output_dim
+        )
         # Set the lambda_obs and the phase_N parameters
         tf_batch_mono_psf.set_lambda_phaseN(phase_N, lambda_obs)
 
@@ -247,6 +244,7 @@ class TF_SemiParam_field(tf.keras.Model):
         field model.
 
     """
+
     def __init__(
         self,
         zernike_maps,
@@ -292,10 +290,7 @@ class TF_SemiParam_field(tf.keras.Model):
 
         # Initialize the first layer
         self.tf_poly_Z_field = TF_poly_Z_field(
-            x_lims=self.x_lims,
-            y_lims=self.y_lims,
-            n_zernikes=self.n_zernikes,
-            d_max=self.d_max
+            x_lims=self.x_lims, y_lims=self.y_lims, n_zernikes=self.n_zernikes, d_max=self.d_max
         )
 
         # Initialize the zernike to OPD layer
@@ -303,17 +298,12 @@ class TF_SemiParam_field(tf.keras.Model):
 
         # Initialize the non-parametric layer
         self.tf_np_poly_opd = TF_NP_poly_OPD(
-            x_lims=self.x_lims,
-            y_lims=self.y_lims,
-            d_max=self.d_max_nonparam,
-            opd_dim=self.opd_dim
+            x_lims=self.x_lims, y_lims=self.y_lims, d_max=self.d_max_nonparam, opd_dim=self.opd_dim
         )
 
         # Initialize the batch opd to batch polychromatic PSF layer
         self.tf_batch_poly_PSF = TF_batch_poly_PSF(
-            obscurations=self.obscurations,
-            output_Q=self.output_Q,
-            output_dim=self.output_dim
+            obscurations=self.obscurations, output_Q=self.output_Q, output_dim=self.output_dim
         )
 
         # Initialize the model parameters with non-default value
@@ -358,9 +348,9 @@ class TF_SemiParam_field(tf.keras.Model):
             self.output_dim = output_dim
 
         # Reinitialize the PSF batch poly generator
-        self.tf_batch_poly_PSF = TF_batch_poly_PSF(obscurations=self.obscurations,
-                                                    output_Q=self.output_Q,
-                                                    output_dim=self.output_dim)
+        self.tf_batch_poly_PSF = TF_batch_poly_PSF(
+            obscurations=self.obscurations, output_Q=self.output_Q, output_dim=self.output_dim
+        )
 
     def predict_mono_psfs(self, input_positions, lambda_obs, phase_N):
         """ Predict a set of monochromatic PSF at desired positions.
@@ -377,9 +367,9 @@ class TF_SemiParam_field(tf.keras.Model):
         """
 
         # Initialise the monochromatic PSF batch calculator
-        tf_batch_mono_psf = TF_batch_mono_PSF(obscurations=self.obscurations,
-                                                    output_Q=self.output_Q,
-                                                    output_dim=self.output_dim)
+        tf_batch_mono_psf = TF_batch_mono_PSF(
+            obscurations=self.obscurations, output_Q=self.output_Q, output_dim=self.output_dim
+        )
         # Set the lambda_obs and the phase_N parameters
         tf_batch_mono_psf.set_lambda_phaseN(phase_N, lambda_obs)
 
@@ -387,7 +377,7 @@ class TF_SemiParam_field(tf.keras.Model):
         zernike_coeffs = self.tf_poly_Z_field(input_positions)
         param_opd_maps = self.tf_zernike_OPD(zernike_coeffs)
         # Calculate the non parametric part
-        nonparam_opd_maps =  self.tf_np_poly_opd(input_positions)
+        nonparam_opd_maps = self.tf_np_poly_opd(input_positions)
         # Add the estimations
         opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
 
@@ -414,7 +404,7 @@ class TF_SemiParam_field(tf.keras.Model):
         zernike_coeffs = self.tf_poly_Z_field(input_positions)
         param_opd_maps = self.tf_zernike_OPD(zernike_coeffs)
         # Calculate the non parametric part
-        nonparam_opd_maps =  self.tf_np_poly_opd(input_positions)
+        nonparam_opd_maps = self.tf_np_poly_opd(input_positions)
         # Add the estimations
         opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
 
@@ -440,7 +430,7 @@ class TF_SemiParam_field(tf.keras.Model):
         # Add l2 loss on the parametric OPD
         self.add_loss(self.l2_param * tf.math.reduce_sum(tf.math.square(param_opd_maps)))
         # Calculate the non parametric part
-        nonparam_opd_maps =  self.tf_np_poly_opd(input_positions)
+        nonparam_opd_maps = self.tf_np_poly_opd(input_positions)
         # Add the estimations
         opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
         # Compute the polychromatic PSFs
@@ -449,8 +439,7 @@ class TF_SemiParam_field(tf.keras.Model):
         return poly_psfs
 
 
-def build_PSF_model(model_inst, optimizer=None, loss=None,
-    metrics=None):
+def build_PSF_model(model_inst, optimizer=None, loss=None, metrics=None):
     """ Define the model-compilation parameters.
 
     Specially the loss function, the optimizer and the metrics.
@@ -462,19 +451,21 @@ def build_PSF_model(model_inst, optimizer=None, loss=None,
     # Define optimizer function
     if optimizer is None:
         optimizer = tf.keras.optimizers.Adam(
-            learning_rate=1e-2, beta_1=0.9, beta_2=0.999,
-            epsilon=1e-07, amsgrad=False)
+            learning_rate=1e-2, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=False
+        )
 
     # Define metric functions
     if metrics is None:
         metrics = [tf.keras.metrics.MeanSquaredError()]
 
     # Compile the model
-    model_inst.compile(optimizer=optimizer,
-                       loss=loss,
-                       metrics=metrics,
-                       loss_weights=None,
-                       weighted_metrics=None,
-                       run_eagerly=False)
+    model_inst.compile(
+        optimizer=optimizer,
+        loss=loss,
+        metrics=metrics,
+        loss_weights=None,
+        weighted_metrics=None,
+        run_eagerly=False
+    )
 
     return model_inst
