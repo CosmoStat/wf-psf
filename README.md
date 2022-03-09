@@ -4,15 +4,14 @@
 A differentiable data-driven wavefront-based PSF model framework.
 
 
+
 ## Proposed framework
 
+A schematic of the proposed framework can be seen below. The PSF model is estimated (trained) using star observations in the field-of-view.
+<img height=300 src="assets/PSF_model_diagram_v5.png" >
 
-<img src="assets/PSF_model_diagram_v5.png" style="width:auto;height:300;">
-
-
-<img src="assets/DD_features_example.png" style="width:auto;height:200;">
-
-<img src="assets/PSF_reconstruction_example.png" style="width:auto;height:500;">
+Visual reconstruction example of the WaveDiff-original PSF model trained on a simplified Euclid-like setting.
+<img height=800 src="assets/PSF_reconstruction_example.png" >
 
 
 ## Install
@@ -23,6 +22,8 @@ A differentiable data-driven wavefront-based PSF model framework.
 $ cd wf-psf
 $ pip install .
 ```
+
+The package can then be imported in Python as `import wf_psf`.
 
 ## Requirements
 - [numpy](https://github.com/numpy/numpy) [>=1.19.2]
@@ -50,7 +51,11 @@ _Submitted._
 - The input PSF field can be found [here](https://github.com/tobias-liaudat/wf-psf/tree/main/data).
 - The script used to generate the input PSF field is [this one](https://github.com/tobias-liaudat/wf-psf/blob/main/long-runs/LR-PSF-field-gen-coherentFields.py).
 - The code required to run the comparison against pixel-based PSF models is in [this directory](https://github.com/tobias-liaudat/wf-psf/tree/main/method-comparison).
-
+- The training of the models was done using [this script](https://github.com/tobias-liaudat/wf-psf/blob/main/long-runs/train_eval_plot_script_click.py). In order to match the script's option for the different models with the article you should follow: 
+    - `poly->WaveDiff-original`
+    - `graph->WaveDiff-graph`
+    - `mccd->WaveDiff-Polygraph`
+    
 _Note: To run the comparison to other PSF models you need to install them first. See [RCA](https://github.com/CosmoStat/rca), [PSFEx](https://github.com/astromatic/psfex) and [MCCD](https://github.com/CosmoStat/mccd)._
 
 
