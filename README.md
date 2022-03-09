@@ -4,7 +4,14 @@
 A differentiable data-driven wavefront-based PSF model.
 
 
-<img src="assets/PSF_model_diagram_v5.pdf">
+## Proposed framework
+
+<img src="assets/PSF_model_diagram_v5.png">
+
+
+<img src="assets/DD_features_example.png">
+
+<img src="assets/PSF_reconstruction_example.png">
 
 
 ## Install
