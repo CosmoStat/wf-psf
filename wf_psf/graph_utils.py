@@ -1,6 +1,5 @@
 import numpy as np
 
-
 class GraphBuilder(object):
     r"""GraphBuilder class.
 
@@ -176,7 +175,6 @@ class GraphBuilder(object):
         return vT
 
 
-
 def select_vstar(eigenvects, R, weights):
     r"""Pick best eigenvector from a set of :math:`(e,a)`.
 
@@ -211,7 +209,6 @@ def pairwise_distances(obs_pos):
     out0 = np.outer(obs_pos[:, 0], ones)
     out1 = np.outer(obs_pos[:, 1], ones)
     return np.sqrt((out0 - out0.T) ** 2 + (out1 - out1.T) ** 2)
-
 
 def gen_Pea(distances, e, a):
     r"""Compute the graph Laplacian for a given set of parameters.
