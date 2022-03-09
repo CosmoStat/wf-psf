@@ -1,17 +1,18 @@
 [![arXiv:2011.08271](https://img.shields.io/badge/astro--ph.IM-arXiv%3A0000.00000-B31B1B.svg)](https://arxiv.org/abs/0000.00000) [![arXiv:2011.08271](https://img.shields.io/badge/astro--ph.IM-arXiv%3A2111.12541-B31B1B.svg)](https://arxiv.org/abs/2111.12541) [![yapf](https://img.shields.io/badge/code%20style-yapf-blue.svg)](https://www.python.org/dev/peps/pep-0008/) [![License](https://img.shields.io/badge/License-MIT-brigthgreen.svg)](https://github.com/tobias-liaudat/wf-psf/tree/master/LICENSE)
 # wf-psf: WaveDiff PSF model
 
-A differentiable data-driven wavefront-based PSF model.
+A differentiable data-driven wavefront-based PSF model framework.
 
 
 ## Proposed framework
 
-<img src="assets/PSF_model_diagram_v5.png">
+
+<img src="assets/PSF_model_diagram_v5.png" style="width:auto;height:300;">
 
 
-<img src="assets/DD_features_example.png">
+<img src="assets/DD_features_example.png" style="width:auto;height:200;">
 
-<img src="assets/PSF_reconstruction_example.png">
+<img src="assets/PSF_reconstruction_example.png" style="width:auto;height:500;">
 
 
 ## Install
