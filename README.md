@@ -8,9 +8,11 @@ A differentiable data-driven wavefront-based PSF model framework.
 ## Proposed framework
 
 A schematic of the proposed framework can be seen below. The PSF model is estimated (trained) using star observations in the field-of-view.
+
 <img height=300 src="assets/PSF_model_diagram_v5.png" >
 
 Visual reconstruction example of the WaveDiff-original PSF model trained on a simplified Euclid-like setting.
+
 <img height=800 src="assets/PSF_reconstruction_example.png" >
 
 
@@ -55,7 +57,7 @@ _Submitted._
     - `poly->WaveDiff-original`
     - `graph->WaveDiff-graph`
     - `mccd->WaveDiff-Polygraph`
-    
+
 _Note: To run the comparison to other PSF models you need to install them first. See [RCA](https://github.com/CosmoStat/rca), [PSFEx](https://github.com/astromatic/psfex) and [MCCD](https://github.com/CosmoStat/mccd)._
 
 
