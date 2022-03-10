@@ -1,8 +1,12 @@
-[![arXiv:2011.08271](https://img.shields.io/badge/astro--ph.IM-arXiv%3A0000.00000-B31B1B.svg)](https://arxiv.org/abs/0000.00000) [![arXiv:2011.08271](https://img.shields.io/badge/astro--ph.IM-arXiv%3A2111.12541-B31B1B.svg)](https://arxiv.org/abs/2111.12541) [![yapf](https://img.shields.io/badge/code%20style-yapf-blue.svg)](https://www.python.org/dev/peps/pep-0008/) [![License](https://img.shields.io/badge/License-MIT-brigthgreen.svg)](https://github.com/tobias-liaudat/wf-psf/tree/master/LICENSE)
-# wf-psf: WaveDiff PSF model
+[![arXiv:2203.04908](https://img.shields.io/badge/astro--ph.IM-arXiv%3A2203.04908-B31B1B.svg)](http://arxiv.org/abs/2203.04908) [![yapf](https://img.shields.io/badge/code%20style-yapf-blue.svg)](https://www.python.org/dev/peps/pep-0008/) [![License](https://img.shields.io/badge/License-MIT-brigthgreen.svg)](https://github.com/tobias-liaudat/wf-psf/tree/master/LICENSE)
 
-A differentiable data-driven wavefront-based PSF model framework.
+<h1 align='center'>WaveDiff</h1>
+<h2 align='center'>A differentiable data-driven wavefront-based PSF model framework.</h2>
 
+This repository includes:
+- A differentiable PSF model entirely built in [Tensorflow](https://github.com/tensorflow/tensorflow).
+- A numpy-based PSF simulator [here](https://github.com/tobias-liaudat/wf-psf/blob/main/wf_psf/SimPSFToolkit.py).
+- All the scripts, jobs and notebooks required to reproduce the results in [arXiv:2203.04908](http://arxiv.org/abs/2203.04908) and [arXiv:2111.12541](https://arxiv.org/abs/2111.12541).
 
 
 ## Proposed framework
@@ -45,7 +49,7 @@ Optional packages:
 
 ## Reproducible research
 
-#### [arXiv:0000.00000](https://arxiv.org/abs/0000.00000) 
+#### [arXiv:2203.04908](http://arxiv.org/abs/2203.04908) Rethinking data-driven point spread function modeling with a differentiable optical model (2022)
 _Submitted._
 
 - All the scripts, jobs and notebooks to reproduce the figures from the article can be found [here](https://github.com/tobias-liaudat/wf-psf/tree/main/papers/article_IOP).
@@ -61,7 +65,7 @@ _Submitted._
 _Note: To run the comparison to other PSF models you need to install them first. See [RCA](https://github.com/CosmoStat/rca), [PSFEx](https://github.com/astromatic/psfex) and [MCCD](https://github.com/CosmoStat/mccd)._
 
 
-#### [arXiv:2111.12541](https://arxiv.org/abs/2111.12541) 
+#### [arXiv:2111.12541](https://arxiv.org/abs/2111.12541) Rethinking the modeling of the instrumental response of telescopes with a differentiable optical model (2021)
 _NeurIPS 2021 Workshop on Machine Learning and the Physical Sciences._
 
 - All the scripts, jobs and notebooks to reproduce the figures from the article can be found [here](https://github.com/tobias-liaudat/wf-psf/tree/main/papers/Neurips2021_ML4Physics_workshop).
@@ -72,7 +76,7 @@ _NeurIPS 2021 Workshop on Machine Learning and the Physical Sciences._
 
 If you use `wf-psf` in a scientific publication, we would appreciate citations to the following paper:
 
-[Rethinking data-driven point spread function modeling with a differentiable optical model](https://arxiv.org/abs/0000.00000), T. Liaudat, J.-L. Starck, M. Kilbinger, P.-A. Frugier, submitted, 2022.
+*Rethinking data-driven point spread function modeling with a differentiable optical model*, T. Liaudat, J.-L. Starck, M. Kilbinger, P.-A. Frugier, [arXiv:2203.04908](http://arxiv.org/abs/2203.04908), 2022.
 
 
 The BibTeX citation is the following:
