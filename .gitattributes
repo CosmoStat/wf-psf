@@ -1,0 +1,5 @@
+# Exclude jupyter notebooks from linguist project count
+*.ipynb linguist-generated=true
+debug/*.ipynb linguist-generated=true
+papers/article_IOP/notebooks/*.ipynb linguist-generated=true
+papers/Neurips2021_ML4Physics_workshop/notebooks/*.ipynb linguist-generated=true
