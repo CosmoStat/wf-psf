@@ -33,8 +33,8 @@ class TF_SP_MCCD_field(tf.keras.Model):
         Predefined obscurations of the phase.
     batch_size: int
         Batch size
-    obs_pos:
-        TODO ... 
+    obs_pos: Tensor(n_stars, 2)
+        The positions of all the stars
     spatial_dic:
         TODO ...
     output_Q: int
