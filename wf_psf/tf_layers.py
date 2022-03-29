@@ -731,6 +731,62 @@ class TF_NP_GRAPH_OPD(tf.keras.layers.Layer):
         return contribution_graph
 
 
+class TF_physical_layer(tf.keras.layers.Layer):
+    """ Store and calculate the zernike coefficients for a given position.
+
+    This layer gives the Zernike contribution of the physical layer.
+    It is fixed and not trainable.
+
+    Parameters
+    ----------
+    obs_pos: tensor(n_stars, 2)
+        Observed positions of the `n_stars` in the dataset. The indexing of the
+        positions has to correspond to the indexing in the `zks_prior`.
+    n_zernikes: int
+        Number of Zernike polynomials
+    zks_prior: Tensor (n_stars, n_zernikes)
+        Zernike coefficients for each position
+
+    """
+
+    def __init__(
+        self, 
+        obs_pos,
+        zks_prior,
+        name='TF_physical_layer',
+    ):
+        super().__init__(name=name)
+        self.obs_pos = obs_pos
+        self.zks_prior = zks_prior
+
+
+    def call(self, positions):
+        """ Calculate the prior zernike coefficients for a given position.
+
+        The position polynomial matrix and the coefficients should be
+        set before calling this function.
+
+        Parameters
+        ----------
+        positions: Tensor(batch, 2)
+            First element is x-axis, second is y-axis.
+
+        Returns
+        -------
+        zernikes_coeffs: Tensor(batch, n_zernikes, 1, 1)
+        """
+
+        def calc_index(idx_pos):
+            return tf.where(tf.equal(self.obs_pos, idx_pos))[0, 0]
+        # Calculate the indices of the input batch
+        indices = tf.map_fn(calc_index, positions, fn_output_signature=tf.int64)
+        # Recover the prior zernikes from the batch indexes
+        batch_zks = tf.gather(self.zks_prior, indices=indices, axis=0, batch_dims=0)
+
+        return batch_zks[:, :, tf.newaxis, tf.newaxis]
+
+# --- #
+# Deprecated #
 class OLD_TF_batch_poly_PSF(tf.keras.layers.Layer):
     """Calculate a polychromatic PSF from an OPD and stored SED values.
 
