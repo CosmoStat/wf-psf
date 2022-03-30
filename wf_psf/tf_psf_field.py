@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+from tensorflow.python.keras.engine import data_adapter
 from wf_psf.tf_layers import TF_poly_Z_field, TF_zernike_OPD, TF_batch_poly_PSF
 from wf_psf.tf_layers import TF_NP_poly_OPD, TF_batch_mono_PSF, TF_physical_layer
 
@@ -617,16 +618,16 @@ class TF_physical_poly_field(tf.keras.Model):
 
         Parameters
         ----------
-        zk_param: Tensor(batch, n_zks_param, 1, 1)
+        zk_param: Tensor [batch, n_zks_param, 1, 1]
             Zernike coefficients for the parametric part
-        zk_prior: Tensor(batch, n_zks_prior, 1, 1)
+        zk_prior: Tensor [batch, n_zks_prior, 1, 1]
             Zernike coefficients for the prior part
 
         Returns
         -------
-        zk_param: Tensor(batch, n_zks_total, 1, 1)
+        zk_param: Tensor [batch, n_zks_total, 1, 1]
             Zernike coefficients for the parametric part
-        zk_prior: Tensor(batch, n_zks_total, 1, 1)
+        zk_prior: Tensor [batch, n_zks_total, 1, 1]
             Zernike coefficients for the prior part
 
         """
@@ -654,29 +655,64 @@ class TF_physical_poly_field(tf.keras.Model):
 
         return padded_zk_param, padded_zk_prior
 
+    def predict_step(self, data, evaluate_step=False):
+        r""" Custom predict (inference) step.
+
+        It is needed as the physical layer requires a special
+        interpolation (different from training).
+
+        """
+        if evaluate_step:
+            input_data = data
+        else:
+            # Format input data
+            data = data_adapter.expand_1d(data)
+            input_data, _, _ = data_adapter.unpack_x_y_sample_weight(data)
+
+        # Unpack inputs
+        input_positions = input_data[0]
+        packed_SEDs = input_data[1]
+
+        # Compute zernikes from parametric model and physical layer
+        zks_coeffs = self.predict_zernikes(input_positions)
+        # Propagate to obtain the OPD
+        param_opd_maps = self.tf_zernike_OPD(zks_coeffs)
+        # Calculate the non parametric part
+        nonparam_opd_maps = self.tf_np_poly_opd(input_positions)
+        # Add the estimations
+        opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
+        # Compute the polychromatic PSFs
+        poly_psfs = self.tf_batch_poly_PSF([opd_maps, packed_SEDs])
+
+        return poly_psfs
+
     def predict_mono_psfs(self, input_positions, lambda_obs, phase_N):
         """ Predict a set of monochromatic PSF at desired positions.
 
-        input_positions: Tensor(batch_dim x 2)
-
+        Parameters
+        ----------
+        input_positions: Tensor [batch_dim, 2]
+            Positions at which to compute the PSF
         lambda_obs: float
             Observed wavelength in um.
-
         phase_N: int
             Required wavefront dimension. Should be calculated with as:
             ``simPSF_np = wf.SimPSFToolkit(...)``
             ``phase_N = simPSF_np.feasible_N(lambda_obs)``
+
         """
 
         # Initialise the monochromatic PSF batch calculator
         tf_batch_mono_psf = TF_batch_mono_PSF(
-            obscurations=self.obscurations, output_Q=self.output_Q, output_dim=self.output_dim
+            obscurations=self.obscurations,
+            output_Q=self.output_Q,
+            output_dim=self.output_dim,
         )
         # Set the lambda_obs and the phase_N parameters
         tf_batch_mono_psf.set_lambda_phaseN(phase_N, lambda_obs)
 
         # Compute zernikes from parametric model and physical layer
-        zks_coeffs = self.compute_zernikes(input_positions)
+        zks_coeffs = self.predict_zernikes(input_positions)
         # Propagate to obtain the OPD
         param_opd_maps = self.tf_zernike_OPD(zks_coeffs)
         # Calculate the non parametric part
@@ -694,17 +730,17 @@ class TF_physical_poly_field(tf.keras.Model):
 
         Parameters
         ----------
-        input_positions: Tensor(batch_dim x 2)
+        input_positions: Tensor [batch_dim, 2]
             Positions to predict the OPD.
 
         Returns
         -------
-        opd_maps : Tensor [batch x opd_dim x opd_dim]
+        opd_maps : Tensor [batch, opd_dim, opd_dim]
             OPD at requested positions.
 
         """
         # Compute zernikes from parametric model and physical layer
-        zks_coeffs = self.compute_zernikes(input_positions)
+        zks_coeffs = self.predict_zernikes(input_positions)
         # Propagate to obtain the OPD
         param_opd_maps = self.tf_zernike_OPD(zks_coeffs)
         # Calculate the non parametric part
@@ -721,7 +757,7 @@ class TF_physical_poly_field(tf.keras.Model):
 
         Parameters
         ----------
-        input_positions: Tensor(batch_dim, 2)
+        input_positions: Tensor [batch_dim, 2]
             Positions to compute the Zernikes.
 
         Returns
@@ -740,7 +776,35 @@ class TF_physical_poly_field(tf.keras.Model):
 
         return zks_coeffs
 
-    def call(self, inputs):
+    def predict_zernikes(self, input_positions):
+        """ Predict Zernike coefficients at a batch of positions
+
+        This includes the parametric model and the physical layer.
+        The prediction of the physical layer ios to positions not used
+        at training time.
+
+        Parameters
+        ----------
+        input_positions: Tensor [batch_dim, 2]
+            Positions to compute the Zernikes.
+
+        Returns
+        -------
+        zks_coeffs : Tensor [batch, n_zks_total, 1, 1]
+            Zernikes at requested positions
+
+        """
+        # Calculate parametric part
+        zks_params = self.tf_poly_Z_field(input_positions)
+        # Calculate the physical layer
+        zks_prior = self.tf_physical_layer.predict(input_positions)
+        # Pad and sum the zernike coefficients
+        padded_zk_param, padded_zk_prior = self.zks_pad(zks_params, zks_prior)
+        zks_coeffs = tf.math.add(padded_zk_param, padded_zk_prior)
+
+        return zks_coeffs
+
+    def call(self, inputs, training=True):
         """Define the PSF field forward model.
 
         [1] From positions to Zernike coefficients
@@ -753,20 +817,27 @@ class TF_physical_poly_field(tf.keras.Model):
         input_positions = inputs[0]
         packed_SEDs = inputs[1]
 
-        # Compute zernikes from parametric model and physical layer
-        zks_coeffs = self.compute_zernikes(input_positions)
-        # Propagate to obtain the OPD
-        param_opd_maps = self.tf_zernike_OPD(zks_coeffs)
-        # Add l2 loss on the parametric OPD
-        self.add_loss(self.l2_param * tf.math.reduce_sum(tf.math.square(param_opd_maps)))
-        # Calculate the non parametric part
-        nonparam_opd_maps = self.tf_np_poly_opd(input_positions)
-        # Add the estimations
-        opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
-        # Compute the polychromatic PSFs
-        poly_psfs = self.tf_batch_poly_PSF([opd_maps, packed_SEDs])
+        # For the training
+        if training:
+            # Compute zernikes from parametric model and physical layer
+            zks_coeffs = self.compute_zernikes(input_positions)
+            # Propagate to obtain the OPD
+            param_opd_maps = self.tf_zernike_OPD(zks_coeffs)
+            # Add l2 loss on the parametric OPD
+            self.add_loss(self.l2_param * tf.math.reduce_sum(tf.math.square(param_opd_maps)))
+            # Calculate the non parametric part
+            nonparam_opd_maps = self.tf_np_poly_opd(input_positions)
+            # Add the estimations
+            opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
+            # Compute the polychromatic PSFs
+            poly_psfs = self.tf_batch_poly_PSF([opd_maps, packed_SEDs])
+        # For the inference
+        else:
+            # Compute predictions
+            poly_psfs = self.predict_step(inputs, evaluate_step=True)
 
         return poly_psfs
+
 
 def build_PSF_model(model_inst, optimizer=None, loss=None, metrics=None):
     """ Define the model-compilation parameters.
