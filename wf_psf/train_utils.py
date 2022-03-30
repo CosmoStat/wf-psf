@@ -56,6 +56,7 @@ def general_train_cycle(
     non_param_callback=None,
     general_callback=None,
     first_run=False,
+    cycle_def='complete',
     use_sample_weights=False,
     verbose=1
 ):
@@ -119,6 +120,9 @@ def general_train_cycle(
     first_run: bool
         If True, it is the first iteration of the model training.
         The Non-parametric part is not considered in the first parametric training.
+    cycle_def: string
+        Train cycle definition. It can be: `parametric`, `non-parametric`, `complete`.
+        Default is `complete`.
     use_sample_weights: bool
         If True, the sample weights are used for the training.
         The sample weights are computed as the inverse noise estimated variance
@@ -147,7 +151,11 @@ def general_train_cycle(
     # Define optimiser
     if param_optim is None:
         optimizer = tf.keras.optimizers.Adam(
-            learning_rate=l_rate_param, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=False
+            learning_rate=l_rate_param,
+            beta_1=0.9,
+            beta_2=0.999,
+            epsilon=1e-07,
+            amsgrad=False,
         )
     else:
         optimizer = param_optim
@@ -205,92 +213,103 @@ def general_train_cycle(
     else:
         sample_weight = None
 
-    # If it is the first run
-    if first_run:
-        # Set the non-parametric model to zero
-        # With alpha to zero its already enough
-        tf_semiparam_field.set_zero_nonparam()
+    # Define the training cycle 
+    if cycle_def == 'parametric' or cycle_def == 'complete':
+        # If it is the first run
+        if first_run:
+            # Set the non-parametric model to zero
+            # With alpha to zero its already enough
+            tf_semiparam_field.set_zero_nonparam()
 
-    # Set the trainable layer
-    tf_semiparam_field.set_trainable_layers(param_bool=True, nonparam_bool=False)
+        # Set the trainable layer
+        tf_semiparam_field.set_trainable_layers(param_bool=True, nonparam_bool=False)
 
-    # Compile the model for the first optimisation
-    tf_semiparam_field = build_PSF_model(
-        tf_semiparam_field, optimizer=optimizer, loss=loss, metrics=metrics
-    )
-
-    # Train the parametric part
-    print('Starting parametric update..')
-    hist_param = tf_semiparam_field.fit(
-        x=inputs,
-        y=outputs,
-        batch_size=batch_size,
-        epochs=n_epochs_param,
-        validation_data=val_data,
-        callbacks=callbacks,
-        sample_weight=sample_weight,
-        verbose=verbose
-    )
+        # Compile the model for the first optimisation
+        tf_semiparam_field = build_PSF_model(
+            tf_semiparam_field,
+            optimizer=optimizer,
+            loss=loss,
+            metrics=metrics,
+        )
+        # Train the parametric part
+        print('Starting parametric update..')
+        hist_param = tf_semiparam_field.fit(
+            x=inputs,
+            y=outputs,
+            batch_size=batch_size,
+            epochs=n_epochs_param,
+            validation_data=val_data,
+            callbacks=callbacks,
+            sample_weight=sample_weight,
+            verbose=verbose
+        )
 
     ## Non parametric train
+    # Define the training cycle 
+    if cycle_def == 'non-parametric' or cycle_def == 'complete':
+        # If it is the first run
+        if first_run:
+            # Set the non-parametric model to non-zero
+            # With alpha to zero its already enough
+            tf_semiparam_field.set_nonzero_nonparam()
 
-    # If it is the first run
-    if first_run:
-        # Set the non-parametric model to non-zero
-        # With alpha to zero its already enough
-        tf_semiparam_field.set_nonzero_nonparam()
+        # Set the non parametric layer to non trainable
+        tf_semiparam_field.set_trainable_layers(param_bool=False, nonparam_bool=True)
 
-    # Set the non parametric layer to non trainable
-    tf_semiparam_field.set_trainable_layers(param_bool=False, nonparam_bool=True)
-
-    # Define Loss
-    if non_param_loss is None:
-        loss = tf.keras.losses.MeanSquaredError()
-    else:
-        loss = non_param_loss
-
-    # Define optimiser
-    if non_param_optim is None:
-        optimizer = tf.keras.optimizers.Adam(
-            learning_rate=l_rate_non_param, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=False
-        )
-    else:
-        optimizer = non_param_optim
-
-    # Define metric
-    if non_param_metrics is None:
-        metrics = [tf.keras.metrics.MeanSquaredError()]
-    else:
-        metrics = non_param_metrics
-
-    # Define callbacks
-    if non_param_callback is None and general_callback is None:
-        callbacks = None
-    else:
-        if general_callback is None:
-            callbacks = non_param_callback
-        elif non_param_callback is None:
-            callbacks = general_callback
+        # Define Loss
+        if non_param_loss is None:
+            loss = tf.keras.losses.MeanSquaredError()
         else:
-            callbacks = general_callback + non_param_callback
+            loss = non_param_loss
 
-    # Compile the model again for the second optimisation
-    tf_semiparam_field = build_PSF_model(
-        tf_semiparam_field, optimizer=optimizer, loss=loss, metrics=metrics
-    )
+        # Define optimiser
+        if non_param_optim is None:
+            optimizer = tf.keras.optimizers.Adam(
+                learning_rate=l_rate_non_param,
+                beta_1=0.9,
+                beta_2=0.999,
+                epsilon=1e-07,
+                amsgrad=False,
+            )
+        else:
+            optimizer = non_param_optim
 
-    # Train the parametric part
-    print('Starting non-parametric update..')
-    hist_non_param = tf_semiparam_field.fit(
-        x=inputs,
-        y=outputs,
-        batch_size=batch_size,
-        epochs=n_epochs_non_param,
-        validation_data=val_data,
-        callbacks=callbacks,
-        sample_weight=sample_weight,
-        verbose=verbose
-    )
+        # Define metric
+        if non_param_metrics is None:
+            metrics = [tf.keras.metrics.MeanSquaredError()]
+        else:
+            metrics = non_param_metrics
+
+        # Define callbacks
+        if non_param_callback is None and general_callback is None:
+            callbacks = None
+        else:
+            if general_callback is None:
+                callbacks = non_param_callback
+            elif non_param_callback is None:
+                callbacks = general_callback
+            else:
+                callbacks = general_callback + non_param_callback
+
+        # Compile the model again for the second optimisation
+        tf_semiparam_field = build_PSF_model(
+            tf_semiparam_field,
+            optimizer=optimizer,
+            loss=loss,
+            metrics=metrics,
+        )
+        # Train the parametric part
+        print('Starting non-parametric update..')
+        hist_non_param = tf_semiparam_field.fit(
+            x=inputs,
+            y=outputs,
+            batch_size=batch_size,
+            epochs=n_epochs_non_param,
+            validation_data=val_data,
+            callbacks=callbacks,
+            sample_weight=sample_weight,
+            verbose=verbose
+        )
 
     return tf_semiparam_field, hist_param, hist_non_param
 
