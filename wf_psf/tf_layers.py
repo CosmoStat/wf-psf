@@ -759,6 +759,24 @@ class TF_physical_layer(tf.keras.layers.Layer):
         self.obs_pos = obs_pos
         self.zks_prior = zks_prior
 
+    def predict(self, positions):
+        """ Physical layer prediction """
+        
+        # RBF interpolation of prior Zerniles
+        # Order 2 means a thin_plate RBF interpolation
+        # All tensors need to expand one dimension to fulfil requirement in
+        # the tfa's interpolate_spline function
+        interp_zks = tfa.image.interpolate_spline(
+            train_points=tf.expand_dims(self.obs_pos, axis=0),
+            train_values=tf.expand_dims(self.zks_prior, axis=0),
+            query_points=tf.expand_dims(positions, axis=0),
+            order=2,
+            regularization_weight=0.0
+        )
+        # Remove extra dimension required by tfa's interpolate_spline
+        interp_zks = tf.squeeze(interp_zks, axis=0)
+
+        return interp_zks[:, :, tf.newaxis, tf.newaxis]
 
     def call(self, positions):
         """ Calculate the prior zernike coefficients for a given position.
