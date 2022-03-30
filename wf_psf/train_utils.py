@@ -70,7 +70,61 @@ def general_train_cycle(
     
     Parameters
     ----------
-    TODO..
+    tf_semiparam_field: tf.keras.Model
+        The model to be trained.
+    inputs: Tensor or list of tensors
+        Inputs used for Model.fit()
+    outputs: Tensor
+        Outputs used for Model.fit()
+    val_data: Tuple
+        Validation data used for Model.fit().
+        Tuple of input, output validation data
+    batch_size: int
+        Batch size for the training.
+    l_rate_param: float
+        Learning rate for the parametric part
+    l_rate_non_param: float
+        Learning rate for the non-parametric part
+    n_epochs_param: int
+        Number of epochs for the parametric part
+    n_epochs_non_param: int
+        Number of epochs for the non-parametric part
+    param_optim: Tensorflow optimizer
+        Optimizer for the parametric part.
+        Optional, default is the Adam optimizer
+    non_param_optim: Tensorflow optimizer
+        Optimizer for the non-parametric part.
+        Optional, default is the Adam optimizer
+    param_loss: Tensorflow loss
+        Loss function for the parametric part.
+        Optional, default is the MeanSquaredError() loss
+    non_param_loss: Tensorflow loss
+        Loss function for the non-parametric part.
+        Optional, default is the MeanSquaredError() loss
+    param_metrics: Tensorflow metrics
+        Metrics for the parametric part.
+        Optional, default is the MeanSquaredError() metric
+    non_param_metrics: Tensorflow metrics
+        Metrics for the non-parametric part.
+        Optional, default is the MeanSquaredError() metric
+    param_callback: Tensorflow callback
+        Callback for the parametric part only.
+        Optional, default is no callback
+    non_param_callback: Tensorflow callback
+        Callback for the non-parametric part only.
+        Optional, default is no callback
+    general_callback: Tensorflow callback
+        Callback shared for both the parametric and non-parametric parts.
+        Optional, default is no callback
+    first_run: bool
+        If True, it is the first iteration of the model training.
+        The Non-parametric part is not considered in the first parametric training.
+    use_sample_weights: bool
+        If True, the sample weights are used for the training.
+        The sample weights are computed as the inverse noise estimated variance
+    verbose: int
+        Verbosity mode used for the training procedure.
+        If a log of the training is being saved, `verbose=2` is recommended.
 
     Returns
     -------
