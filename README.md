@@ -52,6 +52,7 @@ Optional packages:
 #### [arXiv:2203.04908](http://arxiv.org/abs/2203.04908) Rethinking data-driven point spread function modeling with a differentiable optical model (2022)
 _Submitted._
 
+- Use the release 1.2.0.
 - All the scripts, jobs and notebooks to reproduce the figures from the article can be found [here](https://github.com/tobias-liaudat/wf-psf/tree/main/papers/article_IOP).
 - The trained PSF models are found [here](https://github.com/tobias-liaudat/wf-psf/tree/main/papers/article_IOP/data/models).
 - The input PSF field can be found [here](https://github.com/tobias-liaudat/wf-psf/tree/main/data).
@@ -68,6 +69,7 @@ _Note: To run the comparison to other PSF models you need to install them first.
 #### [arXiv:2111.12541](https://arxiv.org/abs/2111.12541) Rethinking the modeling of the instrumental response of telescopes with a differentiable optical model (2021)
 _NeurIPS 2021 Workshop on Machine Learning and the Physical Sciences._
 
+- Use the release 1.2.0.
 - All the scripts, jobs and notebooks to reproduce the figures from the article can be found [here](https://github.com/tobias-liaudat/wf-psf/tree/main/papers/Neurips2021_ML4Physics_workshop).
 
 
