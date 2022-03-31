@@ -33,7 +33,7 @@ import click
     "--model",
     default="poly",
     type=str,
-    help="Model type. Options are: 'mccd', 'mccd', 'poly, 'param'.")
+    help="Model type. Options are: 'mccd', 'mccd', 'poly, 'param', 'poly_physical'.")
 @click.option(
     "--id_name",
     default="-coherent_euclid_200stars",
@@ -189,6 +189,11 @@ import click
     default=2,
     type=int,
     help="Total amount of cycles to perform. For the moment the only available options are '1' or '2'.")
+@click.option(
+    "--cycle_def",
+    default="complete",
+    type=str,
+    help="Train cycle definition. It can be: 'parametric', 'non-parametric', 'complete'.")
 ## Evaluation flags
 # Saving paths
 @click.option(
