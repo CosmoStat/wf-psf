@@ -760,7 +760,21 @@ class TF_physical_layer(tf.keras.layers.Layer):
         self.zks_prior = zks_prior
 
     def predict(self, positions):
-        """ Physical layer prediction """
+        """ Physical layer prediction
+        
+        Right now all the input elements are used to build the RBF interpolant
+        that is going to be used for the interpolation.
+        The class wf.utils.ZernikeInterpolation() allows to use only the K closest
+        elements for the interpolation. Even though, the interpolation error is smaller
+        the computing time is much bigger.
+        Example:
+        ```
+        zk_interpolator = ZernikeInterpolation(tf_train_pos, tf_zernike_prior, k=100, order=2)
+        new_zks = zk_interpolator.interpolate_zks(tf_test_pos)
+        new_zks = tf.squeeze(new_zks, axis=1)
+        ```
+
+        """
         
         # RBF interpolation of prior Zerniles
         # Order 2 means a thin_plate RBF interpolation
