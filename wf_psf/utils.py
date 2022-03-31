@@ -233,14 +233,14 @@ class ZernikeInterpolation(object):
         Zernike coefficients for each position
     k: int
         Number of elements to use for the interpolation.
-        Default is 25
+        Default is 50
     order: int
         Order of the RBF interpolation.
         Default is 2, corresponds to thin plate interp (r^2*log(r))
 
     """
     
-    def __init__(self, tf_pos, tf_zks, k=25, order=2):
+    def __init__(self, tf_pos, tf_zks, k=50, order=2):
         self.tf_pos = tf_pos
         self.tf_zks = tf_zks
         self.k = k
