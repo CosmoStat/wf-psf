@@ -739,7 +739,7 @@ class TF_physical_layer(tf.keras.layers.Layer):
 
     Parameters
     ----------
-    obs_pos: tensor(n_stars, 2)
+    obs_pos: Tensor (n_stars, 2)
         Observed positions of the `n_stars` in the dataset. The indexing of the
         positions has to correspond to the indexing in the `zks_prior`.
     n_zernikes: int

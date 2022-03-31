@@ -227,9 +227,9 @@ class ZernikeInterpolation(object):
 
     Parameters
     ----------
-    tf_pos: Tensor(n_sources, 2)
+    tf_pos: Tensor (n_sources, 2)
         Positions
-    tf_zks: Tensor(n_sources, n_zernikes)
+    tf_zks: Tensor (n_sources, n_zernikes)
         Zernike coefficients for each position
     k: int
         Number of elements to use for the interpolation.
