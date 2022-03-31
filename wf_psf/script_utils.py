@@ -259,7 +259,7 @@ def train_model(**args):
         monitor='mean_squared_error',
         verbose=1,
         save_best_only=True,
-        save_weights_only=False,
+        save_weights_only=True,
         mode='min',
         save_freq='epoch',
         options=None
@@ -335,7 +335,7 @@ def train_model(**args):
             monitor='mean_squared_error',
             verbose=1,
             save_best_only=True,
-            save_weights_only=False,
+            save_weights_only=True,
             mode='min',
             save_freq='epoch',
             options=None
@@ -476,6 +476,9 @@ def evaluate_model(**args):
     tf_train_pos = tf.convert_to_tensor(train_dataset['positions'], dtype=tf.float32)
     tf_test_pos = tf.convert_to_tensor(test_dataset['positions'], dtype=tf.float32)
 
+    if args['model'] == 'poly_physical':
+        tf_zernike_prior = tf.convert_to_tensor(train_dataset['zernike_prior'], dtype=tf.float32)
+
     print('Dataset parameters:')
     print(train_parameters)
 
@@ -592,6 +595,24 @@ def evaluate_model(**args):
             l2_param=args['l2_param'],
             output_dim=args['output_dim'],
             n_zernikes=args['n_zernikes'],
+            d_max=args['d_max'],
+            x_lims=args['x_lims'],
+            y_lims=args['y_lims']
+        )
+
+    elif args['model'] == 'poly_physical':
+        # Initialize the model
+        tf_semiparam_field = tf_psf_field.TF_physical_poly_field(
+            zernike_maps=tf_zernike_cube,
+            obscurations=tf_obscurations,
+            batch_size=args['batch_size'],
+            obs_pos=tf_train_pos,
+            zks_prior=tf_zernike_prior,
+            output_Q=args['output_q'],
+            d_max_nonparam=args['d_max_nonparam'],
+            l2_param=args['l2_param'],
+            output_dim=args['output_dim'],
+            n_zks_param=args['n_zernikes'],
             d_max=args['d_max'],
             x_lims=args['x_lims'],
             y_lims=args['y_lims']
