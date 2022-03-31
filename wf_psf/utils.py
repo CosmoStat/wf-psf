@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+import tensorflow_addons as tfa
 import PIL
 import zernike as zk
 try:
@@ -216,3 +217,71 @@ class NoiseEstimator(object):
 
         # Calculate noise std dev
         return self.sigma_mad(image[self.window])
+
+
+class ZernikeInterpolation(object):
+    """ Interpolate zernikes
+    
+    This class helps to interpolate zernikes using only the closest K elements
+    in a given dataset using a RBF interpolation.
+
+    Parameters
+    ----------
+    tf_pos: Tensor(n_sources, 2)
+        Positions
+    tf_zks: Tensor(n_sources, n_zernikes)
+        Zernike coefficients for each position
+    k: int
+        Number of elements to use for the interpolation.
+        Default is 25
+    order: int
+        Order of the RBF interpolation.
+        Default is 2, corresponds to thin plate interp (r^2*log(r))
+
+    """
+    
+    def __init__(self, tf_pos, tf_zks, k=25, order=2):
+        self.tf_pos = tf_pos
+        self.tf_zks = tf_zks
+        self.k = k
+        self.order = order
+        
+        
+    def interpolate_zk(self, single_pos):
+        """ Interpolate a single position
+        """
+        # Compute distance
+        dist = tf.math.reduce_euclidean_norm(self.tf_pos - single_pos, axis=1) * -1.
+        # Get top K elements 
+        result = tf.math.top_k(dist, k=self.k)
+        # Gather useful elements from the array
+        rec_pos = tf.gather(
+            self.tf_pos, result.indices, validate_indices=None, axis=0, batch_dims=0,
+        )
+        rec_zks = tf.gather(
+            self.tf_zks, result.indices, validate_indices=None, axis=0, batch_dims=0,
+        )
+        # Interpolate
+        interp_zk = tfa.image.interpolate_spline(
+            train_points=tf.expand_dims(rec_pos, axis=0),
+            train_values=tf.expand_dims(rec_zks, axis=0),
+            query_points=tf.expand_dims(single_pos[tf.newaxis,:], axis=0),
+            order=self.order,
+            regularization_weight=0.0
+        )
+        # Remove extra dimension required by tfa's interpolate_spline
+        interp_zk = tf.squeeze(interp_zk, axis=0)
+
+        return interp_zk
+
+    
+    def interpolate_zks(self, interp_positions):
+        """ Vectorize to interpolate to each position
+        """
+        return tf.map_fn(
+            self.interpolate_zk,
+            interp_positions,
+            parallel_iterations=10,
+            fn_output_signature=tf.float32,
+            swap_memory=True
+        )
