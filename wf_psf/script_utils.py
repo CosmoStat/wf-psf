@@ -91,6 +91,9 @@ def train_model(**args):
     tf_test_stars = tf.convert_to_tensor(test_dataset['stars'], dtype=tf.float32)
     tf_test_pos = tf.convert_to_tensor(test_dataset['positions'], dtype=tf.float32)
 
+    if args['model'] == 'poly_physical':
+        tf_zernike_prior = tf.convert_to_tensor(train_dataset['zernike_prior'], dtype=tf.float32)
+
     print('Dataset parameters:')
     print(train_parameters)
 
@@ -160,7 +163,7 @@ def train_model(**args):
         spatial_dic = [poly_dic, graph_dic]
 
         if args['model'] == 'mccd':
-            # Initialize the model
+            # Initialize the WaveDiff-polygraph model
             tf_semiparam_field = tf_mccd_psf_field.TF_SP_MCCD_field(
                 zernike_maps=tf_zernike_cube,
                 obscurations=tf_obscurations,
@@ -180,7 +183,7 @@ def train_model(**args):
             )
 
         elif args['model'] == 'graph':
-            # Initialize the model
+            # Initialize the WaveDiff-graph model
             tf_semiparam_field = tf_mccd_psf_field.TF_SP_graph_field(
                 zernike_maps=tf_zernike_cube,
                 obscurations=tf_obscurations,
@@ -199,7 +202,7 @@ def train_model(**args):
             )
 
     elif args['model'] == 'poly':
-        # Initialize the model
+        # Initialize the WaveDiff-original model
         tf_semiparam_field = tf_psf_field.TF_SemiParam_field(
             zernike_maps=tf_zernike_cube,
             obscurations=tf_obscurations,
@@ -215,7 +218,7 @@ def train_model(**args):
         )
 
     elif args['model'] == 'param':
-        # Initialize the model
+        # Initialize the Zernike-X model
         tf_semiparam_field = tf_psf_field.TF_PSF_field_model(
             zernike_maps=tf_zernike_cube,
             obscurations=tf_obscurations,
@@ -224,6 +227,24 @@ def train_model(**args):
             l2_param=args['l2_param'],
             output_dim=args['output_dim'],
             n_zernikes=args['n_zernikes'],
+            d_max=args['d_max'],
+            x_lims=args['x_lims'],
+            y_lims=args['y_lims']
+        )
+
+    elif args['model'] == 'poly_physical':
+        # Initialize the model
+        tf_semiparam_field = tf_psf_field.TF_physical_poly_field(
+            zernike_maps=tf_zernike_cube,
+            obscurations=tf_obscurations,
+            batch_size=args['batch_size'],
+            obs_pos=tf_train_pos,
+            zks_prior=tf_zernike_prior,
+            output_Q=args['output_q'],
+            d_max_nonparam=args['d_max_nonparam'],
+            l2_param=args['l2_param'],
+            output_dim=args['output_dim'],
+            n_zks_param=args['n_zernikes'],
             d_max=args['d_max'],
             x_lims=args['x_lims'],
             y_lims=args['y_lims']
@@ -245,8 +266,8 @@ def train_model(**args):
     )
 
     # Prepare the optimisers
-    param_optim = tfa.optimizers.RectifiedAdam(lr=args['l_rate_param'][0])
-    non_param_optim = tfa.optimizers.RectifiedAdam(lr=args['l_rate_non_param'][0])
+    param_optim = tfa.optimizers.RectifiedAdam(learning_rate=args['l_rate_param'][0])
+    non_param_optim = tfa.optimizers.RectifiedAdam(learning_rate=args['l_rate_non_param'][0])
 
     print('Starting cycle 1..')
     start_cycle1 = time.time()
@@ -290,6 +311,7 @@ def train_model(**args):
             non_param_callback=None,
             general_callback=[model_chkp_callback],
             first_run=True,
+            cycle_def=args['cycle_def'],
             use_sample_weights=args['use_sample_weights'],
             verbose=2
         )
@@ -320,8 +342,8 @@ def train_model(**args):
         )
 
         # Prepare the optimisers
-        param_optim = tfa.optimizers.RectifiedAdam(lr=args['l_rate_param'][1])
-        non_param_optim = tfa.optimizers.RectifiedAdam(lr=args['l_rate_non_param'][1])
+        param_optim = tfa.optimizers.RectifiedAdam(learning_rate=args['l_rate_param'][1])
+        non_param_optim = tfa.optimizers.RectifiedAdam(learning_rate=args['l_rate_non_param'][1])
 
         print('Starting cycle 2..')
         start_cycle2 = time.time()
@@ -366,6 +388,7 @@ def train_model(**args):
                 non_param_callback=None,
                 general_callback=[model_chkp_callback],
                 first_run=False,
+                cycle_def=args['cycle_def'],
                 use_sample_weights=args['use_sample_weights'],
                 verbose=2
             )
