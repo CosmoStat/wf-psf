@@ -518,7 +518,7 @@ class TF_physical_poly_field(tf.keras.Model):
         self.x_lims = x_lims
         self.y_lims = y_lims
 
-        # Inputs: TF_poly_Z_field
+        # Inputs: TF_physical_layer
         self.obs_pos = obs_pos
         self.zks_prior = zks_prior
         self.n_zks_prior = tf.shape(zks_prior)[1].numpy()
@@ -780,7 +780,7 @@ class TF_physical_poly_field(tf.keras.Model):
         """ Predict Zernike coefficients at a batch of positions
 
         This includes the parametric model and the physical layer.
-        The prediction of the physical layer ios to positions not used
+        The prediction of the physical layer to positions is not used
         at training time.
 
         Parameters
