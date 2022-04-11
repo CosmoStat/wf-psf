@@ -776,7 +776,7 @@ class TF_physical_layer(tf.keras.layers.Layer):
 
         """
         
-        # RBF interpolation of prior Zerniles
+        # RBF interpolation of prior Zernikes
         # Order 2 means a thin_plate RBF interpolation
         # All tensors need to expand one dimension to fulfil requirement in
         # the tfa's interpolate_spline function
