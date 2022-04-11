@@ -287,6 +287,7 @@ class ZernikeInterpolation(object):
         )
         return tf.squeeze(interp_zks, axis=1)
 
+
 class IndependentZernikeInterpolation(object):
     """ Interpolate each Zernike polynomial independently 
     
