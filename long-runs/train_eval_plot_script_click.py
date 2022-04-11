@@ -33,7 +33,7 @@ import click
     "--model",
     default="poly",
     type=str,
-    help="Model type. Options are: 'mccd', 'mccd', 'poly, 'param', 'poly_physical'.")
+    help="Model type. Options are: 'mccd', 'graph', 'poly, 'param', 'poly_physical'.")
 @click.option(
     "--id_name",
     default="-coherent_euclid_200stars",
