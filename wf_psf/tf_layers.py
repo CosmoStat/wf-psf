@@ -768,10 +768,14 @@ class TF_physical_layer(tf.keras.layers.Layer):
         elements for the interpolation. Even though, the interpolation error is smaller
         the computing time is much bigger.
         Example:
-        ```
+        ``` python
         zk_interpolator = ZernikeInterpolation(tf_train_pos, tf_zernike_prior, k=100, order=2)
         new_zks = zk_interpolator.interpolate_zks(tf_test_pos)
-        new_zks = tf.squeeze(new_zks, axis=1)
+        ```
+        or
+        ``` python
+        zk_interpolator = IndependentZernikeInterpolation(tf_train_pos, tf_zernike_prior, order=2)
+        new_zks = zk_interpolator.interpolate_zks(tf_test_pos)
         ```
 
         """
