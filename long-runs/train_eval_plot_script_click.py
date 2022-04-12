@@ -197,6 +197,11 @@ import click
 ## Evaluation flags
 # Saving paths
 @click.option(
+    "--model_eval",
+    default="poly",
+    type=str,
+    help="Model used as ground truth for the evaluation. Options are: 'poly', 'physical'.")
+@click.option(
     "--metric_base_path",
     default="/gpfswork/rech/ynx/ulx23va/wf-outputs/metrics/",
     type=str,
