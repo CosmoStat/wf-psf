@@ -154,6 +154,11 @@ import click
     default=False,
     type=bool,
     help="Boolean to define if we use sample weights based on the noise standard deviation estimation.")
+@click.option(
+    "--interpolation_type",
+    default="none",
+    type=str,
+    help="The interpolation type for the physical poly model. Options are: 'none', 'all', 'top_K', 'independent_Zk'.")
 # Training parameters
 @click.option(
     "--batch_size",
