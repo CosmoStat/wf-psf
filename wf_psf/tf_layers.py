@@ -3,6 +3,7 @@ import tensorflow as tf
 import tensorflow_addons as tfa
 from wf_psf.tf_modules import TF_mono_PSF
 from wf_psf.utils import calc_poly_position_mat
+import wf_psf.utils as utils
 
 
 class TF_poly_Z_field(tf.keras.layers.Layer):
@@ -746,6 +747,13 @@ class TF_physical_layer(tf.keras.layers.Layer):
         Number of Zernike polynomials
     zks_prior: Tensor (n_stars, n_zernikes)
         Zernike coefficients for each position
+    interpolation_type: str
+        Type of interpolation to be used.
+        Options are: 'none', 'all', 'top_K', 'independent_Zk'.
+        Default is 'none'.
+    interpolation_args: dict
+        Interpolation hyper-parameters. The order of the RBF interpolation,
+        and the K elements in the `top_K` interpolation.
 
     """
 
@@ -753,33 +761,36 @@ class TF_physical_layer(tf.keras.layers.Layer):
         self, 
         obs_pos,
         zks_prior,
+        interpolation_type='none',
+        interpolation_args=None,
         name='TF_physical_layer',
     ):
         super().__init__(name=name)
         self.obs_pos = obs_pos
         self.zks_prior = zks_prior
 
-    def predict(self, positions):
-        """ Physical layer prediction
+        if interpolation_args is None:
+            interpolation_args = {
+                'order': 2,
+                'K': 50
+            }
+        # Define the prediction routine
+        if interpolation_type is 'none':
+            self.predict = self.call
+        elif interpolation_type is 'all':
+            self.predict = self.interpolate_all
+        elif interpolation_type is 'top_K':
+            self.predict = self.interpolate_top_K
+        elif interpolation_type is 'independent_Zk':
+            self.predict = self.interpolate_independent_Zk
+
+    def interpolate_all(self, positions):
+        """ Zernike interpolation
         
         Right now all the input elements are used to build the RBF interpolant
         that is going to be used for the interpolation.
-        The class wf.utils.ZernikeInterpolation() allows to use only the K closest
-        elements for the interpolation. Even though, the interpolation error is smaller
-        the computing time is much bigger.
-        Example:
-        ``` python
-        zk_interpolator = ZernikeInterpolation(tf_train_pos, tf_zernike_prior, k=100, order=2)
-        new_zks = zk_interpolator.interpolate_zks(tf_test_pos)
-        ```
-        or
-        ``` python
-        zk_interpolator = IndependentZernikeInterpolation(tf_train_pos, tf_zernike_prior, order=2)
-        new_zks = zk_interpolator.interpolate_zks(tf_test_pos)
-        ```
 
         """
-        
         # RBF interpolation of prior Zernikes
         # Order 2 means a thin_plate RBF interpolation
         # All tensors need to expand one dimension to fulfil requirement in
@@ -788,11 +799,46 @@ class TF_physical_layer(tf.keras.layers.Layer):
             train_points=tf.expand_dims(self.obs_pos, axis=0),
             train_values=tf.expand_dims(self.zks_prior, axis=0),
             query_points=tf.expand_dims(positions, axis=0),
-            order=2,
+            order=self.interpolation_args['order'],
             regularization_weight=0.0
         )
         # Remove extra dimension required by tfa's interpolate_spline
         interp_zks = tf.squeeze(interp_zks, axis=0)
+
+        return interp_zks[:, :, tf.newaxis, tf.newaxis]
+
+    def interpolate_top_K(self, positions):
+        """ Zernike interpolation
+        
+        The class wf.utils.ZernikeInterpolation allows to use only the K closest
+        elements for the interpolation. Even though, the interpolation error is smaller
+        the computing time is bigger.
+
+        """
+        zk_interpolator = utils.ZernikeInterpolation(
+            self.obs_pos,
+            self.zks_prior,
+            k=self.interpolation_args['K'],
+            order=self.interpolation_args['order']
+        )
+        interp_zks = zk_interpolator.interpolate_zks(positions)
+
+        return interp_zks[:, :, tf.newaxis, tf.newaxis]
+
+    def interpolate_independent_Zk(self, positions):
+        """ Zernike interpolation
+        
+        The class wf.utils.IndependentZernikeInterpolation allows to interpolate each
+        order of the Zernike polynomials independently using all the points avaialble to build
+        the interpolant.
+
+        """
+        zk_interpolator = utils.IndependentZernikeInterpolation(
+            self.obs_pos,
+            self.zks_prior,
+            order=self.interpolation_args['order']
+        )
+        interp_zks = zk_interpolator.interpolate_zks(positions)
 
         return interp_zks[:, :, tf.newaxis, tf.newaxis]
 
