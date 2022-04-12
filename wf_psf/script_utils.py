@@ -477,7 +477,27 @@ def evaluate_model(**args):
     tf_test_pos = tf.convert_to_tensor(test_dataset['positions'], dtype=tf.float32)
 
     if args['model'] == 'poly_physical':
-        tf_zernike_prior = tf.convert_to_tensor(train_dataset['zernike_prior'], dtype=tf.float32)
+        # Concatenate the Zernike and the positions from train and test datasets
+        all_zernike_prior = np.concatenate(
+            (train_dataset['zernike_prior'], test_dataset['zernike_prior']),
+            axis=0
+        )
+        all_pos = np.concatenate((train_dataset['positions'], test_dataset['positions']), axis=0)
+        # Convert to tensor
+        tf_zernike_prior_all = tf.convert_to_tensor(all_zernike_prior, dtype=tf.float32)
+        tf_pos_all = tf.convert_to_tensor(all_pos, dtype=tf.float32)
+
+    if args['model_eval'] == 'physical': 
+        # Concatenate both datasets
+        all_zernike_GT = np.concatenate(
+            (train_dataset['zernike_GT'], test_dataset['zernike_GT']),
+            axis=0
+        )
+        all_pos = np.concatenate((train_dataset['positions'], test_dataset['positions']), axis=0)
+        # Convert to tensor
+        tf_zernike_GT_all = tf.convert_to_tensor(all_zernike_GT, dtype=tf.float32)
+        tf_pos_all = tf.convert_to_tensor(all_pos, dtype=tf.float32)
+
 
     print('Dataset parameters:')
     print(train_parameters)
@@ -606,8 +626,8 @@ def evaluate_model(**args):
             zernike_maps=tf_zernike_cube,
             obscurations=tf_obscurations,
             batch_size=args['batch_size'],
-            obs_pos=tf_train_pos,
-            zks_prior=tf_zernike_prior,
+            obs_pos=tf_pos_all,
+            zks_prior=tf_zernike_prior_all,
             output_Q=args['output_q'],
             d_max_nonparam=args['d_max_nonparam'],
             l2_param=args['l2_param'],
@@ -615,7 +635,8 @@ def evaluate_model(**args):
             n_zks_param=args['n_zernikes'],
             d_max=args['d_max'],
             x_lims=args['x_lims'],
-            y_lims=args['y_lims']
+            y_lims=args['y_lims'],
+            interpolation_type=args['interpolation_type'],
         )
 
     ## Load the model's weights
@@ -634,25 +655,36 @@ def evaluate_model(**args):
     np_zernike_cube[np.isnan(np_zernike_cube)] = 0
     tf_zernike_cube = tf.convert_to_tensor(np_zernike_cube, dtype=tf.float32)
 
-    # Initialize the model
-    GT_tf_semiparam_field = tf_psf_field.TF_SemiParam_field(
-        zernike_maps=tf_zernike_cube,
-        obscurations=tf_obscurations,
-        batch_size=args['batch_size'],
-        output_Q=args['output_q'],
-        d_max_nonparam=args['d_max_nonparam'],
-        output_dim=args['output_dim'],
-        n_zernikes=args['gt_n_zernikes'],
-        d_max=args['d_max'],
-        x_lims=args['x_lims'],
-        y_lims=args['y_lims']
-    )
-
-    # For the Ground truth model
-    GT_tf_semiparam_field.tf_poly_Z_field.assign_coeff_matrix(train_C_poly)
-    _ = GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat.assign(
-        np.zeros_like(GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat)
-    )
+    if args['model_eval'] == 'physical': 
+        # Initialize the model
+        GT_tf_semiparam_field = tf_psf_field.TF_GT_physical_field(
+            zernike_maps=tf_zernike_cube,
+            obscurations=tf_obscurations,
+            batch_size=args['batch_size'],
+            obs_pos=tf_pos_all,
+            zks_prior=tf_zernike_GT_all,
+            output_Q=args['output_q'],
+            output_dim=args['output_dim'],
+        )
+    elif args['model_eval'] == 'poly':
+        # Initialize the model
+        GT_tf_semiparam_field = tf_psf_field.TF_SemiParam_field(
+            zernike_maps=tf_zernike_cube,
+            obscurations=tf_obscurations,
+            batch_size=args['batch_size'],
+            output_Q=args['output_q'],
+            d_max_nonparam=args['d_max_nonparam'],
+            output_dim=args['output_dim'],
+            n_zernikes=args['gt_n_zernikes'],
+            d_max=args['d_max'],
+            x_lims=args['x_lims'],
+            y_lims=args['y_lims']
+        )
+        # For the Ground truth model
+        GT_tf_semiparam_field.tf_poly_Z_field.assign_coeff_matrix(train_C_poly)
+        _ = GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat.assign(
+            np.zeros_like(GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat)
+        )
 
     ## Metric evaluation on the test dataset
     print('\n***\nMetric evaluation on the test dataset\n***\n')
