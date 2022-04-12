@@ -214,11 +214,14 @@ def general_train_cycle(
         sample_weight = None
 
     # Define the training cycle 
-    if cycle_def == 'parametric' or cycle_def == 'complete':
+    if cycle_def == 'parametric' or cycle_def == 'complete' and cycle_def == 'only-parametric':
         # If it is the first run
         if first_run:
             # Set the non-parametric model to zero
             # With alpha to zero its already enough
+            tf_semiparam_field.set_zero_nonparam()
+        if cycle_def == 'only-parametric':
+            # Set the non-parametric part to zero
             tf_semiparam_field.set_zero_nonparam()
 
         # Set the trainable layer
@@ -246,12 +249,16 @@ def general_train_cycle(
 
     ## Non parametric train
     # Define the training cycle 
-    if cycle_def == 'non-parametric' or cycle_def == 'complete':
+    if cycle_def == 'non-parametric' or cycle_def == 'complete' or cycle_def == 'only-non-parametric':
         # If it is the first run
         if first_run:
             # Set the non-parametric model to non-zero
             # With alpha to zero its already enough
             tf_semiparam_field.set_nonzero_nonparam()
+        if cycle_def == 'only-non-parametric':
+            # Set the parametric layer to zero
+            coeff_mat = tf_semiparam_field.get_coeff_matrix()
+            tf_semiparam_field.assign_coeff_matrix(tf.zeros_like(coeff_mat))
 
         # Set the non parametric layer to non trainable
         tf_semiparam_field.set_trainable_layers(param_bool=False, nonparam_bool=True)

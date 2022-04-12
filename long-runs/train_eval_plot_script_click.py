@@ -198,7 +198,7 @@ import click
     "--cycle_def",
     default="complete",
     type=str,
-    help="Train cycle definition. It can be: 'parametric', 'non-parametric', 'complete'.")
+    help="Train cycle definition. It can be: 'parametric', 'non-parametric', 'complete', 'only-non-parametric' and 'only-parametric'.")
 ## Evaluation flags
 # Saving paths
 @click.option(
