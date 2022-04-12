@@ -485,6 +485,11 @@ class TF_physical_poly_field(tf.keras.Model):
     coeff_mat: Tensor or None
         Initialization of the coefficient matrix defining the parametric psf
         field model.
+    interpolation_type: str
+        Option for the interpolation type of the physical layer.
+        Default is no interpolation.
+    interpolation_args: dict
+        Additional arguments for the interpolation.
 
     """
 
@@ -504,9 +509,11 @@ class TF_physical_poly_field(tf.keras.Model):
         x_lims=[0, 1e3],
         y_lims=[0, 1e3],
         coeff_mat=None,
+        interpolation_type='none',
+        interpolation_args=None,
         name='TF_physical_poly_field'
     ):
-        super(TF_physical_poly_field, self).__init__()
+        super(TF_physical_poly_field, self).__init__(name=name)
 
         # Inputs: oversampling used
         self.output_Q = output_Q
@@ -522,6 +529,8 @@ class TF_physical_poly_field(tf.keras.Model):
         self.obs_pos = obs_pos
         self.zks_prior = zks_prior
         self.n_zks_prior = tf.shape(zks_prior)[1].numpy()
+        self.interpolation_type = interpolation_type
+        self.interpolation_args = interpolation_args
 
         # Inputs: TF_NP_poly_OPD
         self.d_max_nonparam = d_max_nonparam
@@ -554,6 +563,8 @@ class TF_physical_poly_field(tf.keras.Model):
         self.tf_physical_layer = TF_physical_layer(
             self.obs_pos,
             self.zks_prior,
+            interpolation_type=self.interpolation_type,
+            interpolation_args=self.interpolation_args,
         )
         # Initialize the zernike to OPD layer
         self.tf_zernike_OPD = TF_zernike_OPD(zernike_maps=zernike_maps)
@@ -769,7 +780,7 @@ class TF_physical_poly_field(tf.keras.Model):
         # Calculate parametric part
         zks_params = self.tf_poly_Z_field(input_positions)
         # Calculate the physical layer
-        zks_prior = self.tf_physical_layer(input_positions)
+        zks_prior = self.tf_physical_layer.call(input_positions)
         # Pad and sum the zernike coefficients
         padded_zk_param, padded_zk_prior = self.zks_pad(zks_params, zks_prior)
         zks_coeffs = tf.math.add(padded_zk_param, padded_zk_prior)
@@ -911,6 +922,7 @@ class TF_GT_physical_field(tf.keras.Model):
         self.tf_physical_layer = TF_physical_layer(
             self.obs_pos,
             self.zks_prior,
+            interpolation_type='none',
         )
         # Initialize the zernike to OPD layer
         self.tf_zernike_OPD = TF_zernike_OPD(zernike_maps=zernike_maps)
@@ -1059,7 +1071,7 @@ class TF_GT_physical_field(tf.keras.Model):
 
         """
         # Calculate the physical layer
-        return self.tf_physical_layer.call(input_positions)
+        return self.tf_physical_layer.predict(input_positions)
 
 
     def call(self, inputs, training=True):
