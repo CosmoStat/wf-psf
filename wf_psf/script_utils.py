@@ -1120,7 +1120,10 @@ def plot_optimisation_metrics(**args):
     plot_saving_path = args['base_path'] + args['plots_folder']
 
     # Define the number of datasets to test
-    n_datasets = len(args['suffix_id_name'])
+    if isinstance(args['suffix_id_name'], list):
+        n_datasets = len(args['suffix_id_name'])
+    else:
+        n_datasets = 1
 
     optim_hist_file = args['base_path'] + args['optim_hist_folder']
     run_id_no_suff = args['model'] + args['base_id_name']
