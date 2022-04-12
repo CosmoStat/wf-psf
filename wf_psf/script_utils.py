@@ -1126,10 +1126,13 @@ def plot_optimisation_metrics(**args):
     run_id_no_suff = args['model'] + args['base_id_name']
 
     # Define the metric data paths
-    model_paths = [
-        optim_hist_file + 'optim_hist_' + run_id_no_suff + _suff + '.npy'
-        for _suff in args['suffix_id_name']
-    ]
+    if isinstance(args['suffix_id_name'], list):
+        model_paths = [
+            args['metric_base_path'] + 'metrics-' + run_id_no_suff + _suff + '.npy'
+            for _suff in args['suffix_id_name']
+        ]
+    else:
+        model_paths = args['metric_base_path'] + 'metrics-' + run_id_no_suff + args['suffix_id_name'] + '.npy'
 
     try:
         # Load metrics
