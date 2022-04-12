@@ -223,6 +223,7 @@ def general_train_cycle(
         if cycle_def == 'only-parametric':
             # Set the non-parametric part to zero
             tf_semiparam_field.set_zero_nonparam()
+            hist_non_param = None
 
         # Set the trainable layer
         tf_semiparam_field.set_trainable_layers(param_bool=True, nonparam_bool=False)
@@ -259,6 +260,7 @@ def general_train_cycle(
             # Set the parametric layer to zero
             coeff_mat = tf_semiparam_field.get_coeff_matrix()
             tf_semiparam_field.assign_coeff_matrix(tf.zeros_like(coeff_mat))
+            hist_param = None
 
         # Set the non parametric layer to non trainable
         tf_semiparam_field.set_trainable_layers(param_bool=False, nonparam_bool=True)
