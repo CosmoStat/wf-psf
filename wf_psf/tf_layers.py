@@ -775,13 +775,13 @@ class TF_physical_layer(tf.keras.layers.Layer):
                 'K': 50
             }
         # Define the prediction routine
-        if interpolation_type is 'none':
+        if interpolation_type == 'none':
             self.predict = self.call
-        elif interpolation_type is 'all':
+        elif interpolation_type == 'all':
             self.predict = self.interpolate_all
-        elif interpolation_type is 'top_K':
+        elif interpolation_type == 'top_K':
             self.predict = self.interpolate_top_K
-        elif interpolation_type is 'independent_Zk':
+        elif interpolation_type == 'independent_Zk':
             self.predict = self.interpolate_independent_Zk
 
     def interpolate_all(self, positions):
