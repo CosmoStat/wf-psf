@@ -218,7 +218,7 @@ def general_train_cycle(
         sample_weight = None
 
     # Define the training cycle 
-    if cycle_def == 'parametric' or cycle_def == 'complete' and cycle_def == 'only-parametric':
+    if cycle_def == 'parametric' or cycle_def == 'complete' or cycle_def == 'only-parametric':
         # If it is the first run
         if first_run:
             # Set the non-parametric model to zero
