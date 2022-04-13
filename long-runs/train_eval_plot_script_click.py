@@ -261,10 +261,13 @@ import click
 def main(**args):
     print(args)
     if args['train_opt']:
+        print('Training...')
         wf.script_utils.train_model(**args)
     if args['eval_opt']:
+        print('Evaluation...')
         wf.script_utils.evaluate_model(**args)
     if args['plot_opt']:
+        print('Plotting...')
         wf.script_utils.plot_metrics(**args)
         wf.script_utils.plot_optimisation_metrics(**args)
 
