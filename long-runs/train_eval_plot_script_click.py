@@ -33,7 +33,7 @@ import click
     "--model",
     default="poly",
     type=str,
-    help="Model type. Options are: 'mccd', 'mccd', 'poly, 'param', 'poly_physical'.")
+    help="Model type. Options are: 'mccd', 'graph', 'poly, 'param', 'poly_physical'.")
 @click.option(
     "--id_name",
     default="-coherent_euclid_200stars",
@@ -154,6 +154,11 @@ import click
     default=False,
     type=bool,
     help="Boolean to define if we use sample weights based on the noise standard deviation estimation.")
+@click.option(
+    "--interpolation_type",
+    default="none",
+    type=str,
+    help="The interpolation type for the physical poly model. Options are: 'none', 'all', 'top_K', 'independent_Zk'.")
 # Training parameters
 @click.option(
     "--batch_size",
@@ -193,9 +198,14 @@ import click
     "--cycle_def",
     default="complete",
     type=str,
-    help="Train cycle definition. It can be: 'parametric', 'non-parametric', 'complete'.")
+    help="Train cycle definition. It can be: 'parametric', 'non-parametric', 'complete', 'only-non-parametric' and 'only-parametric'.")
 ## Evaluation flags
 # Saving paths
+@click.option(
+    "--model_eval",
+    default="poly",
+    type=str,
+    help="Model used as ground truth for the evaluation. Options are: 'poly', 'physical'.")
 @click.option(
     "--metric_base_path",
     default="/gpfswork/rech/ynx/ulx23va/wf-outputs/metrics/",
@@ -251,10 +261,13 @@ import click
 def main(**args):
     print(args)
     if args['train_opt']:
+        print('Training...')
         wf.script_utils.train_model(**args)
     if args['eval_opt']:
+        print('Evaluation...')
         wf.script_utils.evaluate_model(**args)
     if args['plot_opt']:
+        print('Plotting...')
         wf.script_utils.plot_metrics(**args)
         wf.script_utils.plot_optimisation_metrics(**args)
 

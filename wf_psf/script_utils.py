@@ -92,7 +92,15 @@ def train_model(**args):
     tf_test_pos = tf.convert_to_tensor(test_dataset['positions'], dtype=tf.float32)
 
     if args['model'] == 'poly_physical':
-        tf_zernike_prior = tf.convert_to_tensor(train_dataset['zernike_prior'], dtype=tf.float32)
+            # Concatenate the Zernike and the positions from train and test datasets
+            all_pos = np.concatenate((train_dataset['positions'], test_dataset['positions']), axis=0)
+            all_zernike_prior = np.concatenate(
+                (train_dataset['zernike_prior'], test_dataset['zernike_prior']),
+                axis=0
+            )
+            # Convert to tensor
+            tf_pos_all = tf.convert_to_tensor(all_pos, dtype=tf.float32)
+            tf_zernike_prior_all = tf.convert_to_tensor(all_zernike_prior, dtype=tf.float32)
 
     print('Dataset parameters:')
     print(train_parameters)
@@ -238,8 +246,8 @@ def train_model(**args):
             zernike_maps=tf_zernike_cube,
             obscurations=tf_obscurations,
             batch_size=args['batch_size'],
-            obs_pos=tf_train_pos,
-            zks_prior=tf_zernike_prior,
+            obs_pos=tf_pos_all,
+            zks_prior=tf_zernike_prior_all,
             output_Q=args['output_q'],
             d_max_nonparam=args['d_max_nonparam'],
             l2_param=args['l2_param'],
@@ -323,8 +331,9 @@ def train_model(**args):
     print('Cycle1 elapsed time: %f' % (end_cycle1 - start_cycle1))
 
     # Save optimisation history in the saving dict
-    saving_optim_hist['param_cycle1'] = hist_param.history
-    if args['model'] != 'param':
+    if hist_param is not None:
+        saving_optim_hist['param_cycle1'] = hist_param.history
+    if args['model'] != 'param' and hist_non_param is not None:
         saving_optim_hist['nonparam_cycle1'] = hist_non_param.history
 
     if args['total_cycles'] >= 2:
@@ -400,8 +409,9 @@ def train_model(**args):
         print('Cycle2 elapsed time: %f' % (end_cycle2 - start_cycle2))
 
         # Save optimisation history in the saving dict
-        saving_optim_hist['param_cycle2'] = hist_param_2.history
-        if args['model'] != 'param':
+        if hist_param_2 is not None:
+            saving_optim_hist['param_cycle2'] = hist_param_2.history
+        if args['model'] != 'param' and hist_non_param_2 is not None:
             saving_optim_hist['nonparam_cycle2'] = hist_non_param_2.history
 
     # Save optimisation history dictionary
@@ -477,7 +487,27 @@ def evaluate_model(**args):
     tf_test_pos = tf.convert_to_tensor(test_dataset['positions'], dtype=tf.float32)
 
     if args['model'] == 'poly_physical':
-        tf_zernike_prior = tf.convert_to_tensor(train_dataset['zernike_prior'], dtype=tf.float32)
+        # Concatenate the Zernike and the positions from train and test datasets
+        all_zernike_prior = np.concatenate(
+            (train_dataset['zernike_prior'], test_dataset['zernike_prior']),
+            axis=0
+        )
+        all_pos = np.concatenate((train_dataset['positions'], test_dataset['positions']), axis=0)
+        # Convert to tensor
+        tf_zernike_prior_all = tf.convert_to_tensor(all_zernike_prior, dtype=tf.float32)
+        tf_pos_all = tf.convert_to_tensor(all_pos, dtype=tf.float32)
+
+    if args['model_eval'] == 'physical': 
+        # Concatenate both datasets
+        all_zernike_GT = np.concatenate(
+            (train_dataset['zernike_GT'], test_dataset['zernike_GT']),
+            axis=0
+        )
+        all_pos = np.concatenate((train_dataset['positions'], test_dataset['positions']), axis=0)
+        # Convert to tensor
+        tf_zernike_GT_all = tf.convert_to_tensor(all_zernike_GT, dtype=tf.float32)
+        tf_pos_all = tf.convert_to_tensor(all_pos, dtype=tf.float32)
+
 
     print('Dataset parameters:')
     print(train_parameters)
@@ -606,8 +636,8 @@ def evaluate_model(**args):
             zernike_maps=tf_zernike_cube,
             obscurations=tf_obscurations,
             batch_size=args['batch_size'],
-            obs_pos=tf_train_pos,
-            zks_prior=tf_zernike_prior,
+            obs_pos=tf_pos_all,
+            zks_prior=tf_zernike_prior_all,
             output_Q=args['output_q'],
             d_max_nonparam=args['d_max_nonparam'],
             l2_param=args['l2_param'],
@@ -615,7 +645,8 @@ def evaluate_model(**args):
             n_zks_param=args['n_zernikes'],
             d_max=args['d_max'],
             x_lims=args['x_lims'],
-            y_lims=args['y_lims']
+            y_lims=args['y_lims'],
+            interpolation_type=args['interpolation_type'],
         )
 
     ## Load the model's weights
@@ -634,25 +665,36 @@ def evaluate_model(**args):
     np_zernike_cube[np.isnan(np_zernike_cube)] = 0
     tf_zernike_cube = tf.convert_to_tensor(np_zernike_cube, dtype=tf.float32)
 
-    # Initialize the model
-    GT_tf_semiparam_field = tf_psf_field.TF_SemiParam_field(
-        zernike_maps=tf_zernike_cube,
-        obscurations=tf_obscurations,
-        batch_size=args['batch_size'],
-        output_Q=args['output_q'],
-        d_max_nonparam=args['d_max_nonparam'],
-        output_dim=args['output_dim'],
-        n_zernikes=args['gt_n_zernikes'],
-        d_max=args['d_max'],
-        x_lims=args['x_lims'],
-        y_lims=args['y_lims']
-    )
-
-    # For the Ground truth model
-    GT_tf_semiparam_field.tf_poly_Z_field.assign_coeff_matrix(train_C_poly)
-    _ = GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat.assign(
-        np.zeros_like(GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat)
-    )
+    if args['model_eval'] == 'physical': 
+        # Initialize the model
+        GT_tf_semiparam_field = tf_psf_field.TF_GT_physical_field(
+            zernike_maps=tf_zernike_cube,
+            obscurations=tf_obscurations,
+            batch_size=args['batch_size'],
+            obs_pos=tf_pos_all,
+            zks_prior=tf_zernike_GT_all,
+            output_Q=args['output_q'],
+            output_dim=args['output_dim'],
+        )
+    elif args['model_eval'] == 'poly':
+        # Initialize the model
+        GT_tf_semiparam_field = tf_psf_field.TF_SemiParam_field(
+            zernike_maps=tf_zernike_cube,
+            obscurations=tf_obscurations,
+            batch_size=args['batch_size'],
+            output_Q=args['output_q'],
+            d_max_nonparam=args['d_max_nonparam'],
+            output_dim=args['output_dim'],
+            n_zernikes=args['gt_n_zernikes'],
+            d_max=args['d_max'],
+            x_lims=args['x_lims'],
+            y_lims=args['y_lims']
+        )
+        # For the Ground truth model
+        GT_tf_semiparam_field.tf_poly_Z_field.assign_coeff_matrix(train_C_poly)
+        _ = GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat.assign(
+            np.zeros_like(GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat)
+        )
 
     ## Metric evaluation on the test dataset
     print('\n***\nMetric evaluation on the test dataset\n***\n')
@@ -833,16 +875,23 @@ def plot_metrics(**args):
     R2_req_euclid = 1e-03
 
     # Define the number of datasets to test
-    n_datasets = len(args['suffix_id_name'])
+    if isinstance(args['suffix_id_name'], list):
+        n_datasets = len(args['suffix_id_name'])
+    else:
+        n_datasets = 1
 
     # Run id without suffix
     run_id_no_suff = args['model'] + args['base_id_name']
 
     # Define the metric data paths
-    model_paths = [
-        args['metric_base_path'] + 'metrics-' + run_id_no_suff + _suff + '.npy'
-        for _suff in args['suffix_id_name']
-    ]
+    if isinstance(args['suffix_id_name'], list):
+        model_paths = [
+            args['metric_base_path'] + 'metrics-' + run_id_no_suff + _suff + '.npy'
+            for _suff in args['suffix_id_name']
+        ]
+    else:
+        model_paths = [args['metric_base_path'] + 'metrics-' + run_id_no_suff + args['suffix_id_name'] + '.npy']
+
 
     # Load metrics
     try:
@@ -854,108 +903,117 @@ def plot_metrics(**args):
 
     for plot_dataset in ['test', 'train']:
 
-        ## Polychromatic results
-        res = extract_poly_results(metrics, test_train=plot_dataset)
-        model_polyc_rmse = res[0]
-        model_polyc_std_rmse = res[1]
-        model_polyc_rel_rmse = res[2]
-        model_polyc_std_rel_rmse = res[3]
+        try:
+            ## Polychromatic results
+            res = extract_poly_results(metrics, test_train=plot_dataset)
+            model_polyc_rmse = res[0]
+            model_polyc_std_rmse = res[1]
+            model_polyc_rel_rmse = res[2]
+            model_polyc_std_rel_rmse = res[3]
 
-        fig = plt.figure(figsize=(12, 8))
-        ax1 = fig.add_subplot(111)
-        ax1.errorbar(
-            x=star_list,
-            y=model_polyc_rmse,
-            yerr=model_polyc_std_rmse,
-            label=run_id_no_suff,
-            alpha=0.75
-        )
-        plt.minorticks_on()
-        ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
-        ax1.legend()
-        ax1.set_title(
-            'Stars ' + plot_dataset + '\n' + run_id_no_suff +
-            '.\nPolychromatic pixel RMSE @ Euclid resolution'
-        )
-        ax1.set_xlabel('Number of stars')
-        ax1.set_ylabel('Absolute error')
-        ax2 = ax1.twinx()
-        kwargs = dict(linewidth=2, linestyle='dashed', markersize=4, marker='^', alpha=0.5)
-        ax2.plot(star_list, model_polyc_rel_rmse, **kwargs)
-        ax2.set_ylabel('Relative error [%]')
-        ax2.grid(False)
-        plt.savefig(
-            plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_polyc_pixel_RMSE.png'
-        )
-        plt.show()
-
-        ## Monochromatic
-        fig = plt.figure(figsize=(12, 8))
-        ax1 = fig.add_subplot(111)
-        for it in range(n_datasets):
+            fig = plt.figure(figsize=(12, 8))
+            ax1 = fig.add_subplot(111)
             ax1.errorbar(
-                x=lambda_list,
-                y=metrics[it]['test_metrics']['mono_metric']['rmse_lda'],
-                yerr=metrics[it]['test_metrics']['mono_metric']['std_rmse_lda'],
-                label=args['model'] + args['suffix_id_name'][it],
+                x=star_list,
+                y=model_polyc_rmse,
+                yerr=model_polyc_std_rmse,
+                label=run_id_no_suff,
                 alpha=0.75
             )
-        plt.minorticks_on()
-        ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
-        ax1.legend()
-        ax1.set_title(
-            'Stars ' + plot_dataset + '\n' + run_id_no_suff +
-            '.\nMonochromatic pixel RMSE @ Euclid resolution'
-        )
-        ax1.set_xlabel('Wavelength [um]')
-        ax1.set_ylabel('Absolute error')
-
-        ax2 = ax1.twinx()
-        kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
-        for it in range(n_datasets):
-            ax2.plot(
-                lambda_list, metrics[it]['test_metrics']['mono_metric']['rel_rmse_lda'], **kwargs
+            plt.minorticks_on()
+            ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
+            ax1.legend()
+            ax1.set_title(
+                'Stars ' + plot_dataset + '\n' + run_id_no_suff +
+                '.\nPolychromatic pixel RMSE @ Euclid resolution'
             )
-        ax2.set_ylabel('Relative error [%]')
-        ax2.grid(False)
-        plt.savefig(
-            plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff +
-            '_monochrom_pixel_RMSE.png'
-        )
-        plt.show()
+            ax1.set_xlabel('Number of stars')
+            ax1.set_ylabel('Absolute error')
+            ax2 = ax1.twinx()
+            kwargs = dict(linewidth=2, linestyle='dashed', markersize=4, marker='^', alpha=0.5)
+            ax2.plot(star_list, model_polyc_rel_rmse, **kwargs)
+            ax2.set_ylabel('Relative error [%]')
+            ax2.grid(False)
+            plt.savefig(
+                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_polyc_pixel_RMSE.png'
+            )
+            plt.show()
+        except Exception:
+            print('Problem with the performance metrics plot of pixel polychromatic errors.')
+
+        ## Monochromatic
+        try:
+            fig = plt.figure(figsize=(12, 8))
+            ax1 = fig.add_subplot(111)
+            for it in range(n_datasets):
+                ax1.errorbar(
+                    x=lambda_list,
+                    y=metrics[it]['test_metrics']['mono_metric']['rmse_lda'],
+                    yerr=metrics[it]['test_metrics']['mono_metric']['std_rmse_lda'],
+                    label=args['model'] + args['suffix_id_name'][it],
+                    alpha=0.75
+                )
+            plt.minorticks_on()
+            ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
+            ax1.legend()
+            ax1.set_title(
+                'Stars ' + plot_dataset + '\n' + run_id_no_suff +
+                '.\nMonochromatic pixel RMSE @ Euclid resolution'
+            )
+            ax1.set_xlabel('Wavelength [um]')
+            ax1.set_ylabel('Absolute error')
+
+            ax2 = ax1.twinx()
+            kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+            for it in range(n_datasets):
+                ax2.plot(
+                    lambda_list, metrics[it]['test_metrics']['mono_metric']['rel_rmse_lda'], **kwargs
+                )
+            ax2.set_ylabel('Relative error [%]')
+            ax2.grid(False)
+            plt.savefig(
+                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff +
+                '_monochrom_pixel_RMSE.png'
+            )
+            plt.show()
+        except Exception:
+            print('Problem with the performance metrics plot of pixel monochromatic errors.')
 
         ## OPD results
-        res = extract_opd_results(metrics, test_train=plot_dataset)
-        model_opd_rmse = res[0]
-        model_opd_std_rmse = res[1]
-        model_opd_rel_rmse = res[2]
-        model_opd_std_rel_rmse = res[3]
+        try:
+            res = extract_opd_results(metrics, test_train=plot_dataset)
+            model_opd_rmse = res[0]
+            model_opd_std_rmse = res[1]
+            model_opd_rel_rmse = res[2]
+            model_opd_std_rel_rmse = res[3]
 
-        fig = plt.figure(figsize=(12, 8))
-        ax1 = fig.add_subplot(111)
-        ax1.errorbar(
-            x=star_list,
-            y=model_opd_rmse,
-            yerr=model_opd_std_rmse,
-            label=run_id_no_suff,
-            alpha=0.75
-        )
-        plt.minorticks_on()
-        ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
-        ax1.legend()
-        ax1.set_title('Stars ' + plot_dataset + '\n' + run_id_no_suff + '.\nOPD RMSE')
-        ax1.set_xlabel('Number of stars')
-        ax1.set_ylabel('Absolute error')
+            fig = plt.figure(figsize=(12, 8))
+            ax1 = fig.add_subplot(111)
+            ax1.errorbar(
+                x=star_list,
+                y=model_opd_rmse,
+                yerr=model_opd_std_rmse,
+                label=run_id_no_suff,
+                alpha=0.75
+            )
+            plt.minorticks_on()
+            ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
+            ax1.legend()
+            ax1.set_title('Stars ' + plot_dataset + '\n' + run_id_no_suff + '.\nOPD RMSE')
+            ax1.set_xlabel('Number of stars')
+            ax1.set_ylabel('Absolute error')
 
-        ax2 = ax1.twinx()
-        kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
-        ax2.plot(star_list, model_opd_rel_rmse, **kwargs)
-        ax2.set_ylabel('Relative error [%]')
-        ax2.grid(False)
-        plt.savefig(
-            plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_OPD_RMSE.png'
-        )
-        plt.show()
+            ax2 = ax1.twinx()
+            kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+            ax2.plot(star_list, model_opd_rel_rmse, **kwargs)
+            ax2.set_ylabel('Relative error [%]')
+            ax2.grid(False)
+            plt.savefig(
+                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_OPD_RMSE.png'
+            )
+            plt.show()
+        except Exception:
+            print('Problem with the performance metrics plot of OPD errors.')
 
         ## Shape results
         model_e1, model_e2, model_R2 = extract_shape_results(metrics, test_train=plot_dataset)
@@ -976,107 +1034,116 @@ def plot_metrics(**args):
         model_R2_rel_euclid = model_rmse_R2_meanR2 / R2_req_euclid
 
         # Plot e1 and e2
-        fig = plt.figure(figsize=(12, 8))
-        ax1 = fig.add_subplot(111)
-        ax1.errorbar(
-            x=star_list,
-            y=model_e1_rmse,
-            yerr=model_e1_std_rmse,
-            label='e1 ' + run_id_no_suff,
-            alpha=0.75
-        )
-        ax1.errorbar(
-            x=star_list,
-            y=model_e2_rmse,
-            yerr=model_e2_std_rmse,
-            label='e2 ' + run_id_no_suff,
-            alpha=0.75
-        )
-        plt.minorticks_on()
-        ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
-        ax1.legend()
-        ax1.set_title(
-            'Stars ' + plot_dataset + '\n' + run_id_no_suff + '\ne1, e2 RMSE @ 3x Euclid resolution'
-        )
-        ax1.set_xlabel('Number of stars')
-        ax1.set_ylabel('Absolute error')
+        try:
+            fig = plt.figure(figsize=(12, 8))
+            ax1 = fig.add_subplot(111)
+            ax1.errorbar(
+                x=star_list,
+                y=model_e1_rmse,
+                yerr=model_e1_std_rmse,
+                label='e1 ' + run_id_no_suff,
+                alpha=0.75
+            )
+            ax1.errorbar(
+                x=star_list,
+                y=model_e2_rmse,
+                yerr=model_e2_std_rmse,
+                label='e2 ' + run_id_no_suff,
+                alpha=0.75
+            )
+            plt.minorticks_on()
+            ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
+            ax1.legend()
+            ax1.set_title(
+                'Stars ' + plot_dataset + '\n' + run_id_no_suff + '\ne1, e2 RMSE @ 3x Euclid resolution'
+            )
+            ax1.set_xlabel('Number of stars')
+            ax1.set_ylabel('Absolute error')
 
-        ax2 = ax1.twinx()
-        kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
-        ax2.plot(star_list, model_e1_rel_euclid, **kwargs)
-        ax2.plot(star_list, model_e2_rel_euclid, **kwargs)
-        ax2.set_ylabel('Times over Euclid req.')
-        ax2.grid(False)
-        plt.savefig(
-            plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_shape_e1_e2_RMSE.png'
-        )
-        plt.show()
+            ax2 = ax1.twinx()
+            kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+            ax2.plot(star_list, model_e1_rel_euclid, **kwargs)
+            ax2.plot(star_list, model_e2_rel_euclid, **kwargs)
+            ax2.set_ylabel('Times over Euclid req.')
+            ax2.grid(False)
+            plt.savefig(
+                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_shape_e1_e2_RMSE.png'
+            )
+            plt.show()
+        except Exception:
+            print('Problem with the performance metrics plot of e1/e2 errors.')
 
         # Plot R2
-        fig = plt.figure(figsize=(12, 8))
-        ax1 = fig.add_subplot(111)
-        ax1.errorbar(
-            x=star_list,
-            y=model_rmse_R2_meanR2,
-            yerr=model_std_rmse_R2_meanR2,
-            label='R2 ' + run_id_no_suff,
-            alpha=0.75
-        )
-        plt.minorticks_on()
-        ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
-        ax1.legend()
-        ax1.set_title(
-            'Stars ' + plot_dataset + '\n' + run_id_no_suff +
-            '\nR2/<R2> RMSE @ 3x Euclid resolution'
-        )
-        ax1.set_xlabel('Number of stars')
-        ax1.set_ylabel('Absolute error')
+        try:
+            fig = plt.figure(figsize=(12, 8))
+            ax1 = fig.add_subplot(111)
+            ax1.errorbar(
+                x=star_list,
+                y=model_rmse_R2_meanR2,
+                yerr=model_std_rmse_R2_meanR2,
+                label='R2 ' + run_id_no_suff,
+                alpha=0.75
+            )
+            plt.minorticks_on()
+            ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
+            ax1.legend()
+            ax1.set_title(
+                'Stars ' + plot_dataset + '\n' + run_id_no_suff +
+                '\nR2/<R2> RMSE @ 3x Euclid resolution'
+            )
+            ax1.set_xlabel('Number of stars')
+            ax1.set_ylabel('Absolute error')
 
-        ax2 = ax1.twinx()
-        kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
-        ax2.plot(star_list, model_R2_rel_euclid, **kwargs)
-        ax2.set_ylabel('Times over Euclid req.')
-        ax2.grid(False)
-        plt.savefig(
-            plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_shape_R2_RMSE.png'
-        )
-        plt.show()
+            ax2 = ax1.twinx()
+            kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+            ax2.plot(star_list, model_R2_rel_euclid, **kwargs)
+            ax2.set_ylabel('Times over Euclid req.')
+            ax2.grid(False)
+            plt.savefig(
+                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_shape_R2_RMSE.png'
+            )
+            plt.show()
+        except Exception:
+            print('Problem with the performance metrics plot of R2 errors.')
 
         ## Polychromatic pixel residual at shape measurement resolution
-        res = extract_shape_pix_results(metrics, test_train=plot_dataset)
-        model_polyc_shpix_rmse = res[0]
-        model_polyc_shpix_std_rmse = res[1]
-        model_polyc_shpix_rel_rmse = res[2]
-        model_polyc_shpix_std_rel_rmse = res[3]
+        try:
+            res = extract_shape_pix_results(metrics, test_train=plot_dataset)
+            model_polyc_shpix_rmse = res[0]
+            model_polyc_shpix_std_rmse = res[1]
+            model_polyc_shpix_rel_rmse = res[2]
+            model_polyc_shpix_std_rel_rmse = res[3]
 
-        fig = plt.figure(figsize=(12, 8))
-        ax1 = fig.add_subplot(111)
-        ax1.errorbar(
-            x=star_list,
-            y=model_polyc_shpix_rmse,
-            yerr=model_polyc_shpix_std_rmse,
-            label=run_id_no_suff,
-            alpha=0.75
-        )
-        plt.minorticks_on()
-        ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
-        ax1.legend()
-        ax1.set_title(
-            'Stars ' + plot_dataset + '\n' + run_id_no_suff + '\nPixel RMSE @ 3x Euclid resolution'
-        )
-        ax1.set_xlabel('Number of stars')
-        ax1.set_ylabel('Absolute error')
+            fig = plt.figure(figsize=(12, 8))
+            ax1 = fig.add_subplot(111)
+            ax1.errorbar(
+                x=star_list,
+                y=model_polyc_shpix_rmse,
+                yerr=model_polyc_shpix_std_rmse,
+                label=run_id_no_suff,
+                alpha=0.75
+            )
+            plt.minorticks_on()
+            ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
+            ax1.legend()
+            ax1.set_title(
+                'Stars ' + plot_dataset + '\n' + run_id_no_suff + '\nPixel RMSE @ 3x Euclid resolution'
+            )
+            ax1.set_xlabel('Number of stars')
+            ax1.set_ylabel('Absolute error')
 
-        ax2 = ax1.twinx()
-        kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
-        ax2.plot(star_list, model_polyc_shpix_rel_rmse, **kwargs)
-        ax2.set_ylabel('Relative error [%]')
-        ax2.grid(False)
-        plt.savefig(
-            plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff +
-            '_poly_pixel_3xResolution_RMSE.png'
-        )
-        plt.show()
+            ax2 = ax1.twinx()
+            kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+            ax2.plot(star_list, model_polyc_shpix_rel_rmse, **kwargs)
+            ax2.set_ylabel('Relative error [%]')
+            ax2.grid(False)
+            plt.savefig(
+                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff +
+                '_poly_pixel_3xResolution_RMSE.png'
+            )
+            plt.show()
+        except Exception:
+            print('Problem with the performance metrics plot of super resolution pixel polychromatic errors.')
 
 
 def plot_optimisation_metrics(**args):
@@ -1088,16 +1155,22 @@ def plot_optimisation_metrics(**args):
     plot_saving_path = args['base_path'] + args['plots_folder']
 
     # Define the number of datasets to test
-    n_datasets = len(args['suffix_id_name'])
+    if isinstance(args['suffix_id_name'], list):
+        n_datasets = len(args['suffix_id_name'])
+    else:
+        n_datasets = 1
 
     optim_hist_file = args['base_path'] + args['optim_hist_folder']
     run_id_no_suff = args['model'] + args['base_id_name']
 
     # Define the metric data paths
-    model_paths = [
-        optim_hist_file + 'optim_hist_' + run_id_no_suff + _suff + '.npy'
-        for _suff in args['suffix_id_name']
-    ]
+    if isinstance(args['suffix_id_name'], list):
+        model_paths = [
+            optim_hist_file + 'optim_hist_' + run_id_no_suff + _suff + '.npy'
+            for _suff in args['suffix_id_name']
+        ]
+    else:
+        model_paths = [args['metric_base_path'] + 'metrics-' + run_id_no_suff + args['suffix_id_name'] + '.npy']
 
     try:
         # Load metrics
@@ -1112,36 +1185,7 @@ def plot_optimisation_metrics(**args):
     metric_str = 'mean_squared_error'
     val_mertric_str = 'val_mean_squared_error'
 
-    fig = plt.figure(figsize=(12, 8))
-    ax1 = fig.add_subplot(111)
-    for it in range(n_datasets):
-        ax1.plot(
-            metrics[it][cycle_str][metric_str],
-            label=args['model'] + args['suffix_id_name'][it],
-            alpha=0.75
-        )
-    plt.yscale('log')
-    plt.minorticks_on()
-    ax1.legend()
-    ax1.set_title('Parametric cycle 1.\n' + run_id_no_suff + '_' + cycle_str)
-    ax1.set_xlabel('Number of epoch')
-    ax1.set_ylabel('Training MSE')
-
-    ax2 = ax1.twinx()
-    kwargs = dict(linewidth=2, linestyle='dashed', markersize=2, marker='^', alpha=0.5)
-    for it in range(n_datasets):
-        ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
-    ax2.set_ylabel('Validation MSE')
-    ax2.grid(False)
-    plt.savefig(plot_saving_path + 'optim_' + run_id_no_suff + '_' + cycle_str + '.png')
-    plt.show()
-
-    # Plot the first non-parametric cycle
-    if args['model'] != 'param':
-        cycle_str = 'nonparam_cycle1'
-        metric_str = 'mean_squared_error'
-        val_mertric_str = 'val_mean_squared_error'
-
+    try:
         fig = plt.figure(figsize=(12, 8))
         ax1 = fig.add_subplot(111)
         for it in range(n_datasets):
@@ -1153,7 +1197,7 @@ def plot_optimisation_metrics(**args):
         plt.yscale('log')
         plt.minorticks_on()
         ax1.legend()
-        ax1.set_title('Non-parametric cycle 1.\n' + run_id_no_suff + '_' + cycle_str)
+        ax1.set_title('Parametric cycle 1.\n' + run_id_no_suff + '_' + cycle_str)
         ax1.set_xlabel('Number of epoch')
         ax1.set_ylabel('Training MSE')
 
@@ -1165,6 +1209,41 @@ def plot_optimisation_metrics(**args):
         ax2.grid(False)
         plt.savefig(plot_saving_path + 'optim_' + run_id_no_suff + '_' + cycle_str + '.png')
         plt.show()
+    except Exception:
+        print('Problem with the plot of the optimisation metrics of the first parametric cycle.')
+
+    # Plot the first non-parametric cycle
+    if args['model'] != 'param':
+        try:
+            cycle_str = 'nonparam_cycle1'
+            metric_str = 'mean_squared_error'
+            val_mertric_str = 'val_mean_squared_error'
+
+            fig = plt.figure(figsize=(12, 8))
+            ax1 = fig.add_subplot(111)
+            for it in range(n_datasets):
+                ax1.plot(
+                    metrics[it][cycle_str][metric_str],
+                    label=args['model'] + args['suffix_id_name'][it],
+                    alpha=0.75
+                )
+            plt.yscale('log')
+            plt.minorticks_on()
+            ax1.legend()
+            ax1.set_title('Non-parametric cycle 1.\n' + run_id_no_suff + '_' + cycle_str)
+            ax1.set_xlabel('Number of epoch')
+            ax1.set_ylabel('Training MSE')
+
+            ax2 = ax1.twinx()
+            kwargs = dict(linewidth=2, linestyle='dashed', markersize=2, marker='^', alpha=0.5)
+            for it in range(n_datasets):
+                ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
+            ax2.set_ylabel('Validation MSE')
+            ax2.grid(False)
+            plt.savefig(plot_saving_path + 'optim_' + run_id_no_suff + '_' + cycle_str + '.png')
+            plt.show()
+        except Exception:
+            print('Problem with the plot of the optimisation metrics of the first non-parametric cycle.')
 
     ## Plot the second parametric cycle
     if cycle_str in metrics[0]:
@@ -1172,29 +1251,32 @@ def plot_optimisation_metrics(**args):
         metric_str = 'mean_squared_error'
         val_mertric_str = 'val_mean_squared_error'
 
-        fig = plt.figure(figsize=(12, 8))
-        ax1 = fig.add_subplot(111)
-        for it in range(n_datasets):
-            ax1.plot(
-                metrics[it][cycle_str][metric_str],
-                label=args['model'] + args['suffix_id_name'][it],
-                alpha=0.75
-            )
-        plt.yscale('log')
-        plt.minorticks_on()
-        ax1.legend()
-        ax1.set_title('Parametric cycle 2.\n' + run_id_no_suff + '_' + cycle_str)
-        ax1.set_xlabel('Number of epoch')
-        ax1.set_ylabel('Training MSE')
+        try:
+            fig = plt.figure(figsize=(12, 8))
+            ax1 = fig.add_subplot(111)
+            for it in range(n_datasets):
+                ax1.plot(
+                    metrics[it][cycle_str][metric_str],
+                    label=args['model'] + args['suffix_id_name'][it],
+                    alpha=0.75
+                )
+            plt.yscale('log')
+            plt.minorticks_on()
+            ax1.legend()
+            ax1.set_title('Parametric cycle 2.\n' + run_id_no_suff + '_' + cycle_str)
+            ax1.set_xlabel('Number of epoch')
+            ax1.set_ylabel('Training MSE')
 
-        ax2 = ax1.twinx()
-        kwargs = dict(linewidth=2, linestyle='dashed', markersize=2, marker='^', alpha=0.5)
-        for it in range(n_datasets):
-            ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
-        ax2.set_ylabel('Validation MSE')
-        ax2.grid(False)
-        plt.savefig(plot_saving_path + 'optim_' + run_id_no_suff + '_' + cycle_str + '.png')
-        plt.show()
+            ax2 = ax1.twinx()
+            kwargs = dict(linewidth=2, linestyle='dashed', markersize=2, marker='^', alpha=0.5)
+            for it in range(n_datasets):
+                ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
+            ax2.set_ylabel('Validation MSE')
+            ax2.grid(False)
+            plt.savefig(plot_saving_path + 'optim_' + run_id_no_suff + '_' + cycle_str + '.png')
+            plt.show()
+        except Exception:
+            print('Problem with the plot of the optimisation metrics of the second parametric cycle.')
 
     ## Plot the second non-parametric cycle
     if cycle_str in metrics[0]:
@@ -1202,30 +1284,33 @@ def plot_optimisation_metrics(**args):
         metric_str = 'mean_squared_error'
         val_mertric_str = 'val_mean_squared_error'
 
-        fig = plt.figure(figsize=(12, 8))
-        ax1 = fig.add_subplot(111)
-        for it in range(n_datasets):
-            ax1.plot(
-                metrics[it][cycle_str][metric_str],
-                label=args['model'] + args['suffix_id_name'][it],
-                alpha=0.75
-            )
-        plt.yscale('log')
-        plt.minorticks_on()
-        ax1.legend()
-        ax1.set_title('Non-parametric cycle 2.\n' + run_id_no_suff + '_' + cycle_str)
-        ax1.set_xlabel('Number of epoch')
-        ax1.set_ylabel('Training MSE')
+        try:
+            fig = plt.figure(figsize=(12, 8))
+            ax1 = fig.add_subplot(111)
+            for it in range(n_datasets):
+                ax1.plot(
+                    metrics[it][cycle_str][metric_str],
+                    label=args['model'] + args['suffix_id_name'][it],
+                    alpha=0.75
+                )
+            plt.yscale('log')
+            plt.minorticks_on()
+            ax1.legend()
+            ax1.set_title('Non-parametric cycle 2.\n' + run_id_no_suff + '_' + cycle_str)
+            ax1.set_xlabel('Number of epoch')
+            ax1.set_ylabel('Training MSE')
 
-        ax2 = ax1.twinx()
-        kwargs = dict(linewidth=2, linestyle='dashed', markersize=2, marker='^', alpha=0.5)
-        for it in range(n_datasets):
-            ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
+            ax2 = ax1.twinx()
+            kwargs = dict(linewidth=2, linestyle='dashed', markersize=2, marker='^', alpha=0.5)
+            for it in range(n_datasets):
+                ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
 
-        ax2.set_ylabel('Validation MSE')
-        ax2.grid(False)
-        plt.savefig(plot_saving_path + 'optim_' + run_id_no_suff + '_' + cycle_str + '.png')
-        plt.show()
+            ax2.set_ylabel('Validation MSE')
+            ax2.grid(False)
+            plt.savefig(plot_saving_path + 'optim_' + run_id_no_suff + '_' + cycle_str + '.png')
+            plt.show()
+        except Exception:
+            print('Problem with the plot of the optimisation metrics of the second non-parametric cycle.')
 
 
 def define_plot_style():
