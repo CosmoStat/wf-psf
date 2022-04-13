@@ -18,6 +18,7 @@ class GenPolyFieldPSF(object):
         y_lims=[0, 1e3],
         n_bins=35,
         lim_max_wfe_rms=None,
+        auto_init=True,
         verbose=False
     ):
         # Input attributes
@@ -34,12 +35,15 @@ class GenPolyFieldPSF(object):
         else:
             self.lim_max_wfe_rms = lim_max_wfe_rms
 
+        self.auto_init = auto_init
+
         # Class attributes
         self.C_poly = None
         self.WFE_RMS = None
 
         # Build coefficient polynomial matric
-        self.build_poly_coefficients()
+        if self.auto_init:
+            self.build_poly_coefficients()
 
     def scale_positions(self, xv_flat, yv_flat):
         # Scale positions to the square [-1,1] x [-1,1]
@@ -90,6 +94,26 @@ class GenPolyFieldPSF(object):
         Pi_samples = self.poly_mat_gen(xv_flat, yv_flat)
 
         return self.C_poly @ Pi_samples
+
+    def set_C_poly(self, C_poly):
+        """ Set the polynomial coefficients.
+
+        Parameters
+        ----------
+        C_poly: np.ndarray
+            Polynomial coefficients.
+        """
+        self.C_poly = C_poly
+
+    def set_WFE_RMS(self, WFE_RMS):
+        """ Set the WFE RMS map.
+
+        Parameters
+        ----------
+        WFE_RMS: np.ndarray
+            WFE_RMS map of the C_poly values.
+        """
+        self.WFE_RMS = WFE_RMS
 
     def build_poly_coefficients(self):
         """Build a polynomial coefficient matrix."""
