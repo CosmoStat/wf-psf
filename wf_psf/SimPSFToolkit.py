@@ -74,6 +74,12 @@ class SimPSFToolkit(object):
         top-hat filter. Default is `3`.
     verbose: int
         Self-explanatory variable. Default is `0`, use a value `>0` to activate.
+    SED_sigma: float
+        Noise standard deviation for every SED bin, as a proportion of bins value.
+    interp_pts_per_bin: int
+        Number of points to interpolate in between SED values. It can be 0, 1 or 2.
+    extrapolate: bool
+        SED interpolation mode. Default mode uses extrapolation.
 
     """
 
@@ -95,7 +101,9 @@ class SimPSFToolkit(object):
         LP_filter_length=3,
         verbose=0,
         SED_sigma=0,
-        interp_pts_per_bin=0 
+        interp_pts_per_bin=0,
+        extrapolate=True,
+        SED_interp_kind='cubic'
     ):
         # Input attributes
         self.max_order = max_order
@@ -107,7 +115,9 @@ class SimPSFToolkit(object):
         self.verbose = verbose
         
         self.SED_sigma = SED_sigma # std dev for the SED noise distribution 
-        self.interp_pts_per_bin = interp_pts_per_bin # Number of points to add to each SED bin 
+        self.interp_pts_per_bin = interp_pts_per_bin # Number of points to add to each SED bin
+        self.extrapolate = extrapolate # SED interpolation mode
+        self.SED_interp_kind = SED_interp_kind # Type of interpolation for the SED
 
         # Telescope characteristics
         self.oversampling_rate = oversampling_rate  # dimensionless
@@ -759,7 +769,7 @@ class SimPSFToolkit(object):
         """
         return np.random.normal(0, SED_sigma, n_bins)
 
-    def interp_SED(self, SED_filt, n_points = 0, n_bins = 35):
+    def interp_SED(self, SED_filt, n_points = 0, n_bins = 35, interp_kind = 'cubic'):
         """Interpolate the binned SED.
 
         Returns a ('n_bins')x('n_points'+1) point SED and wvlength vector.
@@ -774,32 +784,60 @@ class SimPSFToolkit(object):
 
         """
         # Generate interpolation function from the binned SED
-        _, SED_interpolator = self.gen_SED_interp(SED_filt, n_bins,interp_kind='cubic')
+        _, SED_interpolator = self.gen_SED_interp(SED_filt, n_bins,interp_kind=interp_kind)
         wv_step = SED_filt[1,0] - SED_filt[0,0]
 
         # Regenerate the wavelenght points
         if n_points == 1:
-            # Add points at the border of each bin : *--o--*--o--*--o--*--o--* 
-            SED = np.zeros((n_bins*2+1, 3))
-            # Set wavelength points then interpolate
-            SED[1::2, 0] = SED_filt[:,0]
-            SED[2::2, 0] = SED_filt[:,0] + wv_step/2
-            SED[0] = SED_filt[0,0] - wv_step/2
-            SED[:,1] = SED_interpolator(SED[:,0])
-            # Set weigths for new bins (borders have half the bin size)
-            SED[:,2] = np.ones(n_bins*2+1)
-            SED[0,2], SED[-1,2] = 0.5, 0.5
-            # Apply weights to bins
-            SED[:,1] *= SED[:,2]
+            if self.extrapolate:
+                # Add points at the border of each bin : *--o--*--o--*--o--*--o--* 
+                SED = np.zeros((n_bins*2+1, 3))
+                # Set wavelength points then interpolate
+                SED[1::2, 0] = SED_filt[:,0]
+                SED[2::2, 0] = SED_filt[:,0] + wv_step/2
+                SED[0] = SED_filt[0,0] - wv_step/2
+                SED[:,1] = SED_interpolator(SED[:,0])
+                # Set weigths for new bins (borders have half the bin size)
+                SED[:,2] = np.ones(n_bins*2+1)
+                SED[0,2], SED[-1,2] = 0.5, 0.5
+                # Apply weights to bins
+                SED[:,1] *= SED[:,2]
+            else:
+                # Add points at the border of each bin : ---o--*--o--*--o--*--o--- 
+                SED = np.zeros((n_bins*2-1, 3))
+                # Set wavelength points then interpolate
+                SED[::2, 0] = SED_filt[:,0]
+                SED[1::2, 0] = SED_filt[1:,0] - wv_step/2
+                SED[:,1] = SED_interpolator(SED[:,0])
+                # Set weigths for new bins (borders have half the bin size)
+                SED[:,2] = np.ones(n_bins*2-1)
+                SED[0,2], SED[-1,2] = 1.5, 1.5
+                # Apply weights to bins
+                SED[:,1] *= SED[:,2]
         elif n_points == 2:
-            # Add 2 points per bin: -*-o-*-*-o-*-*-o-*-*-o-*-
-            SED = np.zeros((n_bins*3, 3))
-            SED[1::3, 0] = SED_filt[:,0]
-            SED[::3, 0] = SED_filt[:,0] - wv_step/3
-            SED[2::3, 0] = SED_filt[:,0] + wv_step/3
-            SED[:,1] = SED_interpolator(SED[:,0])
-            # Set weigths for new bins (borders have half the bin size)
-            SED[:,2] = np.ones(n_bins*3)
+            if self.extrapolate:
+                # Add 2 points per bin: -*-o-*-*-o-*-*-o-*-*-o-*-
+                SED = np.zeros((n_bins*3, 3))
+                SED[1::3, 0] = SED_filt[:,0]
+                SED[::3, 0] = SED_filt[:,0] - wv_step/3
+                SED[2::3, 0] = SED_filt[:,0] + wv_step/3
+                SED[:,1] = SED_interpolator(SED[:,0])
+                # Set weigths for new bins (borders have half the bin size)
+                SED[:,2] = np.ones(n_bins*3)
+                # Apply weights to bins
+                SED[:,1] *= SED[:,2]
+            else:
+                # Add 2 points per bin: ---o-*-*-o-*-*-o-*-*-o---
+                SED = np.zeros((n_bins*3-2, 3))
+                SED[::3, 0] = SED_filt[:,0]
+                SED[1::3, 0] = SED_filt[1:,0] - 2 * wv_step/3
+                SED[2::3, 0] = SED_filt[1:,0] - wv_step/3
+                SED[:,1] = SED_interpolator(SED[:,0])
+                # Set weigths for new bins (borders have half the bin size)
+                SED[:,2] = np.ones(n_bins*3-2)
+                SED[0,2], SED[-1,2] = 2, 2
+                # Apply weights to bins
+                SED[:,1] *= SED[:,2]
         else:
             SED = SED_filt
 
@@ -816,12 +854,12 @@ class SimPSFToolkit(object):
         # Integrate SED into n_bins
         SED_filt = self.filter_SED(SED, n_bins)
 
-        # Add noise and normalise
-        SED_filt[:,1] = SED_filt[:,1] + self.SED_gen_noise(len(SED_filt), self.SED_sigma)
+        # Add noise. Scale sigma for each bin. Normalise the SED.
+        SED_filt[:,1] = SED_filt[:,1] + self.SED_gen_noise(len(SED_filt), self.SED_sigma)/len(SED_filt) #* SED_filt[:,1]
         SED_filt[:,1] = SED_filt[:,1]/np.sum(SED_filt[:,1])
 
         # Add inside-bin points - Interpolate
-        SED_filt = self.interp_SED(SED_filt, self.interp_pts_per_bin, n_bins)
+        SED_filt = self.interp_SED(SED_filt, self.interp_pts_per_bin, n_bins, self.SED_interp_kind)
 
         # Add weights if not present
         if SED_filt.shape[1] == 2:
