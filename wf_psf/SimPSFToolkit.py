@@ -1,4 +1,5 @@
 from asyncio.constants import SENDFILE_FALLBACK_READBUFFER_SIZE
+from os import WIFSTOPPED
 import numpy as np
 import scipy.signal as spsig
 import scipy.interpolate as sinterp
@@ -795,7 +796,7 @@ class SimPSFToolkit(object):
                 # Set wavelength points then interpolate
                 SED[1::2, 0] = SED_filt[:,0]
                 SED[2::2, 0] = SED_filt[:,0] + wv_step/2
-                SED[0] = SED_filt[0,0] - wv_step/2
+                SED[0,0] = SED_filt[0,0] - wv_step/2
                 SED[:,1] = SED_interpolator(SED[:,0])
                 # Set weigths for new bins (borders have half the bin size)
                 SED[:,2] = np.ones(n_bins*2+1)
@@ -836,6 +837,23 @@ class SimPSFToolkit(object):
                 # Set weigths for new bins (borders have half the bin size)
                 SED[:,2] = np.ones(n_bins*3-2)
                 SED[0,2], SED[-1,2] = 2, 2
+                # Apply weights to bins
+                SED[:,1] *= SED[:,2]
+        elif n_points == 3:
+            if self.extrapolate:
+                # Add points at the border of each bin : *--o--*--o--*--o--*--o--* 
+                SED = np.zeros((n_bins*4+1, 3))
+                # Set wavelength points then interpolate
+                SED[4::4, 0] = SED_filt[:,0] + wv_step/2
+                SED[0,0] = SED_filt[0,0] - wv_step/2
+                SED[1::4, 0] = SED_filt[:,0] - wv_step/4
+                SED[2::4, 0] = SED_filt[:,0]
+                SED[3::4, 0] = SED_filt[:,0] + wv_step/4
+                # Evaluate interpolator at new points
+                SED[:,1] = SED_interpolator(SED[:,0])
+                # Set weigths for new bins (borders have half the bin size)
+                SED[:,2] = np.ones(n_bins*4+1)
+                SED[0,2], SED[-1,2] = 0.5, 0.5
                 # Apply weights to bins
                 SED[:,1] *= SED[:,2]
         else:
