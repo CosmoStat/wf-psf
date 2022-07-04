@@ -298,7 +298,8 @@ def compute_shape_metrics(
     n_bins_lda,
     output_Q=1,
     output_dim=64,
-    batch_size=16
+    batch_size=16,
+    opt_stars_rel_pix_rmse=False
 ):
     """ Compute the pixel, shape and size RMSE of a PSF model.
 
@@ -372,6 +373,10 @@ def compute_shape_metrics(
     # Calculate residuals
     residuals = np.sqrt(np.mean((GT_predictions - predictions)**2, axis=(1, 2)))
     GT_star_mean = np.sqrt(np.mean((GT_predictions)**2, axis=(1, 2)))
+
+    # Pixel RMSE for each star
+    if opt_stars_rel_pix_rmse:
+        stars_rel_pix_rmse = 100. * residuals / GT_star_mean
 
     # RMSE calculations
     pix_rmse = np.mean(residuals)
@@ -463,32 +468,60 @@ def compute_shape_metrics(
     GT_tf_semiparam_field = build_PSF_model(GT_tf_semiparam_field)
 
     # Moment results
-    result_dict = {
-        'pred_e1_HSM': pred_e1_HSM,
-        'pred_e2_HSM': pred_e2_HSM,
-        'pred_R2_HSM': pred_R2_HSM,
-        'GT_pred_e1_HSM': GT_pred_e1_HSM,
-        'GT_ped_e2_HSM': GT_pred_e2_HSM,
-        'GT_pred_R2_HSM': GT_pred_R2_HSM,
-        'rmse_e1': rmse_e1,
-        'std_rmse_e1': std_rmse_e1,
-        'rel_rmse_e1': rel_rmse_e1,
-        'std_rel_rmse_e1': std_rel_rmse_e1,
-        'rmse_e2': rmse_e2,
-        'std_rmse_e2': std_rmse_e2,
-        'rel_rmse_e2': rel_rmse_e2,
-        'std_rel_rmse_e2': std_rel_rmse_e2,
-        'rmse_R2_meanR2': rmse_R2_meanR2,
-        'std_rmse_R2_meanR2': std_rmse_R2_meanR2,
-        'pix_rmse': pix_rmse,
-        'pix_rmse_std': pix_rmse_std,
-        'rel_pix_rmse': rel_pix_rmse,
-        'rel_pix_rmse_std': rel_pix_rmse_std,
-        'output_Q': output_Q,
-        'output_dim': output_dim,
-        'n_bins_lda': n_bins_lda,
-    }
-
+    if opt_stars_rel_pix_rmse:
+        result_dict = {
+            'pred_e1_HSM': pred_e1_HSM,
+            'pred_e2_HSM': pred_e2_HSM,
+            'pred_R2_HSM': pred_R2_HSM,
+            'GT_pred_e1_HSM': GT_pred_e1_HSM,
+            'GT_ped_e2_HSM': GT_pred_e2_HSM,
+            'GT_pred_R2_HSM': GT_pred_R2_HSM,
+            'rmse_e1': rmse_e1,
+            'std_rmse_e1': std_rmse_e1,
+            'rel_rmse_e1': rel_rmse_e1,
+            'std_rel_rmse_e1': std_rel_rmse_e1,
+            'rmse_e2': rmse_e2,
+            'std_rmse_e2': std_rmse_e2,
+            'rel_rmse_e2': rel_rmse_e2,
+            'std_rel_rmse_e2': std_rel_rmse_e2,
+            'rmse_R2_meanR2': rmse_R2_meanR2,
+            'std_rmse_R2_meanR2': std_rmse_R2_meanR2,
+            'pix_rmse': pix_rmse,
+            'pix_rmse_std': pix_rmse_std,
+            'rel_pix_rmse': rel_pix_rmse,
+            'rel_pix_rmse_std': rel_pix_rmse_std,
+            'stars_rel_pix_rmse':stars_rel_pix_rmse,
+            'output_Q': output_Q,
+            'output_dim': output_dim,
+            'n_bins_lda': n_bins_lda,
+        }
+    else:
+        result_dict = {
+            'pred_e1_HSM': pred_e1_HSM,
+            'pred_e2_HSM': pred_e2_HSM,
+            'pred_R2_HSM': pred_R2_HSM,
+            'GT_pred_e1_HSM': GT_pred_e1_HSM,
+            'GT_ped_e2_HSM': GT_pred_e2_HSM,
+            'GT_pred_R2_HSM': GT_pred_R2_HSM,
+            'rmse_e1': rmse_e1,
+            'std_rmse_e1': std_rmse_e1,
+            'rel_rmse_e1': rel_rmse_e1,
+            'std_rel_rmse_e1': std_rel_rmse_e1,
+            'rmse_e2': rmse_e2,
+            'std_rmse_e2': std_rmse_e2,
+            'rel_rmse_e2': rel_rmse_e2,
+            'std_rel_rmse_e2': std_rel_rmse_e2,
+            'rmse_R2_meanR2': rmse_R2_meanR2,
+            'std_rmse_R2_meanR2': std_rmse_R2_meanR2,
+            'pix_rmse': pix_rmse,
+            'pix_rmse_std': pix_rmse_std,
+            'rel_pix_rmse': rel_pix_rmse,
+            'rel_pix_rmse_std': rel_pix_rmse_std,
+            'output_Q': output_Q,
+            'output_dim': output_dim,
+            'n_bins_lda': n_bins_lda,
+        }
+        
     return result_dict
 
 

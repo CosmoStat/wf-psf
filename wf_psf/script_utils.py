@@ -753,6 +753,12 @@ def evaluate_model(**args):
         'rel_rmse_std_opd': rel_rmse_std_opd
     }
 
+    # Check if all stars SR pixel RMSE are needed
+    if 'opt_stars_rel_pix_rmse' not in args:
+        opt_stars_rel_pix_rmse = False
+    else:
+        opt_stars_rel_pix_rmse = args['opt_stars_rel_pix_rmse']
+
     # Shape metrics
     shape_results_dict = wf_metrics.compute_shape_metrics(
         tf_semiparam_field=tf_semiparam_field,
@@ -763,7 +769,8 @@ def evaluate_model(**args):
         n_bins_lda=args['n_bins_lda'],
         output_Q=1,
         output_dim=64,
-        batch_size=args['eval_batch_size']
+        batch_size=args['eval_batch_size'],
+        opt_stars_rel_pix_rmse=opt_stars_rel_pix_rmse
     )
 
     # Save metrics
