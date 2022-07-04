@@ -450,6 +450,10 @@ def evaluate_model(**args):
         model_save_file = args['base_path'] + args['model_folder']
         weights_paths = model_save_file + 'chkp_' + run_id_name + '_' + args['saved_cycle']
 
+    elif args['saved_model_type'] == 'external':
+        weights_paths = args['chkp_save_path']
+
+
     ## Save output prints to logfile
     old_stdout = sys.stdout
     log_file = open(log_save_file + run_id_name + '-metrics_output.log', 'w')
