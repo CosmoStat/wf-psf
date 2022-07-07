@@ -886,7 +886,7 @@ def plot_metrics(**args):
     R2_req_euclid = 1e-03
 
     # Define the number of datasets to test
-    if isinstance(args['suffix_id_name'], list):
+    if not isinstance(args['suffix_id_name'], str):
         n_datasets = len(args['suffix_id_name'])
     else:
         n_datasets = 1
@@ -895,7 +895,7 @@ def plot_metrics(**args):
     run_id_no_suff = args['model'] + args['base_id_name']
 
     # Define the metric data paths
-    if isinstance(args['suffix_id_name'], list):
+    if not isinstance(args['suffix_id_name'], str):
         model_paths = [
             args['metric_base_path'] + 'metrics-' + run_id_no_suff + _suff + '.npy'
             for _suff in args['suffix_id_name']
@@ -1166,7 +1166,7 @@ def plot_optimisation_metrics(**args):
     plot_saving_path = args['base_path'] + args['plots_folder']
 
     # Define the number of datasets to test
-    if isinstance(args['suffix_id_name'], list):
+    if not isinstance(args['suffix_id_name'], str):
         n_datasets = len(args['suffix_id_name'])
     else:
         n_datasets = 1
@@ -1175,7 +1175,7 @@ def plot_optimisation_metrics(**args):
     run_id_no_suff = args['model'] + args['base_id_name']
 
     # Define the metric data paths
-    if isinstance(args['suffix_id_name'], list):
+    if not isinstance(args['suffix_id_name'], str):
         model_paths = [
             optim_hist_file + 'optim_hist_' + run_id_no_suff + _suff + '.npy'
             for _suff in args['suffix_id_name']
@@ -1200,11 +1200,14 @@ def plot_optimisation_metrics(**args):
         fig = plt.figure(figsize=(12, 8))
         ax1 = fig.add_subplot(111)
         for it in range(n_datasets):
-            ax1.plot(
-                metrics[it][cycle_str][metric_str],
-                label=args['model'] + args['suffix_id_name'][it],
-                alpha=0.75
-            )
+            try:
+                ax1.plot(
+                    metrics[it][cycle_str][metric_str],
+                    label=args['model'] + args['suffix_id_name'][it],
+                    alpha=0.75
+                )
+            except KeyError as KE:
+                print('Error with Key: ', KE)
         plt.yscale('log')
         plt.minorticks_on()
         ax1.legend()
@@ -1215,7 +1218,10 @@ def plot_optimisation_metrics(**args):
         ax2 = ax1.twinx()
         kwargs = dict(linewidth=2, linestyle='dashed', markersize=2, marker='^', alpha=0.5)
         for it in range(n_datasets):
-            ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
+            try:
+                ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
+            except KeyError as KE:
+                print('Error with Key: ', KE)            
         ax2.set_ylabel('Validation MSE')
         ax2.grid(False)
         plt.savefig(plot_saving_path + 'optim_' + run_id_no_suff + '_' + cycle_str + '.png')
@@ -1233,11 +1239,14 @@ def plot_optimisation_metrics(**args):
             fig = plt.figure(figsize=(12, 8))
             ax1 = fig.add_subplot(111)
             for it in range(n_datasets):
-                ax1.plot(
-                    metrics[it][cycle_str][metric_str],
-                    label=args['model'] + args['suffix_id_name'][it],
-                    alpha=0.75
-                )
+                try:
+                    ax1.plot(
+                        metrics[it][cycle_str][metric_str],
+                        label=args['model'] + args['suffix_id_name'][it],
+                        alpha=0.75
+                    )
+                except KeyError as KE:
+                    print('Error with Key: ', KE)                
             plt.yscale('log')
             plt.minorticks_on()
             ax1.legend()
@@ -1248,7 +1257,10 @@ def plot_optimisation_metrics(**args):
             ax2 = ax1.twinx()
             kwargs = dict(linewidth=2, linestyle='dashed', markersize=2, marker='^', alpha=0.5)
             for it in range(n_datasets):
-                ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
+                try:
+                    ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
+                except KeyError as KE:
+                    print('Error with Key: ', KE)                
             ax2.set_ylabel('Validation MSE')
             ax2.grid(False)
             plt.savefig(plot_saving_path + 'optim_' + run_id_no_suff + '_' + cycle_str + '.png')
@@ -1266,11 +1278,14 @@ def plot_optimisation_metrics(**args):
             fig = plt.figure(figsize=(12, 8))
             ax1 = fig.add_subplot(111)
             for it in range(n_datasets):
-                ax1.plot(
-                    metrics[it][cycle_str][metric_str],
-                    label=args['model'] + args['suffix_id_name'][it],
-                    alpha=0.75
-                )
+                try:
+                    ax1.plot(
+                        metrics[it][cycle_str][metric_str],
+                        label=args['model'] + args['suffix_id_name'][it],
+                        alpha=0.75
+                    )
+                except KeyError as KE:
+                    print('Error with Key: ', KE)                
             plt.yscale('log')
             plt.minorticks_on()
             ax1.legend()
@@ -1281,7 +1296,10 @@ def plot_optimisation_metrics(**args):
             ax2 = ax1.twinx()
             kwargs = dict(linewidth=2, linestyle='dashed', markersize=2, marker='^', alpha=0.5)
             for it in range(n_datasets):
-                ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
+                try:
+                    ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
+                except KeyError as KE:
+                    print('Error with Key: ', KE)                
             ax2.set_ylabel('Validation MSE')
             ax2.grid(False)
             plt.savefig(plot_saving_path + 'optim_' + run_id_no_suff + '_' + cycle_str + '.png')
@@ -1299,11 +1317,14 @@ def plot_optimisation_metrics(**args):
             fig = plt.figure(figsize=(12, 8))
             ax1 = fig.add_subplot(111)
             for it in range(n_datasets):
-                ax1.plot(
-                    metrics[it][cycle_str][metric_str],
-                    label=args['model'] + args['suffix_id_name'][it],
-                    alpha=0.75
-                )
+                try:
+                    ax1.plot(
+                        metrics[it][cycle_str][metric_str],
+                        label=args['model'] + args['suffix_id_name'][it],
+                        alpha=0.75
+                    )
+                except KeyError as KE:
+                    print('Error with Key: ', KE)                
             plt.yscale('log')
             plt.minorticks_on()
             ax1.legend()
@@ -1314,8 +1335,10 @@ def plot_optimisation_metrics(**args):
             ax2 = ax1.twinx()
             kwargs = dict(linewidth=2, linestyle='dashed', markersize=2, marker='^', alpha=0.5)
             for it in range(n_datasets):
-                ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
-
+                try:                
+                    ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
+                except KeyError as KE:
+                    print('Error with Key: ', KE)
             ax2.set_ylabel('Validation MSE')
             ax2.grid(False)
             plt.savefig(plot_saving_path + 'optim_' + run_id_no_suff + '_' + cycle_str + '.png')
