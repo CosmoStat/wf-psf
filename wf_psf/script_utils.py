@@ -356,8 +356,8 @@ def train_model(**args):
         )
 
         # Prepare the optimisers
-        param_optim = tfa.optimizers.RectifiedAdam(learning_rate=args['l_rate_param'][1])
-        non_param_optim = tfa.optimizers.RectifiedAdam(learning_rate=args['l_rate_non_param'][1])
+        param_optim = tfa.optimizers.RectifiedAdam(learning_rate=args['l_rate_param'][current_cycle-1])
+        non_param_optim = tfa.optimizers.RectifiedAdam(learning_rate=args['l_rate_non_param'][current_cycle-1])
 
         print('Starting cycle {}..'.format(current_cycle))
         start_cycle = time.time()
