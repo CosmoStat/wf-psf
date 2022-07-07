@@ -335,10 +335,15 @@ def train_model(**args):
         saving_optim_hist['param_cycle1'] = hist_param.history
     if args['model'] != 'param' and hist_non_param is not None:
         saving_optim_hist['nonparam_cycle1'] = hist_non_param.history
+    
 
-    if args['total_cycles'] >= 2:
+    # Perform all the necessary cycles
+    current_cycle = 1
+
+    while args['total_cycles'] > current_cycle:
+        current_cycle += 1
         # Prepare to save the model as a callback
-        filepath_chkp_callback = args['chkp_save_path'] + 'chkp_callback_' + run_id_name + '_cycle2'
+        filepath_chkp_callback = args['chkp_save_path'] + 'chkp_callback_' + run_id_name + '_cycle' + str(current_cycle)
         model_chkp_callback = tf.keras.callbacks.ModelCheckpoint(
             filepath_chkp_callback,
             monitor='mean_squared_error',
@@ -354,8 +359,8 @@ def train_model(**args):
         param_optim = tfa.optimizers.RectifiedAdam(learning_rate=args['l_rate_param'][1])
         non_param_optim = tfa.optimizers.RectifiedAdam(learning_rate=args['l_rate_non_param'][1])
 
-        print('Starting cycle 2..')
-        start_cycle2 = time.time()
+        print('Starting cycle {}..'.format(current_cycle))
+        start_cycle = time.time()
 
         # Compute the next cycle
         if args['model'] == 'param':
@@ -365,8 +370,8 @@ def train_model(**args):
                 outputs=outputs,
                 val_data=val_data,
                 batch_size=args['batch_size'],
-                l_rate=args['l_rate_param'][1],
-                n_epochs=args['n_epochs_param'][1],
+                l_rate=args['l_rate_param'][current_cycle-1],
+                n_epochs=args['n_epochs_param'][current_cycle-1],
                 param_optim=param_optim,
                 param_loss=None,
                 param_metrics=None,
@@ -383,10 +388,10 @@ def train_model(**args):
                 outputs=outputs,
                 val_data=val_data,
                 batch_size=args['batch_size'],
-                l_rate_param=args['l_rate_param'][1],
-                l_rate_non_param=args['l_rate_non_param'][1],
-                n_epochs_param=args['n_epochs_param'][1],
-                n_epochs_non_param=args['n_epochs_non_param'][1],
+                l_rate_param=args['l_rate_param'][current_cycle-1],
+                l_rate_non_param=args['l_rate_non_param'][current_cycle-1],
+                n_epochs_param=args['n_epochs_param'][current_cycle-1],
+                n_epochs_non_param=args['n_epochs_non_param'][current_cycle-1],
                 param_optim=param_optim,
                 non_param_optim=non_param_optim,
                 param_loss=None,
@@ -403,16 +408,16 @@ def train_model(**args):
             )
 
         # Save the weights at the end of the second cycle
-        tf_semiparam_field.save_weights(model_save_file + 'chkp_' + run_id_name + '_cycle2')
+        tf_semiparam_field.save_weights(model_save_file + 'chkp_' + run_id_name + '_cycle' + str(current_cycle))
 
-        end_cycle2 = time.time()
-        print('Cycle2 elapsed time: %f' % (end_cycle2 - start_cycle2))
+        end_cycle = time.time()
+        print('Cycle{} elapsed time: {}'.format(current_cycle , end_cycle - start_cycle))
 
         # Save optimisation history in the saving dict
         if hist_param_2 is not None:
-            saving_optim_hist['param_cycle2'] = hist_param_2.history
+            saving_optim_hist['param_cycle{}'.format(current_cycle)] = hist_param_2.history
         if args['model'] != 'param' and hist_non_param_2 is not None:
-            saving_optim_hist['nonparam_cycle2'] = hist_non_param_2.history
+            saving_optim_hist['nonparam_cycle{}'.format(current_cycle)] = hist_non_param_2.history
 
     # Save optimisation history dictionary
     np.save(optim_hist_file + 'optim_hist_' + run_id_name + '.npy', saving_optim_hist)
