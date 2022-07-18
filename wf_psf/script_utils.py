@@ -335,13 +335,24 @@ def train_model(**args):
         saving_optim_hist['param_cycle1'] = hist_param.history
     if args['model'] != 'param' and hist_non_param is not None:
         saving_optim_hist['nonparam_cycle1'] = hist_non_param.history
-    
+
+    # Backwards compatibility with click scripts older than the projected learning feature
+    if 'project_DD_features' not in args:
+        args['project_DD_features'] = False
+    if 'project_last_cycle' not in args:
+        args['project_last_cycle'] =  False        
 
     # Perform all the necessary cycles
     current_cycle = 1
 
     while args['total_cycles'] > current_cycle:
         current_cycle += 1
+
+        # If projected learning is enabled project DD_features. 
+        if args['project_DD_features'] and args['model'] == 'poly':
+            tf_semiparam_field.project_DD_features(tf_zernike_cube)
+            print('Project non-param DD features onto param model: done!')
+
         # Prepare to save the model as a callback
         filepath_chkp_callback = args['chkp_save_path'] + 'chkp_callback_' + run_id_name + '_cycle' + str(current_cycle)
         model_chkp_callback = tf.keras.callbacks.ModelCheckpoint(
@@ -418,6 +429,11 @@ def train_model(**args):
             saving_optim_hist['param_cycle{}'.format(current_cycle)] = hist_param_2.history
         if args['model'] != 'param' and hist_non_param_2 is not None:
             saving_optim_hist['nonparam_cycle{}'.format(current_cycle)] = hist_non_param_2.history
+
+    # If projected learning is enabled for the last cycle project DD_features. 
+    if args['project_DD_features'] and args['model'] == 'poly' and args['project_last_cycle']:
+        tf_semiparam_field.project_DD_features(tf_zernike_cube)
+        print('Project non-param DD features onto param model: done!')
 
     # Save optimisation history dictionary
     np.save(optim_hist_file + 'optim_hist_' + run_id_name + '.npy', saving_optim_hist)
