@@ -337,8 +337,8 @@ def train_model(**args):
         saving_optim_hist['nonparam_cycle1'] = hist_non_param.history
 
     # Backwards compatibility with click scripts older than the projected learning feature
-    if 'project_DD_features' not in args:
-        args['project_DD_features'] = False
+    if 'project_dd_features' not in args:
+        args['project_dd_features'] = False
     if 'project_last_cycle' not in args:
         args['project_last_cycle'] =  False        
 
@@ -349,7 +349,7 @@ def train_model(**args):
         current_cycle += 1
 
         # If projected learning is enabled project DD_features. 
-        if args['project_DD_features'] and args['model'] == 'poly':
+        if args['project_dd_features'] and args['model'] == 'poly':
             tf_semiparam_field.project_DD_features(tf_zernike_cube)
             print('Project non-param DD features onto param model: done!')
 
@@ -431,7 +431,7 @@ def train_model(**args):
             saving_optim_hist['nonparam_cycle{}'.format(current_cycle)] = hist_non_param_2.history
 
     # If projected learning is enabled for the last cycle project DD_features. 
-    if args['project_DD_features'] and args['model'] == 'poly' and args['project_last_cycle']:
+    if args['project_dd_features'] and args['model'] == 'poly' and args['project_last_cycle']:
         tf_semiparam_field.project_DD_features(tf_zernike_cube)
         print('Project non-param DD features onto param model: done!')
 
