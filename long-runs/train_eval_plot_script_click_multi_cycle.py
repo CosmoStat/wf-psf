@@ -11,6 +11,7 @@ For backwards compatibility the old click parameters concerning multiple cycles 
 
 """
 
+from email.policy import default
 import string
 import wf_psf as wf
 import click
@@ -220,7 +221,11 @@ import click
     default="100 120",
     type=str,
     help="Number of training epochs of the non-parametric parts. It should be a string where integer values are separated by spaces.")
-
+@click.option(
+    "--save_all_cycles",
+    default=False,
+    type=bool,
+    help="Make checkpoint at every cycle or just save the checkpoint at the end of the training.")
 @click.option(
     "--total_cycles",
     default=2,
@@ -288,7 +293,17 @@ import click
     multiple=True,
     type=int,
     help="Plot parameter. Training star number of the different models evaluated. Needs to correspond with the `suffix_id_name`.")
-
+@click.option(
+    "--opt_stars_rel_pix_rmse",
+    default=False,
+    type=bool,
+    help="Option to get SR pixel PSF RMSE for each test star.")
+@click.option(
+    "--project_dd_features",
+    default=False,
+    type=bool,
+    help="Project NP DD features onto parametric model.")
+    
 def main(**args):
     args = wf.utils.load_multi_cycle_params_click(args)
     print(args)
