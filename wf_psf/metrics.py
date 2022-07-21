@@ -298,7 +298,8 @@ def compute_shape_metrics(
     n_bins_lda,
     output_Q=1,
     output_dim=64,
-    batch_size=16
+    batch_size=16,
+    opt_stars_rel_pix_rmse=False
 ):
     """ Compute the pixel, shape and size RMSE of a PSF model.
 
@@ -372,6 +373,10 @@ def compute_shape_metrics(
     # Calculate residuals
     residuals = np.sqrt(np.mean((GT_predictions - predictions)**2, axis=(1, 2)))
     GT_star_mean = np.sqrt(np.mean((GT_predictions)**2, axis=(1, 2)))
+
+    # Pixel RMSE for each star
+    if opt_stars_rel_pix_rmse:
+        stars_rel_pix_rmse = 100. * residuals / GT_star_mean
 
     # RMSE calculations
     pix_rmse = np.mean(residuals)
@@ -488,6 +493,9 @@ def compute_shape_metrics(
         'output_dim': output_dim,
         'n_bins_lda': n_bins_lda,
     }
+
+    if opt_stars_rel_pix_rmse:
+        result_dict['stars_rel_pix_rmse']=stars_rel_pix_rmse
 
     return result_dict
 
