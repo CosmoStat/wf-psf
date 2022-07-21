@@ -324,8 +324,13 @@ def train_model(**args):
             verbose=2
         )
 
+    # Backwards compatibility with click scripts older than the projected learning feature
+    if 'save_all_cycles' not in args:
+        args['save_all_cycles'] = False
+ 
     # Save weights
-    tf_semiparam_field.save_weights(model_save_file + 'chkp_' + run_id_name + '_cycle1')
+    if args['save_all_cycles']:
+        tf_semiparam_field.save_weights(model_save_file + 'chkp_' + run_id_name + '_cycle1')
 
     end_cycle1 = time.time()
     print('Cycle1 elapsed time: %f' % (end_cycle1 - start_cycle1))
@@ -419,7 +424,8 @@ def train_model(**args):
             )
 
         # Save the weights at the end of the second cycle
-        tf_semiparam_field.save_weights(model_save_file + 'chkp_' + run_id_name + '_cycle' + str(current_cycle))
+        if args['save_all_cycles']:
+            tf_semiparam_field.save_weights(model_save_file + 'chkp_' + run_id_name + '_cycle' + str(current_cycle))
 
         end_cycle = time.time()
         print('Cycle{} elapsed time: {}'.format(current_cycle , end_cycle - start_cycle))
@@ -430,10 +436,9 @@ def train_model(**args):
         if args['model'] != 'param' and hist_non_param_2 is not None:
             saving_optim_hist['nonparam_cycle{}'.format(current_cycle)] = hist_non_param_2.history
 
-    # If projected learning is enabled for the last cycle project DD_features. 
-    if args['project_dd_features'] and args['model'] == 'poly' and args['project_last_cycle']:
-        tf_semiparam_field.project_DD_features(tf_zernike_cube)
-        print('Project non-param DD features onto param model: done!')
+    # Save last cycle if no cycles were saved
+    if not args['save_all_cycles']:
+        tf_semiparam_field.save_weights(model_save_file + 'chkp_' + run_id_name + '_cycle' + str(current_cycle))
 
     # Save optimisation history dictionary
     np.save(optim_hist_file + 'optim_hist_' + run_id_name + '.npy', saving_optim_hist)
@@ -470,6 +475,9 @@ def evaluate_model(**args):
     elif args['saved_model_type'] == 'final':
         model_save_file = args['base_path'] + args['model_folder']
         weights_paths = model_save_file + 'chkp_' + run_id_name + '_' + args['saved_cycle']
+
+    elif args['saved_model_type'] == 'external':
+        weights_paths = args['chkp_save_path']
 
     ## Save output prints to logfile
     old_stdout = sys.stdout
@@ -770,6 +778,10 @@ def evaluate_model(**args):
         'rel_rmse_std_opd': rel_rmse_std_opd
     }
 
+    # Check if all stars SR pixel RMSE are needed
+    if 'opt_stars_rel_pix_rmse' not in args:
+        args['opt_stars_rel_pix_rmse'] = False
+
     # Shape metrics
     shape_results_dict = wf_metrics.compute_shape_metrics(
         tf_semiparam_field=tf_semiparam_field,
@@ -780,7 +792,8 @@ def evaluate_model(**args):
         n_bins_lda=args['n_bins_lda'],
         output_Q=1,
         output_dim=64,
-        batch_size=args['eval_batch_size']
+        batch_size=args['eval_batch_size'],
+        opt_stars_rel_pix_rmse=args['opt_stars_rel_pix_rmse']
     )
 
     # Save metrics
