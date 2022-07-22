@@ -509,6 +509,8 @@ def evaluate_model(**args):
     # test_pos = test_dataset['positions']
     test_SEDs = test_dataset['SEDs']
     # test_zernike_coef = test_dataset['zernike_coef']
+    # ground truth d_max (spatial polynomial max order)
+    d_max_gt = test_dataset['parameters']['d_max']
 
     # Convert to tensor
     tf_noisy_train_stars = tf.convert_to_tensor(train_dataset['noisy_stars'], dtype=tf.float32)
@@ -715,7 +717,9 @@ def evaluate_model(**args):
             d_max_nonparam=args['d_max_nonparam'],
             output_dim=args['output_dim'],
             n_zernikes=args['gt_n_zernikes'],
-            d_max=args['d_max'],
+            # d_max_GT may differ from the current d_max of the parametric model
+            #d_max=args['d_max'],
+            d_max=d_max_gt,
             x_lims=args['x_lims'],
             y_lims=args['y_lims']
         )
