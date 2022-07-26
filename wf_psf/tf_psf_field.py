@@ -435,11 +435,19 @@ class TF_SemiParam_field(tf.keras.Model):
         S_tilde = tf.tensordot(self.tf_np_poly_opd.alpha_mat, self.tf_np_poly_opd.S_mat, axes=1)
         # Get beta tilde as the proyection of the first n_param_poly_terms (6 for d_max=2) onto the first n_zernikes.
         beta_tilde_inner = np.array([[PI_zernikes(tf_zernike_cube[j,:,:], S_tilde_slice, n_pix_zernike) for j in range(self.n_zernikes) ] for S_tilde_slice in S_tilde[:self.tf_poly_Z_field.coeff_mat.shape[1],:,:] ])
-        beta_tilde = np.pad(beta_tilde_inner, [(0, S_tilde.shape[0]-beta_tilde_inner.shape[0]), (0, S_tilde.shape[0]-beta_tilde_inner.shape[1])], mode='constant')
+        
+        # Only pad in the firs dimention so we get a matrix of size (d_max_nonparam_terms)x(n_zernikes)  --> 21x15 or 21x45.
+        #beta_tilde = np.pad(beta_tilde_inner, [(0, S_tilde.shape[0]-beta_tilde_inner.shape[0]), (0, S_tilde.shape[0]-beta_tilde_inner.shape[1])], mode='constant')
+        beta_tilde = np.pad(beta_tilde_inner, [(0, S_tilde.shape[0]-beta_tilde_inner.shape[0]), (0, 0)], mode='constant')
+        
         # Unmix beta tilde with the inverse of alpha
         beta = tf.constant(np.linalg.inv(self.tf_np_poly_opd.alpha_mat) @ beta_tilde , dtype=tf.float32)
         # Get the projection for the unmixed features
-        S_mat_projected = tf.tensordot(beta[:,:self.n_zernikes],tf_zernike_cube, axes=[1,0])
+        
+        # Now since beta.shape[1]=n_zernikes we can take the whole beta matrix.
+        #S_mat_projected = tf.tensordot(beta[:,:self.n_zernikes],tf_zernike_cube, axes=[1,0])
+        S_mat_projected = tf.tensordot(beta,tf_zernike_cube, axes=[1,0])
+        
         # Subtract the projection from the DD features
         S_new = self.tf_np_poly_opd.S_mat - S_mat_projected
         self.assign_S_mat(S_new)
