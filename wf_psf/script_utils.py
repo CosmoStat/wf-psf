@@ -683,6 +683,12 @@ def evaluate_model(**args):
     ## Load the model's weights
     tf_semiparam_field.load_weights(weights_paths)
 
+    # If eval_only_param is true we put non param model to zero.
+    if 'eval_only_param' not in args:
+        args['eval_only_param'] = False
+    elif args['eval_only_param']:
+        tf_semiparam_field.set_zero_nonparam()
+
     ## Prepare ground truth model
     # Generate Zernike maps
     zernikes = wf_utils.zernike_generator(
