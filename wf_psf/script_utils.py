@@ -687,6 +687,8 @@ def evaluate_model(**args):
     if 'eval_only_param' not in args:
         args['eval_only_param'] = False
     elif args['eval_only_param']:
+        if args['project_dd_features']:
+            tf_semiparam_field.project_DD_features(tf_zernike_cube)
         tf_semiparam_field.set_zero_nonparam()
 
     ## Prepare ground truth model
