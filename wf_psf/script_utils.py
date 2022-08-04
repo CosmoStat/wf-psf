@@ -345,7 +345,9 @@ def train_model(**args):
     if 'project_dd_features' not in args:
         args['project_dd_features'] = False
     if 'project_last_cycle' not in args:
-        args['project_last_cycle'] =  False        
+        args['project_last_cycle'] =  False    
+    if 'reset_dd_features' not in args:
+        args['reset_dd_features'] = False    
 
     # Perform all the necessary cycles
     current_cycle = 1
@@ -357,6 +359,9 @@ def train_model(**args):
         if args['project_dd_features'] and args['model'] == 'poly':
             tf_semiparam_field.project_DD_features(tf_zernike_cube)
             print('Project non-param DD features onto param model: done!')
+            if args['reset_dd_features']:
+                tf_semiparam_field.TF_NP_poly_OPD.init_vars()
+                print('DD features reseted to random initialisation.')
 
         # Prepare to save the model as a callback
         filepath_chkp_callback = args['chkp_save_path'] + 'chkp_callback_' + run_id_name + '_cycle' + str(current_cycle)
