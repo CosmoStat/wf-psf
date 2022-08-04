@@ -360,7 +360,7 @@ def train_model(**args):
             tf_semiparam_field.project_DD_features(tf_zernike_cube)
             print('Project non-param DD features onto param model: done!')
             if args['reset_dd_features']:
-                tf_semiparam_field.TF_NP_poly_OPD.init_vars()
+                tf_semiparam_field.tf_np_poly_opd.init_vars()
                 print('DD features reseted to random initialisation.')
 
         # Prepare to save the model as a callback
