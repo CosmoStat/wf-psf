@@ -258,6 +258,27 @@ def train_model(**args):
             y_lims=args['y_lims']
         )
 
+    # Backwards compatibility with older versions of train_eval_plot_click.py
+    if 'project_dd_features' not in args:
+        args['project_dd_features'] = False
+    if 'project_last_cycle' not in args:
+        args['project_last_cycle'] =  False    
+    if 'reset_dd_features' not in args:
+        args['reset_dd_features'] = False   
+    if 'pretrained_model' not in args:
+        args['pretrained_model'] = None
+
+    # Load pretrained model
+    if args['model'] == 'poly' and args['pretrained_model'] != None:
+        tf_semiparam_field.load_weights(args['pretrained_model'])
+        print('Model loaded.')
+
+    # If reset_dd_features is true we project the DD features onto the param model and reset them.
+    if args['model'] == 'poly' and args['reset_dd_features']:
+        tf_semiparam_field.project_DD_features(tf_zernike_cube)
+        tf_semiparam_field.tf_np_poly_opd.init_vars()
+        print('DD features reseted to random initialisation.')
+
     # # Model Training
     # Prepare the saving callback
     # Prepare to save the model as a callback
@@ -340,14 +361,6 @@ def train_model(**args):
         saving_optim_hist['param_cycle1'] = hist_param.history
     if args['model'] != 'param' and hist_non_param is not None:
         saving_optim_hist['nonparam_cycle1'] = hist_non_param.history
-
-    # Backwards compatibility with click scripts older than the projected learning feature
-    if 'project_dd_features' not in args:
-        args['project_dd_features'] = False
-    if 'project_last_cycle' not in args:
-        args['project_last_cycle'] =  False    
-    if 'reset_dd_features' not in args:
-        args['reset_dd_features'] = False    
 
     # Perform all the necessary cycles
     current_cycle = 1
