@@ -274,7 +274,7 @@ def train_model(**args):
         print('Model loaded.')
 
     # If reset_dd_features is true we project the DD features onto the param model and reset them.
-    if args['model'] == 'poly' and args['reset_dd_features']:
+    if args['model'] == 'poly' and args['reset_dd_features'] and args['cycle_def'] != 'only-parametric':
         tf_semiparam_field.project_DD_features(tf_zernike_cube)
         tf_semiparam_field.tf_np_poly_opd.init_vars()
         print('DD features reseted to random initialisation.')
