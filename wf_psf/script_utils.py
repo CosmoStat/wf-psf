@@ -269,7 +269,7 @@ def train_model(**args):
         args['pretrained_model'] = None
 
     # Load pretrained model
-    if args['model'] == 'poly' and args['pretrained_model'] != None:
+    if args['model'] == 'poly' and args['pretrained_model'] is not None:
         tf_semiparam_field.load_weights(args['pretrained_model'])
         print('Model loaded.')
         tf_semiparam_field.project_DD_features(tf_zernike_cube)
