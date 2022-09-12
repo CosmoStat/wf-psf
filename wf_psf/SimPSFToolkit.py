@@ -804,7 +804,7 @@ class SimPSFToolkit(object):
                 # Apply weights to bins
                 SED[:,1] *= SED[:,2]
             else:
-                # Add points at the border of each bin : ---o--*--o--*--o--*--o--- 
+                # Add points at the border of each bin with no extrapolation: ---o--*--o--*--o--*--o---
                 SED = np.zeros((n_bins*2-1, 3))
                 # Set wavelength points then interpolate
                 SED[::2, 0] = SED_filt[:,0]
@@ -828,7 +828,7 @@ class SimPSFToolkit(object):
                 # Apply weights to bins
                 SED[:,1] *= SED[:,2]
             else:
-                # Add 2 points per bin: ---o-*-*-o-*-*-o-*-*-o---
+                # Add 2 points per bin with no extrapolation: ---o-*-*-o-*-*-o-*-*-o---
                 SED = np.zeros((n_bins*3-2, 3))
                 SED[::3, 0] = SED_filt[:,0]
                 SED[1::3, 0] = SED_filt[1:,0] - 2 * wv_step/3
@@ -841,7 +841,7 @@ class SimPSFToolkit(object):
                 SED[:,1] *= SED[:,2]
         elif n_points == 3:
             if self.extrapolate:
-                # Add points at the border of each bin : *--o--*--o--*--o--*--o--* 
+                # Add 3 points inside each bin :  *-*-o-*-*-*-o-*-*-*-o-*-*-*-o-*-*
                 SED = np.zeros((n_bins*4+1, 3))
                 # Set wavelength points then interpolate
                 SED[4::4, 0] = SED_filt[:,0] + wv_step/2
@@ -873,7 +873,8 @@ class SimPSFToolkit(object):
         SED_filt = self.filter_SED(SED, n_bins)
 
         # Add noise. Scale sigma for each bin. Normalise the SED.
-        SED_filt[:,1] = SED_filt[:,1] + self.SED_gen_noise(len(SED_filt), self.SED_sigma)/len(SED_filt) #* SED_filt[:,1]
+        #SED_filt[:,1] = SED_filt[:,1] + self.SED_gen_noise(len(SED_filt), self.SED_sigma)/len(SED_filt) # Here we assume 1/N as the mean bin value
+        SED_filt[:,1] += np.multiply(SED_filt[:,1], self.SED_gen_noise(len(SED_filt), self.SED_sigma))
         SED_filt[:,1] = SED_filt[:,1]/np.sum(SED_filt[:,1])
 
         # Add inside-bin points - Interpolate
