@@ -105,6 +105,12 @@ def train_model(**args):
     print('Dataset parameters:')
     print(train_parameters)
 
+    # New interp features backwards compatibility
+    if 'interp_pts_per_bin' not in args:
+        args['interp_pts_per_bin'] = 0
+        args['extrapolate'] = True
+        args['SED_interp_kind'] = 'linear'
+
     ## Generate initializations
     # Prepare np input
     simPSF_np = SimPSFToolkit(
@@ -113,8 +119,10 @@ def train_model(**args):
         pupil_diameter=args['pupil_diameter'],
         output_dim=args['output_dim'],
         oversampling_rate=args['oversampling_rate'],
-        output_Q=args['output_q']
-        # Add sed interp features (and check other initialisations of the SimPSFToolkit)
+        output_Q=args['output_q'],
+        interp_pts_per_bin=args['interp_pts_per_bin'],
+        extrapolate=args['extrapolate'],
+        SED_interp_kind=args['SED_interp_kind']
     )
     simPSF_np.gen_random_Z_coeffs(max_order=args['n_zernikes'])
     z_coeffs = simPSF_np.normalize_zernikes(simPSF_np.get_z_coeffs(), simPSF_np.max_wfe_rms)
@@ -531,6 +539,12 @@ def evaluate_model(**args):
     np_zernike_cube[np.isnan(np_zernike_cube)] = 0
     tf_zernike_cube = tf.convert_to_tensor(np_zernike_cube, dtype=tf.float32)
 
+    # New interp features backwards compatibility
+    if 'interp_pts_per_bin' not in args:
+        args['interp_pts_per_bin'] = 0
+        args['extrapolate'] = True
+        args['SED_interp_kind'] = 'linear'
+
     # Prepare np input
     simPSF_np = SimPSFToolkit(
         zernikes,
@@ -538,7 +552,10 @@ def evaluate_model(**args):
         pupil_diameter=args['pupil_diameter'],
         output_dim=args['output_dim'],
         oversampling_rate=args['oversampling_rate'],
-        output_Q=args['output_q']
+        output_Q=args['output_q'],
+        interp_pts_per_bin=args['interp_pts_per_bin'],
+        extrapolate=args['extrapolate'],
+        SED_interp_kind=args['SED_interp_kind'],
     )
     simPSF_np.gen_random_Z_coeffs(max_order=args['n_zernikes'])
     z_coeffs = simPSF_np.normalize_zernikes(simPSF_np.get_z_coeffs(), simPSF_np.max_wfe_rms)
