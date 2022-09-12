@@ -114,6 +114,7 @@ def train_model(**args):
         output_dim=args['output_dim'],
         oversampling_rate=args['oversampling_rate'],
         output_Q=args['output_q']
+        # Add sed interp features (and check other initialisations of the SimPSFToolkit)
     )
     simPSF_np.gen_random_Z_coeffs(max_order=args['n_zernikes'])
     z_coeffs = simPSF_np.normalize_zernikes(simPSF_np.get_z_coeffs(), simPSF_np.max_wfe_rms)
@@ -703,6 +704,9 @@ def evaluate_model(**args):
     ## Metric evaluation on the test dataset
     print('\n***\nMetric evaluation on the test dataset\n***\n')
 
+    if 'n_bins_gt' not in args:
+        args['n_bins_gt'] = args['n_bins_lda']
+
     # Polychromatic star reconstructions
     rmse, rel_rmse, std_rmse, std_rel_rmse = wf_metrics.compute_poly_metric(
         tf_semiparam_field=tf_semiparam_field,
@@ -711,6 +715,7 @@ def evaluate_model(**args):
         tf_pos=tf_test_pos,
         tf_SEDs=test_SEDs,
         n_bins_lda=args['n_bins_lda'],
+        n_bins_gt= args['n_bins_gt'],
         batch_size=args['eval_batch_size']
     )
 
@@ -767,6 +772,7 @@ def evaluate_model(**args):
         SEDs=test_SEDs,
         tf_pos=tf_test_pos,
         n_bins_lda=args['n_bins_lda'],
+        n_bins_gt= args['n_bins_gt'],
         output_Q=1,
         output_dim=64,
         batch_size=args['eval_batch_size'],
@@ -792,6 +798,7 @@ def evaluate_model(**args):
         tf_pos=tf_train_pos,
         tf_SEDs=train_SEDs,
         n_bins_lda=args['n_bins_lda'],
+        n_bins_gt= args['n_bins_gt'],
         batch_size=args['eval_batch_size']
     )
 
@@ -842,6 +849,7 @@ def evaluate_model(**args):
         SEDs=train_SEDs,
         tf_pos=tf_train_pos,
         n_bins_lda=args['n_bins_lda'],
+        n_bins_gt= args['n_bins_gt'],
         output_Q=1,
         output_dim=64,
         batch_size=args['eval_batch_size']
