@@ -15,6 +15,7 @@ def compute_poly_metric(
     tf_pos,
     tf_SEDs,
     n_bins_lda=20,
+    n_bins_gt=20,
     batch_size=16
 ):
     """ Calculate metrics for polychromatic reconstructions.
@@ -54,7 +55,7 @@ def compute_poly_metric(
         Standard deviation of relative RMSEs. Values in %.
 
     """
-    # Generate SED data list
+    # Generate SED data list for the model
     packed_SED_data = [
         utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_lda) for _sed in tf_SEDs
     ]
@@ -64,6 +65,14 @@ def compute_poly_metric(
 
     # Model prediction
     preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
+
+    # Generate SED data list for GT model
+    packed_SED_data = [
+        utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_gt) for _sed in tf_SEDs
+    ]
+    tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
+    tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
+    pred_inputs = [tf_pos, tf_packed_SED_data]
 
     # GT model prediction
     GT_preds = GT_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
@@ -296,6 +305,7 @@ def compute_shape_metrics(
     SEDs,
     tf_pos,
     n_bins_lda,
+    n_bins_gt,
     output_Q=1,
     output_dim=64,
     batch_size=16,
@@ -366,6 +376,16 @@ def compute_shape_metrics(
 
     # PSF model
     predictions = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
+
+    # Generate SED data list for GT model
+    packed_SED_data = [
+        utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_gt) for _sed in SEDs
+    ]
+
+    # Prepare inputs
+    tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
+    tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
+    pred_inputs = [tf_pos, tf_packed_SED_data]
 
     # Ground Truth model
     GT_predictions = GT_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
