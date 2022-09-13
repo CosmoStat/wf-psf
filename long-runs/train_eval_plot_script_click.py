@@ -3,6 +3,7 @@
 
 # PSF modelling and evaluation
 
+from email.policy import default
 import wf_psf as wf
 import click
 
@@ -165,30 +166,57 @@ import click
     default=32,
     type=int,
     help="Batch size used for the trainingin the stochastic gradient descend type of algorithm.")
+# Old multicycle parameters for backwards compatibility. 
 @click.option(
     "--l_rate_param",
     nargs=2,
-    default=[1e-2, 1e-2],
+    default=None,
     type=float,
     help="Learning rates for the parametric parts.")
 @click.option(
     "--l_rate_non_param",
     nargs=2,
-    default=[1e-1, 1e-1],
+    default=None,
     type=float,
     help="Learning rates for the non-parametric parts.")
 @click.option(
     "--n_epochs_param",
     nargs=2,
-    default=[20, 20],
+    default=None,
     type=int,
     help="Number of training epochs of the parametric parts.")
 @click.option(
     "--n_epochs_non_param",
     nargs=2,
-    default=[100, 120],
+    default=None,
     type=int,
     help="Number of training epochs of the non-parametric parts.")
+# New multicycle parameters
+@click.option(
+    "--l_rate_param_multi_cycle",
+    default="1e-2 1e-2",
+    type=str,
+    help="Learning rates for the parametric parts. It should be a strign where numeric values are separated by spaces.")
+@click.option(
+    "--l_rate_non_param_multi_cycle",
+    default="1e-1 1e-1",
+    type=str,
+    help="Learning rates for the non-parametric parts. It should be a strign where numeric values are separated by spaces.")
+@click.option(
+    "--n_epochs_param_multi_cycle",
+    default="20 20",
+    type=str,
+    help="Number of training epochs of the parametric parts. It should be a strign where numeric values are separated by spaces.")
+@click.option(
+    "--n_epochs_non_param_multi_cycle",
+    default="100 120",
+    type=str,
+    help="Number of training epochs of the non-parametric parts. It should be a strign where numeric values are separated by spaces.")
+@click.option(
+    "--save_all_cycles",
+    default=False,
+    type=bool,
+    help="Make checkpoint at every cycle or just save the checkpoint at the end of the training.")
 @click.option(
     "--total_cycles",
     default=2,
@@ -232,6 +260,17 @@ import click
     default=16,
     type=int,
     help="Batch size to use for the evaluation.")
+@click.option(
+    "--n_bins_gt",
+    default=20,
+    type=int,
+    help="Number of bins used for the ground truth model poly PSF generation."
+)
+@click.option(
+    "--opt_stars_rel_pix_rmse",
+    default=False,
+    type=bool,
+    help="Option to get SR pixel PSF RMSE for each individual test star.")
 ## Specific parameters
 @click.option(
     "--l2_param",
@@ -256,6 +295,28 @@ import click
     multiple=True,
     type=int,
     help="Plot parameter. Training star number of the different models evaluated. Needs to correspond with the `suffix_id_name`.")
+# Feature: SED interp
+@click.option(
+    "--interp_pts_per_bin",
+    default=0,
+    type=int,
+    help="Number of points per bin to add during the interpolation process. It can take values {0,1,2,3}, where 0 means no interpolation.")
+@click.option(
+    "--extrapolate",
+    default=True,
+    type=bool,
+    help="Whether extrapolation is performed or not on the borders of the SED.")
+@click.option(
+    "--SED_interp_kind",
+    default="linear",
+    type=str,
+    help="Type of interpolation for the SED.")
+# Feature: project parameters
+@click.option(
+    "--project_dd_features",
+    default=False,
+    type=bool,
+    help="Project NP DD features onto parametric model.")
 
 
 def main(**args):
