@@ -51,7 +51,13 @@ inputs = [tf_pos, tf_packed_SED_data]
 - `tf_pos` is a tensor of shape `([n_stars,2])`. The order of the $(x,y)$ positions are the same as before. 
 
 - `tf_packed_SED_data` is a tensor of shape `([n_stars,n_bins,3])`. For each observation $i$ this tensor  contains three `n_bins`-point SED features. The first one contains each integer `feasible_N` needed for the upscaling of the wavefront error in order to compute the PSF at each `feasible_wv` (listed in the second position). Finaly in the third position the SED values are listed for each `feasible_wv`. 
-    - Notes 
+    - Notes
+        - The second dimention of the packed SED data can change its lenght if SED interpolation is performed. The interpolated SED will then have the following number of samples:
+
+            $n_{\text{bins\_interp}} = n_{\text{bins}} \times (\texttt{interp\_pts\_per\_bin} + 1) \; \pm \; 1$,
+
+            if extrapolation is performed, a point is added to the SED, thus it corresponts to the $+1$ case. If exptrapolation is not performed the $-1$ case is considered.  
+
         - The `feasible_N` asociated to each `feasible_wv` is calculated using the [`SimPSFToolkit.feasible_N()`](https://github.com/tobias-liaudat/wf-psf/blob/main/wf_psf/SimPSFToolkit.py#L636) method. 
         - The packed SED date is generated with the [generate_packed_elems()](https://github.com/tobias-liaudat/wf-psf/blob/main/wf_psf/utils.py#L44) method of the `wf_utils` class detailed in the `utils.py` file.
         - The packed SED data must be converted to tensor to be an input of the model (a column permutation also takes place):
