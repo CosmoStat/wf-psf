@@ -362,6 +362,10 @@ class TF_NP_poly_OPD(tf.keras.layers.Layer):
         """ Set alpha matrix to the identity."""
         _ = self.alpha_mat.assign(tf.eye(self.n_poly, dtype=tf.float32))
 
+    def assign_S_mat(self, S_mat):
+        """ Assign DD features matrix."""
+        self.S_mat.assign(S_mat)
+
     def call(self, positions):
         """ Calculate the OPD maps for the given positions.
 
