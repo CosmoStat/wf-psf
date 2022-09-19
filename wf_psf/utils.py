@@ -7,7 +7,7 @@ try:
     from cv2 import resize, INTER_AREA
 except:
     print('Problem importing opencv..')
-
+import sys
 
 def scale_to_range(input_array, old_range, new_range):
     # Scale to [0,1]
@@ -345,3 +345,67 @@ class IndependentZernikeInterpolation(object):
         
         # Remove null dimension and transpose back to have batch at input
         return tf.transpose(tf.squeeze(interp_zks, axis=2), perm=[1,0])
+
+
+def load_multi_cycle_params_click(args):
+    """
+    Load multiple cycle training parameters.
+
+    For backwards compatibility, the training parameters are received as a string, 
+    separated and stored in the args dictionary.
+
+    Parameters
+    ----------
+    args: dictionary
+        Comand line arguments dictionary loaded with the click package.
+
+    Returns
+    -------
+    args: dictionary
+        The input dictionary with all multi-cycle training parameters correctly loaded.
+    """
+    if args['l_rate_param'] is None:
+        args['l_rate_param'] = list(map(float, args['l_rate_param_multi_cycle'].split(' ')))
+    if len(args['l_rate_param']) == 1:
+        args['l_rate_param'] = args['l_rate_param'] * args['total_cycles']
+    elif len(args['l_rate_param']) != args['total_cycles']:
+        print('Invalid argument: --l_rate_param. Expected 1 or {} values but {} were given.'.format(args['total_cycles'],len(args['l_rate_param'])))
+        sys.exit()
+    
+    if args['l_rate_non_param'] is None:
+        args['l_rate_non_param'] = list(map(float, args['l_rate_non_param_multi_cycle'].split(' ')))
+    if len(args['l_rate_non_param']) == 1:
+        args['l_rate_non_param'] = args['l_rate_non_param'] * args['total_cycles']
+    elif len(args['l_rate_non_param']) != args['total_cycles']:
+        print('Invalid argument: --l_rate_non_param. Expected 1 or {} values but {} were given.'.format(args['total_cycles'],len(args['l_rate_non_param'])))
+        sys.exit()
+
+    if args['n_epochs_param'] is None:
+        args['n_epochs_param'] = list(map(int, args['n_epochs_param_multi_cycle'].split(' ')))
+    if len(args['n_epochs_param']) == 1:
+        args['n_epochs_param'] = args['n_epochs_param'] * args['total_cycles']
+    elif len(args['n_epochs_param']) != args['total_cycles']:
+        print('Invalid argument: --n_epochs_param. Expected 1 or {} values but {} were given.'.format(args['total_cycles'],len(args['n_epochs_param'])))
+        sys.exit()
+
+    if args['n_epochs_non_param'] is None:
+        args['n_epochs_non_param'] = list(map(int, args['n_epochs_non_param_multi_cycle'].split(' ')))
+    if len(args['n_epochs_non_param']) == 1:
+        args['n_epochs_non_param'] = args['n_epochs_non_param'] * args['total_cycles']
+    elif len(args['n_epochs_non_param']) != args['total_cycles']:
+        print('Invalid argument: --n_epochs_non_param. Expected 1 or {} values but {} were given.'.format(args['total_cycles'], len(args['n_epochs_non_param'])))
+        sys.exit()
+
+    return args
+
+def PI_zernikes(tf_z1,tf_z2, norm_factor=None):
+    """ Compute internal product between zernikes and OPDs
+
+    Defined such that Zernikes are orthonormal to each other
+
+    First one should compute: norm_factor =  PI_zernikes(tf_zernike,tf_zernike)
+    for futur calls: PI_zernikes(OPD,tf_zernike_k, norm_factor)
+    """
+    if norm_factor is None:
+        norm_factor = 1
+    return np.sum((tf.math.multiply(tf_z1,tf_z2) ).numpy())/(norm_factor)
