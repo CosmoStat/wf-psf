@@ -1,5 +1,3 @@
-from asyncio.constants import SENDFILE_FALLBACK_READBUFFER_SIZE
-from os import WIFSTOPPED
 import numpy as np
 import scipy.signal as spsig
 import scipy.interpolate as sinterp

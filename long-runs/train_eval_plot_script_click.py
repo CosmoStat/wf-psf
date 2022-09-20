@@ -3,7 +3,6 @@
 
 # PSF modelling and evaluation
 
-from email.policy import default
 import wf_psf as wf
 import click
 
