@@ -10,9 +10,6 @@ This script allows for a multi-cycle optimisation where the number of cycles can
 For backwards compatibility the old click parameters concerning multiple cycles are preserved.
 
 """
-
-from email.policy import default
-import string
 import wf_psf as wf
 import click
 
@@ -269,6 +266,17 @@ import click
     default=16,
     type=int,
     help="Batch size to use for the evaluation.")
+@click.option(
+    "--n_bins_gt",
+    default=20,
+    type=int,
+    help="Number of bins used for the ground truth model poly PSF generation."
+)
+@click.option(
+    "--opt_stars_rel_pix_rmse",
+    default=False,
+    type=bool,
+    help="Save RMS error for each super resolved PSF in the test dataset in addition to the mean across the FOV.")
 ## Specific parameters
 @click.option(
     "--l2_param",
@@ -293,17 +301,49 @@ import click
     multiple=True,
     type=int,
     help="Plot parameter. Training star number of the different models evaluated. Needs to correspond with the `suffix_id_name`.")
+# Feature: SED interp
 @click.option(
-    "--opt_stars_rel_pix_rmse",
-    default=False,
+    "--interp_pts_per_bin",
+    default=0,
+    type=int,
+    help="Number of points per bin to add during the interpolation process. It can take values {0,1,2,3}, where 0 means no interpolation.")
+@click.option(
+    "--extrapolate",
+    default=True,
     type=bool,
-    help="Option to get SR pixel PSF RMSE for each test star.")
+    help="Whether extrapolation is performed or not on the borders of the SED.")
+@click.option(
+    "--SED_interp_kind",
+    default="linear",
+    type=str,
+    help="Type of interpolation for the SED.")
+@click.option(
+    "--SED_sigma",
+    default=0,
+    type=float,
+    help="Standard deviation of the multiplicative SED Gaussian noise.")
+# Feature: project parameters
 @click.option(
     "--project_dd_features",
     default=False,
     type=bool,
     help="Project NP DD features onto parametric model.")
-    
+@click.option(
+    "--eval_only_param",
+    default=False,
+    type=bool,
+    help="Use only the parametric model for evaluation.")
+@click.option(
+    "--reset_dd_features",
+    default= False,
+    type=bool,
+    help="Reset to random initialisation the non-parametric model after projecting.")
+@click.option(
+    "--pretrained_model",
+    default= None,
+    type=str,
+    help="Path to pretrained model checkpoint callback.")
+
 def main(**args):
     args = wf.utils.load_multi_cycle_params_click(args)
     print(args)

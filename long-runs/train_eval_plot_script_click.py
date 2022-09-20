@@ -3,7 +3,6 @@
 
 # PSF modelling and evaluation
 
-from email.policy import default
 import wf_psf as wf
 import click
 
@@ -270,7 +269,7 @@ import click
     "--opt_stars_rel_pix_rmse",
     default=False,
     type=bool,
-    help="Option to get SR pixel PSF RMSE for each individual test star.")
+    help="Save RMS error for each super resolved PSF in the test dataset in addition to the mean across the FOV.")
 ## Specific parameters
 @click.option(
     "--l2_param",
