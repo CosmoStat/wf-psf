@@ -417,7 +417,9 @@ class TF_SemiParam_field(tf.keras.Model):
 
     def project_DD_features(self,tf_zernike_cube):
         """ 
-        Extract from the DD non-parametric learnt features what could be represented by the parametric model
+        Project non-parametric wavefront onto first n_z Zernikes and transfer 
+        their parameters to the parametric model.
+        
         """
         # Compute Zernike norm for projections
         n_pix_zernike = PI_zernikes(tf_zernike_cube[0,:,:],tf_zernike_cube[0,:,:])
