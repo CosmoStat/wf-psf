@@ -69,6 +69,8 @@ def compute_poly_metric(
     # Change interpolation parameters for the GT simPSF
     interp_pts_per_bin = simPSF_np.interp_pts_per_bin
     simPSF_np.interp_pts_per_bin = 0
+    SED_sigma = simPSF_np.SED_sigma
+    simPSF_np.SED_sigma = 0
     # Generate SED data list for GT model
     packed_SED_data = [
         utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_gt) for _sed in tf_SEDs
@@ -383,6 +385,8 @@ def compute_shape_metrics(
     # Change interpolation parameters for the GT simPSF
     interp_pts_per_bin = simPSF_np.interp_pts_per_bin
     simPSF_np.interp_pts_per_bin = 0
+    SED_sigma = simPSF_np.SED_sigma
+    simPSF_np.SED_sigma = 0
     # Generate SED data list for GT model
     packed_SED_data = [
         utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_gt) for _sed in SEDs
