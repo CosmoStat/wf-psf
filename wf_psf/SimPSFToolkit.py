@@ -74,7 +74,7 @@ class SimPSFToolkit(object):
     verbose: int
         Self-explanatory variable. Default is `0`, use a value `>0` to activate.
     SED_sigma: float
-        Noise standard deviation for every SED bin, as a proportion of bins value.
+        Standard deviation of the multiplicative SED Gaussian noise.
     interp_pts_per_bin: int
         Number of points to interpolate in between SED values. It can be 0, 1 or 2.
     extrapolate: bool
