@@ -44,13 +44,13 @@ Here we detail every option or argument used in the WaveDiff model auxiliary scr
 
 ## Script options
 
-- `--train_opt`, default=True, type: bool
+- `--train_opt`, default=`True`, type: `bool`
 	- Train the model.
 
-- `--eval_opt`, default=True, type: bool
+- `--eval_opt`, default=`True`, type: `bool`
 	- Evaluate the model.
 
-- `--plot_opt`, default=True, type: bool
+- `--plot_opt`, default=`True`, type: `bool`
 	- Plot the model results
 ## Training options
 ### Model definition
@@ -126,10 +126,10 @@ nargs=2,, default=[0, 1e3], type: float
 - `--graph_features`, default=10, type: int
 	- Number of graph-constrained features of the non-parametric part.
 
-- `--l1_rate`, default=1e-8, type: float
+- `--l1_rate`, default=`1e-8`, type: float
 	- L1 regularisation parameter for the non-parametric part.
 
-- `--use_sample_weights`, default=False, type: bool
+- `--use_sample_weights`, default=`False`, type: `bool`
 	- Boolean to define if we use sample weights based on the noise standard deviation estimation.
 
 - `--interpolation_type`, default="none", type: str
@@ -157,10 +157,10 @@ nargs=2,, default=None, type: int
 	- Number of training epochs of the non-parametric parts.
 ### New multicycle parameters
 
-- `--l_rate_param_multi_cycle`, default="1e-2 1e-2", type: str
+- `--l_rate_param_multi_cycle`, default="`1e-2` `1e-2`", type: str
 	- Learning rates for the parametric parts. It should be a strign where numeric values are separated by spaces.
 
-- `--l_rate_non_param_multi_cycle`, default="1e-1 1e-1", type: str
+- `--l_rate_non_param_multi_cycle`, default="`1e-1` `1e-1`", type: str
 	- Learning rates for the non-parametric parts. It should be a strign where numeric values are separated by spaces.
 
 - `--n_epochs_param_multi_cycle`, default="20 20", type: str
@@ -169,7 +169,7 @@ nargs=2,, default=None, type: int
 - `--n_epochs_non_param_multi_cycle`, default="100 120", type: str
 	- Number of training epochs of the non-parametric parts. It should be a strign where numeric values are separated by spaces.
 
-- `--save_all_cycles`, default=False, type: bool
+- `--save_all_cycles`, default=`False`, type: `bool`
 	- Make checkpoint at every cycle or just save the checkpoint at the end of the training.
 
 - `--total_cycles`, default=2, type: int
@@ -203,7 +203,7 @@ nargs=2,, default=None, type: int
 help="Number of bins used for the ground truth model poly PSF generation."
 )
 
-- `--opt_stars_rel_pix_rmse`, default=False, type: bool
+- `--opt_stars_rel_pix_rmse`, default=`False`, type: `bool`
 	- Option to get SR pixel PSF RMSE for each individual test star.
 ## Specific parameters
 
@@ -215,11 +215,11 @@ help="Number of bins used for the ground truth model poly PSF generation."
 	- Plot parameter. Base id_name before dataset suffix are added.
 
 - `--suffix_id_name`, default=["2c", "5c"],
-multiple=True, type: str
+multiple=`True`, type: str
 	- Plot parameter. Suffix needed to recreate the different id names.
 
 - `--star_numbers`, default=[200, 500],
-multiple=True, type: int
+multiple=`True`, type: int
 	- Plot parameter. Training star number of the different models evaluated. Needs to correspond with the `suffix_id_name`.
 ## WaveDiff new features
 ### Feature: SED interp
@@ -227,12 +227,12 @@ multiple=True, type: int
 - `--interp_pts_per_bin`, default=0, type: int
 	- Number of points per bin to add during the interpolation process. It can take values {0,1,2,3}, where 0 means no interpolation.
 
-- `--extrapolate`, default=True, type: bool
+- `--extrapolate`, default=`True`, type: `bool`
 	- Whether extrapolation is performed or not on the borders of the SED.
 
 - `--SED_interp_kind`, default="linear", type: str
 	- Type of interpolation for the SED.
 ### Feature: project parameters
 
-- `--project_dd_features`, default=False, type: bool
+- `--project_dd_features`, default=`False`, type: `bool`
 	- Project NP DD features onto parametric model.
