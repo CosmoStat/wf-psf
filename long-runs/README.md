@@ -187,7 +187,7 @@ nargs=2,, default=None, type: int
 	- Base path for saving metric files.
 
 - `--saved_model_type`, default="final", type: str
-	- Type of saved model to use for the evaluation. Can be 'final' or 'checkpoint'.
+	- Type of saved model to use for the evaluation. Can be 'final' for a full model, 'checkpoint' for model weights or 'external' for a different model not saved under the same base_id as the current one..
 
 - `--saved_cycle`, default="cycle2", type: str
 	- Saved cycle to use for the evaluation. Can be 'cycle1' or 'cycle2'.
