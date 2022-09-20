@@ -249,7 +249,7 @@ import click
     "--saved_model_type",
     default="final",
     type=str,
-    help="Type of saved model to use for the evaluation. Can be 'final' or 'checkpoint'.")
+    help="Type of saved model to use for the evaluation. Can be 'final' for a full model, 'checkpoint' for model weights or 'external' for a different model not saved under the same base_id as the current one.")
 @click.option(
     "--saved_cycle",
     default="cycle2",

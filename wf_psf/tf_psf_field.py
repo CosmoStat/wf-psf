@@ -417,13 +417,15 @@ class TF_SemiParam_field(tf.keras.Model):
 
     def project_DD_features(self,tf_zernike_cube):
         """ 
-        Extract from the DD non-parametric learnt features what could be represented by the parametric model
+        Project non-parametric wavefront onto first n_z Zernikes and transfer 
+        their parameters to the parametric model.
+        
         """
         # Compute Zernike norm for projections
         n_pix_zernike = PI_zernikes(tf_zernike_cube[0,:,:],tf_zernike_cube[0,:,:])
         # Multiply Alpha matrix with DD features matrix S
         inter_res_v2 = tf.tensordot(self.tf_np_poly_opd.alpha_mat[:self.tf_poly_Z_field.coeff_mat.shape[1],:], self.tf_np_poly_opd.S_mat, axes=1)
-        # Project over first 15 Zernikes
+        # Project over first n_z Zernikes
         delta_C_poly = tf.constant(np.array([[PI_zernikes(tf_zernike_cube[i,:,:], inter_res_v2[j,:,:], n_pix_zernike) for j in range(self.tf_poly_Z_field.coeff_mat.shape[1]) ] for i in range(self.n_zernikes) ]), dtype=tf.float32)
         old_C_poly = self.tf_poly_Z_field.coeff_mat
         # Corrected parametric coeff matrix
@@ -437,7 +439,6 @@ class TF_SemiParam_field(tf.keras.Model):
         beta_tilde_inner = np.array([[PI_zernikes(tf_zernike_cube[j,:,:], S_tilde_slice, n_pix_zernike) for j in range(self.n_zernikes) ] for S_tilde_slice in S_tilde[:self.tf_poly_Z_field.coeff_mat.shape[1],:,:] ])
         
         # Only pad in the firs dimention so we get a matrix of size (d_max_nonparam_terms)x(n_zernikes)  --> 21x15 or 21x45.
-        #beta_tilde = np.pad(beta_tilde_inner, [(0, S_tilde.shape[0]-beta_tilde_inner.shape[0]), (0, S_tilde.shape[0]-beta_tilde_inner.shape[1])], mode='constant')
         beta_tilde = np.pad(beta_tilde_inner, [(0, S_tilde.shape[0]-beta_tilde_inner.shape[0]), (0, 0)], mode='constant')
         
         # Unmix beta tilde with the inverse of alpha
@@ -445,7 +446,6 @@ class TF_SemiParam_field(tf.keras.Model):
         # Get the projection for the unmixed features
         
         # Now since beta.shape[1]=n_zernikes we can take the whole beta matrix.
-        #S_mat_projected = tf.tensordot(beta[:,:self.n_zernikes],tf_zernike_cube, axes=[1,0])
         S_mat_projected = tf.tensordot(beta,tf_zernike_cube, axes=[1,0])
         
         # Subtract the projection from the DD features
