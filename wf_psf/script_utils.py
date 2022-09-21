@@ -92,15 +92,14 @@ def train_model(**args):
     tf_test_pos = tf.convert_to_tensor(test_dataset['positions'], dtype=tf.float32)
 
     if args['model'] == 'poly_physical':
-            # Concatenate the Zernike and the positions from train and test datasets
-            all_pos = np.concatenate((train_dataset['positions'], test_dataset['positions']), axis=0)
-            all_zernike_prior = np.concatenate(
-                (train_dataset['zernike_prior'], test_dataset['zernike_prior']),
-                axis=0
-            )
-            # Convert to tensor
-            tf_pos_all = tf.convert_to_tensor(all_pos, dtype=tf.float32)
-            tf_zernike_prior_all = tf.convert_to_tensor(all_zernike_prior, dtype=tf.float32)
+        # Concatenate the Zernike and the positions from train and test datasets
+        all_pos = np.concatenate((train_dataset['positions'], test_dataset['positions']), axis=0)
+        all_zernike_prior = np.concatenate(
+            (train_dataset['zernike_prior'], test_dataset['zernike_prior']), axis=0
+        )
+        # Convert to tensor
+        tf_pos_all = tf.convert_to_tensor(all_pos, dtype=tf.float32)
+        tf_zernike_prior_all = tf.convert_to_tensor(all_zernike_prior, dtype=tf.float32)
 
     print('Dataset parameters:')
     print(train_parameters)
@@ -272,9 +271,9 @@ def train_model(**args):
     if 'project_dd_features' not in args:
         args['project_dd_features'] = False
     if 'project_last_cycle' not in args:
-        args['project_last_cycle'] =  False    
+        args['project_last_cycle'] = False
     if 'reset_dd_features' not in args:
-        args['reset_dd_features'] = False   
+        args['reset_dd_features'] = False
     if 'pretrained_model' not in args:
         args['pretrained_model'] = None
 
@@ -286,7 +285,8 @@ def train_model(**args):
         print('DD features projected over parametric model')
 
     # If reset_dd_features is true we project the DD features onto the param model and reset them.
-    if args['model'] == 'poly' and args['reset_dd_features'] and args['cycle_def'] != 'only-parametric':
+    if args['model'] == 'poly' and args['reset_dd_features'
+                                       ] and args['cycle_def'] != 'only-parametric':
         tf_semiparam_field.tf_np_poly_opd.init_vars()
         print('DD features reseted to random initialisation.')
 
@@ -359,7 +359,7 @@ def train_model(**args):
     # Backwards compatibility with click scripts older than the projected learning feature
     if 'save_all_cycles' not in args:
         args['save_all_cycles'] = False
- 
+
     # Save weights
     if args['save_all_cycles']:
         tf_semiparam_field.save_weights(model_save_file + 'chkp_' + run_id_name + '_cycle1')
@@ -379,7 +379,7 @@ def train_model(**args):
     while args['total_cycles'] > current_cycle:
         current_cycle += 1
 
-        # If projected learning is enabled project DD_features. 
+        # If projected learning is enabled project DD_features.
         if args['project_dd_features'] and args['model'] == 'poly':
             tf_semiparam_field.project_DD_features(tf_zernike_cube)
             print('Project non-param DD features onto param model: done!')
@@ -388,7 +388,8 @@ def train_model(**args):
                 print('DD features reseted to random initialisation.')
 
         # Prepare to save the model as a callback
-        filepath_chkp_callback = args['chkp_save_path'] + 'chkp_callback_' + run_id_name + '_cycle' + str(current_cycle)
+        filepath_chkp_callback = args[
+            'chkp_save_path'] + 'chkp_callback_' + run_id_name + '_cycle' + str(current_cycle)
         model_chkp_callback = tf.keras.callbacks.ModelCheckpoint(
             filepath_chkp_callback,
             monitor='mean_squared_error',
@@ -401,8 +402,12 @@ def train_model(**args):
         )
 
         # Prepare the optimisers
-        param_optim = tfa.optimizers.RectifiedAdam(learning_rate=args['l_rate_param'][current_cycle-1])
-        non_param_optim = tfa.optimizers.RectifiedAdam(learning_rate=args['l_rate_non_param'][current_cycle-1])
+        param_optim = tfa.optimizers.RectifiedAdam(
+            learning_rate=args['l_rate_param'][current_cycle - 1]
+        )
+        non_param_optim = tfa.optimizers.RectifiedAdam(
+            learning_rate=args['l_rate_non_param'][current_cycle - 1]
+        )
 
         print('Starting cycle {}..'.format(current_cycle))
         start_cycle = time.time()
@@ -415,8 +420,8 @@ def train_model(**args):
                 outputs=outputs,
                 val_data=val_data,
                 batch_size=args['batch_size'],
-                l_rate=args['l_rate_param'][current_cycle-1],
-                n_epochs=args['n_epochs_param'][current_cycle-1],
+                l_rate=args['l_rate_param'][current_cycle - 1],
+                n_epochs=args['n_epochs_param'][current_cycle - 1],
                 param_optim=param_optim,
                 param_loss=None,
                 param_metrics=None,
@@ -433,10 +438,10 @@ def train_model(**args):
                 outputs=outputs,
                 val_data=val_data,
                 batch_size=args['batch_size'],
-                l_rate_param=args['l_rate_param'][current_cycle-1],
-                l_rate_non_param=args['l_rate_non_param'][current_cycle-1],
-                n_epochs_param=args['n_epochs_param'][current_cycle-1],
-                n_epochs_non_param=args['n_epochs_non_param'][current_cycle-1],
+                l_rate_param=args['l_rate_param'][current_cycle - 1],
+                l_rate_non_param=args['l_rate_non_param'][current_cycle - 1],
+                n_epochs_param=args['n_epochs_param'][current_cycle - 1],
+                n_epochs_non_param=args['n_epochs_non_param'][current_cycle - 1],
                 param_optim=param_optim,
                 non_param_optim=non_param_optim,
                 param_loss=None,
@@ -454,10 +459,12 @@ def train_model(**args):
 
         # Save the weights at the end of the second cycle
         if args['save_all_cycles']:
-            tf_semiparam_field.save_weights(model_save_file + 'chkp_' + run_id_name + '_cycle' + str(current_cycle))
+            tf_semiparam_field.save_weights(
+                model_save_file + 'chkp_' + run_id_name + '_cycle' + str(current_cycle)
+            )
 
         end_cycle = time.time()
-        print('Cycle{} elapsed time: {}'.format(current_cycle , end_cycle - start_cycle))
+        print('Cycle{} elapsed time: {}'.format(current_cycle, end_cycle - start_cycle))
 
         # Save optimisation history in the saving dict
         if hist_param_2 is not None:
@@ -467,7 +474,9 @@ def train_model(**args):
 
     # Save last cycle if no cycles were saved
     if not args['save_all_cycles']:
-        tf_semiparam_field.save_weights(model_save_file + 'chkp_' + run_id_name + '_cycle' + str(current_cycle))
+        tf_semiparam_field.save_weights(
+            model_save_file + 'chkp_' + run_id_name + '_cycle' + str(current_cycle)
+        )
 
     # Save optimisation history dictionary
     np.save(optim_hist_file + 'optim_hist_' + run_id_name + '.npy', saving_optim_hist)
@@ -549,15 +558,14 @@ def evaluate_model(**args):
     if args['model'] == 'poly_physical':
         # Concatenate the Zernike and the positions from train and test datasets
         all_zernike_prior = np.concatenate(
-            (train_dataset['zernike_prior'], test_dataset['zernike_prior']),
-            axis=0
+            (train_dataset['zernike_prior'], test_dataset['zernike_prior']), axis=0
         )
         all_pos = np.concatenate((train_dataset['positions'], test_dataset['positions']), axis=0)
         # Convert to tensor
         tf_zernike_prior_all = tf.convert_to_tensor(all_zernike_prior, dtype=tf.float32)
         tf_pos_all = tf.convert_to_tensor(all_pos, dtype=tf.float32)
 
-    if args['model_eval'] == 'physical': 
+    if args['model_eval'] == 'physical':
         # Concatenate both datasets
         all_zernike_GT = np.concatenate(
             (train_dataset['zernike_GT'], test_dataset['zernike_GT']),
@@ -567,7 +575,6 @@ def evaluate_model(**args):
         # Convert to tensor
         tf_zernike_GT_all = tf.convert_to_tensor(all_zernike_GT, dtype=tf.float32)
         tf_pos_all = tf.convert_to_tensor(all_pos, dtype=tf.float32)
-
 
     print('Dataset parameters:')
     print(train_parameters)
@@ -743,7 +750,7 @@ def evaluate_model(**args):
     np_zernike_cube[np.isnan(np_zernike_cube)] = 0
     tf_zernike_cube = tf.convert_to_tensor(np_zernike_cube, dtype=tf.float32)
 
-    if args['model_eval'] == 'physical': 
+    if args['model_eval'] == 'physical':
         # Initialize the model
         GT_tf_semiparam_field = tf_psf_field.TF_GT_physical_field(
             zernike_maps=tf_zernike_cube,
@@ -790,7 +797,7 @@ def evaluate_model(**args):
         tf_pos=tf_test_pos,
         tf_SEDs=test_SEDs,
         n_bins_lda=args['n_bins_lda'],
-        n_bins_gt= args['n_bins_gt'],
+        n_bins_gt=args['n_bins_gt'],
         batch_size=args['eval_batch_size']
     )
 
@@ -870,7 +877,7 @@ def evaluate_model(**args):
         tf_pos=tf_train_pos,
         tf_SEDs=train_SEDs,
         n_bins_lda=args['n_bins_lda'],
-        n_bins_gt= args['n_bins_gt'],
+        n_bins_gt=args['n_bins_gt'],
         batch_size=args['eval_batch_size']
     )
 
@@ -921,7 +928,7 @@ def evaluate_model(**args):
         SEDs=train_SEDs,
         tf_pos=tf_train_pos,
         n_bins_lda=args['n_bins_lda'],
-        n_bins_gt= args['n_bins_gt'],
+        n_bins_gt=args['n_bins_gt'],
         output_Q=1,
         output_dim=64,
         batch_size=args['eval_batch_size']
@@ -981,8 +988,9 @@ def plot_metrics(**args):
             for _suff in args['suffix_id_name']
         ]
     else:
-        model_paths = [args['metric_base_path'] + 'metrics-' + run_id_no_suff + args['suffix_id_name'] + '.npy']
-
+        model_paths = [
+            args['metric_base_path'] + 'metrics-' + run_id_no_suff + args['suffix_id_name'] + '.npy'
+        ]
 
     # Load metrics
     try:
@@ -1026,7 +1034,8 @@ def plot_metrics(**args):
             ax2.set_ylabel('Relative error [%]')
             ax2.grid(False)
             plt.savefig(
-                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_polyc_pixel_RMSE.png'
+                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff +
+                '_polyc_pixel_RMSE.png'
             )
             plt.show()
         except Exception:
@@ -1058,7 +1067,8 @@ def plot_metrics(**args):
             kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
             for it in range(n_datasets):
                 ax2.plot(
-                    lambda_list, metrics[it]['test_metrics']['mono_metric']['rel_rmse_lda'], **kwargs
+                    lambda_list, metrics[it]['test_metrics']['mono_metric']['rel_rmse_lda'],
+                    **kwargs
                 )
             ax2.set_ylabel('Relative error [%]')
             ax2.grid(False)
@@ -1146,7 +1156,8 @@ def plot_metrics(**args):
             ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
             ax1.legend()
             ax1.set_title(
-                'Stars ' + plot_dataset + '\n' + run_id_no_suff + '\ne1, e2 RMSE @ 3x Euclid resolution'
+                'Stars ' + plot_dataset + '\n' + run_id_no_suff +
+                '\ne1, e2 RMSE @ 3x Euclid resolution'
             )
             ax1.set_xlabel('Number of stars')
             ax1.set_ylabel('Absolute error')
@@ -1158,7 +1169,8 @@ def plot_metrics(**args):
             ax2.set_ylabel('Times over Euclid req.')
             ax2.grid(False)
             plt.savefig(
-                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_shape_e1_e2_RMSE.png'
+                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff +
+                '_shape_e1_e2_RMSE.png'
             )
             plt.show()
         except Exception:
@@ -1191,7 +1203,8 @@ def plot_metrics(**args):
             ax2.set_ylabel('Times over Euclid req.')
             ax2.grid(False)
             plt.savefig(
-                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_shape_R2_RMSE.png'
+                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff +
+                '_shape_R2_RMSE.png'
             )
             plt.show()
         except Exception:
@@ -1218,7 +1231,8 @@ def plot_metrics(**args):
             ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
             ax1.legend()
             ax1.set_title(
-                'Stars ' + plot_dataset + '\n' + run_id_no_suff + '\nPixel RMSE @ 3x Euclid resolution'
+                'Stars ' + plot_dataset + '\n' + run_id_no_suff +
+                '\nPixel RMSE @ 3x Euclid resolution'
             )
             ax1.set_xlabel('Number of stars')
             ax1.set_ylabel('Absolute error')
@@ -1234,7 +1248,9 @@ def plot_metrics(**args):
             )
             plt.show()
         except Exception:
-            print('Problem with the performance metrics plot of super resolution pixel polychromatic errors.')
+            print(
+                'Problem with the performance metrics plot of super resolution pixel polychromatic errors.'
+            )
 
 
 def plot_optimisation_metrics(**args):
@@ -1261,7 +1277,9 @@ def plot_optimisation_metrics(**args):
             for _suff in args['suffix_id_name']
         ]
     else:
-        model_paths = [args['metric_base_path'] + 'metrics-' + run_id_no_suff + args['suffix_id_name'] + '.npy']
+        model_paths = [
+            args['metric_base_path'] + 'metrics-' + run_id_no_suff + args['suffix_id_name'] + '.npy'
+        ]
 
     try:
         # Load metrics
@@ -1301,7 +1319,7 @@ def plot_optimisation_metrics(**args):
             try:
                 ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
             except KeyError as KE:
-                print('Error with Key: ', KE)            
+                print('Error with Key: ', KE)
         ax2.set_ylabel('Validation MSE')
         ax2.grid(False)
         plt.savefig(plot_saving_path + 'optim_' + run_id_no_suff + '_' + cycle_str + '.png')
@@ -1326,7 +1344,7 @@ def plot_optimisation_metrics(**args):
                         alpha=0.75
                     )
                 except KeyError as KE:
-                    print('Error with Key: ', KE)                
+                    print('Error with Key: ', KE)
             plt.yscale('log')
             plt.minorticks_on()
             ax1.legend()
@@ -1340,13 +1358,15 @@ def plot_optimisation_metrics(**args):
                 try:
                     ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
                 except KeyError as KE:
-                    print('Error with Key: ', KE)                
+                    print('Error with Key: ', KE)
             ax2.set_ylabel('Validation MSE')
             ax2.grid(False)
             plt.savefig(plot_saving_path + 'optim_' + run_id_no_suff + '_' + cycle_str + '.png')
             plt.show()
         except Exception:
-            print('Problem with the plot of the optimisation metrics of the first non-parametric cycle.')
+            print(
+                'Problem with the plot of the optimisation metrics of the first non-parametric cycle.'
+            )
 
     ## Plot the second parametric cycle
     if cycle_str in metrics[0]:
@@ -1365,7 +1385,7 @@ def plot_optimisation_metrics(**args):
                         alpha=0.75
                     )
                 except KeyError as KE:
-                    print('Error with Key: ', KE)                
+                    print('Error with Key: ', KE)
             plt.yscale('log')
             plt.minorticks_on()
             ax1.legend()
@@ -1379,13 +1399,15 @@ def plot_optimisation_metrics(**args):
                 try:
                     ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
                 except KeyError as KE:
-                    print('Error with Key: ', KE)                
+                    print('Error with Key: ', KE)
             ax2.set_ylabel('Validation MSE')
             ax2.grid(False)
             plt.savefig(plot_saving_path + 'optim_' + run_id_no_suff + '_' + cycle_str + '.png')
             plt.show()
         except Exception:
-            print('Problem with the plot of the optimisation metrics of the second parametric cycle.')
+            print(
+                'Problem with the plot of the optimisation metrics of the second parametric cycle.'
+            )
 
     ## Plot the second non-parametric cycle
     if cycle_str in metrics[0]:
@@ -1404,7 +1426,7 @@ def plot_optimisation_metrics(**args):
                         alpha=0.75
                     )
                 except KeyError as KE:
-                    print('Error with Key: ', KE)                
+                    print('Error with Key: ', KE)
             plt.yscale('log')
             plt.minorticks_on()
             ax1.legend()
@@ -1415,7 +1437,7 @@ def plot_optimisation_metrics(**args):
             ax2 = ax1.twinx()
             kwargs = dict(linewidth=2, linestyle='dashed', markersize=2, marker='^', alpha=0.5)
             for it in range(n_datasets):
-                try:                
+                try:
                     ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
                 except KeyError as KE:
                     print('Error with Key: ', KE)
@@ -1424,7 +1446,9 @@ def plot_optimisation_metrics(**args):
             plt.savefig(plot_saving_path + 'optim_' + run_id_no_suff + '_' + cycle_str + '.png')
             plt.show()
         except Exception:
-            print('Problem with the plot of the optimisation metrics of the second non-parametric cycle.')
+            print(
+                'Problem with the plot of the optimisation metrics of the second non-parametric cycle.'
+            )
 
 
 def define_plot_style():
