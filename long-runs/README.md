@@ -231,8 +231,20 @@ multiple=`True`, type: int
 	- Whether extrapolation is performed or not on the borders of the SED.
 
 - `--SED_interp_kind`, default="linear", type: str
-	- Type of interpolation for the SED.
+	- Type of interpolation for the SED. It can be "linear", "cubic", "quadratic", etc. Check [all available options](https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.interp1d.html). 
+
+- `--SED_sigma`, default=0, type: float
+	- Standard deviation of the multiplicative SED Gaussian noise.
 ### Feature: project parameters
 
 - `--project_dd_features`, default=`False`, type: `bool`
 	- Project NP DD features onto parametric model.
+
+- `--eval_only_param`, default=`False`, type: `bool`
+	- Use only the parametric model for evaluation.
+
+- `--reset_dd_features`, default=`False`, type: `bool`
+	- Reset to random initialisation the non-parametric model after projecting the DD features.
+
+- `--pretrained_model`, default=`None`, type: str
+	- Path to pretrained model checkpoint callback.
