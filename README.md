@@ -84,6 +84,22 @@ If you use `wf-psf` in a scientific publication, we would appreciate citations t
 
 The BibTeX citation is the following:
 ```
-@Upcomming
+@misc{https://doi.org/10.48550/arxiv.2203.04908,
+  doi = {10.48550/ARXIV.2203.04908},
+  
+  url = {https://arxiv.org/abs/2203.04908},
+  
+  author = {Liaudat, Tobias and Starck, Jean-Luc and Kilbinger, Martin and Frugier, Pierre-Antoine},
+  
+  keywords = {Instrumentation and Methods for Astrophysics (astro-ph.IM), Computer Vision and Pattern Recognition (cs.CV), FOS: Physical sciences, FOS: Physical sciences, FOS: Computer and information sciences, FOS: Computer and information sciences},
+  
+  title = {Rethinking data-driven point spread function modeling with a differentiable optical model},
+  
+  publisher = {arXiv},
+  
+  year = {2022},
+  
+  copyright = {arXiv.org perpetual, non-exclusive license}
+}
 ```
 
