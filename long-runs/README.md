@@ -10,7 +10,7 @@ The package has two main functions to perform test with the WaveDiff model. One 
 
 - `train_model(**args)` : trains the PSF model.
 - `evaluate_model(**args)` : evaluate the trained PSF model. 
-- `plot_metrics(**args)`: Plot model results.
+- `plot_metrics(**args)`: Plot multiple models results.
 
 The arguments of these functions are detailed below. 
 
@@ -40,6 +40,24 @@ To run the script one should input the desired parameters as command line argume
 ```
 
 The options that remain unset will take the default values defined in the [`train_eval_plot_script_click.py`](https://github.com/tobias-liaudat/wf-psf/blob/main/long-runs/train_eval_plot_script_click.py) script.
+
+# Output folders
+
+For the auxiliary functions to work properly several folders must be created before running the experiments. The output file structure is shown below:
+
+```
+wf-outputs
+├── chkp
+|	├── model_1
+|	├── ...
+|	└── model_N
+├── log-files
+├── metrics
+├── optim-hist
+└── plots
+```
+
+One checkpoint folder is recommended for each model in a multi-model parallel training. This simplifies the organisation of multiple cycle model checkpoints. This folders should coincide with their corresponding script option.
 
 # Script options 
 Here we detail every option or argument used in the WaveDiff model auxiliary script. 
@@ -192,7 +210,7 @@ nargs=2,, default=None, type: int
 	- Type of saved model to use for the evaluation. Can be 'final' for a full model, 'checkpoint' for model weights or 'external' for a different model not saved under the same base_id as the current one..
 
 - `--saved_cycle`, default="cycle2", type: str
-	- Saved cycle to use for the evaluation. Can be 'cycle1' or 'cycle2'.
+	- Saved cycle to use for the evaluation. Can be 'cycle1', 'cycle2', ..., 'cycleN'.
 ### Evaluation parameters
 
 - `--gt_n_zernikes`, default=45, type: int
