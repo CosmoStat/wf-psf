@@ -2,6 +2,8 @@
 
 The model should be installed as a python package as detailed in the main [README](https://github.com/tobias-liaudat/wf-psf) file. The `wf-psf` package includes functions to train, evaluate and plot the results of the model. In this file we detail how to make use of this functions.
 
+For more information on the input datasets see [Input_data.md](https://github.com/tobias-liaudat/wf-psf/blob/main/long-runs/Input_data.md).
+
 ## Auxiliary functions
 
 The package has two main functions to perform test with the WaveDiff model. One function for running the model's optimisation process and one function for performing evaluation and saving the results. There is a third function that generates some plots when the evaluation is finished. This functions can be found in the [`script_utils.py`](https://github.com/tobias-liaudat/wf-psf/blob/main/wf_psf/script_utils.py) file. 
