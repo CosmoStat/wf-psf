@@ -362,6 +362,10 @@ class TF_NP_poly_OPD(tf.keras.layers.Layer):
         """ Set alpha matrix to the identity."""
         _ = self.alpha_mat.assign(tf.eye(self.n_poly, dtype=tf.float32))
 
+    def assign_S_mat(self, S_mat):
+        """ Assign DD features matrix."""
+        self.S_mat.assign(S_mat)
+
     def call(self, positions):
         """ Calculate the OPD maps for the given positions.
 
@@ -758,7 +762,7 @@ class TF_physical_layer(tf.keras.layers.Layer):
     """
 
     def __init__(
-        self, 
+        self,
         obs_pos,
         zks_prior,
         interpolation_type='none',
@@ -770,10 +774,7 @@ class TF_physical_layer(tf.keras.layers.Layer):
         self.zks_prior = zks_prior
 
         if interpolation_args is None:
-            interpolation_args = {
-                'order': 2,
-                'K': 50
-            }
+            interpolation_args = {'order': 2, 'K': 50}
         # Define the prediction routine
         if interpolation_type == 'none':
             self.predict = self.call
@@ -834,9 +835,7 @@ class TF_physical_layer(tf.keras.layers.Layer):
 
         """
         zk_interpolator = utils.IndependentZernikeInterpolation(
-            self.obs_pos,
-            self.zks_prior,
-            order=self.interpolation_args['order']
+            self.obs_pos, self.zks_prior, order=self.interpolation_args['order']
         )
         interp_zks = zk_interpolator.interpolate_zks(positions)
 
@@ -860,12 +859,14 @@ class TF_physical_layer(tf.keras.layers.Layer):
 
         def calc_index(idx_pos):
             return tf.where(tf.equal(self.obs_pos, idx_pos))[0, 0]
+
         # Calculate the indices of the input batch
         indices = tf.map_fn(calc_index, positions, fn_output_signature=tf.int64)
         # Recover the prior zernikes from the batch indexes
         batch_zks = tf.gather(self.zks_prior, indices=indices, axis=0, batch_dims=0)
 
         return batch_zks[:, :, tf.newaxis, tf.newaxis]
+
 
 # --- #
 # Deprecated #

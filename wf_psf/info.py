@@ -7,7 +7,7 @@ This module provides some basic information about the package.
 """
 
 # Set the package release version
-version_info = (1, 2, 0)
+version_info = (1, 3, 0)
 __version__ = '.'.join(str(c) for c in version_info)
 
 # Set the package details
