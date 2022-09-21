@@ -14,18 +14,18 @@ For more information on how to use the WaveDiff model through configurable scrip
 
 A schematic of the proposed framework can be seen below. The PSF model is estimated (trained) using star observations in the field-of-view.
 
-<img height=300 src="assets/PSF_model_diagram_v5.png" >
+<img height=300 src="assets/PSF_model_diagram_v6.png" >
 
-Visual reconstruction example of the WaveDiff-original PSF model trained on a simplified Euclid-like setting.
+<!-- Visual reconstruction example of the WaveDiff-original PSF model trained on a simplified Euclid-like setting.
 
-<img height=800 src="assets/PSF_reconstruction_example.png" >
+<img height=800 src="assets/PSF_reconstruction_example.png" > -->
 
 
 ## Install
 
-`wf-psf` is pure python and can be easily installed with `pip`:
+`wf-psf` is pure python and can be easily installed with `pip`. After cloning the repository, run the following commands:
 
-```
+```bash
 $ cd wf-psf
 $ pip install .
 ```
