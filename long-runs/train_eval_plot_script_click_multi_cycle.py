@@ -309,6 +309,19 @@ import click
     type=bool,
     help="Save RMS error for each super resolved PSF in the test dataset in addition to the mean across the FOV."
 )
+@click.option(
+    "--eval_mono_metric_rmse",
+    default=True,
+    type=bool,
+    help="Evaluate the monchromatic RMSE metric."
+)
+@click.option(
+    "--eval_opd_metric_rmse",
+    default=True,
+    type=bool,
+    help="Evaluate the OPD RMSE metric."
+)
+
 ## Specific parameters
 @click.option(
     "--l2_param",

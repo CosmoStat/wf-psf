@@ -810,36 +810,43 @@ def evaluate_model(**args):
     }
 
     # Monochromatic star reconstructions
-    lambda_list = np.arange(0.55, 0.9, 0.01)  # 10nm separation
-    rmse_lda, rel_rmse_lda, std_rmse_lda, std_rel_rmse_lda = wf_metrics.compute_mono_metric(
-        tf_semiparam_field=tf_semiparam_field,
-        GT_tf_semiparam_field=GT_tf_semiparam_field,
-        simPSF_np=simPSF_np,
-        tf_pos=tf_test_pos,
-        lambda_list=lambda_list
-    )
+    if args['eval_mono_metric_rmse']:
+        lambda_list = np.arange(0.55, 0.9, 0.01)  # 10nm separation
+        rmse_lda, rel_rmse_lda, std_rmse_lda, std_rel_rmse_lda = wf_metrics.compute_mono_metric(
+            tf_semiparam_field=tf_semiparam_field,
+            GT_tf_semiparam_field=GT_tf_semiparam_field,
+            simPSF_np=simPSF_np,
+            tf_pos=tf_test_pos,
+            lambda_list=lambda_list
+        )
 
-    mono_metric = {
-        'rmse_lda': rmse_lda,
-        'rel_rmse_lda': rel_rmse_lda,
-        'std_rmse_lda': std_rmse_lda,
-        'std_rel_rmse_lda': std_rel_rmse_lda
-    }
+        mono_metric = {
+            'rmse_lda': rmse_lda,
+            'rel_rmse_lda': rel_rmse_lda,
+            'std_rmse_lda': std_rmse_lda,
+            'std_rel_rmse_lda': std_rel_rmse_lda
+        }
+    else:
+        mono_metric = None
 
     # OPD metrics
-    rmse_opd, rel_rmse_opd, rmse_std_opd, rel_rmse_std_opd = wf_metrics.compute_opd_metrics(
-        tf_semiparam_field=tf_semiparam_field,
-        GT_tf_semiparam_field=GT_tf_semiparam_field,
-        pos=tf_test_pos,
-        batch_size=args['eval_batch_size']
-    )
+    if args['eval_opd_metric_rmse']:
+        rmse_opd, rel_rmse_opd, rmse_std_opd, rel_rmse_std_opd = wf_metrics.compute_opd_metrics(
+            tf_semiparam_field=tf_semiparam_field,
+            GT_tf_semiparam_field=GT_tf_semiparam_field,
+            pos=tf_test_pos,
+            batch_size=args['eval_batch_size']
+        )
 
-    opd_metric = {
-        'rmse_opd': rmse_opd,
-        'rel_rmse_opd': rel_rmse_opd,
-        'rmse_std_opd': rmse_std_opd,
-        'rel_rmse_std_opd': rel_rmse_std_opd
-    }
+        opd_metric = {
+            'rmse_opd': rmse_opd,
+            'rel_rmse_opd': rel_rmse_opd,
+            'rmse_std_opd': rmse_std_opd,
+            'rel_rmse_std_opd': rel_rmse_std_opd
+        }
+    else:
+        opd_metric = None
+
 
     # Check if all stars SR pixel RMSE are needed
     if 'opt_stars_rel_pix_rmse' not in args:
@@ -891,37 +898,44 @@ def evaluate_model(**args):
         'std_rel_rmse': std_rel_rmse
     }
 
-    # Monochromatic star reconstructions
-    lambda_list = np.arange(0.55, 0.9, 0.01)  # 10nm separation
-    rmse_lda, rel_rmse_lda, std_rmse_lda, std_rel_rmse_lda = wf_metrics.compute_mono_metric(
-        tf_semiparam_field=tf_semiparam_field,
-        GT_tf_semiparam_field=GT_tf_semiparam_field,
-        simPSF_np=simPSF_np,
-        tf_pos=tf_train_pos,
-        lambda_list=lambda_list
-    )
+    if args['eval_mono_metric_rmse']:
+        # Monochromatic star reconstructions
+        lambda_list = np.arange(0.55, 0.9, 0.01)  # 10nm separation
+        rmse_lda, rel_rmse_lda, std_rmse_lda, std_rel_rmse_lda = wf_metrics.compute_mono_metric(
+            tf_semiparam_field=tf_semiparam_field,
+            GT_tf_semiparam_field=GT_tf_semiparam_field,
+            simPSF_np=simPSF_np,
+            tf_pos=tf_train_pos,
+            lambda_list=lambda_list
+        )
 
-    train_mono_metric = {
-        'rmse_lda': rmse_lda,
-        'rel_rmse_lda': rel_rmse_lda,
-        'std_rmse_lda': std_rmse_lda,
-        'std_rel_rmse_lda': std_rel_rmse_lda
-    }
+        train_mono_metric = {
+            'rmse_lda': rmse_lda,
+            'rel_rmse_lda': rel_rmse_lda,
+            'std_rmse_lda': std_rmse_lda,
+            'std_rel_rmse_lda': std_rel_rmse_lda
+        }
+    else:
+        train_mono_metric = None
+
 
     # OPD metrics
-    rmse_opd, rel_rmse_opd, rmse_std_opd, rel_rmse_std_opd = wf_metrics.compute_opd_metrics(
-        tf_semiparam_field=tf_semiparam_field,
-        GT_tf_semiparam_field=GT_tf_semiparam_field,
-        pos=tf_train_pos,
-        batch_size=args['eval_batch_size']
-    )
+    if args['eval_opd_metric_rmse']:
+        rmse_opd, rel_rmse_opd, rmse_std_opd, rel_rmse_std_opd = wf_metrics.compute_opd_metrics(
+            tf_semiparam_field=tf_semiparam_field,
+            GT_tf_semiparam_field=GT_tf_semiparam_field,
+            pos=tf_train_pos,
+            batch_size=args['eval_batch_size']
+        )
 
-    train_opd_metric = {
-        'rmse_opd': rmse_opd,
-        'rel_rmse_opd': rel_rmse_opd,
-        'rmse_std_opd': rmse_std_opd,
-        'rel_rmse_std_opd': rel_rmse_std_opd
-    }
+        train_opd_metric = {
+            'rmse_opd': rmse_opd,
+            'rel_rmse_opd': rel_rmse_opd,
+            'rmse_std_opd': rmse_std_opd,
+            'rel_rmse_std_opd': rel_rmse_std_opd
+        }
+    else:
+        train_opd_metric = None
 
     # Shape metrics
     train_shape_results_dict = wf_metrics.compute_shape_metrics(
