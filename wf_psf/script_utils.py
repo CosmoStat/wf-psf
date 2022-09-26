@@ -810,7 +810,7 @@ def evaluate_model(**args):
     }
 
     # Monochromatic star reconstructions
-    if args['eval_mono_metric_rmse']:
+    if args['eval_mono_metric_rmse'] is True or 'eval_mono_metric_rmse' not in args:
         lambda_list = np.arange(0.55, 0.9, 0.01)  # 10nm separation
         rmse_lda, rel_rmse_lda, std_rmse_lda, std_rel_rmse_lda = wf_metrics.compute_mono_metric(
             tf_semiparam_field=tf_semiparam_field,
@@ -830,7 +830,7 @@ def evaluate_model(**args):
         mono_metric = None
 
     # OPD metrics
-    if args['eval_opd_metric_rmse']:
+    if args['eval_opd_metric_rmse'] is True or 'eval_opd_metric_rmse' not in args:
         rmse_opd, rel_rmse_opd, rmse_std_opd, rel_rmse_std_opd = wf_metrics.compute_opd_metrics(
             tf_semiparam_field=tf_semiparam_field,
             GT_tf_semiparam_field=GT_tf_semiparam_field,
@@ -898,7 +898,7 @@ def evaluate_model(**args):
         'std_rel_rmse': std_rel_rmse
     }
 
-    if args['eval_mono_metric_rmse']:
+    if args['eval_mono_metric_rmse'] is True or 'eval_mono_metric_rmse' not in args:
         # Monochromatic star reconstructions
         lambda_list = np.arange(0.55, 0.9, 0.01)  # 10nm separation
         rmse_lda, rel_rmse_lda, std_rmse_lda, std_rel_rmse_lda = wf_metrics.compute_mono_metric(
@@ -920,7 +920,7 @@ def evaluate_model(**args):
 
 
     # OPD metrics
-    if args['eval_opd_metric_rmse']:
+    if args['eval_opd_metric_rmse'] is True or 'eval_opd_metric_rmse' not in args:
         rmse_opd, rel_rmse_opd, rmse_std_opd, rel_rmse_std_opd = wf_metrics.compute_opd_metrics(
             tf_semiparam_field=tf_semiparam_field,
             GT_tf_semiparam_field=GT_tf_semiparam_field,
@@ -937,28 +937,32 @@ def evaluate_model(**args):
     else:
         train_opd_metric = None
 
-    # Shape metrics
-    train_shape_results_dict = wf_metrics.compute_shape_metrics(
-        tf_semiparam_field=tf_semiparam_field,
-        GT_tf_semiparam_field=GT_tf_semiparam_field,
-        simPSF_np=simPSF_np,
-        SEDs=train_SEDs,
-        tf_pos=tf_train_pos,
-        n_bins_lda=args['n_bins_lda'],
-        n_bins_gt=args['n_bins_gt'],
-        output_Q=1,
-        output_dim=64,
-        batch_size=args['eval_batch_size'],
-        dataset_dict=train_dataset,
-    )
 
-    # Save metrics into dictionary
-    train_metrics = {
-        'poly_metric': train_poly_metric,
-        'mono_metric': train_mono_metric,
-        'opd_metric': train_opd_metric,
-        'shape_results_dict': train_shape_results_dict
-    }
+    # Shape metrics
+    if args['eval_train_shape_sr_metric_rmse'] is True or 'eval_train_shape_sr_metric_rmse' not in args:
+        train_shape_results_dict = wf_metrics.compute_shape_metrics(
+            tf_semiparam_field=tf_semiparam_field,
+            GT_tf_semiparam_field=GT_tf_semiparam_field,
+            simPSF_np=simPSF_np,
+            SEDs=train_SEDs,
+            tf_pos=tf_train_pos,
+            n_bins_lda=args['n_bins_lda'],
+            n_bins_gt=args['n_bins_gt'],
+            output_Q=1,
+            output_dim=64,
+            batch_size=args['eval_batch_size'],
+            dataset_dict=train_dataset,
+        )
+
+        # Save metrics into dictionary
+        train_metrics = {
+            'poly_metric': train_poly_metric,
+            'mono_metric': train_mono_metric,
+            'opd_metric': train_opd_metric,
+            'shape_results_dict': train_shape_results_dict
+        }
+    else:
+        train_metrics = None
 
     ## Save results
     metrics = {'test_metrics': test_metrics, 'train_metrics': train_metrics}

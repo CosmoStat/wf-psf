@@ -321,7 +321,12 @@ import click
     type=bool,
     help="Evaluate the OPD RMSE metric."
 )
-
+@click.option(
+    "--eval_train_shape_sr_metric_rmse",
+    default=True,
+    type=bool,
+    help="Evaluate the super-resolution and the shape RMSE metrics for the train dataset."
+)
 ## Specific parameters
 @click.option(
     "--l2_param",
