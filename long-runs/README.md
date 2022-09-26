@@ -44,6 +44,10 @@ The options that remain unset will take the default values defined in the [`trai
 # Running model on SLURM clusters
 In the folder `./examples` a job scheduler example can be found. That script lets us run several experiments (model training and evaluation) in parallel on a computing cluster using SLURM directives. Each model can use different parameters, datasets or optimisation strategies. 
 
+Note:
+- The `--star_numbers` option is for the final plot's x-axis. It does not always represents the number of stars but it needs to be an integer.
+- `--id_name` = `--base_id_name` + `--suffix_id_name`
+
 # Output folders
 
 For the auxiliary functions to work properly several folders must be created before running the experiments. The output file structure is shown below:
