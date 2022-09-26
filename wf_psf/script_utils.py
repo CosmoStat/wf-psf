@@ -798,7 +798,8 @@ def evaluate_model(**args):
         tf_SEDs=test_SEDs,
         n_bins_lda=args['n_bins_lda'],
         n_bins_gt=args['n_bins_gt'],
-        batch_size=args['eval_batch_size']
+        batch_size=args['eval_batch_size'],
+        dataset_dict=test_dataset,
     )
 
     poly_metric = {
@@ -855,7 +856,8 @@ def evaluate_model(**args):
         output_Q=1,
         output_dim=64,
         batch_size=args['eval_batch_size'],
-        opt_stars_rel_pix_rmse=args['opt_stars_rel_pix_rmse']
+        opt_stars_rel_pix_rmse=args['opt_stars_rel_pix_rmse'],
+        dataset_dict=test_dataset,
     )
 
     # Save metrics
@@ -878,7 +880,8 @@ def evaluate_model(**args):
         tf_SEDs=train_SEDs,
         n_bins_lda=args['n_bins_lda'],
         n_bins_gt=args['n_bins_gt'],
-        batch_size=args['eval_batch_size']
+        batch_size=args['eval_batch_size'],
+        dataset_dict=train_dataset,
     )
 
     train_poly_metric = {
@@ -931,7 +934,8 @@ def evaluate_model(**args):
         n_bins_gt=args['n_bins_gt'],
         output_Q=1,
         output_dim=64,
-        batch_size=args['eval_batch_size']
+        batch_size=args['eval_batch_size'],
+        dataset_dict=train_dataset,
     )
 
     # Save metrics into dictionary
