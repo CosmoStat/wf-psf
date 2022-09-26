@@ -40,6 +40,8 @@ def compute_poly_metric(
         SED samples for the corresponding positions.
     n_bins_lda: int
         Number of wavelength bins to use for the polychromatic PSF.
+    n_bins_gt: int
+        Number of wavelength bins to use for the ground truth polychromatic PSF.
     batch_size: int
         Batch size for the PSF calcualtions.
 
