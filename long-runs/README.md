@@ -10,12 +10,12 @@ The package has two main functions to perform test with the WaveDiff model. One 
 
 - `train_model(**args)` : trains the PSF model.
 - `evaluate_model(**args)` : evaluate the trained PSF model. 
-- `plot_metrics(**args)`: Plot model results.
+- `plot_metrics(**args)`: Plot multiple models results.
 
 The arguments of these functions are detailed below. 
 
 ## Training script
-For runing the previous functions one can use the [`train_eval_plot_script_click.py`](https://github.com/tobias-liaudat/wf-psf/blob/main/long-runs/train_eval_plot_script_click.py) script. This script calls each of the above functions and serves as an interface to collect the `**args` optios from command line arguments using the [`click`](https://click.palletsprojects.com/en/8.1.x/) package. 
+For running the previous functions one can use the [`train_eval_plot_script_click.py`](https://github.com/tobias-liaudat/wf-psf/blob/main/long-runs/train_eval_plot_script_click.py) script. This script calls each of the above functions and serves as an interface to collect the `**args` options from command line arguments using the [`click`](https://click.palletsprojects.com/en/8.1.x/) package. 
 
 To run the script one should input the desired parameters as command line arguments as in the following example:
 
@@ -40,6 +40,31 @@ To run the script one should input the desired parameters as command line argume
 ```
 
 The options that remain unset will take the default values defined in the [`train_eval_plot_script_click.py`](https://github.com/tobias-liaudat/wf-psf/blob/main/long-runs/train_eval_plot_script_click.py) script.
+
+# Running model on SLURM clusters
+In the folder `./examples` a job scheduler example can be found. That script lets us run several experiments (model training and evaluation) in parallel on a computing cluster using SLURM directives. Each model can use different parameters, datasets or optimisation strategies. 
+
+Note:
+- The `--star_numbers` option is for the final plot's x-axis. It does not always represents the number of stars but it needs to be an integer.
+- `--id_name` = `--base_id_name` + `--suffix_id_name`
+
+# Output folders
+
+For the auxiliary functions to work properly several folders must be created before running the experiments. The output file structure is shown below:
+
+```
+wf-outputs
+├── chkp
+|	├── model_1
+|	├── ...
+|	└── model_N
+├── log-files
+├── metrics
+├── optim-hist
+└── plots
+```
+
+One checkpoint folder is recommended for each model in a multi-model parallel training. This simplifies the organisation of multiple cycle model checkpoints. This folders should coincide with their corresponding script option.
 
 # Script options 
 Here we detail every option or argument used in the WaveDiff model auxiliary script. 
@@ -139,37 +164,33 @@ nargs=2,, default=[0, 1e3], type: float
 ## Training parameters
 
 - `--batch_size`, default=32, type: int
-	- Batch size used for the trainingin the stochastic gradient descend type of algorithm.
+	- Batch size used for the training in the stochastic gradient descend type of algorithm.
 ### Old multicycle parameters for backwards compatibility. 
 
-- `--l_rate_param`
-nargs=2,, default=None, type: float
+- `--l_rate_param`, default=None, type: float
 	- Learning rates for the parametric parts.
 
-- `--l_rate_non_param`
-nargs=2,, default=None, type: float
+- `--l_rate_non_param`, default=None, type: float
 	- Learning rates for the non-parametric parts.
 
-- `--n_epochs_param`
-nargs=2,, default=None, type: int
+- `--n_epochs_param`, default=None, type: int
 	- Number of training epochs of the parametric parts.
 
-- `--n_epochs_non_param`
-nargs=2,, default=None, type: int
+- `--n_epochs_non_param`, default=None, type: int
 	- Number of training epochs of the non-parametric parts.
 ### New multicycle parameters
 
 - `--l_rate_param_multi_cycle`, default="`1e-2` `1e-2`", type: str
-	- Learning rates for the parametric parts. It should be a strign where numeric values are separated by spaces.
+	- Learning rates for the parametric parts. It should be a string where numeric values are separated by spaces.
 
 - `--l_rate_non_param_multi_cycle`, default="`1e-1` `1e-1`", type: str
-	- Learning rates for the non-parametric parts. It should be a strign where numeric values are separated by spaces.
+	- Learning rates for the non-parametric parts. It should be a string where numeric values are separated by spaces.
 
 - `--n_epochs_param_multi_cycle`, default="20 20", type: str
-	- Number of training epochs of the parametric parts. It should be a strign where numeric values are separated by spaces.
+	- Number of training epochs of the parametric parts. It should be a string where numeric values are separated by spaces.
 
 - `--n_epochs_non_param_multi_cycle`, default="100 120", type: str
-	- Number of training epochs of the non-parametric parts. It should be a strign where numeric values are separated by spaces.
+	- Number of training epochs of the non-parametric parts. It should be a string where numeric values are separated by spaces.
 
 - `--save_all_cycles`, default=`False`, type: `bool`
 	- Make checkpoint at every cycle or just save the checkpoint at the end of the training.
@@ -192,7 +213,7 @@ nargs=2,, default=None, type: int
 	- Type of saved model to use for the evaluation. Can be 'final' for a full model, 'checkpoint' for model weights or 'external' for a different model not saved under the same base_id as the current one..
 
 - `--saved_cycle`, default="cycle2", type: str
-	- Saved cycle to use for the evaluation. Can be 'cycle1' or 'cycle2'.
+	- Saved cycle to use for the evaluation. Can be 'cycle1', 'cycle2', ..., 'cycleN'.
 ### Evaluation parameters
 
 - `--gt_n_zernikes`, default=45, type: int
