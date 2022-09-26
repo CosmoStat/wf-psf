@@ -1064,215 +1064,219 @@ def plot_metrics(**args):
             print('Problem with the performance metrics plot of pixel polychromatic errors.')
 
         ## Monochromatic
-        try:
-            fig = plt.figure(figsize=(12, 8))
-            ax1 = fig.add_subplot(111)
-            for it in range(n_datasets):
-                ax1.errorbar(
-                    x=lambda_list,
-                    y=metrics[it]['test_metrics']['mono_metric']['rmse_lda'],
-                    yerr=metrics[it]['test_metrics']['mono_metric']['std_rmse_lda'],
-                    label=args['model'] + args['suffix_id_name'][it],
-                    alpha=0.75
+        if args['eval_mono_metric_rmse'] is True or 'eval_mono_metric_rmse' not in args:
+            try:
+                fig = plt.figure(figsize=(12, 8))
+                ax1 = fig.add_subplot(111)
+                for it in range(n_datasets):
+                    ax1.errorbar(
+                        x=lambda_list,
+                        y=metrics[it]['test_metrics']['mono_metric']['rmse_lda'],
+                        yerr=metrics[it]['test_metrics']['mono_metric']['std_rmse_lda'],
+                        label=args['model'] + args['suffix_id_name'][it],
+                        alpha=0.75
+                    )
+                plt.minorticks_on()
+                ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
+                ax1.legend()
+                ax1.set_title(
+                    'Stars ' + plot_dataset + '\n' + run_id_no_suff +
+                    '.\nMonochromatic pixel RMSE @ Euclid resolution'
                 )
-            plt.minorticks_on()
-            ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
-            ax1.legend()
-            ax1.set_title(
-                'Stars ' + plot_dataset + '\n' + run_id_no_suff +
-                '.\nMonochromatic pixel RMSE @ Euclid resolution'
-            )
-            ax1.set_xlabel('Wavelength [um]')
-            ax1.set_ylabel('Absolute error')
+                ax1.set_xlabel('Wavelength [um]')
+                ax1.set_ylabel('Absolute error')
 
-            ax2 = ax1.twinx()
-            kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
-            for it in range(n_datasets):
-                ax2.plot(
-                    lambda_list, metrics[it]['test_metrics']['mono_metric']['rel_rmse_lda'],
-                    **kwargs
+                ax2 = ax1.twinx()
+                kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+                for it in range(n_datasets):
+                    ax2.plot(
+                        lambda_list, metrics[it]['test_metrics']['mono_metric']['rel_rmse_lda'],
+                        **kwargs
+                    )
+                ax2.set_ylabel('Relative error [%]')
+                ax2.grid(False)
+                plt.savefig(
+                    plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff +
+                    '_monochrom_pixel_RMSE.png'
                 )
-            ax2.set_ylabel('Relative error [%]')
-            ax2.grid(False)
-            plt.savefig(
-                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff +
-                '_monochrom_pixel_RMSE.png'
-            )
-            plt.show()
-        except Exception:
-            print('Problem with the performance metrics plot of pixel monochromatic errors.')
+                plt.show()
+            except Exception:
+                print('Problem with the performance metrics plot of pixel monochromatic errors.')
 
         ## OPD results
-        try:
-            res = extract_opd_results(metrics, test_train=plot_dataset)
-            model_opd_rmse = res[0]
-            model_opd_std_rmse = res[1]
-            model_opd_rel_rmse = res[2]
-            model_opd_std_rel_rmse = res[3]
+        if args['eval_opd_metric_rmse'] is True or 'eval_opd_metric_rmse' not in args:
+            try:
+                res = extract_opd_results(metrics, test_train=plot_dataset)
+                model_opd_rmse = res[0]
+                model_opd_std_rmse = res[1]
+                model_opd_rel_rmse = res[2]
+                model_opd_std_rel_rmse = res[3]
 
-            fig = plt.figure(figsize=(12, 8))
-            ax1 = fig.add_subplot(111)
-            ax1.errorbar(
-                x=star_list,
-                y=model_opd_rmse,
-                yerr=model_opd_std_rmse,
-                label=run_id_no_suff,
-                alpha=0.75
-            )
-            plt.minorticks_on()
-            ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
-            ax1.legend()
-            ax1.set_title('Stars ' + plot_dataset + '\n' + run_id_no_suff + '.\nOPD RMSE')
-            ax1.set_xlabel('Number of stars')
-            ax1.set_ylabel('Absolute error')
+                fig = plt.figure(figsize=(12, 8))
+                ax1 = fig.add_subplot(111)
+                ax1.errorbar(
+                    x=star_list,
+                    y=model_opd_rmse,
+                    yerr=model_opd_std_rmse,
+                    label=run_id_no_suff,
+                    alpha=0.75
+                )
+                plt.minorticks_on()
+                ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
+                ax1.legend()
+                ax1.set_title('Stars ' + plot_dataset + '\n' + run_id_no_suff + '.\nOPD RMSE')
+                ax1.set_xlabel('Number of stars')
+                ax1.set_ylabel('Absolute error')
 
-            ax2 = ax1.twinx()
-            kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
-            ax2.plot(star_list, model_opd_rel_rmse, **kwargs)
-            ax2.set_ylabel('Relative error [%]')
-            ax2.grid(False)
-            plt.savefig(
-                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_OPD_RMSE.png'
-            )
-            plt.show()
-        except Exception:
-            print('Problem with the performance metrics plot of OPD errors.')
+                ax2 = ax1.twinx()
+                kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+                ax2.plot(star_list, model_opd_rel_rmse, **kwargs)
+                ax2.set_ylabel('Relative error [%]')
+                ax2.grid(False)
+                plt.savefig(
+                    plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_OPD_RMSE.png'
+                )
+                plt.show()
+            except Exception:
+                print('Problem with the performance metrics plot of OPD errors.')
 
         ## Shape results
-        model_e1, model_e2, model_R2 = extract_shape_results(metrics, test_train=plot_dataset)
-        model_e1_rmse = model_e1[0]
-        model_e1_std_rmse = model_e1[1]
-        model_e1_rel_rmse = model_e1[2]
-        model_e1_std_rel_rmse = model_e1[3]
-        model_e2_rmse = model_e2[0]
-        model_e2_std_rmse = model_e2[1]
-        model_e2_rel_rmse = model_e2[2]
-        model_e2_std_rel_rmse = model_e2[3]
-        model_rmse_R2_meanR2 = model_R2[0]
-        model_std_rmse_R2_meanR2 = model_R2[1]
+        if args['eval_train_shape_sr_metric_rmse'] is True or 'eval_train_shape_sr_metric_rmse' not in args or plot_dataset=='test':
+            model_e1, model_e2, model_R2 = extract_shape_results(metrics, test_train=plot_dataset)
+            model_e1_rmse = model_e1[0]
+            model_e1_std_rmse = model_e1[1]
+            model_e1_rel_rmse = model_e1[2]
+            model_e1_std_rel_rmse = model_e1[3]
+            model_e2_rmse = model_e2[0]
+            model_e2_std_rmse = model_e2[1]
+            model_e2_rel_rmse = model_e2[2]
+            model_e2_std_rel_rmse = model_e2[3]
+            model_rmse_R2_meanR2 = model_R2[0]
+            model_std_rmse_R2_meanR2 = model_R2[1]
 
-        # Compute Euclid relative error values
-        model_e1_rel_euclid = model_e1_rmse / e1_req_euclid
-        model_e2_rel_euclid = model_e2_rmse / e2_req_euclid
-        model_R2_rel_euclid = model_rmse_R2_meanR2 / R2_req_euclid
+            # Compute Euclid relative error values
+            model_e1_rel_euclid = model_e1_rmse / e1_req_euclid
+            model_e2_rel_euclid = model_e2_rmse / e2_req_euclid
+            model_R2_rel_euclid = model_rmse_R2_meanR2 / R2_req_euclid
 
-        # Plot e1 and e2
-        try:
-            fig = plt.figure(figsize=(12, 8))
-            ax1 = fig.add_subplot(111)
-            ax1.errorbar(
-                x=star_list,
-                y=model_e1_rmse,
-                yerr=model_e1_std_rmse,
-                label='e1 ' + run_id_no_suff,
-                alpha=0.75
-            )
-            ax1.errorbar(
-                x=star_list,
-                y=model_e2_rmse,
-                yerr=model_e2_std_rmse,
-                label='e2 ' + run_id_no_suff,
-                alpha=0.75
-            )
-            plt.minorticks_on()
-            ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
-            ax1.legend()
-            ax1.set_title(
-                'Stars ' + plot_dataset + '\n' + run_id_no_suff +
-                '\ne1, e2 RMSE @ 3x Euclid resolution'
-            )
-            ax1.set_xlabel('Number of stars')
-            ax1.set_ylabel('Absolute error')
 
-            ax2 = ax1.twinx()
-            kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
-            ax2.plot(star_list, model_e1_rel_euclid, **kwargs)
-            ax2.plot(star_list, model_e2_rel_euclid, **kwargs)
-            ax2.set_ylabel('Times over Euclid req.')
-            ax2.grid(False)
-            plt.savefig(
-                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff +
-                '_shape_e1_e2_RMSE.png'
-            )
-            plt.show()
-        except Exception:
-            print('Problem with the performance metrics plot of e1/e2 errors.')
+            # Plot e1 and e2
+            try:
+                fig = plt.figure(figsize=(12, 8))
+                ax1 = fig.add_subplot(111)
+                ax1.errorbar(
+                    x=star_list,
+                    y=model_e1_rmse,
+                    yerr=model_e1_std_rmse,
+                    label='e1 ' + run_id_no_suff,
+                    alpha=0.75
+                )
+                ax1.errorbar(
+                    x=star_list,
+                    y=model_e2_rmse,
+                    yerr=model_e2_std_rmse,
+                    label='e2 ' + run_id_no_suff,
+                    alpha=0.75
+                )
+                plt.minorticks_on()
+                ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
+                ax1.legend()
+                ax1.set_title(
+                    'Stars ' + plot_dataset + '\n' + run_id_no_suff +
+                    '\ne1, e2 RMSE @ 3x Euclid resolution'
+                )
+                ax1.set_xlabel('Number of stars')
+                ax1.set_ylabel('Absolute error')
 
-        # Plot R2
-        try:
-            fig = plt.figure(figsize=(12, 8))
-            ax1 = fig.add_subplot(111)
-            ax1.errorbar(
-                x=star_list,
-                y=model_rmse_R2_meanR2,
-                yerr=model_std_rmse_R2_meanR2,
-                label='R2 ' + run_id_no_suff,
-                alpha=0.75
-            )
-            plt.minorticks_on()
-            ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
-            ax1.legend()
-            ax1.set_title(
-                'Stars ' + plot_dataset + '\n' + run_id_no_suff +
-                '\nR2/<R2> RMSE @ 3x Euclid resolution'
-            )
-            ax1.set_xlabel('Number of stars')
-            ax1.set_ylabel('Absolute error')
+                ax2 = ax1.twinx()
+                kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+                ax2.plot(star_list, model_e1_rel_euclid, **kwargs)
+                ax2.plot(star_list, model_e2_rel_euclid, **kwargs)
+                ax2.set_ylabel('Times over Euclid req.')
+                ax2.grid(False)
+                plt.savefig(
+                    plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff +
+                    '_shape_e1_e2_RMSE.png'
+                )
+                plt.show()
+            except Exception:
+                print('Problem with the performance metrics plot of e1/e2 errors.')
 
-            ax2 = ax1.twinx()
-            kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
-            ax2.plot(star_list, model_R2_rel_euclid, **kwargs)
-            ax2.set_ylabel('Times over Euclid req.')
-            ax2.grid(False)
-            plt.savefig(
-                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff +
-                '_shape_R2_RMSE.png'
-            )
-            plt.show()
-        except Exception:
-            print('Problem with the performance metrics plot of R2 errors.')
+            # Plot R2
+            try:
+                fig = plt.figure(figsize=(12, 8))
+                ax1 = fig.add_subplot(111)
+                ax1.errorbar(
+                    x=star_list,
+                    y=model_rmse_R2_meanR2,
+                    yerr=model_std_rmse_R2_meanR2,
+                    label='R2 ' + run_id_no_suff,
+                    alpha=0.75
+                )
+                plt.minorticks_on()
+                ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
+                ax1.legend()
+                ax1.set_title(
+                    'Stars ' + plot_dataset + '\n' + run_id_no_suff +
+                    '\nR2/<R2> RMSE @ 3x Euclid resolution'
+                )
+                ax1.set_xlabel('Number of stars')
+                ax1.set_ylabel('Absolute error')
 
-        ## Polychromatic pixel residual at shape measurement resolution
-        try:
-            res = extract_shape_pix_results(metrics, test_train=plot_dataset)
-            model_polyc_shpix_rmse = res[0]
-            model_polyc_shpix_std_rmse = res[1]
-            model_polyc_shpix_rel_rmse = res[2]
-            model_polyc_shpix_std_rel_rmse = res[3]
+                ax2 = ax1.twinx()
+                kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+                ax2.plot(star_list, model_R2_rel_euclid, **kwargs)
+                ax2.set_ylabel('Times over Euclid req.')
+                ax2.grid(False)
+                plt.savefig(
+                    plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff +
+                    '_shape_R2_RMSE.png'
+                )
+                plt.show()
+            except Exception:
+                print('Problem with the performance metrics plot of R2 errors.')
 
-            fig = plt.figure(figsize=(12, 8))
-            ax1 = fig.add_subplot(111)
-            ax1.errorbar(
-                x=star_list,
-                y=model_polyc_shpix_rmse,
-                yerr=model_polyc_shpix_std_rmse,
-                label=run_id_no_suff,
-                alpha=0.75
-            )
-            plt.minorticks_on()
-            ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
-            ax1.legend()
-            ax1.set_title(
-                'Stars ' + plot_dataset + '\n' + run_id_no_suff +
-                '\nPixel RMSE @ 3x Euclid resolution'
-            )
-            ax1.set_xlabel('Number of stars')
-            ax1.set_ylabel('Absolute error')
+            ## Polychromatic pixel residual at shape measurement resolution
+            try:
+                res = extract_shape_pix_results(metrics, test_train=plot_dataset)
+                model_polyc_shpix_rmse = res[0]
+                model_polyc_shpix_std_rmse = res[1]
+                model_polyc_shpix_rel_rmse = res[2]
+                model_polyc_shpix_std_rel_rmse = res[3]
 
-            ax2 = ax1.twinx()
-            kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
-            ax2.plot(star_list, model_polyc_shpix_rel_rmse, **kwargs)
-            ax2.set_ylabel('Relative error [%]')
-            ax2.grid(False)
-            plt.savefig(
-                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff +
-                '_poly_pixel_3xResolution_RMSE.png'
-            )
-            plt.show()
-        except Exception:
-            print(
-                'Problem with the performance metrics plot of super resolution pixel polychromatic errors.'
-            )
+                fig = plt.figure(figsize=(12, 8))
+                ax1 = fig.add_subplot(111)
+                ax1.errorbar(
+                    x=star_list,
+                    y=model_polyc_shpix_rmse,
+                    yerr=model_polyc_shpix_std_rmse,
+                    label=run_id_no_suff,
+                    alpha=0.75
+                )
+                plt.minorticks_on()
+                ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
+                ax1.legend()
+                ax1.set_title(
+                    'Stars ' + plot_dataset + '\n' + run_id_no_suff +
+                    '\nPixel RMSE @ 3x Euclid resolution'
+                )
+                ax1.set_xlabel('Number of stars')
+                ax1.set_ylabel('Absolute error')
+
+                ax2 = ax1.twinx()
+                kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+                ax2.plot(star_list, model_polyc_shpix_rel_rmse, **kwargs)
+                ax2.set_ylabel('Relative error [%]')
+                ax2.grid(False)
+                plt.savefig(
+                    plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff +
+                    '_poly_pixel_3xResolution_RMSE.png'
+                )
+                plt.show()
+            except Exception:
+                print(
+                    'Problem with the performance metrics plot of super resolution pixel polychromatic errors.'
+                )
 
 
 def plot_optimisation_metrics(**args):
