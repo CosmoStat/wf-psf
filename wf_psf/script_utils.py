@@ -108,7 +108,7 @@ def train_model(**args):
     if 'interp_pts_per_bin' not in args:
         args['interp_pts_per_bin'] = 0
         args['extrapolate'] = True
-        args['SED_interp_kind'] = 'linear'
+        args['sed_interp_kind'] = 'linear'
 
     ## Generate initializations
     # Prepare np input
@@ -121,8 +121,8 @@ def train_model(**args):
         output_Q=args['output_q'],
         interp_pts_per_bin=args['interp_pts_per_bin'],
         extrapolate=args['extrapolate'],
-        SED_interp_kind=args['SED_interp_kind'],
-        SED_sigma=args['SED_sigma']
+        SED_interp_kind=args['sed_interp_kind'],
+        SED_sigma=args['sed_sigma']
     )
     simPSF_np.gen_random_Z_coeffs(max_order=args['n_zernikes'])
     z_coeffs = simPSF_np.normalize_zernikes(simPSF_np.get_z_coeffs(), simPSF_np.max_wfe_rms)
@@ -597,7 +597,7 @@ def evaluate_model(**args):
     if 'interp_pts_per_bin' not in args:
         args['interp_pts_per_bin'] = 0
         args['extrapolate'] = True
-        args['SED_interp_kind'] = 'linear'
+        args['sed_interp_kind'] = 'linear'
 
     # Prepare np input
     simPSF_np = SimPSFToolkit(
@@ -609,8 +609,8 @@ def evaluate_model(**args):
         output_Q=args['output_q'],
         interp_pts_per_bin=args['interp_pts_per_bin'],
         extrapolate=args['extrapolate'],
-        SED_interp_kind=args['SED_interp_kind'],
-        SED_sigma=args['SED_sigma']
+        SED_interp_kind=args['sed_interp_kind'],
+        SED_sigma=args['sed_sigma']
     )
     simPSF_np.gen_random_Z_coeffs(max_order=args['n_zernikes'])
     z_coeffs = simPSF_np.normalize_zernikes(simPSF_np.get_z_coeffs(), simPSF_np.max_wfe_rms)

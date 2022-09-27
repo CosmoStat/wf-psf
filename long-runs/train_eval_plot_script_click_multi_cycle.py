@@ -369,13 +369,13 @@ import click
     help="Whether extrapolation is performed or not on the borders of the SED."
 )
 @click.option(
-    "--SED_interp_kind",
+    "--sed_interp_kind",
     default="linear",
     type=str,
     help="Type of interpolation for the SED."
 )
 @click.option(
-    "--SED_sigma",
+    "--sed_sigma",
     default=0,
     type=float,
     help="Standard deviation of the multiplicative SED Gaussian noise."
