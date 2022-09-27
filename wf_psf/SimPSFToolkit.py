@@ -79,6 +79,8 @@ class SimPSFToolkit(object):
         Number of points to interpolate in between SED values. It can be 0, 1 or 2.
     extrapolate: bool
         SED interpolation mode. Default mode uses extrapolation.
+    SED_interp_kind: str
+        SED interpolation kind. Options are `'cubic'` or `'linear'`.
 
     """
 
@@ -102,7 +104,7 @@ class SimPSFToolkit(object):
         SED_sigma=0,
         interp_pts_per_bin=0,
         extrapolate=True,
-        SED_interp_kind='cubic'
+        SED_interp_kind='linear'
     ):
         # Input attributes
         self.max_order = max_order
