@@ -343,8 +343,8 @@ import click
 )
 @click.option(
     "--suffix_id_name",
-    default="wfeRes_256",
-    #multiple=True,
+    default=["2c", "5c"],
+    multiple=True,
     type=str,
     help="Plot parameter. Suffix needed to recreate the different id names."
 )
