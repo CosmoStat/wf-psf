@@ -1321,13 +1321,15 @@ def plot_optimisation_metrics(**args):
             args['metric_base_path'] + 'metrics-' + run_id_no_suff + args['suffix_id_name'] + '.npy'
         ]
 
+    print('Model paths: ', model_paths)
+
     try:
         # Load metrics
         metrics = [np.load(_path, allow_pickle=True)[()] for _path in model_paths]
     except FileNotFoundError:
         print('The required file for the plots was not found.')
         print('Probably I am not the last job for plotting the optimisation metrics.')
-        return 0
+        raise FileNotFoundError
 
     ## Plot the first parametric cycle
     cycle_str = 'param_cycle1'
