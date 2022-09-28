@@ -789,6 +789,7 @@ def evaluate_model(**args):
             args['n_bins_gt'] = args['n_bins_lda']
 
         # Polychromatic star reconstructions
+        print('Computing polychromatic metrics at low resolution.')
         rmse, rel_rmse, std_rmse, std_rel_rmse = wf_metrics.compute_poly_metric(
             tf_semiparam_field=tf_semiparam_field,
             GT_tf_semiparam_field=GT_tf_semiparam_field,
@@ -810,6 +811,7 @@ def evaluate_model(**args):
 
         # Monochromatic star reconstructions
         if args['eval_mono_metric_rmse'] is True or 'eval_mono_metric_rmse' not in args:
+            print('Computing monochromatic metrics.')
             lambda_list = np.arange(0.55, 0.9, 0.01)  # 10nm separation
             rmse_lda, rel_rmse_lda, std_rmse_lda, std_rel_rmse_lda = wf_metrics.compute_mono_metric(
                 tf_semiparam_field=tf_semiparam_field,
@@ -830,6 +832,7 @@ def evaluate_model(**args):
 
         # OPD metrics
         if args['eval_opd_metric_rmse'] is True or 'eval_opd_metric_rmse' not in args:
+            print('Computing OPD metrics.')
             rmse_opd, rel_rmse_opd, rmse_std_opd, rel_rmse_std_opd = wf_metrics.compute_opd_metrics(
                 tf_semiparam_field=tf_semiparam_field,
                 GT_tf_semiparam_field=GT_tf_semiparam_field,
@@ -852,6 +855,7 @@ def evaluate_model(**args):
             args['opt_stars_rel_pix_rmse'] = False
 
         # Shape metrics
+        print('Computing polychromatic high-resolution metrics and shape metrics.')
         shape_results_dict = wf_metrics.compute_shape_metrics(
             tf_semiparam_field=tf_semiparam_field,
             GT_tf_semiparam_field=GT_tf_semiparam_field,
@@ -878,6 +882,7 @@ def evaluate_model(**args):
         print('\n***\nMetric evaluation on the train dataset\n***\n')
 
         # Polychromatic star reconstructions
+        print('Computing polychromatic metrics at low resolution.')
         rmse, rel_rmse, std_rmse, std_rel_rmse = wf_metrics.compute_poly_metric(
             tf_semiparam_field=tf_semiparam_field,
             GT_tf_semiparam_field=GT_tf_semiparam_field,
@@ -897,8 +902,9 @@ def evaluate_model(**args):
             'std_rel_rmse': std_rel_rmse
         }
 
+        # Monochromatic star reconstructions
         if args['eval_mono_metric_rmse'] is True or 'eval_mono_metric_rmse' not in args:
-            # Monochromatic star reconstructions
+            print('Computing monochromatic metrics.')
             lambda_list = np.arange(0.55, 0.9, 0.01)  # 10nm separation
             rmse_lda, rel_rmse_lda, std_rmse_lda, std_rel_rmse_lda = wf_metrics.compute_mono_metric(
                 tf_semiparam_field=tf_semiparam_field,
@@ -920,6 +926,7 @@ def evaluate_model(**args):
 
         # OPD metrics
         if args['eval_opd_metric_rmse'] is True or 'eval_opd_metric_rmse' not in args:
+            print('Computing OPD metrics.')
             rmse_opd, rel_rmse_opd, rmse_std_opd, rel_rmse_std_opd = wf_metrics.compute_opd_metrics(
                 tf_semiparam_field=tf_semiparam_field,
                 GT_tf_semiparam_field=GT_tf_semiparam_field,
@@ -939,6 +946,7 @@ def evaluate_model(**args):
 
         # Shape metrics
         if args['eval_train_shape_sr_metric_rmse'] is True or 'eval_train_shape_sr_metric_rmse' not in args:
+            print('Computing polychromatic high-resolution metrics and shape metrics.')
             train_shape_results_dict = wf_metrics.compute_shape_metrics(
                 tf_semiparam_field=tf_semiparam_field,
                 GT_tf_semiparam_field=GT_tf_semiparam_field,
