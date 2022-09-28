@@ -1318,7 +1318,7 @@ def plot_optimisation_metrics(**args):
         ]
     else:
         model_paths = [
-            args['metric_base_path'] + 'metrics-' + run_id_no_suff + args['suffix_id_name'] + '.npy'
+            optim_hist_file + 'optim_hist_' + run_id_no_suff + str(args['suffix_id_name']) + '.npy'
         ]
 
     print('Model paths: ', model_paths)
