@@ -863,6 +863,7 @@ def evaluate_model(**args):
             SEDs=test_SEDs,
             tf_pos=tf_test_pos,
             n_bins_lda=args['n_bins_lda'],
+            n_bins_gt=args['n_bins_gt'],
             output_Q=1,
             output_dim=64,
             batch_size=args['eval_batch_size'],
