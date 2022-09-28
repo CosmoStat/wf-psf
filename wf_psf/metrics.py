@@ -76,6 +76,7 @@ def compute_poly_metric(
 
     # GT data preparation
     if dataset_dict is None or 'stars' not in dataset_dict:
+        print('Regenerating GT stars from model.')
         # Change interpolation parameters for the GT simPSF
         interp_pts_per_bin = simPSF_np.interp_pts_per_bin
         simPSF_np.interp_pts_per_bin = 0
@@ -93,6 +94,7 @@ def compute_poly_metric(
         GT_preds = GT_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
         
     else:
+        print('Using GT stars from dataset.')
         GT_preds = dataset_dict['stars']
 
 
@@ -116,7 +118,12 @@ def compute_poly_metric(
 
 
 def compute_mono_metric(
-    tf_semiparam_field, GT_tf_semiparam_field, simPSF_np, tf_pos, lambda_list, batch_size=32
+    tf_semiparam_field,
+    GT_tf_semiparam_field,
+    simPSF_np,
+    tf_pos,
+    lambda_list,
+    batch_size=32
 ):
     """ Calculate metrics for monochromatic reconstructions.
 
@@ -410,6 +417,7 @@ def compute_shape_metrics(
 
     # GT data preparation
     if dataset_dict is None or 'super_res_stars' not in dataset_dict:
+        print('Generating GT super resolved stars from the GT model.')
         # Change interpolation parameters for the GT simPSF
         interp_pts_per_bin = simPSF_np.interp_pts_per_bin
         simPSF_np.interp_pts_per_bin = 0
@@ -429,6 +437,7 @@ def compute_shape_metrics(
         GT_predictions = GT_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
     
     else:
+        print('Using super resolved stars from dataset.')
         GT_predictions = dataset_dict['super_res_stars']
 
     # Calculate residuals
