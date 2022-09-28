@@ -1028,6 +1028,8 @@ def plot_metrics(**args):
             args['metric_base_path'] + 'metrics-' + run_id_no_suff + args['suffix_id_name'] + '.npy'
         ]
 
+    print('Model paths for performance plots: ', model_paths)
+
     # Load metrics
     try:
         metrics = [np.load(_path, allow_pickle=True)[()] for _path in model_paths]
@@ -1321,7 +1323,7 @@ def plot_optimisation_metrics(**args):
             optim_hist_file + 'optim_hist_' + run_id_no_suff + str(args['suffix_id_name']) + '.npy'
         ]
 
-    print('Model paths: ', model_paths)
+    print('Model paths for optimisation plots: ', model_paths)
 
     try:
         # Load metrics
@@ -1329,7 +1331,7 @@ def plot_optimisation_metrics(**args):
     except FileNotFoundError:
         print('The required file for the plots was not found.')
         print('Probably I am not the last job for plotting the optimisation metrics.')
-        raise FileNotFoundError
+        raise 0
 
     ## Plot the first parametric cycle
     cycle_str = 'param_cycle1'
