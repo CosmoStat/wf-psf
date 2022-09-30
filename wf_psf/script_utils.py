@@ -549,7 +549,8 @@ def evaluate_model(**args):
         test_SEDs = test_dataset['SEDs']
         # test_zernike_coef = test_dataset['zernike_coef']
         # ground truth d_max (spatial polynomial max order)
-        d_max_gt = test_dataset['parameters']['d_max']
+        if args['model_eval'] == 'poly':
+            d_max_gt = test_dataset['parameters']['d_max']
 
         # Convert to tensor
         tf_noisy_train_stars = tf.convert_to_tensor(train_dataset['noisy_stars'], dtype=tf.float32)
