@@ -11,11 +11,11 @@ import click
 
 
 @click.command()
-## Script options
+# Script options
 @click.option("--train_opt", default=True, type=bool, help="Train the model.")
 @click.option("--eval_opt", default=True, type=bool, help="Evaluate the model.")
 @click.option("--plot_opt", default=True, type=bool, help="Plot the model results")
-## Training options
+# Training options
 # Model definition
 @click.option(
     "--model",
@@ -61,9 +61,9 @@ import click
     help="Path to save model checkpoints during training."
 )
 @click.option(
-    "--plots_folder", 
-    default="plots/", 
-    type=str, 
+    "--plots_folder",
+    default="plots/",
+    type=str,
     help="Folder name to save the generated plots."
 )
 # Input dataset paths
@@ -183,28 +183,28 @@ import click
 @click.option(
     "--l_rate_param",
     nargs=2,
-    default=None,
+    default=[1e-2, 1e-2],
     type=float,
     help="Learning rates for the parametric parts."
 )
 @click.option(
     "--l_rate_non_param",
     nargs=2,
-    default=None,
+    default=[1e-1, 1e-1],
     type=float,
     help="Learning rates for the non-parametric parts."
 )
 @click.option(
     "--n_epochs_param",
     nargs=2,
-    default=None,
+    default=[20, 20],
     type=int,
     help="Number of training epochs of the parametric parts."
 )
 @click.option(
     "--n_epochs_non_param",
     nargs=2,
-    default=None,
+    default=[100, 120],
     type=int,
     help="Number of training epochs of the non-parametric parts."
 )
@@ -251,7 +251,7 @@ import click
     type=str,
     help="Train cycle definition. It can be: 'parametric', 'non-parametric', 'complete', 'only-non-parametric' and 'only-parametric'."
 )
-## Evaluation flags
+# Evaluation flags
 # Saving paths
 @click.option(
     "--model_eval",
@@ -302,14 +302,14 @@ import click
     type=bool,
     help="Save RMS error for each super resolved PSF in the test dataset in addition to the mean across the FOV."
 )
-## Specific parameters
+# Specific parameters
 @click.option(
     "--l2_param",
     default=0.,
     type=float,
     help="Parameter for the l2 loss of the OPD."
 )
-## Plot parameters
+# Plot parameters
 @click.option(
     "--base_id_name",
     default="-coherent_euclid_",
@@ -349,15 +349,18 @@ import click
     type=str,
     help="Type of interpolation for the SED."
 )
-# Feature: project parameters
+@click.option(
+     "--SED_sigma",
+     default=0,
+     type=float,
+     help="Standard deviation of the multiplicative SED Gaussian noise.")
+ # Feature: project parameters
 @click.option(
     "--project_dd_features",
     default=False,
     type=bool,
     help="Project NP DD features onto parametric model."
 )
-
-
 def main(**args):
     print(args)
     if args['train_opt']:
