@@ -6,9 +6,12 @@ from wf_psf.tf_layers import TF_NP_MCCD_OPD_v2, TF_NP_GRAPH_OPD
 from wf_psf.tf_layers import TF_batch_mono_PSF
 from wf_psf.graph_utils import GraphBuilder
 from wf_psf.utils import calc_poly_position_mat
+#from wf_psf.psf_models import register_psfclass
 
 
+# @register_psfclass
 class TF_SP_MCCD_field(tf.keras.Model):
+    #    ids=("mccd",)
     r""" Semi-parametric MCCD PSF field model!
 
     Semi parametric model based on the hybrid-MCCD matrix factorization scheme.
@@ -16,7 +19,7 @@ class TF_SP_MCCD_field(tf.keras.Model):
     The forward model is different for the training procedure and for the
     inference procedure. This makes things more complicated and requires several
     custom functions. 
-    
+
     The prediction step is the forward model for the inference while the 
     ``call(inputs, trainable=True)`` is the forward model for the training
     procedure. When calling ``call(inputs, trainable=False)`` we are falling
@@ -305,7 +308,8 @@ class TF_SP_MCCD_field(tf.keras.Model):
             # Calculate the non parametric part
             nonparam_opd_maps = self.tf_NP_mccd_OPD(input_positions)
             # Add l2 loss on the parmetric OPD
-            self.add_loss(self.l2_param * tf.math.reduce_sum(tf.math.square(nonparam_opd_maps)))
+            self.add_loss(
+                self.l2_param * tf.math.reduce_sum(tf.math.square(nonparam_opd_maps)))
             # Add the estimations
             opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
             # Compute the polychromatic PSFs
@@ -348,7 +352,8 @@ def build_mccd_spatial_dic(
     VT = GraphBuilder(**graph_kwargs).VT
 
     # Compute polynomial-spatial constaint matrix
-    tf_Pi = calc_poly_position_mat(pos=obs_pos, x_lims=x_lims, y_lims=y_lims, d_max=d_max)
+    tf_Pi = calc_poly_position_mat(
+        pos=obs_pos, x_lims=x_lims, y_lims=y_lims, d_max=d_max)
 
     # Need to translate to have the batch dimension first
     spatial_dic = np.concatenate((tf_Pi.numpy(), VT), axis=0).T
@@ -385,13 +390,17 @@ def build_mccd_spatial_dic_v2(
     VT = GraphBuilder(**graph_kwargs).VT
 
     # Compute polynomial-spatial constaint matrix
-    tf_Pi = calc_poly_position_mat(pos=obs_pos, x_lims=x_lims, y_lims=y_lims, d_max=d_max)
+    tf_Pi = calc_poly_position_mat(
+        pos=obs_pos, x_lims=x_lims, y_lims=y_lims, d_max=d_max)
 
     # Return the poly dictionary and the graph dictionary
     return tf.transpose(tf_Pi, perm=[1, 0]), tf.convert_to_tensor(VT.T, dtype=tf.float32)
 
+# @register_psfclass
+
 
 class TF_SP_graph_field(tf.keras.Model):
+ #   ids=("graph",)
     r""" Semi-parametric graph-constraint-only PSF field model!
 
     Semi parametric model based on the graph-constraint-only matrix factorization scheme.
@@ -658,7 +667,8 @@ class TF_SP_graph_field(tf.keras.Model):
             # Calculate the non parametric part
             nonparam_opd_maps = self.tf_NP_graph_OPD(input_positions)
             # Add l2 loss on the parmetric OPD
-            self.add_loss(self.l2_param * tf.math.reduce_sum(tf.math.square(nonparam_opd_maps)))
+            self.add_loss(
+                self.l2_param * tf.math.reduce_sum(tf.math.square(nonparam_opd_maps)))
             # Add the estimations
             opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
             # Compute the polychromatic PSFs

@@ -1,0 +1,7 @@
+--- #DO NOT DELETE; PROVIDE PATH TO WORKDIR (I.E. LOCATION OF WF-PSF REPO)
+  env_vars:
+    workdir: /Users/jenniferpollack/Projects
+    repodir: wf-psf
+---
+  training_conf: config/training_config.yaml
+

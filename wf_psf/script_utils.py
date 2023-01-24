@@ -23,7 +23,7 @@ except:
 
 def train_model(**args):
     r""" Train the PSF model.
-    
+
     For parameters check the training script click help.
 
     """
@@ -33,7 +33,7 @@ def train_model(**args):
     # Define model run id
     run_id_name = args['model'] + args['id_name']
 
-    # Define paths
+    # Define paths -> move to io
     log_save_file = args['base_path'] + args['log_folder']
     model_save_file = args['base_path'] + args['model_folder']
     optim_hist_file = args['base_path'] + args['optim_hist_folder']
@@ -50,13 +50,14 @@ def train_model(**args):
     print('Found GPU at: {}'.format(device_name))
     print('tf_version: ' + str(tf.__version__))
 
-    ## Prepare the inputs
+    # Prepare the inputs
     # Generate Zernike maps
     zernikes = wf_utils.zernike_generator(
         n_zernikes=args['n_zernikes'], wfe_dim=args['pupil_diameter']
     )
     # Now as cubes
-    np_zernike_cube = np.zeros((len(zernikes), zernikes[0].shape[0], zernikes[0].shape[1]))
+    np_zernike_cube = np.zeros(
+        (len(zernikes), zernikes[0].shape[0], zernikes[0].shape[1]))
     for it in range(len(zernikes)):
         np_zernike_cube[it, :, :] = zernikes[it]
     np_zernike_cube[np.isnan(np_zernike_cube)] = 0
@@ -64,7 +65,7 @@ def train_model(**args):
     print('Zernike cube:')
     print(tf_zernike_cube.shape)
 
-    ## Load the dictionaries
+    # Load the dictionaries
     train_dataset = np.load(
         args['dataset_folder'] + args['train_dataset_file'], allow_pickle=True
     )[()]
@@ -85,27 +86,33 @@ def train_model(**args):
     # test_zernike_coef = test_dataset['zernike_coef']
 
     # Convert to tensor
-    tf_noisy_train_stars = tf.convert_to_tensor(train_dataset['noisy_stars'], dtype=tf.float32)
+    tf_noisy_train_stars = tf.convert_to_tensor(
+        train_dataset['noisy_stars'], dtype=tf.float32)
     # tf_train_stars = tf.convert_to_tensor(train_dataset['stars'], dtype=tf.float32)
-    tf_train_pos = tf.convert_to_tensor(train_dataset['positions'], dtype=tf.float32)
-    tf_test_stars = tf.convert_to_tensor(test_dataset['stars'], dtype=tf.float32)
-    tf_test_pos = tf.convert_to_tensor(test_dataset['positions'], dtype=tf.float32)
+    tf_train_pos = tf.convert_to_tensor(
+        train_dataset['positions'], dtype=tf.float32)
+    tf_test_stars = tf.convert_to_tensor(
+        test_dataset['stars'], dtype=tf.float32)
+    tf_test_pos = tf.convert_to_tensor(
+        test_dataset['positions'], dtype=tf.float32)
 
     if args['model'] == 'poly_physical':
-            # Concatenate the Zernike and the positions from train and test datasets
-            all_pos = np.concatenate((train_dataset['positions'], test_dataset['positions']), axis=0)
-            all_zernike_prior = np.concatenate(
-                (train_dataset['zernike_prior'], test_dataset['zernike_prior']),
-                axis=0
-            )
-            # Convert to tensor
-            tf_pos_all = tf.convert_to_tensor(all_pos, dtype=tf.float32)
-            tf_zernike_prior_all = tf.convert_to_tensor(all_zernike_prior, dtype=tf.float32)
+        # Concatenate the Zernike and the positions from train and test datasets
+        all_pos = np.concatenate(
+            (train_dataset['positions'], test_dataset['positions']), axis=0)
+        all_zernike_prior = np.concatenate(
+            (train_dataset['zernike_prior'], test_dataset['zernike_prior']),
+            axis=0
+        )
+        # Convert to tensor
+        tf_pos_all = tf.convert_to_tensor(all_pos, dtype=tf.float32)
+        tf_zernike_prior_all = tf.convert_to_tensor(
+            all_zernike_prior, dtype=tf.float32)
 
     print('Dataset parameters:')
     print(train_parameters)
 
-    ## Generate initializations
+    # Generate initializations
     # Prepare np input
     simPSF_np = SimPSFToolkit(
         zernikes,
@@ -116,20 +123,24 @@ def train_model(**args):
         output_Q=args['output_q']
     )
     simPSF_np.gen_random_Z_coeffs(max_order=args['n_zernikes'])
-    z_coeffs = simPSF_np.normalize_zernikes(simPSF_np.get_z_coeffs(), simPSF_np.max_wfe_rms)
+    z_coeffs = simPSF_np.normalize_zernikes(
+        simPSF_np.get_z_coeffs(), simPSF_np.max_wfe_rms)
     simPSF_np.set_z_coeffs(z_coeffs)
     simPSF_np.generate_mono_PSF(lambda_obs=0.7, regen_sample=False)
     # Obscurations
-    obscurations = simPSF_np.generate_pupil_obscurations(N_pix=args['pupil_diameter'], N_filter=2)
+    obscurations = simPSF_np.generate_pupil_obscurations(
+        N_pix=args['pupil_diameter'], N_filter=2)
     tf_obscurations = tf.convert_to_tensor(obscurations, dtype=tf.complex64)
     # Initialize the SED data list
     packed_SED_data = [
-        wf_utils.generate_packed_elems(_sed, simPSF_np, n_bins=args['n_bins_lda'])
+        wf_utils.generate_packed_elems(
+            _sed, simPSF_np, n_bins=args['n_bins_lda'])
         for _sed in train_SEDs
     ]
 
     # Prepare the inputs for the training
-    tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
+    tf_packed_SED_data = tf.convert_to_tensor(
+        packed_SED_data, dtype=tf.float32)
     tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
 
     inputs = [tf_train_pos, tf_packed_SED_data]
@@ -138,27 +149,30 @@ def train_model(**args):
     outputs = tf_noisy_train_stars
     # outputs = tf_train_stars
 
-    ## Prepare validation data inputs
+    # Prepare validation data inputs
     val_SEDs = test_SEDs
     tf_val_pos = tf_test_pos
     tf_val_stars = tf_test_stars
 
     # Initialize the SED data list
     val_packed_SED_data = [
-        wf_utils.generate_packed_elems(_sed, simPSF_np, n_bins=args['n_bins_lda'])
+        wf_utils.generate_packed_elems(
+            _sed, simPSF_np, n_bins=args['n_bins_lda'])
         for _sed in val_SEDs
     ]
 
     # Prepare the inputs for the validation
-    tf_val_packed_SED_data = tf.convert_to_tensor(val_packed_SED_data, dtype=tf.float32)
-    tf_val_packed_SED_data = tf.transpose(tf_val_packed_SED_data, perm=[0, 2, 1])
+    tf_val_packed_SED_data = tf.convert_to_tensor(
+        val_packed_SED_data, dtype=tf.float32)
+    tf_val_packed_SED_data = tf.transpose(
+        tf_val_packed_SED_data, perm=[0, 2, 1])
 
     # Prepare input validation tuple
     val_x_inputs = [tf_val_pos, tf_val_packed_SED_data]
     val_y_inputs = tf_val_stars
     val_data = (val_x_inputs, val_y_inputs)
 
-    ## Select the model
+    # Select the model
     if args['model'] == 'mccd' or args['model'] == 'graph':
         poly_dic, graph_dic = tf_mccd_psf_field.build_mccd_spatial_dic_v2(
             obs_stars=outputs.numpy(),
@@ -262,9 +276,9 @@ def train_model(**args):
     if 'project_dd_features' not in args:
         args['project_dd_features'] = False
     if 'project_last_cycle' not in args:
-        args['project_last_cycle'] =  False    
+        args['project_last_cycle'] = False
     if 'reset_dd_features' not in args:
-        args['reset_dd_features'] = False   
+        args['reset_dd_features'] = False
     if 'pretrained_model' not in args:
         args['pretrained_model'] = None
 
@@ -283,7 +297,8 @@ def train_model(**args):
     # # Model Training
     # Prepare the saving callback
     # Prepare to save the model as a callback
-    filepath_chkp_callback = args['chkp_save_path'] + 'chkp_callback_' + run_id_name + '_cycle1'
+    filepath_chkp_callback = args['chkp_save_path'] + \
+        'chkp_callback_' + run_id_name + '_cycle1'
     model_chkp_callback = tf.keras.callbacks.ModelCheckpoint(
         filepath_chkp_callback,
         monitor='mean_squared_error',
@@ -296,8 +311,10 @@ def train_model(**args):
     )
 
     # Prepare the optimisers
-    param_optim = tfa.optimizers.RectifiedAdam(learning_rate=args['l_rate_param'][0])
-    non_param_optim = tfa.optimizers.RectifiedAdam(learning_rate=args['l_rate_non_param'][0])
+    param_optim = tfa.optimizers.RectifiedAdam(
+        learning_rate=args['l_rate_param'][0])
+    non_param_optim = tfa.optimizers.RectifiedAdam(
+        learning_rate=args['l_rate_non_param'][0])
 
     print('Starting cycle 1..')
     start_cycle1 = time.time()
@@ -349,10 +366,11 @@ def train_model(**args):
     # Backwards compatibility with click scripts older than the projected learning feature
     if 'save_all_cycles' not in args:
         args['save_all_cycles'] = False
- 
+
     # Save weights
     if args['save_all_cycles']:
-        tf_semiparam_field.save_weights(model_save_file + 'chkp_' + run_id_name + '_cycle1')
+        tf_semiparam_field.save_weights(
+            model_save_file + 'chkp_' + run_id_name + '_cycle1')
 
     end_cycle1 = time.time()
     print('Cycle1 elapsed time: %f' % (end_cycle1 - start_cycle1))
@@ -369,7 +387,7 @@ def train_model(**args):
     while args['total_cycles'] > current_cycle:
         current_cycle += 1
 
-        # If projected learning is enabled project DD_features. 
+        # If projected learning is enabled project DD_features.
         if args['project_dd_features'] and args['model'] == 'poly':
             tf_semiparam_field.project_DD_features(tf_zernike_cube)
             print('Project non-param DD features onto param model: done!')
@@ -378,7 +396,8 @@ def train_model(**args):
                 print('DD features reseted to random initialisation.')
 
         # Prepare to save the model as a callback
-        filepath_chkp_callback = args['chkp_save_path'] + 'chkp_callback_' + run_id_name + '_cycle' + str(current_cycle)
+        filepath_chkp_callback = args['chkp_save_path'] + \
+            'chkp_callback_' + run_id_name + '_cycle' + str(current_cycle)
         model_chkp_callback = tf.keras.callbacks.ModelCheckpoint(
             filepath_chkp_callback,
             monitor='mean_squared_error',
@@ -391,8 +410,10 @@ def train_model(**args):
         )
 
         # Prepare the optimisers
-        param_optim = tfa.optimizers.RectifiedAdam(learning_rate=args['l_rate_param'][current_cycle-1])
-        non_param_optim = tfa.optimizers.RectifiedAdam(learning_rate=args['l_rate_non_param'][current_cycle-1])
+        param_optim = tfa.optimizers.RectifiedAdam(
+            learning_rate=args['l_rate_param'][current_cycle-1])
+        non_param_optim = tfa.optimizers.RectifiedAdam(
+            learning_rate=args['l_rate_non_param'][current_cycle-1])
 
         print('Starting cycle {}..'.format(current_cycle))
         start_cycle = time.time()
@@ -444,29 +465,35 @@ def train_model(**args):
 
         # Save the weights at the end of the second cycle
         if args['save_all_cycles']:
-            tf_semiparam_field.save_weights(model_save_file + 'chkp_' + run_id_name + '_cycle' + str(current_cycle))
+            tf_semiparam_field.save_weights(
+                model_save_file + 'chkp_' + run_id_name + '_cycle' + str(current_cycle))
 
         end_cycle = time.time()
-        print('Cycle{} elapsed time: {}'.format(current_cycle , end_cycle - start_cycle))
+        print('Cycle{} elapsed time: {}'.format(
+            current_cycle, end_cycle - start_cycle))
 
         # Save optimisation history in the saving dict
         if hist_param_2 is not None:
-            saving_optim_hist['param_cycle{}'.format(current_cycle)] = hist_param_2.history
+            saving_optim_hist['param_cycle{}'.format(
+                current_cycle)] = hist_param_2.history
         if args['model'] != 'param' and hist_non_param_2 is not None:
-            saving_optim_hist['nonparam_cycle{}'.format(current_cycle)] = hist_non_param_2.history
+            saving_optim_hist['nonparam_cycle{}'.format(
+                current_cycle)] = hist_non_param_2.history
 
     # Save last cycle if no cycles were saved
     if not args['save_all_cycles']:
-        tf_semiparam_field.save_weights(model_save_file + 'chkp_' + run_id_name + '_cycle' + str(current_cycle))
+        tf_semiparam_field.save_weights(
+            model_save_file + 'chkp_' + run_id_name + '_cycle' + str(current_cycle))
 
     # Save optimisation history dictionary
-    np.save(optim_hist_file + 'optim_hist_' + run_id_name + '.npy', saving_optim_hist)
+    np.save(optim_hist_file + 'optim_hist_' +
+            run_id_name + '.npy', saving_optim_hist)
 
-    ## Print final time
+    # Print final time
     final_time = time.time()
     print('\nTotal elapsed time: %f' % (final_time - starting_time))
 
-    ## Close log file
+    # Close log file
     print('\n Good bye..')
     sys.stdout = old_stdout
     log_file.close()
@@ -474,7 +501,7 @@ def train_model(**args):
 
 def evaluate_model(**args):
     r""" Evaluate the trained model.
-    
+
     For parameters check the training script click help.
 
     """
@@ -493,23 +520,24 @@ def evaluate_model(**args):
 
     elif args['saved_model_type'] == 'final':
         model_save_file = args['base_path'] + args['model_folder']
-        weights_paths = model_save_file + 'chkp_' + run_id_name + '_' + args['saved_cycle']
+        weights_paths = model_save_file + 'chkp_' + \
+            run_id_name + '_' + args['saved_cycle']
 
     elif args['saved_model_type'] == 'external':
         weights_paths = args['chkp_save_path']
 
-    ## Save output prints to logfile
+    # Save output prints to logfile
     old_stdout = sys.stdout
     log_file = open(log_save_file + run_id_name + '-metrics_output.log', 'w')
     sys.stdout = log_file
     print('Starting the log file.')
 
-    ## Check GPU and tensorflow version
+    # Check GPU and tensorflow version
     device_name = tf.test.gpu_device_name()
     print('Found GPU at: {}'.format(device_name))
     print('tf_version: ' + str(tf.__version__))
 
-    ## Load datasets
+    # Load datasets
     train_dataset = np.load(
         args['dataset_folder'] + args['train_dataset_file'], allow_pickle=True
     )[()]
@@ -532,9 +560,12 @@ def evaluate_model(**args):
     d_max_gt = test_dataset['parameters']['d_max']
 
     # Convert to tensor
-    tf_noisy_train_stars = tf.convert_to_tensor(train_dataset['noisy_stars'], dtype=tf.float32)
-    tf_train_pos = tf.convert_to_tensor(train_dataset['positions'], dtype=tf.float32)
-    tf_test_pos = tf.convert_to_tensor(test_dataset['positions'], dtype=tf.float32)
+    tf_noisy_train_stars = tf.convert_to_tensor(
+        train_dataset['noisy_stars'], dtype=tf.float32)
+    tf_train_pos = tf.convert_to_tensor(
+        train_dataset['positions'], dtype=tf.float32)
+    tf_test_pos = tf.convert_to_tensor(
+        test_dataset['positions'], dtype=tf.float32)
 
     if args['model'] == 'poly_physical':
         # Concatenate the Zernike and the positions from train and test datasets
@@ -542,33 +573,37 @@ def evaluate_model(**args):
             (train_dataset['zernike_prior'], test_dataset['zernike_prior']),
             axis=0
         )
-        all_pos = np.concatenate((train_dataset['positions'], test_dataset['positions']), axis=0)
+        all_pos = np.concatenate(
+            (train_dataset['positions'], test_dataset['positions']), axis=0)
         # Convert to tensor
-        tf_zernike_prior_all = tf.convert_to_tensor(all_zernike_prior, dtype=tf.float32)
+        tf_zernike_prior_all = tf.convert_to_tensor(
+            all_zernike_prior, dtype=tf.float32)
         tf_pos_all = tf.convert_to_tensor(all_pos, dtype=tf.float32)
 
-    if args['model_eval'] == 'physical': 
+    if args['model_eval'] == 'physical':
         # Concatenate both datasets
         all_zernike_GT = np.concatenate(
             (train_dataset['zernike_GT'], test_dataset['zernike_GT']),
             axis=0
         )
-        all_pos = np.concatenate((train_dataset['positions'], test_dataset['positions']), axis=0)
+        all_pos = np.concatenate(
+            (train_dataset['positions'], test_dataset['positions']), axis=0)
         # Convert to tensor
-        tf_zernike_GT_all = tf.convert_to_tensor(all_zernike_GT, dtype=tf.float32)
+        tf_zernike_GT_all = tf.convert_to_tensor(
+            all_zernike_GT, dtype=tf.float32)
         tf_pos_all = tf.convert_to_tensor(all_pos, dtype=tf.float32)
-
 
     print('Dataset parameters:')
     print(train_parameters)
 
-    ## Prepare models
+    # Prepare models
     # Generate Zernike maps
     zernikes = wf_utils.zernike_generator(
         n_zernikes=args['n_zernikes'], wfe_dim=args['pupil_diameter']
     )
     # Now as cubes
-    np_zernike_cube = np.zeros((len(zernikes), zernikes[0].shape[0], zernikes[0].shape[1]))
+    np_zernike_cube = np.zeros(
+        (len(zernikes), zernikes[0].shape[0], zernikes[0].shape[1]))
 
     for it in range(len(zernikes)):
         np_zernike_cube[it, :, :] = zernikes[it]
@@ -586,19 +621,21 @@ def evaluate_model(**args):
         output_Q=args['output_q']
     )
     simPSF_np.gen_random_Z_coeffs(max_order=args['n_zernikes'])
-    z_coeffs = simPSF_np.normalize_zernikes(simPSF_np.get_z_coeffs(), simPSF_np.max_wfe_rms)
+    z_coeffs = simPSF_np.normalize_zernikes(
+        simPSF_np.get_z_coeffs(), simPSF_np.max_wfe_rms)
     simPSF_np.set_z_coeffs(z_coeffs)
     simPSF_np.generate_mono_PSF(lambda_obs=0.7, regen_sample=False)
 
     # Obscurations
-    obscurations = simPSF_np.generate_pupil_obscurations(N_pix=args['pupil_diameter'], N_filter=2)
+    obscurations = simPSF_np.generate_pupil_obscurations(
+        N_pix=args['pupil_diameter'], N_filter=2)
     tf_obscurations = tf.convert_to_tensor(obscurations, dtype=tf.complex64)
 
     # Outputs (needed for the MCCD model)
     outputs = tf_noisy_train_stars
 
-    ## Create the model
-    ## Select the model
+    # Create the model
+    # Select the model
     if args['model'] == 'mccd' or args['model'] == 'graph':
         poly_dic, graph_dic = tf_mccd_psf_field.build_mccd_spatial_dic_v2(
             obs_stars=outputs.numpy(),
@@ -699,7 +736,7 @@ def evaluate_model(**args):
             interpolation_type=args['interpolation_type'],
         )
 
-    ## Load the model's weights
+    # Load the model's weights
     tf_semiparam_field.load_weights(weights_paths)
 
     # If eval_only_param is true we put non param model to zero.
@@ -710,20 +747,21 @@ def evaluate_model(**args):
             tf_semiparam_field.project_DD_features(tf_zernike_cube)
         tf_semiparam_field.set_zero_nonparam()
 
-    ## Prepare ground truth model
+    # Prepare ground truth model
     # Generate Zernike maps
     zernikes = wf_utils.zernike_generator(
         n_zernikes=args['gt_n_zernikes'], wfe_dim=args['pupil_diameter']
     )
     # Now as cubes
-    np_zernike_cube = np.zeros((len(zernikes), zernikes[0].shape[0], zernikes[0].shape[1]))
+    np_zernike_cube = np.zeros(
+        (len(zernikes), zernikes[0].shape[0], zernikes[0].shape[1]))
     for it in range(len(zernikes)):
         np_zernike_cube[it, :, :] = zernikes[it]
 
     np_zernike_cube[np.isnan(np_zernike_cube)] = 0
     tf_zernike_cube = tf.convert_to_tensor(np_zernike_cube, dtype=tf.float32)
 
-    if args['model_eval'] == 'physical': 
+    if args['model_eval'] == 'physical':
         # Initialize the model
         GT_tf_semiparam_field = tf_psf_field.TF_GT_physical_field(
             zernike_maps=tf_zernike_cube,
@@ -745,7 +783,7 @@ def evaluate_model(**args):
             output_dim=args['output_dim'],
             n_zernikes=args['gt_n_zernikes'],
             # d_max_GT may differ from the current d_max of the parametric model
-            #d_max=args['d_max'],
+            # d_max=args['d_max'],
             d_max=d_max_gt,
             x_lims=args['x_lims'],
             y_lims=args['y_lims']
@@ -756,7 +794,7 @@ def evaluate_model(**args):
             np.zeros_like(GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat)
         )
 
-    ## Metric evaluation on the test dataset
+    # Metric evaluation on the test dataset
     print('\n***\nMetric evaluation on the test dataset\n***\n')
 
     # Polychromatic star reconstructions
@@ -835,7 +873,7 @@ def evaluate_model(**args):
         'shape_results_dict': shape_results_dict
     }
 
-    ## Metric evaluation on the train dataset
+    # Metric evaluation on the train dataset
     print('\n***\nMetric evaluation on the train dataset\n***\n')
 
     # Polychromatic star reconstructions
@@ -909,16 +947,16 @@ def evaluate_model(**args):
         'shape_results_dict': train_shape_results_dict
     }
 
-    ## Save results
+    # Save results
     metrics = {'test_metrics': test_metrics, 'train_metrics': train_metrics}
     output_path = args['metric_base_path'] + 'metrics-' + run_id_name
     np.save(output_path, metrics, allow_pickle=True)
 
-    ## Print final time
+    # Print final time
     final_time = time.time()
     print('\nTotal elapsed time: %f' % (final_time - starting_time))
 
-    ## Close log file
+    # Close log file
     print('\n Good bye..')
     sys.stdout = old_stdout
     log_file.close()
@@ -951,16 +989,18 @@ def plot_metrics(**args):
     # Define the metric data paths
     if not isinstance(args['suffix_id_name'], str):
         model_paths = [
-            args['metric_base_path'] + 'metrics-' + run_id_no_suff + _suff + '.npy'
+            args['metric_base_path'] + 'metrics-' +
+            run_id_no_suff + _suff + '.npy'
             for _suff in args['suffix_id_name']
         ]
     else:
-        model_paths = [args['metric_base_path'] + 'metrics-' + run_id_no_suff + args['suffix_id_name'] + '.npy']
-
+        model_paths = [args['metric_base_path'] + 'metrics-' +
+                       run_id_no_suff + args['suffix_id_name'] + '.npy']
 
     # Load metrics
     try:
-        metrics = [np.load(_path, allow_pickle=True)[()] for _path in model_paths]
+        metrics = [np.load(_path, allow_pickle=True)[()]
+                   for _path in model_paths]
     except FileNotFoundError:
         print('The required file for the plots was not found.')
         print('Probably I am not the last job for plotting the performance metrics.')
@@ -969,7 +1009,7 @@ def plot_metrics(**args):
     for plot_dataset in ['test', 'train']:
 
         try:
-            ## Polychromatic results
+            # Polychromatic results
             res = extract_poly_results(metrics, test_train=plot_dataset)
             model_polyc_rmse = res[0]
             model_polyc_std_rmse = res[1]
@@ -995,18 +1035,21 @@ def plot_metrics(**args):
             ax1.set_xlabel('Number of stars')
             ax1.set_ylabel('Absolute error')
             ax2 = ax1.twinx()
-            kwargs = dict(linewidth=2, linestyle='dashed', markersize=4, marker='^', alpha=0.5)
+            kwargs = dict(linewidth=2, linestyle='dashed',
+                          markersize=4, marker='^', alpha=0.5)
             ax2.plot(star_list, model_polyc_rel_rmse, **kwargs)
             ax2.set_ylabel('Relative error [%]')
             ax2.grid(False)
             plt.savefig(
-                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_polyc_pixel_RMSE.png'
+                plot_saving_path + plot_dataset + '-metrics-' +
+                run_id_no_suff + '_polyc_pixel_RMSE.png'
             )
             plt.show()
         except Exception:
-            print('Problem with the performance metrics plot of pixel polychromatic errors.')
+            print(
+                'Problem with the performance metrics plot of pixel polychromatic errors.')
 
-        ## Monochromatic
+        # Monochromatic
         try:
             fig = plt.figure(figsize=(12, 8))
             ax1 = fig.add_subplot(111)
@@ -1029,7 +1072,8 @@ def plot_metrics(**args):
             ax1.set_ylabel('Absolute error')
 
             ax2 = ax1.twinx()
-            kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+            kwargs = dict(linewidth=2, linestyle='dashed',
+                          markersize=8, marker='^', alpha=0.5)
             for it in range(n_datasets):
                 ax2.plot(
                     lambda_list, metrics[it]['test_metrics']['mono_metric']['rel_rmse_lda'], **kwargs
@@ -1042,9 +1086,10 @@ def plot_metrics(**args):
             )
             plt.show()
         except Exception:
-            print('Problem with the performance metrics plot of pixel monochromatic errors.')
+            print(
+                'Problem with the performance metrics plot of pixel monochromatic errors.')
 
-        ## OPD results
+        # OPD results
         try:
             res = extract_opd_results(metrics, test_train=plot_dataset)
             model_opd_rmse = res[0]
@@ -1064,12 +1109,14 @@ def plot_metrics(**args):
             plt.minorticks_on()
             ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
             ax1.legend()
-            ax1.set_title('Stars ' + plot_dataset + '\n' + run_id_no_suff + '.\nOPD RMSE')
+            ax1.set_title('Stars ' + plot_dataset + '\n' +
+                          run_id_no_suff + '.\nOPD RMSE')
             ax1.set_xlabel('Number of stars')
             ax1.set_ylabel('Absolute error')
 
             ax2 = ax1.twinx()
-            kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+            kwargs = dict(linewidth=2, linestyle='dashed',
+                          markersize=8, marker='^', alpha=0.5)
             ax2.plot(star_list, model_opd_rel_rmse, **kwargs)
             ax2.set_ylabel('Relative error [%]')
             ax2.grid(False)
@@ -1080,8 +1127,9 @@ def plot_metrics(**args):
         except Exception:
             print('Problem with the performance metrics plot of OPD errors.')
 
-        ## Shape results
-        model_e1, model_e2, model_R2 = extract_shape_results(metrics, test_train=plot_dataset)
+        # Shape results
+        model_e1, model_e2, model_R2 = extract_shape_results(
+            metrics, test_train=plot_dataset)
         model_e1_rmse = model_e1[0]
         model_e1_std_rmse = model_e1[1]
         model_e1_rel_rmse = model_e1[2]
@@ -1120,19 +1168,22 @@ def plot_metrics(**args):
             ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
             ax1.legend()
             ax1.set_title(
-                'Stars ' + plot_dataset + '\n' + run_id_no_suff + '\ne1, e2 RMSE @ 3x Euclid resolution'
+                'Stars ' + plot_dataset + '\n' + run_id_no_suff +
+                '\ne1, e2 RMSE @ 3x Euclid resolution'
             )
             ax1.set_xlabel('Number of stars')
             ax1.set_ylabel('Absolute error')
 
             ax2 = ax1.twinx()
-            kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+            kwargs = dict(linewidth=2, linestyle='dashed',
+                          markersize=8, marker='^', alpha=0.5)
             ax2.plot(star_list, model_e1_rel_euclid, **kwargs)
             ax2.plot(star_list, model_e2_rel_euclid, **kwargs)
             ax2.set_ylabel('Times over Euclid req.')
             ax2.grid(False)
             plt.savefig(
-                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_shape_e1_e2_RMSE.png'
+                plot_saving_path + plot_dataset + '-metrics-' +
+                run_id_no_suff + '_shape_e1_e2_RMSE.png'
             )
             plt.show()
         except Exception:
@@ -1160,18 +1211,20 @@ def plot_metrics(**args):
             ax1.set_ylabel('Absolute error')
 
             ax2 = ax1.twinx()
-            kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+            kwargs = dict(linewidth=2, linestyle='dashed',
+                          markersize=8, marker='^', alpha=0.5)
             ax2.plot(star_list, model_R2_rel_euclid, **kwargs)
             ax2.set_ylabel('Times over Euclid req.')
             ax2.grid(False)
             plt.savefig(
-                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_shape_R2_RMSE.png'
+                plot_saving_path + plot_dataset + '-metrics-' +
+                run_id_no_suff + '_shape_R2_RMSE.png'
             )
             plt.show()
         except Exception:
             print('Problem with the performance metrics plot of R2 errors.')
 
-        ## Polychromatic pixel residual at shape measurement resolution
+        # Polychromatic pixel residual at shape measurement resolution
         try:
             res = extract_shape_pix_results(metrics, test_train=plot_dataset)
             model_polyc_shpix_rmse = res[0]
@@ -1192,13 +1245,15 @@ def plot_metrics(**args):
             ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
             ax1.legend()
             ax1.set_title(
-                'Stars ' + plot_dataset + '\n' + run_id_no_suff + '\nPixel RMSE @ 3x Euclid resolution'
+                'Stars ' + plot_dataset + '\n' + run_id_no_suff +
+                '\nPixel RMSE @ 3x Euclid resolution'
             )
             ax1.set_xlabel('Number of stars')
             ax1.set_ylabel('Absolute error')
 
             ax2 = ax1.twinx()
-            kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+            kwargs = dict(linewidth=2, linestyle='dashed',
+                          markersize=8, marker='^', alpha=0.5)
             ax2.plot(star_list, model_polyc_shpix_rel_rmse, **kwargs)
             ax2.set_ylabel('Relative error [%]')
             ax2.grid(False)
@@ -1208,7 +1263,8 @@ def plot_metrics(**args):
             )
             plt.show()
         except Exception:
-            print('Problem with the performance metrics plot of super resolution pixel polychromatic errors.')
+            print(
+                'Problem with the performance metrics plot of super resolution pixel polychromatic errors.')
 
 
 def plot_optimisation_metrics(**args):
@@ -1235,17 +1291,19 @@ def plot_optimisation_metrics(**args):
             for _suff in args['suffix_id_name']
         ]
     else:
-        model_paths = [args['metric_base_path'] + 'metrics-' + run_id_no_suff + args['suffix_id_name'] + '.npy']
+        model_paths = [args['metric_base_path'] + 'metrics-' +
+                       run_id_no_suff + args['suffix_id_name'] + '.npy']
 
     try:
         # Load metrics
-        metrics = [np.load(_path, allow_pickle=True)[()] for _path in model_paths]
+        metrics = [np.load(_path, allow_pickle=True)[()]
+                   for _path in model_paths]
     except FileNotFoundError:
         print('The required file for the plots was not found.')
         print('Probably I am not the last job for plotting the optimisation metrics.')
         return 0
 
-    ## Plot the first parametric cycle
+    # Plot the first parametric cycle
     cycle_str = 'param_cycle1'
     metric_str = 'mean_squared_error'
     val_mertric_str = 'val_mean_squared_error'
@@ -1265,20 +1323,23 @@ def plot_optimisation_metrics(**args):
         plt.yscale('log')
         plt.minorticks_on()
         ax1.legend()
-        ax1.set_title('Parametric cycle 1.\n' + run_id_no_suff + '_' + cycle_str)
+        ax1.set_title('Parametric cycle 1.\n' +
+                      run_id_no_suff + '_' + cycle_str)
         ax1.set_xlabel('Number of epoch')
         ax1.set_ylabel('Training MSE')
 
         ax2 = ax1.twinx()
-        kwargs = dict(linewidth=2, linestyle='dashed', markersize=2, marker='^', alpha=0.5)
+        kwargs = dict(linewidth=2, linestyle='dashed',
+                      markersize=2, marker='^', alpha=0.5)
         for it in range(n_datasets):
             try:
                 ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
             except KeyError as KE:
-                print('Error with Key: ', KE)            
+                print('Error with Key: ', KE)
         ax2.set_ylabel('Validation MSE')
         ax2.grid(False)
-        plt.savefig(plot_saving_path + 'optim_' + run_id_no_suff + '_' + cycle_str + '.png')
+        plt.savefig(plot_saving_path + 'optim_' +
+                    run_id_no_suff + '_' + cycle_str + '.png')
         plt.show()
     except Exception:
         print('Problem with the plot of the optimisation metrics of the first parametric cycle.')
@@ -1300,29 +1361,33 @@ def plot_optimisation_metrics(**args):
                         alpha=0.75
                     )
                 except KeyError as KE:
-                    print('Error with Key: ', KE)                
+                    print('Error with Key: ', KE)
             plt.yscale('log')
             plt.minorticks_on()
             ax1.legend()
-            ax1.set_title('Non-parametric cycle 1.\n' + run_id_no_suff + '_' + cycle_str)
+            ax1.set_title('Non-parametric cycle 1.\n' +
+                          run_id_no_suff + '_' + cycle_str)
             ax1.set_xlabel('Number of epoch')
             ax1.set_ylabel('Training MSE')
 
             ax2 = ax1.twinx()
-            kwargs = dict(linewidth=2, linestyle='dashed', markersize=2, marker='^', alpha=0.5)
+            kwargs = dict(linewidth=2, linestyle='dashed',
+                          markersize=2, marker='^', alpha=0.5)
             for it in range(n_datasets):
                 try:
                     ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
                 except KeyError as KE:
-                    print('Error with Key: ', KE)                
+                    print('Error with Key: ', KE)
             ax2.set_ylabel('Validation MSE')
             ax2.grid(False)
-            plt.savefig(plot_saving_path + 'optim_' + run_id_no_suff + '_' + cycle_str + '.png')
+            plt.savefig(plot_saving_path + 'optim_' +
+                        run_id_no_suff + '_' + cycle_str + '.png')
             plt.show()
         except Exception:
-            print('Problem with the plot of the optimisation metrics of the first non-parametric cycle.')
+            print(
+                'Problem with the plot of the optimisation metrics of the first non-parametric cycle.')
 
-    ## Plot the second parametric cycle
+    # Plot the second parametric cycle
     if cycle_str in metrics[0]:
         cycle_str = 'param_cycle2'
         metric_str = 'mean_squared_error'
@@ -1339,29 +1404,33 @@ def plot_optimisation_metrics(**args):
                         alpha=0.75
                     )
                 except KeyError as KE:
-                    print('Error with Key: ', KE)                
+                    print('Error with Key: ', KE)
             plt.yscale('log')
             plt.minorticks_on()
             ax1.legend()
-            ax1.set_title('Parametric cycle 2.\n' + run_id_no_suff + '_' + cycle_str)
+            ax1.set_title('Parametric cycle 2.\n' +
+                          run_id_no_suff + '_' + cycle_str)
             ax1.set_xlabel('Number of epoch')
             ax1.set_ylabel('Training MSE')
 
             ax2 = ax1.twinx()
-            kwargs = dict(linewidth=2, linestyle='dashed', markersize=2, marker='^', alpha=0.5)
+            kwargs = dict(linewidth=2, linestyle='dashed',
+                          markersize=2, marker='^', alpha=0.5)
             for it in range(n_datasets):
                 try:
                     ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
                 except KeyError as KE:
-                    print('Error with Key: ', KE)                
+                    print('Error with Key: ', KE)
             ax2.set_ylabel('Validation MSE')
             ax2.grid(False)
-            plt.savefig(plot_saving_path + 'optim_' + run_id_no_suff + '_' + cycle_str + '.png')
+            plt.savefig(plot_saving_path + 'optim_' +
+                        run_id_no_suff + '_' + cycle_str + '.png')
             plt.show()
         except Exception:
-            print('Problem with the plot of the optimisation metrics of the second parametric cycle.')
+            print(
+                'Problem with the plot of the optimisation metrics of the second parametric cycle.')
 
-    ## Plot the second non-parametric cycle
+    # Plot the second non-parametric cycle
     if cycle_str in metrics[0]:
         cycle_str = 'nonparam_cycle2'
         metric_str = 'mean_squared_error'
@@ -1378,27 +1447,31 @@ def plot_optimisation_metrics(**args):
                         alpha=0.75
                     )
                 except KeyError as KE:
-                    print('Error with Key: ', KE)                
+                    print('Error with Key: ', KE)
             plt.yscale('log')
             plt.minorticks_on()
             ax1.legend()
-            ax1.set_title('Non-parametric cycle 2.\n' + run_id_no_suff + '_' + cycle_str)
+            ax1.set_title('Non-parametric cycle 2.\n' +
+                          run_id_no_suff + '_' + cycle_str)
             ax1.set_xlabel('Number of epoch')
             ax1.set_ylabel('Training MSE')
 
             ax2 = ax1.twinx()
-            kwargs = dict(linewidth=2, linestyle='dashed', markersize=2, marker='^', alpha=0.5)
+            kwargs = dict(linewidth=2, linestyle='dashed',
+                          markersize=2, marker='^', alpha=0.5)
             for it in range(n_datasets):
-                try:                
+                try:
                     ax2.plot(metrics[it][cycle_str][val_mertric_str], **kwargs)
                 except KeyError as KE:
                     print('Error with Key: ', KE)
             ax2.set_ylabel('Validation MSE')
             ax2.grid(False)
-            plt.savefig(plot_saving_path + 'optim_' + run_id_no_suff + '_' + cycle_str + '.png')
+            plt.savefig(plot_saving_path + 'optim_' +
+                        run_id_no_suff + '_' + cycle_str + '.png')
             plt.show()
         except Exception:
-            print('Problem with the plot of the optimisation metrics of the second non-parametric cycle.')
+            print(
+                'Problem with the plot of the optimisation metrics of the second non-parametric cycle.')
 
 
 def define_plot_style():

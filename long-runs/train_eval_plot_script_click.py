@@ -5,13 +5,13 @@
 
 import wf_psf as wf
 import click
+from wf_psf.io import make_wfpsf_file_struct
 
 # from absl import app
 # from absl import flags
 
 @click.command()
-
-## Script options
+# Script options
 @click.option(
     "--train_opt",
     default=True,
@@ -27,7 +27,7 @@ import click
     default=True,
     type=bool,
     help="Plot the model results")
-## Training options
+# Training options
 # Model definition
 @click.option(
     "--model",
@@ -199,7 +199,7 @@ import click
     default="complete",
     type=str,
     help="Train cycle definition. It can be: 'parametric', 'non-parametric', 'complete', 'only-non-parametric' and 'only-parametric'.")
-## Evaluation flags
+# Evaluation flags
 # Saving paths
 @click.option(
     "--model_eval",
@@ -232,13 +232,13 @@ import click
     default=16,
     type=int,
     help="Batch size to use for the evaluation.")
-## Specific parameters
+# Specific parameters
 @click.option(
     "--l2_param",
     default=0.,
     type=float,
     help="Parameter for the l2 loss of the OPD.")
-## Plot parameters
+# Plot parameters
 @click.option(
     "--base_id_name",
     default="-coherent_euclid_",
@@ -256,10 +256,9 @@ import click
     multiple=True,
     type=int,
     help="Plot parameter. Training star number of the different models evaluated. Needs to correspond with the `suffix_id_name`.")
-
-
 def main(**args):
     print(args)
+    make_wfpsf_file_struct()
     if args['train_opt']:
         print('Training...')
         wf.script_utils.train_model(**args)
@@ -271,5 +270,6 @@ def main(**args):
         wf.script_utils.plot_metrics(**args)
         wf.script_utils.plot_optimisation_metrics(**args)
 
+
 if __name__ == "__main__":
-  main()
+    main()
