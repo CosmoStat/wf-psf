@@ -1,42 +1,26 @@
 training:
-  model: 
-    - poly
-  pupil_diameter:
-    - 256
-  n_bins_lda:
-    - 8
-  output_q:
-    - 3
-  oversampling_rate:
-    - 3
-  output_dim:
-    - 32
-  d_max_nonparam:
-    - 5
-  use_sample_weights:
-    - true
+  model: poly
+  pupil_diameter: 256
+  n_bins_lda: 8
+  output_q: 3
+  oversampling_rate: 3
+  output_dim: 32
+  d_max_nonparam: 5
+  use_sample_weights: true
   n_epochs_non_param:
     - 2 
     - 2
   n_epochs_param:
     - 2 
     - 2
-  total_cycles:
-    - 2
-  saved_cycle:
-    - cycle2
-  eval_batch_size:
-    - 16
-  l2_param:
-    - 0.
-  base_id_name:
-    - _2_cycles_256
-  suffix_id_name:
-    - proj_d2_45z
-  star_numbers:
-    - 1
-  id_name:
-    - '-coherent_euclid_200stars'
+  total_cycles: 2
+  saved_cycle: cycle2
+  eval_batch_size: 16
+  l2_param: 0.
+  base_id_name: _2_cycles_256
+  suffix_id_name: proj_d2_45z
+  star_numbers: 1
+  id_name: '-coherent_euclid_200stars'
 
 
 
