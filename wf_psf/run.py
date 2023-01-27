@@ -7,27 +7,34 @@
 """
 import argparse
 from wf_psf.read_config import read_stream, read_conf
+from dotenv import load_dotenv
 import wf_psf.io as io
 import os
 import logging.config
 import logging
 from .training import train
 
+# load .env variables
+load_dotenv()
 
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--conffile', '-c', type=str, required=True,
                     help="a configuration file containing program settings.")
 
-parser.add_argument('--workspace', '-w', type=str, required=True,
-                    help="Workspace directory containing configuration files.")
+# parser.add_argument('--workspace', '-w', type=str, required=True,
+#                    help="directory containing configuration files.")
+
+repodir = os.getenv("REPODIR")
 
 args = parser.parse_args()
 config = vars(args)
 
-logging.config.fileConfig(os.path.join(args.workspace, 'config/logging.conf'),
+
+logging.config.fileConfig(os.path.join(repodir, 'config/logging.conf'),
                           defaults={"filename": "test.log"},
                           disable_existing_loggers=False)
+
 
 logger = logging.getLogger("wavediff")
 
@@ -35,18 +42,17 @@ logger.info('#')
 logger.info('# Entering wavediff mainMethod()')
 logger.info('#')
 
-configs = read_stream(os.path.join(args.workspace, config['conffile']))
+# make wf-psf output dirs
+io.make_wfpsf_file_struct()
+
+configs = read_stream(os.path.join(repodir, config['conffile']))
 
 for conf in configs:
-    if hasattr(conf, "env_vars"):
-        io.set_env_workdir(conf.env_vars.workdir)
-        io.set_env_repodir(conf.env_vars.repodir)
-        io.make_wfpsf_file_struct()
 
     if hasattr(conf, "training_conf"):
         # load training_conf
         training_params = read_conf(os.path.join(
-            args.workspace, conf.training_conf))
+            repodir, conf.training_conf))
         logger.info(training_params)
 
         training_params = train.TrainingParams(training_params.training)

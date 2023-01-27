@@ -19,14 +19,6 @@ optim_hist = "optim-hist"
 plots = "plots"
 
 
-def set_env_workdir(workdir):
-    os.environ['WORKDIR'] = workdir
-
-
-def set_env_repodir(repodir):
-    os.environ['REPODIR'] = repodir
-
-
 def make_wfpsf_file_struct():
     """
     A function to produce the output file structure
