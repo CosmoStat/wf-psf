@@ -1,16 +1,17 @@
 """
-:file: wf_psf/wavediff.py
+:file: wf_psf/run.py
 
 :date: 19/01/23
 :author: jpollack
 
 """
 import argparse
-import logging
-import logging.config
-from read_config import read_stream, read_conf
+from wf_psf.read_config import read_stream, read_conf
 import wf_psf.io as io
 import os
+import logging.config
+import logging
+from .training import train
 
 
 parser = argparse.ArgumentParser()
@@ -23,31 +24,31 @@ parser.add_argument('--workspace', '-w', type=str, required=True,
 
 args = parser.parse_args()
 config = vars(args)
-print(config['conffile'])
 
-logging.config.fileConfig(os.path.join(args.workspace, 'config/logging.conf'))
-logging.basicConfig(filename='example.log',
-                    encoding='utf-8', level=logging.DEBUG)
-
-f_handler = logging.FileHandler('example.log')
+logging.config.fileConfig(os.path.join(args.workspace, 'config/logging.conf'),
+                          defaults={"filename": "test.log"},
+                          disable_existing_loggers=False)
 
 logger = logging.getLogger("wavediff")
 
 logger.info('#')
 logger.info('# Entering wavediff mainMethod()')
 logger.info('#')
-logger.addHandler(f_handler)
+
 configs = read_stream(os.path.join(args.workspace, config['conffile']))
 
 for conf in configs:
     if hasattr(conf, "env_vars"):
         io.set_env_workdir(conf.env_vars.workdir)
         io.set_env_repodir(conf.env_vars.repodir)
-        out = io.WFPSF_FileStructure()
-        out.make_wfpsf_file_struct()
+        io.make_wfpsf_file_struct()
 
     if hasattr(conf, "training_conf"):
         # load training_conf
         training_params = read_conf(os.path.join(
             args.workspace, conf.training_conf))
-        print(training_params)
+        logger.info(training_params)
+
+        training_params = train.TrainingParams(training_params.training)
+        print(training_params.model_save_file)
+        training_params.train()
