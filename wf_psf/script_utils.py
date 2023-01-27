@@ -98,21 +98,24 @@ def train_model(**args):
 
     if args['model'] == 'poly_physical':
         # Concatenate the Zernike and the positions from train and test datasets
-        all_pos = np.concatenate(
-            (train_dataset['positions'], test_dataset['positions']), axis=0)
+        all_pos = np.concatenate((train_dataset['positions'], test_dataset['positions']), axis=0)
         all_zernike_prior = np.concatenate(
-            (train_dataset['zernike_prior'], test_dataset['zernike_prior']),
-            axis=0
+            (train_dataset['zernike_prior'], test_dataset['zernike_prior']), axis=0
         )
         # Convert to tensor
         tf_pos_all = tf.convert_to_tensor(all_pos, dtype=tf.float32)
-        tf_zernike_prior_all = tf.convert_to_tensor(
-            all_zernike_prior, dtype=tf.float32)
+        tf_zernike_prior_all = tf.convert_to_tensor(all_zernike_prior, dtype=tf.float32)
 
     print('Dataset parameters:')
     print(train_parameters)
 
-    # Generate initializations
+    # New interp features backwards compatibility
+    if 'interp_pts_per_bin' not in args:
+        args['interp_pts_per_bin'] = 0
+        args['extrapolate'] = True
+        args['sed_interp_kind'] = 'linear'
+
+    ## Generate initializations
     # Prepare np input
     simPSF_np = SimPSFToolkit(
         zernikes,
@@ -120,7 +123,11 @@ def train_model(**args):
         pupil_diameter=args['pupil_diameter'],
         output_dim=args['output_dim'],
         oversampling_rate=args['oversampling_rate'],
-        output_Q=args['output_q']
+        output_Q=args['output_q'],
+        interp_pts_per_bin=args['interp_pts_per_bin'],
+        extrapolate=args['extrapolate'],
+        SED_interp_kind=args['sed_interp_kind'],
+        SED_sigma=args['sed_sigma']
     )
     simPSF_np.gen_random_Z_coeffs(max_order=args['n_zernikes'])
     z_coeffs = simPSF_np.normalize_zernikes(
@@ -290,7 +297,8 @@ def train_model(**args):
         print('DD features projected over parametric model')
 
     # If reset_dd_features is true we project the DD features onto the param model and reset them.
-    if args['model'] == 'poly' and args['reset_dd_features'] and args['cycle_def'] != 'only-parametric':
+    if args['model'] == 'poly' and args['reset_dd_features'
+                                       ] and args['cycle_def'] != 'only-parametric':
         tf_semiparam_field.tf_np_poly_opd.init_vars()
         print('DD features reseted to random initialisation.')
 
@@ -396,8 +404,8 @@ def train_model(**args):
                 print('DD features reseted to random initialisation.')
 
         # Prepare to save the model as a callback
-        filepath_chkp_callback = args['chkp_save_path'] + \
-            'chkp_callback_' + run_id_name + '_cycle' + str(current_cycle)
+        filepath_chkp_callback = args[
+            'chkp_save_path'] + 'chkp_callback_' + run_id_name + '_cycle' + str(current_cycle)
         model_chkp_callback = tf.keras.callbacks.ModelCheckpoint(
             filepath_chkp_callback,
             monitor='mean_squared_error',
@@ -411,9 +419,11 @@ def train_model(**args):
 
         # Prepare the optimisers
         param_optim = tfa.optimizers.RectifiedAdam(
-            learning_rate=args['l_rate_param'][current_cycle-1])
+            learning_rate=args['l_rate_param'][current_cycle - 1]
+        )
         non_param_optim = tfa.optimizers.RectifiedAdam(
-            learning_rate=args['l_rate_non_param'][current_cycle-1])
+            learning_rate=args['l_rate_non_param'][current_cycle - 1]
+        )
 
         print('Starting cycle {}..'.format(current_cycle))
         start_cycle = time.time()
@@ -426,8 +436,8 @@ def train_model(**args):
                 outputs=outputs,
                 val_data=val_data,
                 batch_size=args['batch_size'],
-                l_rate=args['l_rate_param'][current_cycle-1],
-                n_epochs=args['n_epochs_param'][current_cycle-1],
+                l_rate=args['l_rate_param'][current_cycle - 1],
+                n_epochs=args['n_epochs_param'][current_cycle - 1],
                 param_optim=param_optim,
                 param_loss=None,
                 param_metrics=None,
@@ -444,10 +454,10 @@ def train_model(**args):
                 outputs=outputs,
                 val_data=val_data,
                 batch_size=args['batch_size'],
-                l_rate_param=args['l_rate_param'][current_cycle-1],
-                l_rate_non_param=args['l_rate_non_param'][current_cycle-1],
-                n_epochs_param=args['n_epochs_param'][current_cycle-1],
-                n_epochs_non_param=args['n_epochs_non_param'][current_cycle-1],
+                l_rate_param=args['l_rate_param'][current_cycle - 1],
+                l_rate_non_param=args['l_rate_non_param'][current_cycle - 1],
+                n_epochs_param=args['n_epochs_param'][current_cycle - 1],
+                n_epochs_non_param=args['n_epochs_non_param'][current_cycle - 1],
                 param_optim=param_optim,
                 non_param_optim=non_param_optim,
                 param_loss=None,
@@ -466,11 +476,11 @@ def train_model(**args):
         # Save the weights at the end of the second cycle
         if args['save_all_cycles']:
             tf_semiparam_field.save_weights(
-                model_save_file + 'chkp_' + run_id_name + '_cycle' + str(current_cycle))
+                model_save_file + 'chkp_' + run_id_name + '_cycle' + str(current_cycle)
+            )
 
         end_cycle = time.time()
-        print('Cycle{} elapsed time: {}'.format(
-            current_cycle, end_cycle - start_cycle))
+        print('Cycle{} elapsed time: {}'.format(current_cycle, end_cycle - start_cycle))
 
         # Save optimisation history in the saving dict
         if hist_param_2 is not None:
@@ -483,7 +493,8 @@ def train_model(**args):
     # Save last cycle if no cycles were saved
     if not args['save_all_cycles']:
         tf_semiparam_field.save_weights(
-            model_save_file + 'chkp_' + run_id_name + '_cycle' + str(current_cycle))
+            model_save_file + 'chkp_' + run_id_name + '_cycle' + str(current_cycle)
+        )
 
     # Save optimisation history dictionary
     np.save(optim_hist_file + 'optim_hist_' +
@@ -532,134 +543,170 @@ def evaluate_model(**args):
     sys.stdout = log_file
     print('Starting the log file.')
 
-    # Check GPU and tensorflow version
-    device_name = tf.test.gpu_device_name()
-    print('Found GPU at: {}'.format(device_name))
-    print('tf_version: ' + str(tf.__version__))
+    try:
+        ## Check GPU and tensorflow version
+        device_name = tf.test.gpu_device_name()
+        print('Found GPU at: {}'.format(device_name))
+        print('tf_version: ' + str(tf.__version__))
 
-    # Load datasets
-    train_dataset = np.load(
-        args['dataset_folder'] + args['train_dataset_file'], allow_pickle=True
-    )[()]
-    # train_stars = train_dataset['stars']
-    # noisy_train_stars = train_dataset['noisy_stars']
-    # train_pos = train_dataset['positions']
-    train_SEDs = train_dataset['SEDs']
-    # train_zernike_coef = train_dataset['zernike_coef']
-    train_C_poly = train_dataset['C_poly']
-    train_parameters = train_dataset['parameters']
+        ## Load datasets
+        train_dataset = np.load(
+            args['dataset_folder'] + args['train_dataset_file'], allow_pickle=True
+        )[()]
+        # train_stars = train_dataset['stars']
+        # noisy_train_stars = train_dataset['noisy_stars']
+        # train_pos = train_dataset['positions']
+        train_SEDs = train_dataset['SEDs']
+        # train_zernike_coef = train_dataset['zernike_coef']
+        train_C_poly = train_dataset['C_poly']
+        train_parameters = train_dataset['parameters']
 
-    test_dataset = np.load(
-        args['dataset_folder'] + args['test_dataset_file'], allow_pickle=True
-    )[()]
-    # test_stars = test_dataset['stars']
-    # test_pos = test_dataset['positions']
-    test_SEDs = test_dataset['SEDs']
-    # test_zernike_coef = test_dataset['zernike_coef']
-    # ground truth d_max (spatial polynomial max order)
-    d_max_gt = test_dataset['parameters']['d_max']
+        test_dataset = np.load(
+            args['dataset_folder'] + args['test_dataset_file'], allow_pickle=True
+        )[()]
+        # test_stars = test_dataset['stars']
+        # test_pos = test_dataset['positions']
+        test_SEDs = test_dataset['SEDs']
+        # test_zernike_coef = test_dataset['zernike_coef']
+        # ground truth d_max (spatial polynomial max order)
+        if args['model_eval'] == 'poly':
+            d_max_gt = test_dataset['parameters']['d_max']
 
-    # Convert to tensor
-    tf_noisy_train_stars = tf.convert_to_tensor(
-        train_dataset['noisy_stars'], dtype=tf.float32)
-    tf_train_pos = tf.convert_to_tensor(
-        train_dataset['positions'], dtype=tf.float32)
-    tf_test_pos = tf.convert_to_tensor(
-        test_dataset['positions'], dtype=tf.float32)
-
-    if args['model'] == 'poly_physical':
-        # Concatenate the Zernike and the positions from train and test datasets
-        all_zernike_prior = np.concatenate(
-            (train_dataset['zernike_prior'], test_dataset['zernike_prior']),
-            axis=0
-        )
-        all_pos = np.concatenate(
-            (train_dataset['positions'], test_dataset['positions']), axis=0)
         # Convert to tensor
-        tf_zernike_prior_all = tf.convert_to_tensor(
-            all_zernike_prior, dtype=tf.float32)
-        tf_pos_all = tf.convert_to_tensor(all_pos, dtype=tf.float32)
+        tf_noisy_train_stars = tf.convert_to_tensor(train_dataset['noisy_stars'], dtype=tf.float32)
+        tf_train_pos = tf.convert_to_tensor(train_dataset['positions'], dtype=tf.float32)
+        tf_test_pos = tf.convert_to_tensor(test_dataset['positions'], dtype=tf.float32)
 
-    if args['model_eval'] == 'physical':
-        # Concatenate both datasets
-        all_zernike_GT = np.concatenate(
-            (train_dataset['zernike_GT'], test_dataset['zernike_GT']),
-            axis=0
+        if args['model'] == 'poly_physical':
+            # Concatenate the Zernike and the positions from train and test datasets
+            all_zernike_prior = np.concatenate(
+                (train_dataset['zernike_prior'], test_dataset['zernike_prior']), axis=0
+            )
+            all_pos = np.concatenate((train_dataset['positions'], test_dataset['positions']), axis=0)
+            # Convert to tensor
+            tf_zernike_prior_all = tf.convert_to_tensor(all_zernike_prior, dtype=tf.float32)
+            tf_pos_all = tf.convert_to_tensor(all_pos, dtype=tf.float32)
+
+        if args['model_eval'] == 'physical':
+            # Concatenate both datasets
+            all_zernike_GT = np.concatenate(
+                (train_dataset['zernike_GT'], test_dataset['zernike_GT']),
+                axis=0
+            )
+            all_pos = np.concatenate((train_dataset['positions'], test_dataset['positions']), axis=0)
+            # Convert to tensor
+            tf_zernike_GT_all = tf.convert_to_tensor(all_zernike_GT, dtype=tf.float32)
+            tf_pos_all = tf.convert_to_tensor(all_pos, dtype=tf.float32)
+
+        print('Dataset parameters:')
+        print(train_parameters)
+
+        ## Prepare models
+        # Generate Zernike maps
+        zernikes = wf_utils.zernike_generator(
+            n_zernikes=args['n_zernikes'], wfe_dim=args['pupil_diameter']
         )
-        all_pos = np.concatenate(
-            (train_dataset['positions'], test_dataset['positions']), axis=0)
-        # Convert to tensor
-        tf_zernike_GT_all = tf.convert_to_tensor(
-            all_zernike_GT, dtype=tf.float32)
-        tf_pos_all = tf.convert_to_tensor(all_pos, dtype=tf.float32)
+        # Now as cubes
+        np_zernike_cube = np.zeros((len(zernikes), zernikes[0].shape[0], zernikes[0].shape[1]))
 
-    print('Dataset parameters:')
-    print(train_parameters)
+        for it in range(len(zernikes)):
+            np_zernike_cube[it, :, :] = zernikes[it]
 
-    # Prepare models
-    # Generate Zernike maps
-    zernikes = wf_utils.zernike_generator(
-        n_zernikes=args['n_zernikes'], wfe_dim=args['pupil_diameter']
-    )
-    # Now as cubes
-    np_zernike_cube = np.zeros(
-        (len(zernikes), zernikes[0].shape[0], zernikes[0].shape[1]))
+        np_zernike_cube[np.isnan(np_zernike_cube)] = 0
+        tf_zernike_cube = tf.convert_to_tensor(np_zernike_cube, dtype=tf.float32)
 
-    for it in range(len(zernikes)):
-        np_zernike_cube[it, :, :] = zernikes[it]
+        # New interp features backwards compatibility
+        if 'interp_pts_per_bin' not in args:
+            args['interp_pts_per_bin'] = 0
+            args['extrapolate'] = True
+            args['sed_interp_kind'] = 'linear'
 
-    np_zernike_cube[np.isnan(np_zernike_cube)] = 0
-    tf_zernike_cube = tf.convert_to_tensor(np_zernike_cube, dtype=tf.float32)
-
-    # Prepare np input
-    simPSF_np = SimPSFToolkit(
-        zernikes,
-        max_order=args['n_zernikes'],
-        pupil_diameter=args['pupil_diameter'],
-        output_dim=args['output_dim'],
-        oversampling_rate=args['oversampling_rate'],
-        output_Q=args['output_q']
-    )
-    simPSF_np.gen_random_Z_coeffs(max_order=args['n_zernikes'])
-    z_coeffs = simPSF_np.normalize_zernikes(
-        simPSF_np.get_z_coeffs(), simPSF_np.max_wfe_rms)
-    simPSF_np.set_z_coeffs(z_coeffs)
-    simPSF_np.generate_mono_PSF(lambda_obs=0.7, regen_sample=False)
-
-    # Obscurations
-    obscurations = simPSF_np.generate_pupil_obscurations(
-        N_pix=args['pupil_diameter'], N_filter=2)
-    tf_obscurations = tf.convert_to_tensor(obscurations, dtype=tf.complex64)
-
-    # Outputs (needed for the MCCD model)
-    outputs = tf_noisy_train_stars
-
-    # Create the model
-    # Select the model
-    if args['model'] == 'mccd' or args['model'] == 'graph':
-        poly_dic, graph_dic = tf_mccd_psf_field.build_mccd_spatial_dic_v2(
-            obs_stars=outputs.numpy(),
-            obs_pos=tf_train_pos.numpy(),
-            x_lims=args['x_lims'],
-            y_lims=args['y_lims'],
-            d_max=args['d_max_nonparam'],
-            graph_features=args['graph_features']
+        # Prepare np input
+        simPSF_np = SimPSFToolkit(
+            zernikes,
+            max_order=args['n_zernikes'],
+            pupil_diameter=args['pupil_diameter'],
+            output_dim=args['output_dim'],
+            oversampling_rate=args['oversampling_rate'],
+            output_Q=args['output_q'],
+            interp_pts_per_bin=args['interp_pts_per_bin'],
+            extrapolate=args['extrapolate'],
+            SED_interp_kind=args['sed_interp_kind'],
+            SED_sigma=args['sed_sigma']
         )
-        spatial_dic = [poly_dic, graph_dic]
+        simPSF_np.gen_random_Z_coeffs(max_order=args['n_zernikes'])
+        z_coeffs = simPSF_np.normalize_zernikes(simPSF_np.get_z_coeffs(), simPSF_np.max_wfe_rms)
+        simPSF_np.set_z_coeffs(z_coeffs)
+        simPSF_np.generate_mono_PSF(lambda_obs=0.7, regen_sample=False)
 
-        if args['model'] == 'mccd':
+        # Obscurations
+        obscurations = simPSF_np.generate_pupil_obscurations(N_pix=args['pupil_diameter'], N_filter=2)
+        tf_obscurations = tf.convert_to_tensor(obscurations, dtype=tf.complex64)
+
+        # Outputs (needed for the MCCD model)
+        outputs = tf_noisy_train_stars
+
+        ## Create the model
+        ## Select the model
+        if args['model'] == 'mccd' or args['model'] == 'graph':
+            poly_dic, graph_dic = tf_mccd_psf_field.build_mccd_spatial_dic_v2(
+                obs_stars=outputs.numpy(),
+                obs_pos=tf_train_pos.numpy(),
+                x_lims=args['x_lims'],
+                y_lims=args['y_lims'],
+                d_max=args['d_max_nonparam'],
+                graph_features=args['graph_features']
+            )
+            spatial_dic = [poly_dic, graph_dic]
+
+            if args['model'] == 'mccd':
+                # Initialize the model
+                tf_semiparam_field = tf_mccd_psf_field.TF_SP_MCCD_field(
+                    zernike_maps=tf_zernike_cube,
+                    obscurations=tf_obscurations,
+                    batch_size=args['batch_size'],
+                    obs_pos=tf_train_pos,
+                    spatial_dic=spatial_dic,
+                    output_Q=args['output_q'],
+                    l2_param=args['l2_param'],
+                    d_max_nonparam=args['d_max_nonparam'],
+                    graph_features=args['graph_features'],
+                    l1_rate=args['l1_rate'],
+                    output_dim=args['output_dim'],
+                    n_zernikes=args['n_zernikes'],
+                    d_max=args['d_max'],
+                    x_lims=args['x_lims'],
+                    y_lims=args['y_lims']
+                )
+
+            elif args['model'] == 'graph':
+                # Initialize the model
+                tf_semiparam_field = tf_mccd_psf_field.TF_SP_graph_field(
+                    zernike_maps=tf_zernike_cube,
+                    obscurations=tf_obscurations,
+                    batch_size=args['batch_size'],
+                    obs_pos=tf_train_pos,
+                    spatial_dic=spatial_dic,
+                    output_Q=args['output_q'],
+                    l2_param=args['l2_param'],
+                    graph_features=args['graph_features'],
+                    l1_rate=args['l1_rate'],
+                    output_dim=args['output_dim'],
+                    n_zernikes=args['n_zernikes'],
+                    d_max=args['d_max'],
+                    x_lims=args['x_lims'],
+                    y_lims=args['y_lims']
+                )
+
+        elif args['model'] == 'poly':
             # Initialize the model
-            tf_semiparam_field = tf_mccd_psf_field.TF_SP_MCCD_field(
+            tf_semiparam_field = tf_psf_field.TF_SemiParam_field(
                 zernike_maps=tf_zernike_cube,
                 obscurations=tf_obscurations,
                 batch_size=args['batch_size'],
-                obs_pos=tf_train_pos,
-                spatial_dic=spatial_dic,
                 output_Q=args['output_q'],
-                l2_param=args['l2_param'],
                 d_max_nonparam=args['d_max_nonparam'],
-                graph_features=args['graph_features'],
-                l1_rate=args['l1_rate'],
+                l2_param=args['l2_param'],
                 output_dim=args['output_dim'],
                 n_zernikes=args['n_zernikes'],
                 d_max=args['d_max'],
@@ -667,18 +714,14 @@ def evaluate_model(**args):
                 y_lims=args['y_lims']
             )
 
-        elif args['model'] == 'graph':
+        elif args['model'] == 'param':
             # Initialize the model
-            tf_semiparam_field = tf_mccd_psf_field.TF_SP_graph_field(
+            tf_semiparam_field = tf_psf_field.TF_PSF_field_model(
                 zernike_maps=tf_zernike_cube,
                 obscurations=tf_obscurations,
                 batch_size=args['batch_size'],
-                obs_pos=tf_train_pos,
-                spatial_dic=spatial_dic,
                 output_Q=args['output_q'],
                 l2_param=args['l2_param'],
-                graph_features=args['graph_features'],
-                l1_rate=args['l1_rate'],
                 output_dim=args['output_dim'],
                 n_zernikes=args['n_zernikes'],
                 d_max=args['d_max'],
@@ -686,280 +729,289 @@ def evaluate_model(**args):
                 y_lims=args['y_lims']
             )
 
-    elif args['model'] == 'poly':
-        # Initialize the model
-        tf_semiparam_field = tf_psf_field.TF_SemiParam_field(
-            zernike_maps=tf_zernike_cube,
-            obscurations=tf_obscurations,
-            batch_size=args['batch_size'],
-            output_Q=args['output_q'],
-            d_max_nonparam=args['d_max_nonparam'],
-            l2_param=args['l2_param'],
-            output_dim=args['output_dim'],
-            n_zernikes=args['n_zernikes'],
-            d_max=args['d_max'],
-            x_lims=args['x_lims'],
-            y_lims=args['y_lims']
+        elif args['model'] == 'poly_physical':
+            # Initialize the model
+            tf_semiparam_field = tf_psf_field.TF_physical_poly_field(
+                zernike_maps=tf_zernike_cube,
+                obscurations=tf_obscurations,
+                batch_size=args['batch_size'],
+                obs_pos=tf_pos_all,
+                zks_prior=tf_zernike_prior_all,
+                output_Q=args['output_q'],
+                d_max_nonparam=args['d_max_nonparam'],
+                l2_param=args['l2_param'],
+                output_dim=args['output_dim'],
+                n_zks_param=args['n_zernikes'],
+                d_max=args['d_max'],
+                x_lims=args['x_lims'],
+                y_lims=args['y_lims'],
+                interpolation_type=args['interpolation_type'],
+            )
+
+        ## Load the model's weights
+        tf_semiparam_field.load_weights(weights_paths)
+
+        # If eval_only_param is true we put non param model to zero.
+        if 'eval_only_param' not in args:
+            args['eval_only_param'] = False
+        elif args['eval_only_param']:
+            if args['project_dd_features']:
+                tf_semiparam_field.project_DD_features(tf_zernike_cube)
+            tf_semiparam_field.set_zero_nonparam()
+
+        ## Prepare ground truth model
+        # Generate Zernike maps
+        zernikes = wf_utils.zernike_generator(
+            n_zernikes=args['gt_n_zernikes'], wfe_dim=args['pupil_diameter']
+        )
+        # Now as cubes
+        np_zernike_cube = np.zeros((len(zernikes), zernikes[0].shape[0], zernikes[0].shape[1]))
+        for it in range(len(zernikes)):
+            np_zernike_cube[it, :, :] = zernikes[it]
+
+        np_zernike_cube[np.isnan(np_zernike_cube)] = 0
+        tf_zernike_cube = tf.convert_to_tensor(np_zernike_cube, dtype=tf.float32)
+
+        if args['model_eval'] == 'physical':
+            # Initialize the model
+            GT_tf_semiparam_field = tf_psf_field.TF_GT_physical_field(
+                zernike_maps=tf_zernike_cube,
+                obscurations=tf_obscurations,
+                batch_size=args['batch_size'],
+                obs_pos=tf_pos_all,
+                zks_prior=tf_zernike_GT_all,
+                output_Q=args['output_q'],
+                output_dim=args['output_dim'],
+            )
+        elif args['model_eval'] == 'poly':
+            # Initialize the model
+            GT_tf_semiparam_field = tf_psf_field.TF_SemiParam_field(
+                zernike_maps=tf_zernike_cube,
+                obscurations=tf_obscurations,
+                batch_size=args['batch_size'],
+                output_Q=args['output_q'],
+                d_max_nonparam=args['d_max_nonparam'],
+                output_dim=args['output_dim'],
+                n_zernikes=args['gt_n_zernikes'],
+                # d_max_GT may differ from the current d_max of the parametric model
+                # d_max=args['d_max'],
+                d_max=d_max_gt,
+                x_lims=args['x_lims'],
+                y_lims=args['y_lims']
+            )
+            # For the Ground truth model
+            GT_tf_semiparam_field.tf_poly_Z_field.assign_coeff_matrix(train_C_poly)
+            GT_tf_semiparam_field.set_zero_nonparam()
+
+        ## Metric evaluation on the test dataset
+        print('\n***\nMetric evaluation on the test dataset\n***\n')
+
+        if 'n_bins_gt' not in args:
+            args['n_bins_gt'] = args['n_bins_lda']
+
+        # Polychromatic star reconstructions
+        print('Computing polychromatic metrics at low resolution.')
+        rmse, rel_rmse, std_rmse, std_rel_rmse = wf_metrics.compute_poly_metric(
+            tf_semiparam_field=tf_semiparam_field,
+            GT_tf_semiparam_field=GT_tf_semiparam_field,
+            simPSF_np=simPSF_np,
+            tf_pos=tf_test_pos,
+            tf_SEDs=test_SEDs,
+            n_bins_lda=args['n_bins_lda'],
+            n_bins_gt=args['n_bins_gt'],
+            batch_size=args['eval_batch_size'],
+            dataset_dict=test_dataset,
         )
 
-    elif args['model'] == 'param':
-        # Initialize the model
-        tf_semiparam_field = tf_psf_field.TF_PSF_field_model(
-            zernike_maps=tf_zernike_cube,
-            obscurations=tf_obscurations,
-            batch_size=args['batch_size'],
-            output_Q=args['output_q'],
-            l2_param=args['l2_param'],
-            output_dim=args['output_dim'],
-            n_zernikes=args['n_zernikes'],
-            d_max=args['d_max'],
-            x_lims=args['x_lims'],
-            y_lims=args['y_lims']
+        poly_metric = {
+            'rmse': rmse,
+            'rel_rmse': rel_rmse,
+            'std_rmse': std_rmse,
+            'std_rel_rmse': std_rel_rmse
+        }
+
+        # Monochromatic star reconstructions
+        if args['eval_mono_metric_rmse'] is True or 'eval_mono_metric_rmse' not in args:
+            print('Computing monochromatic metrics.')
+            lambda_list = np.arange(0.55, 0.9, 0.01)  # 10nm separation
+            rmse_lda, rel_rmse_lda, std_rmse_lda, std_rel_rmse_lda = wf_metrics.compute_mono_metric(
+                tf_semiparam_field=tf_semiparam_field,
+                GT_tf_semiparam_field=GT_tf_semiparam_field,
+                simPSF_np=simPSF_np,
+                tf_pos=tf_test_pos,
+                lambda_list=lambda_list
+            )
+
+            mono_metric = {
+                'rmse_lda': rmse_lda,
+                'rel_rmse_lda': rel_rmse_lda,
+                'std_rmse_lda': std_rmse_lda,
+                'std_rel_rmse_lda': std_rel_rmse_lda
+            }
+        else:
+            mono_metric = None
+
+        # OPD metrics
+        if args['eval_opd_metric_rmse'] is True or 'eval_opd_metric_rmse' not in args:
+            print('Computing OPD metrics.')
+            rmse_opd, rel_rmse_opd, rmse_std_opd, rel_rmse_std_opd = wf_metrics.compute_opd_metrics(
+                tf_semiparam_field=tf_semiparam_field,
+                GT_tf_semiparam_field=GT_tf_semiparam_field,
+                pos=tf_test_pos,
+                batch_size=args['eval_batch_size']
+            )
+
+            opd_metric = {
+                'rmse_opd': rmse_opd,
+                'rel_rmse_opd': rel_rmse_opd,
+                'rmse_std_opd': rmse_std_opd,
+                'rel_rmse_std_opd': rel_rmse_std_opd
+            }
+        else:
+            opd_metric = None
+
+
+        # Check if all stars SR pixel RMSE are needed
+        if 'opt_stars_rel_pix_rmse' not in args:
+            args['opt_stars_rel_pix_rmse'] = False
+
+        # Shape metrics
+        print('Computing polychromatic high-resolution metrics and shape metrics.')
+        shape_results_dict = wf_metrics.compute_shape_metrics(
+            tf_semiparam_field=tf_semiparam_field,
+            GT_tf_semiparam_field=GT_tf_semiparam_field,
+            simPSF_np=simPSF_np,
+            SEDs=test_SEDs,
+            tf_pos=tf_test_pos,
+            n_bins_lda=args['n_bins_lda'],
+            n_bins_gt=args['n_bins_gt'],
+            output_Q=1,
+            output_dim=64,
+            batch_size=args['eval_batch_size'],
+            opt_stars_rel_pix_rmse=args['opt_stars_rel_pix_rmse'],
+            dataset_dict=test_dataset,
         )
 
-    elif args['model'] == 'poly_physical':
-        # Initialize the model
-        tf_semiparam_field = tf_psf_field.TF_physical_poly_field(
-            zernike_maps=tf_zernike_cube,
-            obscurations=tf_obscurations,
-            batch_size=args['batch_size'],
-            obs_pos=tf_pos_all,
-            zks_prior=tf_zernike_prior_all,
-            output_Q=args['output_q'],
-            d_max_nonparam=args['d_max_nonparam'],
-            l2_param=args['l2_param'],
-            output_dim=args['output_dim'],
-            n_zks_param=args['n_zernikes'],
-            d_max=args['d_max'],
-            x_lims=args['x_lims'],
-            y_lims=args['y_lims'],
-            interpolation_type=args['interpolation_type'],
+        # Save metrics
+        test_metrics = {
+            'poly_metric': poly_metric,
+            'mono_metric': mono_metric,
+            'opd_metric': opd_metric,
+            'shape_results_dict': shape_results_dict
+        }
+
+        ## Metric evaluation on the train dataset
+        print('\n***\nMetric evaluation on the train dataset\n***\n')
+
+        # Polychromatic star reconstructions
+        print('Computing polychromatic metrics at low resolution.')
+        rmse, rel_rmse, std_rmse, std_rel_rmse = wf_metrics.compute_poly_metric(
+            tf_semiparam_field=tf_semiparam_field,
+            GT_tf_semiparam_field=GT_tf_semiparam_field,
+            simPSF_np=simPSF_np,
+            tf_pos=tf_train_pos,
+            tf_SEDs=train_SEDs,
+            n_bins_lda=args['n_bins_lda'],
+            n_bins_gt=args['n_bins_gt'],
+            batch_size=args['eval_batch_size'],
+            dataset_dict=train_dataset,
         )
 
-    # Load the model's weights
-    tf_semiparam_field.load_weights(weights_paths)
+        train_poly_metric = {
+            'rmse': rmse,
+            'rel_rmse': rel_rmse,
+            'std_rmse': std_rmse,
+            'std_rel_rmse': std_rel_rmse
+        }
 
-    # If eval_only_param is true we put non param model to zero.
-    if 'eval_only_param' not in args:
-        args['eval_only_param'] = False
-    elif args['eval_only_param']:
-        if args['project_dd_features']:
-            tf_semiparam_field.project_DD_features(tf_zernike_cube)
-        tf_semiparam_field.set_zero_nonparam()
+        # Monochromatic star reconstructions
+        if args['eval_mono_metric_rmse'] is True or 'eval_mono_metric_rmse' not in args:
+            print('Computing monochromatic metrics.')
+            lambda_list = np.arange(0.55, 0.9, 0.01)  # 10nm separation
+            rmse_lda, rel_rmse_lda, std_rmse_lda, std_rel_rmse_lda = wf_metrics.compute_mono_metric(
+                tf_semiparam_field=tf_semiparam_field,
+                GT_tf_semiparam_field=GT_tf_semiparam_field,
+                simPSF_np=simPSF_np,
+                tf_pos=tf_train_pos,
+                lambda_list=lambda_list
+            )
 
-    # Prepare ground truth model
-    # Generate Zernike maps
-    zernikes = wf_utils.zernike_generator(
-        n_zernikes=args['gt_n_zernikes'], wfe_dim=args['pupil_diameter']
-    )
-    # Now as cubes
-    np_zernike_cube = np.zeros(
-        (len(zernikes), zernikes[0].shape[0], zernikes[0].shape[1]))
-    for it in range(len(zernikes)):
-        np_zernike_cube[it, :, :] = zernikes[it]
+            train_mono_metric = {
+                'rmse_lda': rmse_lda,
+                'rel_rmse_lda': rel_rmse_lda,
+                'std_rmse_lda': std_rmse_lda,
+                'std_rel_rmse_lda': std_rel_rmse_lda
+            }
+        else:
+            train_mono_metric = None
 
-    np_zernike_cube[np.isnan(np_zernike_cube)] = 0
-    tf_zernike_cube = tf.convert_to_tensor(np_zernike_cube, dtype=tf.float32)
 
-    if args['model_eval'] == 'physical':
-        # Initialize the model
-        GT_tf_semiparam_field = tf_psf_field.TF_GT_physical_field(
-            zernike_maps=tf_zernike_cube,
-            obscurations=tf_obscurations,
-            batch_size=args['batch_size'],
-            obs_pos=tf_pos_all,
-            zks_prior=tf_zernike_GT_all,
-            output_Q=args['output_q'],
-            output_dim=args['output_dim'],
-        )
-    elif args['model_eval'] == 'poly':
-        # Initialize the model
-        GT_tf_semiparam_field = tf_psf_field.TF_SemiParam_field(
-            zernike_maps=tf_zernike_cube,
-            obscurations=tf_obscurations,
-            batch_size=args['batch_size'],
-            output_Q=args['output_q'],
-            d_max_nonparam=args['d_max_nonparam'],
-            output_dim=args['output_dim'],
-            n_zernikes=args['gt_n_zernikes'],
-            # d_max_GT may differ from the current d_max of the parametric model
-            # d_max=args['d_max'],
-            d_max=d_max_gt,
-            x_lims=args['x_lims'],
-            y_lims=args['y_lims']
-        )
-        # For the Ground truth model
-        GT_tf_semiparam_field.tf_poly_Z_field.assign_coeff_matrix(train_C_poly)
-        _ = GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat.assign(
-            np.zeros_like(GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat)
-        )
+        # OPD metrics
+        if args['eval_opd_metric_rmse'] is True or 'eval_opd_metric_rmse' not in args:
+            print('Computing OPD metrics.')
+            rmse_opd, rel_rmse_opd, rmse_std_opd, rel_rmse_std_opd = wf_metrics.compute_opd_metrics(
+                tf_semiparam_field=tf_semiparam_field,
+                GT_tf_semiparam_field=GT_tf_semiparam_field,
+                pos=tf_train_pos,
+                batch_size=args['eval_batch_size']
+            )
 
-    # Metric evaluation on the test dataset
-    print('\n***\nMetric evaluation on the test dataset\n***\n')
+            train_opd_metric = {
+                'rmse_opd': rmse_opd,
+                'rel_rmse_opd': rel_rmse_opd,
+                'rmse_std_opd': rmse_std_opd,
+                'rel_rmse_std_opd': rel_rmse_std_opd
+            }
+        else:
+            train_opd_metric = None
 
-    # Polychromatic star reconstructions
-    rmse, rel_rmse, std_rmse, std_rel_rmse = wf_metrics.compute_poly_metric(
-        tf_semiparam_field=tf_semiparam_field,
-        GT_tf_semiparam_field=GT_tf_semiparam_field,
-        simPSF_np=simPSF_np,
-        tf_pos=tf_test_pos,
-        tf_SEDs=test_SEDs,
-        n_bins_lda=args['n_bins_lda'],
-        batch_size=args['eval_batch_size']
-    )
 
-    poly_metric = {
-        'rmse': rmse,
-        'rel_rmse': rel_rmse,
-        'std_rmse': std_rmse,
-        'std_rel_rmse': std_rel_rmse
-    }
+        # Shape metrics
+        if args['eval_train_shape_sr_metric_rmse'] is True or 'eval_train_shape_sr_metric_rmse' not in args:
+            print('Computing polychromatic high-resolution metrics and shape metrics.')
+            train_shape_results_dict = wf_metrics.compute_shape_metrics(
+                tf_semiparam_field=tf_semiparam_field,
+                GT_tf_semiparam_field=GT_tf_semiparam_field,
+                simPSF_np=simPSF_np,
+                SEDs=train_SEDs,
+                tf_pos=tf_train_pos,
+                n_bins_lda=args['n_bins_lda'],
+                n_bins_gt=args['n_bins_gt'],
+                output_Q=1,
+                output_dim=64,
+                batch_size=args['eval_batch_size'],
+                dataset_dict=train_dataset,
+            )
 
-    # Monochromatic star reconstructions
-    lambda_list = np.arange(0.55, 0.9, 0.01)  # 10nm separation
-    rmse_lda, rel_rmse_lda, std_rmse_lda, std_rel_rmse_lda = wf_metrics.compute_mono_metric(
-        tf_semiparam_field=tf_semiparam_field,
-        GT_tf_semiparam_field=GT_tf_semiparam_field,
-        simPSF_np=simPSF_np,
-        tf_pos=tf_test_pos,
-        lambda_list=lambda_list
-    )
+            # Save metrics into dictionary
+            train_metrics = {
+                'poly_metric': train_poly_metric,
+                'mono_metric': train_mono_metric,
+                'opd_metric': train_opd_metric,
+                'shape_results_dict': train_shape_results_dict
+            }
+        else:
+            train_metrics = None
 
-    mono_metric = {
-        'rmse_lda': rmse_lda,
-        'rel_rmse_lda': rel_rmse_lda,
-        'std_rmse_lda': std_rmse_lda,
-        'std_rel_rmse_lda': std_rel_rmse_lda
-    }
+        ## Save results
+        metrics = {'test_metrics': test_metrics, 'train_metrics': train_metrics}
+        output_path = args['metric_base_path'] + 'metrics-' + run_id_name
+        np.save(output_path, metrics, allow_pickle=True)
 
-    # OPD metrics
-    rmse_opd, rel_rmse_opd, rmse_std_opd, rel_rmse_std_opd = wf_metrics.compute_opd_metrics(
-        tf_semiparam_field=tf_semiparam_field,
-        GT_tf_semiparam_field=GT_tf_semiparam_field,
-        pos=tf_test_pos,
-        batch_size=args['eval_batch_size']
-    )
+        ## Print final time
+        final_time = time.time()
+        print('\nTotal elapsed time: %f' % (final_time - starting_time))
 
-    opd_metric = {
-        'rmse_opd': rmse_opd,
-        'rel_rmse_opd': rel_rmse_opd,
-        'rmse_std_opd': rmse_std_opd,
-        'rel_rmse_std_opd': rel_rmse_std_opd
-    }
+        ## Close log file
+        print('\n Good bye..')
+        sys.stdout = old_stdout
+        log_file.close()
 
-    # Check if all stars SR pixel RMSE are needed
-    if 'opt_stars_rel_pix_rmse' not in args:
-        args['opt_stars_rel_pix_rmse'] = False
-
-    # Shape metrics
-    shape_results_dict = wf_metrics.compute_shape_metrics(
-        tf_semiparam_field=tf_semiparam_field,
-        GT_tf_semiparam_field=GT_tf_semiparam_field,
-        simPSF_np=simPSF_np,
-        SEDs=test_SEDs,
-        tf_pos=tf_test_pos,
-        n_bins_lda=args['n_bins_lda'],
-        output_Q=1,
-        output_dim=64,
-        batch_size=args['eval_batch_size'],
-        opt_stars_rel_pix_rmse=args['opt_stars_rel_pix_rmse']
-    )
-
-    # Save metrics
-    test_metrics = {
-        'poly_metric': poly_metric,
-        'mono_metric': mono_metric,
-        'opd_metric': opd_metric,
-        'shape_results_dict': shape_results_dict
-    }
-
-    # Metric evaluation on the train dataset
-    print('\n***\nMetric evaluation on the train dataset\n***\n')
-
-    # Polychromatic star reconstructions
-    rmse, rel_rmse, std_rmse, std_rel_rmse = wf_metrics.compute_poly_metric(
-        tf_semiparam_field=tf_semiparam_field,
-        GT_tf_semiparam_field=GT_tf_semiparam_field,
-        simPSF_np=simPSF_np,
-        tf_pos=tf_train_pos,
-        tf_SEDs=train_SEDs,
-        n_bins_lda=args['n_bins_lda'],
-        batch_size=args['eval_batch_size']
-    )
-
-    train_poly_metric = {
-        'rmse': rmse,
-        'rel_rmse': rel_rmse,
-        'std_rmse': std_rmse,
-        'std_rel_rmse': std_rel_rmse
-    }
-
-    # Monochromatic star reconstructions
-    lambda_list = np.arange(0.55, 0.9, 0.01)  # 10nm separation
-    rmse_lda, rel_rmse_lda, std_rmse_lda, std_rel_rmse_lda = wf_metrics.compute_mono_metric(
-        tf_semiparam_field=tf_semiparam_field,
-        GT_tf_semiparam_field=GT_tf_semiparam_field,
-        simPSF_np=simPSF_np,
-        tf_pos=tf_train_pos,
-        lambda_list=lambda_list
-    )
-
-    train_mono_metric = {
-        'rmse_lda': rmse_lda,
-        'rel_rmse_lda': rel_rmse_lda,
-        'std_rmse_lda': std_rmse_lda,
-        'std_rel_rmse_lda': std_rel_rmse_lda
-    }
-
-    # OPD metrics
-    rmse_opd, rel_rmse_opd, rmse_std_opd, rel_rmse_std_opd = wf_metrics.compute_opd_metrics(
-        tf_semiparam_field=tf_semiparam_field,
-        GT_tf_semiparam_field=GT_tf_semiparam_field,
-        pos=tf_train_pos,
-        batch_size=args['eval_batch_size']
-    )
-
-    train_opd_metric = {
-        'rmse_opd': rmse_opd,
-        'rel_rmse_opd': rel_rmse_opd,
-        'rmse_std_opd': rmse_std_opd,
-        'rel_rmse_std_opd': rel_rmse_std_opd
-    }
-
-    # Shape metrics
-    train_shape_results_dict = wf_metrics.compute_shape_metrics(
-        tf_semiparam_field=tf_semiparam_field,
-        GT_tf_semiparam_field=GT_tf_semiparam_field,
-        simPSF_np=simPSF_np,
-        SEDs=train_SEDs,
-        tf_pos=tf_train_pos,
-        n_bins_lda=args['n_bins_lda'],
-        output_Q=1,
-        output_dim=64,
-        batch_size=args['eval_batch_size']
-    )
-
-    # Save metrics into dictionary
-    train_metrics = {
-        'poly_metric': train_poly_metric,
-        'mono_metric': train_mono_metric,
-        'opd_metric': train_opd_metric,
-        'shape_results_dict': train_shape_results_dict
-    }
-
-    # Save results
-    metrics = {'test_metrics': test_metrics, 'train_metrics': train_metrics}
-    output_path = args['metric_base_path'] + 'metrics-' + run_id_name
-    np.save(output_path, metrics, allow_pickle=True)
-
-    # Print final time
-    final_time = time.time()
-    print('\nTotal elapsed time: %f' % (final_time - starting_time))
-
-    # Close log file
-    print('\n Good bye..')
-    sys.stdout = old_stdout
-    log_file.close()
+    except Exception as e:
+        print('Error: %s' % e)
+        sys.stdout = old_stdout
+        log_file.close()
+        raise e
 
 
 def plot_metrics(**args):
@@ -994,8 +1046,11 @@ def plot_metrics(**args):
             for _suff in args['suffix_id_name']
         ]
     else:
-        model_paths = [args['metric_base_path'] + 'metrics-' +
-                       run_id_no_suff + args['suffix_id_name'] + '.npy']
+        model_paths = [
+            args['metric_base_path'] + 'metrics-' + run_id_no_suff + args['suffix_id_name'] + '.npy'
+        ]
+
+    print('Model paths for performance plots: ', model_paths)
 
     # Load metrics
     try:
@@ -1041,230 +1096,228 @@ def plot_metrics(**args):
             ax2.set_ylabel('Relative error [%]')
             ax2.grid(False)
             plt.savefig(
-                plot_saving_path + plot_dataset + '-metrics-' +
-                run_id_no_suff + '_polyc_pixel_RMSE.png'
+                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff +
+                '_polyc_pixel_RMSE.png'
             )
             plt.show()
         except Exception:
             print(
                 'Problem with the performance metrics plot of pixel polychromatic errors.')
 
-        # Monochromatic
-        try:
-            fig = plt.figure(figsize=(12, 8))
-            ax1 = fig.add_subplot(111)
-            for it in range(n_datasets):
+        ## Monochromatic
+        if args['eval_mono_metric_rmse'] is True or 'eval_mono_metric_rmse' not in args:
+            try:
+                fig = plt.figure(figsize=(12, 8))
+                ax1 = fig.add_subplot(111)
+                for it in range(n_datasets):
+                    ax1.errorbar(
+                        x=lambda_list,
+                        y=metrics[it]['test_metrics']['mono_metric']['rmse_lda'],
+                        yerr=metrics[it]['test_metrics']['mono_metric']['std_rmse_lda'],
+                        label=args['model'] + args['suffix_id_name'][it],
+                        alpha=0.75
+                    )
+                plt.minorticks_on()
+                ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
+                ax1.legend()
+                ax1.set_title(
+                    'Stars ' + plot_dataset + '\n' + run_id_no_suff +
+                    '.\nMonochromatic pixel RMSE @ Euclid resolution'
+                )
+                ax1.set_xlabel('Wavelength [um]')
+                ax1.set_ylabel('Absolute error')
+
+                ax2 = ax1.twinx()
+                kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+                for it in range(n_datasets):
+                    ax2.plot(
+                        lambda_list, metrics[it]['test_metrics']['mono_metric']['rel_rmse_lda'],
+                        **kwargs
+                    )
+                ax2.set_ylabel('Relative error [%]')
+                ax2.grid(False)
+                plt.savefig(
+                    plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff +
+                    '_monochrom_pixel_RMSE.png'
+                )
+                plt.show()
+            except Exception:
+                print('Problem with the performance metrics plot of pixel monochromatic errors.')
+
+        ## OPD results
+        if args['eval_opd_metric_rmse'] is True or 'eval_opd_metric_rmse' not in args:
+            try:
+                res = extract_opd_results(metrics, test_train=plot_dataset)
+                model_opd_rmse = res[0]
+                model_opd_std_rmse = res[1]
+                model_opd_rel_rmse = res[2]
+                model_opd_std_rel_rmse = res[3]
+
+                fig = plt.figure(figsize=(12, 8))
+                ax1 = fig.add_subplot(111)
                 ax1.errorbar(
-                    x=lambda_list,
-                    y=metrics[it]['test_metrics']['mono_metric']['rmse_lda'],
-                    yerr=metrics[it]['test_metrics']['mono_metric']['std_rmse_lda'],
-                    label=args['model'] + args['suffix_id_name'][it],
+                    x=star_list,
+                    y=model_opd_rmse,
+                    yerr=model_opd_std_rmse,
+                    label=run_id_no_suff,
                     alpha=0.75
                 )
-            plt.minorticks_on()
-            ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
-            ax1.legend()
-            ax1.set_title(
-                'Stars ' + plot_dataset + '\n' + run_id_no_suff +
-                '.\nMonochromatic pixel RMSE @ Euclid resolution'
-            )
-            ax1.set_xlabel('Wavelength [um]')
-            ax1.set_ylabel('Absolute error')
+                plt.minorticks_on()
+                ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
+                ax1.legend()
+                ax1.set_title('Stars ' + plot_dataset + '\n' + run_id_no_suff + '.\nOPD RMSE')
+                ax1.set_xlabel('Number of stars')
+                ax1.set_ylabel('Absolute error')
 
-            ax2 = ax1.twinx()
-            kwargs = dict(linewidth=2, linestyle='dashed',
-                          markersize=8, marker='^', alpha=0.5)
-            for it in range(n_datasets):
-                ax2.plot(
-                    lambda_list, metrics[it]['test_metrics']['mono_metric']['rel_rmse_lda'], **kwargs
+                ax2 = ax1.twinx()
+                kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+                ax2.plot(star_list, model_opd_rel_rmse, **kwargs)
+                ax2.set_ylabel('Relative error [%]')
+                ax2.grid(False)
+                plt.savefig(
+                    plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_OPD_RMSE.png'
                 )
-            ax2.set_ylabel('Relative error [%]')
-            ax2.grid(False)
-            plt.savefig(
-                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff +
-                '_monochrom_pixel_RMSE.png'
-            )
-            plt.show()
-        except Exception:
-            print(
-                'Problem with the performance metrics plot of pixel monochromatic errors.')
+                plt.show()
+            except Exception:
+                print('Problem with the performance metrics plot of OPD errors.')
 
-        # OPD results
-        try:
-            res = extract_opd_results(metrics, test_train=plot_dataset)
-            model_opd_rmse = res[0]
-            model_opd_std_rmse = res[1]
-            model_opd_rel_rmse = res[2]
-            model_opd_std_rel_rmse = res[3]
+        ## Shape results
+        if args['eval_train_shape_sr_metric_rmse'] is True or 'eval_train_shape_sr_metric_rmse' not in args or plot_dataset=='test':
+            model_e1, model_e2, model_R2 = extract_shape_results(metrics, test_train=plot_dataset)
+            model_e1_rmse = model_e1[0]
+            model_e1_std_rmse = model_e1[1]
+            model_e1_rel_rmse = model_e1[2]
+            model_e1_std_rel_rmse = model_e1[3]
+            model_e2_rmse = model_e2[0]
+            model_e2_std_rmse = model_e2[1]
+            model_e2_rel_rmse = model_e2[2]
+            model_e2_std_rel_rmse = model_e2[3]
+            model_rmse_R2_meanR2 = model_R2[0]
+            model_std_rmse_R2_meanR2 = model_R2[1]
 
-            fig = plt.figure(figsize=(12, 8))
-            ax1 = fig.add_subplot(111)
-            ax1.errorbar(
-                x=star_list,
-                y=model_opd_rmse,
-                yerr=model_opd_std_rmse,
-                label=run_id_no_suff,
-                alpha=0.75
-            )
-            plt.minorticks_on()
-            ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
-            ax1.legend()
-            ax1.set_title('Stars ' + plot_dataset + '\n' +
-                          run_id_no_suff + '.\nOPD RMSE')
-            ax1.set_xlabel('Number of stars')
-            ax1.set_ylabel('Absolute error')
+            # Compute Euclid relative error values
+            model_e1_rel_euclid = model_e1_rmse / e1_req_euclid
+            model_e2_rel_euclid = model_e2_rmse / e2_req_euclid
+            model_R2_rel_euclid = model_rmse_R2_meanR2 / R2_req_euclid
 
-            ax2 = ax1.twinx()
-            kwargs = dict(linewidth=2, linestyle='dashed',
-                          markersize=8, marker='^', alpha=0.5)
-            ax2.plot(star_list, model_opd_rel_rmse, **kwargs)
-            ax2.set_ylabel('Relative error [%]')
-            ax2.grid(False)
-            plt.savefig(
-                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff + '_OPD_RMSE.png'
-            )
-            plt.show()
-        except Exception:
-            print('Problem with the performance metrics plot of OPD errors.')
 
-        # Shape results
-        model_e1, model_e2, model_R2 = extract_shape_results(
-            metrics, test_train=plot_dataset)
-        model_e1_rmse = model_e1[0]
-        model_e1_std_rmse = model_e1[1]
-        model_e1_rel_rmse = model_e1[2]
-        model_e1_std_rel_rmse = model_e1[3]
-        model_e2_rmse = model_e2[0]
-        model_e2_std_rmse = model_e2[1]
-        model_e2_rel_rmse = model_e2[2]
-        model_e2_std_rel_rmse = model_e2[3]
-        model_rmse_R2_meanR2 = model_R2[0]
-        model_std_rmse_R2_meanR2 = model_R2[1]
+            # Plot e1 and e2
+            try:
+                fig = plt.figure(figsize=(12, 8))
+                ax1 = fig.add_subplot(111)
+                ax1.errorbar(
+                    x=star_list,
+                    y=model_e1_rmse,
+                    yerr=model_e1_std_rmse,
+                    label='e1 ' + run_id_no_suff,
+                    alpha=0.75
+                )
+                ax1.errorbar(
+                    x=star_list,
+                    y=model_e2_rmse,
+                    yerr=model_e2_std_rmse,
+                    label='e2 ' + run_id_no_suff,
+                    alpha=0.75
+                )
+                plt.minorticks_on()
+                ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
+                ax1.legend()
+                ax1.set_title(
+                    'Stars ' + plot_dataset + '\n' + run_id_no_suff +
+                    '\ne1, e2 RMSE @ 3x Euclid resolution'
+                )
+                ax1.set_xlabel('Number of stars')
+                ax1.set_ylabel('Absolute error')
 
-        # Compute Euclid relative error values
-        model_e1_rel_euclid = model_e1_rmse / e1_req_euclid
-        model_e2_rel_euclid = model_e2_rmse / e2_req_euclid
-        model_R2_rel_euclid = model_rmse_R2_meanR2 / R2_req_euclid
+                ax2 = ax1.twinx()
+                kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+                ax2.plot(star_list, model_e1_rel_euclid, **kwargs)
+                ax2.plot(star_list, model_e2_rel_euclid, **kwargs)
+                ax2.set_ylabel('Times over Euclid req.')
+                ax2.grid(False)
+                plt.savefig(
+                    plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff +
+                    '_shape_e1_e2_RMSE.png'
+                )
+                plt.show()
+            except Exception:
+                print('Problem with the performance metrics plot of e1/e2 errors.')
 
-        # Plot e1 and e2
-        try:
-            fig = plt.figure(figsize=(12, 8))
-            ax1 = fig.add_subplot(111)
-            ax1.errorbar(
-                x=star_list,
-                y=model_e1_rmse,
-                yerr=model_e1_std_rmse,
-                label='e1 ' + run_id_no_suff,
-                alpha=0.75
-            )
-            ax1.errorbar(
-                x=star_list,
-                y=model_e2_rmse,
-                yerr=model_e2_std_rmse,
-                label='e2 ' + run_id_no_suff,
-                alpha=0.75
-            )
-            plt.minorticks_on()
-            ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
-            ax1.legend()
-            ax1.set_title(
-                'Stars ' + plot_dataset + '\n' + run_id_no_suff +
-                '\ne1, e2 RMSE @ 3x Euclid resolution'
-            )
-            ax1.set_xlabel('Number of stars')
-            ax1.set_ylabel('Absolute error')
+            # Plot R2
+            try:
+                fig = plt.figure(figsize=(12, 8))
+                ax1 = fig.add_subplot(111)
+                ax1.errorbar(
+                    x=star_list,
+                    y=model_rmse_R2_meanR2,
+                    yerr=model_std_rmse_R2_meanR2,
+                    label='R2 ' + run_id_no_suff,
+                    alpha=0.75
+                )
+                plt.minorticks_on()
+                ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
+                ax1.legend()
+                ax1.set_title(
+                    'Stars ' + plot_dataset + '\n' + run_id_no_suff +
+                    '\nR2/<R2> RMSE @ 3x Euclid resolution'
+                )
+                ax1.set_xlabel('Number of stars')
+                ax1.set_ylabel('Absolute error')
 
-            ax2 = ax1.twinx()
-            kwargs = dict(linewidth=2, linestyle='dashed',
-                          markersize=8, marker='^', alpha=0.5)
-            ax2.plot(star_list, model_e1_rel_euclid, **kwargs)
-            ax2.plot(star_list, model_e2_rel_euclid, **kwargs)
-            ax2.set_ylabel('Times over Euclid req.')
-            ax2.grid(False)
-            plt.savefig(
-                plot_saving_path + plot_dataset + '-metrics-' +
-                run_id_no_suff + '_shape_e1_e2_RMSE.png'
-            )
-            plt.show()
-        except Exception:
-            print('Problem with the performance metrics plot of e1/e2 errors.')
+                ax2 = ax1.twinx()
+                kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+                ax2.plot(star_list, model_R2_rel_euclid, **kwargs)
+                ax2.set_ylabel('Times over Euclid req.')
+                ax2.grid(False)
+                plt.savefig(
+                    plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff +
+                    '_shape_R2_RMSE.png'
+                )
+                plt.show()
+            except Exception:
+                print('Problem with the performance metrics plot of R2 errors.')
 
-        # Plot R2
-        try:
-            fig = plt.figure(figsize=(12, 8))
-            ax1 = fig.add_subplot(111)
-            ax1.errorbar(
-                x=star_list,
-                y=model_rmse_R2_meanR2,
-                yerr=model_std_rmse_R2_meanR2,
-                label='R2 ' + run_id_no_suff,
-                alpha=0.75
-            )
-            plt.minorticks_on()
-            ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
-            ax1.legend()
-            ax1.set_title(
-                'Stars ' + plot_dataset + '\n' + run_id_no_suff +
-                '\nR2/<R2> RMSE @ 3x Euclid resolution'
-            )
-            ax1.set_xlabel('Number of stars')
-            ax1.set_ylabel('Absolute error')
+            ## Polychromatic pixel residual at shape measurement resolution
+            try:
+                res = extract_shape_pix_results(metrics, test_train=plot_dataset)
+                model_polyc_shpix_rmse = res[0]
+                model_polyc_shpix_std_rmse = res[1]
+                model_polyc_shpix_rel_rmse = res[2]
+                model_polyc_shpix_std_rel_rmse = res[3]
 
-            ax2 = ax1.twinx()
-            kwargs = dict(linewidth=2, linestyle='dashed',
-                          markersize=8, marker='^', alpha=0.5)
-            ax2.plot(star_list, model_R2_rel_euclid, **kwargs)
-            ax2.set_ylabel('Times over Euclid req.')
-            ax2.grid(False)
-            plt.savefig(
-                plot_saving_path + plot_dataset + '-metrics-' +
-                run_id_no_suff + '_shape_R2_RMSE.png'
-            )
-            plt.show()
-        except Exception:
-            print('Problem with the performance metrics plot of R2 errors.')
+                fig = plt.figure(figsize=(12, 8))
+                ax1 = fig.add_subplot(111)
+                ax1.errorbar(
+                    x=star_list,
+                    y=model_polyc_shpix_rmse,
+                    yerr=model_polyc_shpix_std_rmse,
+                    label=run_id_no_suff,
+                    alpha=0.75
+                )
+                plt.minorticks_on()
+                ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
+                ax1.legend()
+                ax1.set_title(
+                    'Stars ' + plot_dataset + '\n' + run_id_no_suff +
+                    '\nPixel RMSE @ 3x Euclid resolution'
+                )
+                ax1.set_xlabel('Number of stars')
+                ax1.set_ylabel('Absolute error')
 
-        # Polychromatic pixel residual at shape measurement resolution
-        try:
-            res = extract_shape_pix_results(metrics, test_train=plot_dataset)
-            model_polyc_shpix_rmse = res[0]
-            model_polyc_shpix_std_rmse = res[1]
-            model_polyc_shpix_rel_rmse = res[2]
-            model_polyc_shpix_std_rel_rmse = res[3]
-
-            fig = plt.figure(figsize=(12, 8))
-            ax1 = fig.add_subplot(111)
-            ax1.errorbar(
-                x=star_list,
-                y=model_polyc_shpix_rmse,
-                yerr=model_polyc_shpix_std_rmse,
-                label=run_id_no_suff,
-                alpha=0.75
-            )
-            plt.minorticks_on()
-            ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.1e'))
-            ax1.legend()
-            ax1.set_title(
-                'Stars ' + plot_dataset + '\n' + run_id_no_suff +
-                '\nPixel RMSE @ 3x Euclid resolution'
-            )
-            ax1.set_xlabel('Number of stars')
-            ax1.set_ylabel('Absolute error')
-
-            ax2 = ax1.twinx()
-            kwargs = dict(linewidth=2, linestyle='dashed',
-                          markersize=8, marker='^', alpha=0.5)
-            ax2.plot(star_list, model_polyc_shpix_rel_rmse, **kwargs)
-            ax2.set_ylabel('Relative error [%]')
-            ax2.grid(False)
-            plt.savefig(
-                plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff +
-                '_poly_pixel_3xResolution_RMSE.png'
-            )
-            plt.show()
-        except Exception:
-            print(
-                'Problem with the performance metrics plot of super resolution pixel polychromatic errors.')
+                ax2 = ax1.twinx()
+                kwargs = dict(linewidth=2, linestyle='dashed', markersize=8, marker='^', alpha=0.5)
+                ax2.plot(star_list, model_polyc_shpix_rel_rmse, **kwargs)
+                ax2.set_ylabel('Relative error [%]')
+                ax2.grid(False)
+                plt.savefig(
+                    plot_saving_path + plot_dataset + '-metrics-' + run_id_no_suff +
+                    '_poly_pixel_3xResolution_RMSE.png'
+                )
+                plt.show()
+            except Exception:
+                print(
+                    'Problem with the performance metrics plot of super resolution pixel polychromatic errors.'
+                )
 
 
 def plot_optimisation_metrics(**args):
@@ -1291,8 +1344,11 @@ def plot_optimisation_metrics(**args):
             for _suff in args['suffix_id_name']
         ]
     else:
-        model_paths = [args['metric_base_path'] + 'metrics-' +
-                       run_id_no_suff + args['suffix_id_name'] + '.npy']
+        model_paths = [
+            optim_hist_file + 'optim_hist_' + run_id_no_suff + str(args['suffix_id_name']) + '.npy'
+        ]
+
+    print('Model paths for optimisation plots: ', model_paths)
 
     try:
         # Load metrics
@@ -1301,7 +1357,7 @@ def plot_optimisation_metrics(**args):
     except FileNotFoundError:
         print('The required file for the plots was not found.')
         print('Probably I am not the last job for plotting the optimisation metrics.')
-        return 0
+        raise 0
 
     # Plot the first parametric cycle
     cycle_str = 'param_cycle1'
@@ -1385,7 +1441,8 @@ def plot_optimisation_metrics(**args):
             plt.show()
         except Exception:
             print(
-                'Problem with the plot of the optimisation metrics of the first non-parametric cycle.')
+                'Problem with the plot of the optimisation metrics of the first non-parametric cycle.'
+            )
 
     # Plot the second parametric cycle
     if cycle_str in metrics[0]:
@@ -1428,7 +1485,8 @@ def plot_optimisation_metrics(**args):
             plt.show()
         except Exception:
             print(
-                'Problem with the plot of the optimisation metrics of the second parametric cycle.')
+                'Problem with the plot of the optimisation metrics of the second parametric cycle.'
+            )
 
     # Plot the second non-parametric cycle
     if cycle_str in metrics[0]:
@@ -1471,7 +1529,8 @@ def plot_optimisation_metrics(**args):
             plt.show()
         except Exception:
             print(
-                'Problem with the plot of the optimisation metrics of the second non-parametric cycle.')
+                'Problem with the plot of the optimisation metrics of the second non-parametric cycle.'
+            )
 
 
 def define_plot_style():

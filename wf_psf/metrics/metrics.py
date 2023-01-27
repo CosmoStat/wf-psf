@@ -15,7 +15,9 @@ def compute_poly_metric(
     tf_pos,
     tf_SEDs,
     n_bins_lda=20,
-    batch_size=16
+    n_bins_gt=20,
+    batch_size=16,
+    dataset_dict=None,
 ):
     """ Calculate metrics for polychromatic reconstructions.
 
@@ -39,8 +41,15 @@ def compute_poly_metric(
         SED samples for the corresponding positions.
     n_bins_lda: int
         Number of wavelength bins to use for the polychromatic PSF.
+    n_bins_gt: int
+        Number of wavelength bins to use for the ground truth polychromatic PSF.
     batch_size: int
         Batch size for the PSF calcualtions.
+    dataset_dict: dict
+        Dictionary containing the dataset information. If provided, and if the `'stars'` key 
+        is present, the noiseless stars from the dataset are used to compute the metrics.
+        Otherwise, the stars are generated from the GT model.
+        Default is `None`.
 
     Returns
     -------
@@ -54,7 +63,7 @@ def compute_poly_metric(
         Standard deviation of relative RMSEs. Values in %.
 
     """
-    # Generate SED data list
+    # Generate SED data list for the model
     packed_SED_data = [
         utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_lda) for _sed in tf_SEDs
     ]
@@ -65,8 +74,29 @@ def compute_poly_metric(
     # Model prediction
     preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
-    # GT model prediction
-    GT_preds = GT_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
+    # GT data preparation
+    if dataset_dict is None or 'stars' not in dataset_dict:
+        print('Regenerating GT stars from model.')
+        # Change interpolation parameters for the GT simPSF
+        interp_pts_per_bin = simPSF_np.interp_pts_per_bin
+        simPSF_np.interp_pts_per_bin = 0
+        SED_sigma = simPSF_np.SED_sigma
+        simPSF_np.SED_sigma = 0
+        # Generate SED data list for GT model
+        packed_SED_data = [
+            utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_gt) for _sed in tf_SEDs
+        ]
+        tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
+        tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
+        pred_inputs = [tf_pos, tf_packed_SED_data]
+
+        # GT model prediction
+        GT_preds = GT_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
+        
+    else:
+        print('Using GT stars from dataset.')
+        GT_preds = dataset_dict['stars']
+
 
     # Calculate residuals
     residuals = np.sqrt(np.mean((GT_preds - preds)**2, axis=(1, 2)))
@@ -88,7 +118,12 @@ def compute_poly_metric(
 
 
 def compute_mono_metric(
-    tf_semiparam_field, GT_tf_semiparam_field, simPSF_np, tf_pos, lambda_list, batch_size=32
+    tf_semiparam_field,
+    GT_tf_semiparam_field,
+    simPSF_np,
+    tf_pos,
+    lambda_list,
+    batch_size=32
 ):
     """ Calculate metrics for monochromatic reconstructions.
 
@@ -296,10 +331,12 @@ def compute_shape_metrics(
     SEDs,
     tf_pos,
     n_bins_lda,
+    n_bins_gt,
     output_Q=1,
     output_dim=64,
     batch_size=16,
-    opt_stars_rel_pix_rmse=False
+    opt_stars_rel_pix_rmse=False,
+    dataset_dict=None
 ):
     """ Compute the pixel, shape and size RMSE of a PSF model.
 
@@ -320,6 +357,8 @@ def compute_shape_metrics(
         Positions at where to predict the PSFs.
     n_bins_lda: int
         Number of wavelength bins to use for the polychromatic PSF.
+    n_bins_gt: int
+        Number of wavelength bins to use for the ground truth polychromatic PSF.
     output_Q: int
         Downsampling rate to match the specified telescope's sampling. The value
         of `output_Q` should be equal to `oversampling_rate` in order to have
@@ -333,6 +372,15 @@ def compute_shape_metrics(
         Output dimension of the square PSF stamps.
     batch_size: int
         Batch size to process the PSF estimations.
+    opt_stars_rel_pix_rmse: bool
+        If `True`, the relative pixel RMSE of each star is added to ther saving dictionary.
+        The summary statistics are always computed.
+        Default is `False`.
+    dataset_dict: dict
+        Dictionary containing the dataset information. If provided, and if the `'super_res_stars'`
+        key is present, the noiseless super resolved stars from the dataset are used to compute
+        the metrics. Otherwise, the stars are generated from the GT model.
+        Default is `None`.
 
     Returns
     -------
@@ -367,8 +415,33 @@ def compute_shape_metrics(
     # PSF model
     predictions = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
-    # Ground Truth model
-    GT_predictions = GT_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
+    # GT data preparation
+    if dataset_dict is None or 'super_res_stars' not in dataset_dict or 'SR_stars' not in dataset_dict:
+        print('Generating GT super resolved stars from the GT model.')
+        # Change interpolation parameters for the GT simPSF
+        interp_pts_per_bin = simPSF_np.interp_pts_per_bin
+        simPSF_np.interp_pts_per_bin = 0
+        SED_sigma = simPSF_np.SED_sigma
+        simPSF_np.SED_sigma = 0
+        # Generate SED data list for GT model
+        packed_SED_data = [
+            utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_gt) for _sed in SEDs
+        ]
+
+        # Prepare inputs
+        tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
+        tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
+        pred_inputs = [tf_pos, tf_packed_SED_data]
+
+        # Ground Truth model
+        GT_predictions = GT_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
+    
+    else:
+        print('Using super resolved stars from dataset.')
+        if 'super_res_stars' in dataset_dict:
+            GT_predictions = dataset_dict['super_res_stars']
+        elif 'SR_stars' in dataset_dict:
+            GT_predictions = dataset_dict['SR_stars']
 
     # Calculate residuals
     residuals = np.sqrt(np.mean((GT_predictions - predictions)**2, axis=(1, 2)))
@@ -495,7 +568,7 @@ def compute_shape_metrics(
     }
 
     if opt_stars_rel_pix_rmse:
-        result_dict['stars_rel_pix_rmse']=stars_rel_pix_rmse
+        result_dict['stars_rel_pix_rmse'] = stars_rel_pix_rmse
 
     return result_dict
 

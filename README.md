@@ -8,23 +8,24 @@ This repository includes:
 - A numpy-based PSF simulator [here](https://github.com/tobias-liaudat/wf-psf/blob/main/wf_psf/SimPSFToolkit.py).
 - All the scripts, jobs and notebooks required to reproduce the results in [arXiv:2203.04908](http://arxiv.org/abs/2203.04908) and [arXiv:2111.12541](https://arxiv.org/abs/2111.12541).
 
+For more information on how to use the WaveDiff model through configurable scripts see the `long-runs` directory's [README](https://github.com/tobias-liaudat/wf-psf/blob/main/long-runs/README.md). 
 
 ## Proposed framework
 
 A schematic of the proposed framework can be seen below. The PSF model is estimated (trained) using star observations in the field-of-view.
 
-<img height=300 src="assets/PSF_model_diagram_v5.png" >
+<img height=300 src="assets/PSF_model_diagram_v6.png" >
 
-Visual reconstruction example of the WaveDiff-original PSF model trained on a simplified Euclid-like setting.
+<!-- Visual reconstruction example of the WaveDiff-original PSF model trained on a simplified Euclid-like setting.
 
-<img height=800 src="assets/PSF_reconstruction_example.png" >
+<img height=800 src="assets/PSF_reconstruction_example.png" > -->
 
 
 ## Install
 
-`wf-psf` is pure python and can be easily installed with `pip`:
+`wf-psf` is pure python and can be easily installed with `pip`. After cloning the repository, run the following commands:
 
-```
+```bash
 $ cd wf-psf
 $ pip install .
 ```
@@ -83,6 +84,22 @@ If you use `wf-psf` in a scientific publication, we would appreciate citations t
 
 The BibTeX citation is the following:
 ```
-@Upcomming
+@misc{https://doi.org/10.48550/arxiv.2203.04908,
+  doi = {10.48550/ARXIV.2203.04908},
+  
+  url = {https://arxiv.org/abs/2203.04908},
+  
+  author = {Liaudat, Tobias and Starck, Jean-Luc and Kilbinger, Martin and Frugier, Pierre-Antoine},
+  
+  keywords = {Instrumentation and Methods for Astrophysics (astro-ph.IM), Computer Vision and Pattern Recognition (cs.CV), FOS: Physical sciences, FOS: Physical sciences, FOS: Computer and information sciences, FOS: Computer and information sciences},
+  
+  title = {Rethinking data-driven point spread function modeling with a differentiable optical model},
+  
+  publisher = {arXiv},
+  
+  year = {2022},
+  
+  copyright = {arXiv.org perpetual, non-exclusive license}
+}
 ```
 

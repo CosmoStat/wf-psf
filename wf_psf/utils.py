@@ -9,6 +9,7 @@ except:
     print('Problem importing opencv..')
 import sys
 
+
 def scale_to_range(input_array, old_range, new_range):
     # Scale to [0,1]
     input_array = (input_array - old_range[0]) / (old_range[1] - old_range[0])
@@ -239,33 +240,40 @@ class ZernikeInterpolation(object):
         Default is 2, corresponds to thin plate interp (r^2*log(r))
 
     """
-    
+
     def __init__(self, tf_pos, tf_zks, k=50, order=2):
         self.tf_pos = tf_pos
         self.tf_zks = tf_zks
         self.k = k
         self.order = order
-        
-        
+
     def interpolate_zk(self, single_pos):
         """ Interpolate a single position
         """
         # Compute distance
         dist = tf.math.reduce_euclidean_norm(self.tf_pos - single_pos, axis=1) * -1.
-        # Get top K elements 
+        # Get top K elements
         result = tf.math.top_k(dist, k=self.k)
         # Gather useful elements from the array
         rec_pos = tf.gather(
-            self.tf_pos, result.indices, validate_indices=None, axis=0, batch_dims=0,
+            self.tf_pos,
+            result.indices,
+            validate_indices=None,
+            axis=0,
+            batch_dims=0,
         )
         rec_zks = tf.gather(
-            self.tf_zks, result.indices, validate_indices=None, axis=0, batch_dims=0,
+            self.tf_zks,
+            result.indices,
+            validate_indices=None,
+            axis=0,
+            batch_dims=0,
         )
         # Interpolate
         interp_zk = tfa.image.interpolate_spline(
             train_points=tf.expand_dims(rec_pos, axis=0),
             train_values=tf.expand_dims(rec_zks, axis=0),
-            query_points=tf.expand_dims(single_pos[tf.newaxis,:], axis=0),
+            query_points=tf.expand_dims(single_pos[tf.newaxis, :], axis=0),
             order=self.order,
             regularization_weight=0.0
         )
@@ -274,7 +282,6 @@ class ZernikeInterpolation(object):
 
         return interp_zk
 
-    
     def interpolate_zks(self, interp_positions):
         """ Vectorize to interpolate to each position
         """
@@ -304,47 +311,45 @@ class IndependentZernikeInterpolation(object):
         Default is 2, corresponds to thin plate interp (r^2*log(r))
 
     """
-    
+
     def __init__(self, tf_pos, tf_zks, order=2):
         self.tf_pos = tf_pos
         self.tf_zks = tf_zks
         self.order = order
-        
+
         self.target_pos = None
-        
-        
+
     def interp_one_zk(self, zk_prior):
         """ Interpolate each Zerkine polynomial independently
         """
         interp_zk = tfa.image.interpolate_spline(
             train_points=tf.expand_dims(self.tf_pos, axis=0),
-            train_values=tf.expand_dims(zk_prior[:,tf.newaxis], axis=0),
+            train_values=tf.expand_dims(zk_prior[:, tf.newaxis], axis=0),
             query_points=tf.expand_dims(self.target_pos, axis=0),
             order=self.order,
             regularization_weight=0.0
         )
-        
+
         # Remove extra dimension required by tfa's interpolate_spline
         return tf.squeeze(interp_zk, axis=0)
 
-    
     def interpolate_zks(self, target_pos):
         """ Vectorize to interpolate to each Zernike!
         
         Each zernike is computed indepently from the others.
         """
         self.target_pos = target_pos
-        
+
         interp_zks = tf.map_fn(
             self.interp_one_zk,
-            tf.transpose(self.tf_zks, perm=[1,0]),
+            tf.transpose(self.tf_zks, perm=[1, 0]),
             parallel_iterations=10,
             fn_output_signature=tf.float32,
             swap_memory=True
         )
-        
+
         # Remove null dimension and transpose back to have batch at input
-        return tf.transpose(tf.squeeze(interp_zks, axis=2), perm=[1,0])
+        return tf.transpose(tf.squeeze(interp_zks, axis=2), perm=[1, 0])
 
 
 def load_multi_cycle_params_click(args):
@@ -369,15 +374,22 @@ def load_multi_cycle_params_click(args):
     if len(args['l_rate_param']) == 1:
         args['l_rate_param'] = args['l_rate_param'] * args['total_cycles']
     elif len(args['l_rate_param']) != args['total_cycles']:
-        print('Invalid argument: --l_rate_param. Expected 1 or {} values but {} were given.'.format(args['total_cycles'],len(args['l_rate_param'])))
+        print(
+            'Invalid argument: --l_rate_param. Expected 1 or {} values but {} were given.'.format(
+                args['total_cycles'], len(args['l_rate_param'])
+            )
+        )
         sys.exit()
-    
+
     if args['l_rate_non_param'] is None:
         args['l_rate_non_param'] = list(map(float, args['l_rate_non_param_multi_cycle'].split(' ')))
     if len(args['l_rate_non_param']) == 1:
         args['l_rate_non_param'] = args['l_rate_non_param'] * args['total_cycles']
     elif len(args['l_rate_non_param']) != args['total_cycles']:
-        print('Invalid argument: --l_rate_non_param. Expected 1 or {} values but {} were given.'.format(args['total_cycles'],len(args['l_rate_non_param'])))
+        print(
+            'Invalid argument: --l_rate_non_param. Expected 1 or {} values but {} were given.'
+            .format(args['total_cycles'], len(args['l_rate_non_param']))
+        )
         sys.exit()
 
     if args['n_epochs_param'] is None:
@@ -385,20 +397,30 @@ def load_multi_cycle_params_click(args):
     if len(args['n_epochs_param']) == 1:
         args['n_epochs_param'] = args['n_epochs_param'] * args['total_cycles']
     elif len(args['n_epochs_param']) != args['total_cycles']:
-        print('Invalid argument: --n_epochs_param. Expected 1 or {} values but {} were given.'.format(args['total_cycles'],len(args['n_epochs_param'])))
+        print(
+            'Invalid argument: --n_epochs_param. Expected 1 or {} values but {} were given.'.format(
+                args['total_cycles'], len(args['n_epochs_param'])
+            )
+        )
         sys.exit()
 
     if args['n_epochs_non_param'] is None:
-        args['n_epochs_non_param'] = list(map(int, args['n_epochs_non_param_multi_cycle'].split(' ')))
+        args['n_epochs_non_param'] = list(
+            map(int, args['n_epochs_non_param_multi_cycle'].split(' '))
+        )
     if len(args['n_epochs_non_param']) == 1:
         args['n_epochs_non_param'] = args['n_epochs_non_param'] * args['total_cycles']
     elif len(args['n_epochs_non_param']) != args['total_cycles']:
-        print('Invalid argument: --n_epochs_non_param. Expected 1 or {} values but {} were given.'.format(args['total_cycles'], len(args['n_epochs_non_param'])))
+        print(
+            'Invalid argument: --n_epochs_non_param. Expected 1 or {} values but {} were given.'
+            .format(args['total_cycles'], len(args['n_epochs_non_param']))
+        )
         sys.exit()
 
     return args
 
-def PI_zernikes(tf_z1,tf_z2, norm_factor=None):
+
+def PI_zernikes(tf_z1, tf_z2, norm_factor=None):
     """ Compute internal product between zernikes and OPDs
 
     Defined such that Zernikes are orthonormal to each other
@@ -408,4 +430,4 @@ def PI_zernikes(tf_z1,tf_z2, norm_factor=None):
     """
     if norm_factor is None:
         norm_factor = 1
-    return np.sum((tf.math.multiply(tf_z1,tf_z2) ).numpy())/(norm_factor)
+    return np.sum((tf.math.multiply(tf_z1, tf_z2)).numpy()) / (norm_factor)
