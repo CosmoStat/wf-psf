@@ -1,9 +1,3 @@
---- #DO NOT DELETE
-  env_vars:
-    # Provide path to store wf-psf outputs
-    workdir: /Users/jenniferpollack/Projects
-    # Provide path to wf-psf repo
-    repodir: wf-psf
 ---
   training_conf: config/training_config.yaml
 
