@@ -1,26 +1,90 @@
 training:
-  model: poly
-  pupil_diameter: 256
-  n_bins_lda: 8
-  output_q: 3
-  oversampling_rate: 3
-  output_dim: 32
-  d_max_nonparam: 5
-  use_sample_weights: true
-  n_epochs_non_param:
-    - 2 
-    - 2
-  n_epochs_param:
-    - 2 
-    - 2
-  total_cycles: 2
-  saved_cycle: cycle2
-  eval_batch_size: 16
-  l2_param: 0.
+  model: mccd
+  n_bins_lda: 8 
+  #Num of wavelength bins to reconstruct polychromatic objects.
+  output_q: 3  
+  #Downsampling rate to match the oversampled model to the specified telescope's sampling.
+  oversampling_rate: 3 
+  #Oversampling rate used for the OPD/WFE PSF model.
+  output_dim: 32   
+  #Dimension of the pixel PSF postage stamp
+  d_max: 2  
+  #Max polynomial degree of the parametric part.  chg to max_deg_param
+  d_max_nonparam: 5   
+  #Max polynomial degree of the non-parametric part. chg to max_deg_nonparam
+ 
+  data_driven:
+    num_graph_features: 10
+    hparams:
+      l1_rate: 1e-8
+
+  hparams:
+    n_epochs_non_param:
+      - 2 
+      - 2
+    n_epochs_param:
+      - 2 
+      - 2
+    multicycles:
+      total_cycles: 2
+      saved_cycle: cycle2
+    eval_batch_size: 16
+    l2_param: 0.
+    batch_size: 32
+
   base_id_name: _2_cycles_256
   suffix_id_name: proj_d2_45z
-  star_numbers: 1
   id_name: '-coherent_euclid_200stars'
+  zernikes:
+    n_zernikes: 15
+    pupil_diameter: 256
+  psf_field_coords:
+    x_lims: 
+      - 0
+      - 1e3
+    y_lims:
+      - 0
+      - 1e3
+  training_data:
+    star_numbers: 1
+    dataset_folder:  wf-psf/data/coherent_euclid_dataset/
+    train_dataset_file: train_Euclid_res_200_TrainStars_id_001.npy
+  
+  test_data:
+    test_dataset_file: test_Euclid_res_id_001.npy
+
+# Training parameters
+# multicycle parameters
+  mcycle_params:
+    # Learning rates for the parametric parts. It should be a str where numeric values are separated by spaces.
+    l_rate_param_multi_cycle:
+        - 1e-2
+        - 1e-2
+    # Learning rates for the non-parametric parts. It should be a str where numeric values are separated by spaces."
+    l_rate_non_param_multi_cycle:
+        - 1e-1 
+        - 1e-1
+        
+    # Number of training epochs of the parametric parts. It should be a strign where numeric values are separated by spaces."
+    n_epochs_param_multi_cycle:
+        - 20 
+        - 20
+  
+    # Number of training epochs of the non-parametric parts. It should be a str where numeric values are separated by spaces."
+    n_epochs_non_param_multi_cycle:
+        - 100 
+        - 120
+
+    # Make checkpoint at every cycle or just save the checkpoint at the end of the training."
+    save_all_cycles: False
+        
+    # Total amount of cycles to perform. For the moment the only available options are '1' or '2'."
+    total_cycles: 2
+        
+    # Train cycle definition. It can be: 'parametric', 'non-parametric', 'complete', 'only-non-parametric' and 'only-parametric'."
+    cycle_def: complete
+     
+
 
 
 
