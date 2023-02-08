@@ -9,23 +9,21 @@ import argparse
 from wf_psf.read_config import read_stream, read_conf
 from dotenv import load_dotenv
 import wf_psf.io as io
+from .psf_models import psf_models
 import os
 import logging.config
 import logging
 from .training import train
 
 # load .env variables
-load_dotenv()
+load_dotenv("./.env")
+
+repodir = os.getenv("REPODIR")
 
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--conffile', '-c', type=str, required=True,
                     help="a configuration file containing program settings.")
-
-# parser.add_argument('--workspace', '-w', type=str, required=True,
-#                    help="directory containing configuration files.")
-
-repodir = os.getenv("REPODIR")
 
 args = parser.parse_args()
 config = vars(args)
@@ -55,6 +53,5 @@ for conf in configs:
             repodir, conf.training_conf))
         logger.info(training_params)
 
-        training_params = train.TrainingParams(training_params.training)
-        print(training_params.model_save_file)
-        training_params.train()
+
+train.train(training_params)
