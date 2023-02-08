@@ -6,12 +6,8 @@ from wf_psf.tf_layers import TF_NP_MCCD_OPD_v2, TF_NP_GRAPH_OPD
 from wf_psf.tf_layers import TF_batch_mono_PSF
 from wf_psf.graph_utils import GraphBuilder
 from wf_psf.utils import calc_poly_position_mat
-#from wf_psf.psf_models import register_psfclass
 
-
-# @register_psfclass
 class TF_SP_MCCD_field(tf.keras.Model):
-    #    ids=("mccd",)
     r""" Semi-parametric MCCD PSF field model!
 
     Semi parametric model based on the hybrid-MCCD matrix factorization scheme.
