@@ -8,8 +8,9 @@
 
 import pathlib
 import os
+from dotenv import load_dotenv
 
-
+load_dotenv("./.env")
 workdir = os.getenv('WORKDIR')
 wf_outputs = "wf-outputs"
 chkp = "chkp"
@@ -24,41 +25,44 @@ def make_wfpsf_file_struct():
     A function to produce the output file structure
     for wave-diff psf code.
     """
-    make_wf_outputs()
-    make_chkp_dir()
-    make_logfiles()
-    make_wf_metrics()
-    make_optimhist_dir()
-    make_plots()
+
+    make_wf_outputs(workdir, wf_outputs)
+    make_chkp_dir(workdir, chkp)
+    make_logfiles(workdir, log_files)
+    make_wf_metrics(workdir, metrics)
+    make_optimhist_dir(workdir, optim_hist)
+    make_plots(workdir, plots)
 
 
-def make_wf_outputs():
+def make_wf_outputs(workdir, wf_outputs):
+    print(workdir)
+    print(wf_outputs)
     pathlib.Path(os.path.join(workdir, wf_outputs)
                  ).mkdir(exist_ok=True)
 
 
-def make_chkp_dir():
-    pathlib.Path(os.path.join(workdir, wf_outputs, chkp)
+def make_chkp_dir(workdir, chkp):
+    pathlib.Path(os.path.join(workdir, chkp)
                  ).mkdir(exist_ok=True)
 
 
-def make_logfiles():
-    pathlib.Path(os.path.join(workdir, wf_outputs,
+def make_logfiles(workdir, log_files):
+    pathlib.Path(os.path.join(workdir,
                               log_files)).mkdir(exist_ok=True)
 
 
-def make_wf_metrics():
-    pathlib.Path(os.path.join(workdir, wf_outputs, metrics)
+def make_wf_metrics(workdir, metrics):
+    pathlib.Path(os.path.join(workdir, metrics)
                  ).mkdir(exist_ok=True)
 
 
-def make_optimhist_dir():
-    pathlib.Path(os.path.join(workdir, wf_outputs,
+def make_optimhist_dir(workdir, optim_hist):
+    pathlib.Path(os.path.join(workdir,
                               optim_hist)).mkdir(exist_ok=True)
 
 
-def make_plots():
-    pathlib.Path(os.path.join(workdir, wf_outputs, plots)
+def make_plots(workdir, plots):
+    pathlib.Path(os.path.join(workdir, plots)
                  ).mkdir(exist_ok=True)
 
 
@@ -67,10 +71,12 @@ def get_log_save_file():
 
 
 def get_model_save_file():
+    print(workdir)
     return os.path.join(workdir, chkp)
 
 
 def get_optim_hist_file():
+    workdir = os.getenv('WORKDIR')
     return os.path.join(workdir, optim_hist)
 
     # Define paths -> move to io
@@ -80,5 +86,8 @@ def get_optim_hist_file():
 
 
 if __name__ == "__main__":
+
+    os.getenv("REPODIR")
+
     make_wfpsf_file_struct()
     print(get_model_save_file())
