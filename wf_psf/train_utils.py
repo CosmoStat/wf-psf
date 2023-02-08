@@ -309,7 +309,7 @@ def general_train_cycle(
             loss=loss,
             metrics=metrics,
         )
-        # Train the parametric part
+        # Train the nonparametric part
         print('Starting non-parametric update..')
         hist_non_param = tf_semiparam_field.fit(
             x=inputs,
