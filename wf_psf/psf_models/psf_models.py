@@ -13,8 +13,6 @@ from wf_psf.tf_layers import TF_NP_poly_OPD, TF_batch_mono_PSF, TF_physical_laye
 from wf_psf.utils import PI_zernikes, zernike_generator
 from wf_psf.SimPSFToolkit import SimPSFToolkit
 
-from wf_psf.tf_mccd_psf_field import build_mccd_spatial_dic
-
 
 PSF_CLASS = {}
 
