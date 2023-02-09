@@ -29,6 +29,18 @@ def register_psfclass(psf_class):
     return psf_class
 
 
+def set_psf_model(model_name):
+    """Set PSF Model Class"""
+    psf_class = PSF_CLASS[model_name]
+    return psf_class
+
+
+def get_psf_model(model_name, model_params, training_hparams):
+    """Instantiate PSF Model Class"""
+    psf_class = set_psf_model(model_name)
+    return psf_class(model_params, training_hparams)
+
+
 def tf_zernike_cube(n_zernikes, pupil_diam):
     # Prepare the inputs
     # Generate Zernike maps

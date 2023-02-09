@@ -60,11 +60,6 @@ class TrainingParamsHandler:
         """Test Data Params"""
         return self.training_params.data.test
 
-    def set_psf_model(self):
-        """Instantiate PSF Model Class"""
-        psf_class = psf_models.PSF_CLASS[self.model_name]
-        return psf_class
-
 
 def train(training_params):
     # Print GPU and tensorflow info
@@ -74,8 +69,10 @@ def train(training_params):
 
     training_handler = TrainingParamsHandler(training_params)
 
-    psf_model = training_handler.set_psf_model()
-    
+    psf_model = psf_models.get_psf_model(training_handler.model_name,
+                                         training_handler.model_params,
+                                         training_handler.training_hparams)
+
 
 
 if __name__ == "__main__":
