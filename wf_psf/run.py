@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 :file: wf_psf/run.py
 
@@ -9,7 +10,6 @@ import argparse
 from wf_psf.read_config import read_stream, read_conf
 from dotenv import load_dotenv
 import wf_psf.io as io
-from .psf_models import psf_models
 import os
 import logging.config
 import logging
