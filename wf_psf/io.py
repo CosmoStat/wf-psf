@@ -21,10 +21,9 @@ _plots = "plots"
 
 
 def make_wfpsf_file_struct():
-    # A function to launch a set of commands
-    # to the nested output file structure
-    # for the wave-diff psf code.
-
+    """A function to launch commands
+    to set up wf-outputs file structure.
+    """
     _make_wf_outputs_dir()
     _make_chkp_dir()
     _make_logfiles_dir()
