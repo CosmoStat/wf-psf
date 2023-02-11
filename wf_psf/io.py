@@ -1,83 +1,131 @@
-"""
-:file: wf_psf/io.py
+"""IO
 
-:date: 18/01/23
-:author: jpollack
+A module which defines methods to
+manage wf-psf inputs and outputs.
+
+:Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 
 """
 
 import pathlib
 import os
 from dotenv import load_dotenv
+import logging
+from datetime import datetime
 
 load_dotenv("./.env")
-_workdir = os.getenv('WORKDIR')
+
+_workdir = os.getenv("WORKDIR")
 _wf_outputs = "wf-outputs"
-_chkp = "chkp"
+_checkpoint = "checkpoint"
 _log_files = "log-files"
 _metrics = "metrics"
 _optim_hist = "optim-hist"
 _plots = "plots"
 
 
-def make_wfpsf_file_struct():
-    """A function to launch commands
-    to set up wf-outputs file structure.
+def setup_outputs():
+    """Set up Outputs.
+
+    A function to call
+    auxiliary functions
+    to set up output
+    directories and logging.
+
     """
-    _make_wf_outputs_dir()
-    _make_chkp_dir()
-    _make_logfiles_dir()
-    _make_wf_metrics_dir()
-    _make_optimhist_dir()
-    _make_plots_dir()
+
+    _setup_dirs()
+    _setup_logging()
 
 
-def _make_wf_outputs_dir():
+def _setup_dirs():
+    """Setup Directories.
+
+    A function to setup the output
+    directories.
+
+    Parameters
+    ----------
+    list_of_dirs: tuple
+        Lists of output dirs
+
     """
-    A function to make wf-outputs dir.
+    _make_output_dir()
+
+    list_of_dirs = (_checkpoint, _log_files, _metrics, _optim_hist, _plots)
+    for dir in list_of_dirs:
+        _make_dir(dir)
+
+
+def _setup_logging():
+    """Setup Logger.
+
+    A function to set up
+    logging.
+
+    Parameters
+    ----------
+    repodir: str
+        Repo directory
+    logfile: str
+        Log filename with absolute path
+
     """
-    pathlib.Path(os.path.join(_workdir, _wf_outputs)
-                 ).mkdir(exist_ok=True)
+    repodir = os.getenv("REPODIR")
+
+    logfile = datetime.now().strftime("train_%Y%m%d%H%M.log")
+
+    logfile = os.path.join(_workdir, _wf_outputs, _log_files, logfile)
+
+    logging.config.fileConfig(
+        os.path.join(repodir, "config/logging.conf"),
+        defaults={"filename": logfile},
+        disable_existing_loggers=False,
+    )
 
 
-def _make_chkp_dir():
-    pathlib.Path(os.path.join(_workdir, _wf_outputs,
-                              _chkp)).mkdir(exist_ok=True)
+def _make_output_dir():
+    """Make Output Directory.
+
+    A function to make the
+    output directory "wf-outputs"
+    inside directory defined by
+    the $WORKDIR environment
+    variable.
+
+    """
+    pathlib.Path(os.path.join(_workdir, _wf_outputs)).mkdir(exist_ok=True)
 
 
-def _make_logfiles_dir():
-    pathlib.Path(os.path.join(_workdir, _wf_outputs,
-                              _log_files)).mkdir(exist_ok=True)
+def _make_dir(dir_name):
+    """Make Directory.
+
+    A function to make a subdirectory
+    inside the parent directory "wf-outputs".
+
+    Parameters
+    ----------
+    dir_name: str
+        Name of directory
+
+    """
+    pathlib.Path(os.path.join(_workdir, _wf_outputs, dir_name)).mkdir(exist_ok=True)
 
 
-def _make_wf_metrics_dir():
-    pathlib.Path(os.path.join(_workdir, _wf_outputs,
-                              _metrics)).mkdir(exist_ok=True)
+def get_checkpoint_dir():
+    """Get Checkpoint Directory.
 
+    A function that returns path
+    of checkpoint directory.
 
-def _make_optimhist_dir():
-    pathlib.Path(os.path.join(_workdir, _wf_outputs,
-                 _optim_hist)).mkdir(exist_ok=True)
+    Returns
+    -------
+    str
+        Absolute path to checkpoint directory
 
-
-def _make_plots_dir():
-    pathlib.Path(os.path.join(_workdir, _wf_outputs,
-                              _plots)).mkdir(exist_ok=True)
-
-
-def _get_log_save_file():
-    pass
-
-
-def get_model_save_file():
-    return os.path.join(_workdir, _chkp)
-
-
-def get_optim_hist_file():
-    workdir = os.getenv('WORKDIR')
-    return os.path.join(_workdir, _optim_hist)
+    """
+    return os.path.join(_workdir, _checkpoint)
 
 
 if __name__ == "__main__":
-    make_wfpsf_file_struct()
-    print(get_model_save_file())
+    setup_dirs()
