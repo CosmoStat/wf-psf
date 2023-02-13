@@ -28,7 +28,7 @@ def setup_outputs():
     """Set up Outputs.
 
     A function to call
-    auxiliary functions
+    specific functions
     to set up output
     directories and logging.
 
@@ -47,7 +47,7 @@ def _setup_dirs():
     Parameters
     ----------
     list_of_dirs: tuple
-        Lists of output dirs
+        Lists of output directories
 
     """
     _make_output_dir()
@@ -89,8 +89,8 @@ def _make_output_dir():
 
     A function to make the
     output directory "wf-outputs"
-    inside directory defined by
-    the $WORKDIR environment
+    inside the directory defined 
+    by the $WORKDIR environment
     variable.
 
     """
