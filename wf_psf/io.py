@@ -1,4 +1,4 @@
-"""IO
+"""IO.
 
 A module which defines methods to
 manage wf-psf inputs and outputs.
@@ -33,7 +33,6 @@ def setup_outputs():
     directories and logging.
 
     """
-
     _setup_dirs()
     _setup_logging()
 
@@ -43,11 +42,6 @@ def _setup_dirs():
 
     A function to setup the output
     directories.
-
-    Parameters
-    ----------
-    list_of_dirs: tuple
-        Lists of output directories
 
     """
     _make_output_dir()
@@ -62,13 +56,6 @@ def _setup_logging():
 
     A function to set up
     logging.
-
-    Parameters
-    ----------
-    repodir: str
-        Repo directory
-    logfile: str
-        Log filename with absolute path
 
     """
     repodir = os.getenv("REPODIR")
@@ -89,7 +76,7 @@ def _make_output_dir():
 
     A function to make the
     output directory "wf-outputs"
-    inside the directory defined 
+    inside the directory defined
     by the $WORKDIR environment
     variable.
 
