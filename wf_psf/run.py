@@ -9,7 +9,7 @@ This module setups the run of the WF_PSF pipeline.
 import argparse
 from wf_psf.read_config import read_stream, read_conf
 from dotenv import load_dotenv
-import wf_psf.io as io
+from wf_psf.io import FileIOHandler
 import os
 import logging.config
 import logging
@@ -18,10 +18,8 @@ from wf_psf.training import train
 # load .env variables
 load_dotenv("./.env")
 
+# set repo directory
 repodir = os.getenv("REPODIR")
-# make wf-psf output dirs
-io.setup_outputs()
-
 
 parser = argparse.ArgumentParser()
 
@@ -33,8 +31,19 @@ parser.add_argument(
     help="a configuration file containing program settings.",
 )
 
+parser.add_argument(
+    "--outputdir",
+    "-o",
+    type=str,
+    required=True,
+    help="the path of the output directory.",
+)
+
 args = parser.parse_args()
-config = vars(args)
+
+# make wf-psf output dirs
+file_handler = FileIOHandler(args.outputdir)
+file_handler.setup_outputs()
 
 logger = logging.getLogger("wavediff")
 
@@ -42,8 +51,7 @@ logger.info("#")
 logger.info("# Entering wavediff mainMethod()")
 logger.info("#")
 
-
-configs = read_stream(os.path.join(repodir, config["conffile"]))
+configs = read_stream(os.path.join(repodir, args.conffile))
 
 for conf in configs:
     if hasattr(conf, "training_conf"):
@@ -51,5 +59,4 @@ for conf in configs:
         training_params = read_conf(os.path.join(repodir, conf.training_conf))
         logger.info(training_params)
 
-
-train.train(training_params)
+train.train(training_params, file_handler)
