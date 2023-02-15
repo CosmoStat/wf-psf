@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""WF_PSF Run
+"""WF_PSF Run.
 
 This module setups the run of the WF_PSF pipeline.
 

@@ -1,4 +1,4 @@
-"""Train
+"""Train.
 
 A module which defines the classes and methods
 to manage training of the psf model.
