@@ -13,7 +13,6 @@ import os
 
 
 class RecursiveNamespace(SimpleNamespace):
-
     @staticmethod
     def map_entry(entry):
         if isinstance(entry, dict):
@@ -56,23 +55,24 @@ def read_stream(conf_file):
 
 
 if __name__ == "__main__":
-    workdir = os.getenv('HOME')
+    workdir = os.getenv("HOME")
 
     # read the yaml config
-    my_config = read_yaml(os.path.join(
-        workdir, "Projects/wf-psf/config/training_config.yaml"))
+    my_config = read_yaml(
+        os.path.join(workdir, "Projects/wf-psf/config/training_config.yaml")
+    )
 
     # prtty print my_config
     pprint.pprint(my_config)
 
     # prtty print env config
-    wf_conf = read_conf(os.path.join(
-        workdir, "Projects/wf-psf/config/training_config.yaml"))
+    wf_conf = read_conf(
+        os.path.join(workdir, "Projects/wf-psf/config/training_config.yaml")
+    )
     pprint.pprint(wf_conf)
 
     # prtty print multiple docs in config
-    wf_confs = read_stream(os.path.join(
-        workdir, "Projects/wf-psf/config/configs.yaml"))
+    wf_confs = read_stream(os.path.join(workdir, "Projects/wf-psf/config/configs.yaml"))
 
     # iterate thru generator
     for wf_conf in wf_confs:

@@ -9,7 +9,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
 class GenFieldPSF(object):
-
     def __init__(
         self,
         sim_psf_toolkit,
@@ -18,7 +17,7 @@ class GenFieldPSF(object):
         ylim=1e3,
         n_bins=35,
         lim_max_wfe_rms=None,
-        verbose=0
+        verbose=0,
     ):
         # Input attributes
         self.sim_psf_toolkit = sim_psf_toolkit
@@ -43,7 +42,9 @@ class GenFieldPSF(object):
                 rand_seed = 1
             # Generate Z coeffs and normalize them
             # Normalize coefficients
-            self.sim_psf_toolkit.gen_random_Z_coeffs(max_order=self.max_order, rand_seed=rand_seed)
+            self.sim_psf_toolkit.gen_random_Z_coeffs(
+                max_order=self.max_order, rand_seed=rand_seed
+            )
             z_coef_1 = self.sim_psf_toolkit.normalize_zernikes(
                 self.sim_psf_toolkit.get_z_coeffs(), self.lim_max_wfe_rms
             )
@@ -54,7 +55,9 @@ class GenFieldPSF(object):
                 rand_seed = None
             else:
                 rand_seed = 4
-            self.sim_psf_toolkit.gen_random_Z_coeffs(max_order=self.max_order, rand_seed=rand_seed)
+            self.sim_psf_toolkit.gen_random_Z_coeffs(
+                max_order=self.max_order, rand_seed=rand_seed
+            )
             z_coef_4 = self.sim_psf_toolkit.normalize_zernikes(
                 self.sim_psf_toolkit.get_z_coeffs(), self.lim_max_wfe_rms
             )
@@ -65,7 +68,9 @@ class GenFieldPSF(object):
                 rand_seed = None
             else:
                 rand_seed = 5
-            self.sim_psf_toolkit.gen_random_Z_coeffs(max_order=self.max_order, rand_seed=rand_seed)
+            self.sim_psf_toolkit.gen_random_Z_coeffs(
+                max_order=self.max_order, rand_seed=rand_seed
+            )
             z_coef_5 = self.sim_psf_toolkit.normalize_zernikes(
                 self.sim_psf_toolkit.get_z_coeffs(), self.lim_max_wfe_rms
             )
@@ -86,15 +91,15 @@ class GenFieldPSF(object):
         max_wfe_corner_3 = self.compute_wfe_rms(x=0, y=self.ylim)
         max_wfe_corner_4 = self.compute_wfe_rms(x=self.xlim, y=0)
 
-        max_wfe_rms = np.max([
-            max_wfe_corner_1, max_wfe_corner_2, max_wfe_corner_3, max_wfe_corner_4
-        ])
+        max_wfe_rms = np.max(
+            [max_wfe_corner_1, max_wfe_corner_2, max_wfe_corner_3, max_wfe_corner_4]
+        )
 
         if max_wfe_rms > self.lim_max_wfe_rms:
             if self.verbose:
                 print(
-                    'WFE_RMS %.4f [um] is exceeding from max value: %.4f [um]. Normalizing.' %
-                    (max_wfe_rms, self.lim_max_wfe_rms)
+                    "WFE_RMS %.4f [um] is exceeding from max value: %.4f [um]. Normalizing."
+                    % (max_wfe_rms, self.lim_max_wfe_rms)
                 )
 
             wfe_rms_ratio = self.lim_max_wfe_rms / max_wfe_rms
@@ -105,37 +110,47 @@ class GenFieldPSF(object):
         self.z_coeffs = []
 
     def zernike_coeff_map(self, x, y):
-        """ Calculate Zernikes for a specific position
+        """Calculate Zernikes for a specific position
 
         Normalize (x,y) inputs
         (x,y) need to be in [0,self.xlim] x [0,self.ylim]
         (x_norm,y_norm) need to be in [-1, +1] x [-1, +1]
         """
         if x >= self.xlim and x <= 0:
-            print('WARNING! x value: %f is not between the limits [0, %f]' % (x, self.xlim))
+            print(
+                "WARNING! x value: %f is not between the limits [0, %f]"
+                % (x, self.xlim)
+            )
         if y >= self.ylim and y <= 0:
-            print('WARNING! y value: %f is not between the limits [0, %f]' % (y, self.ylim))
+            print(
+                "WARNING! y value: %f is not between the limits [0, %f]"
+                % (y, self.ylim)
+            )
 
         x_norm = (x - self.xlim / 2) / (self.xlim / 2)
         y_norm = (y - self.ylim / 2) / (self.ylim / 2)
 
-        self.new_z_coef = self.z_coeffs[0] * x_norm + self.z_coeffs[1] * y_norm + self.z_coeffs[2]
+        self.new_z_coef = (
+            self.z_coeffs[0] * x_norm + self.z_coeffs[1] * y_norm + self.z_coeffs[2]
+        )
 
         dif_wfe_rms = self.sim_psf_toolkit.check_wfe_rms(z_coeffs=self.new_z_coef)
 
         if dif_wfe_rms < 0:
             print(
-                "WARNING: Position (%d,%d) posses an WFE_RMS of %f.\n" %
-                (x, y, self.sim_psf_toolkit.max_wfe_rms - dif_wfe_rms)
+                "WARNING: Position (%d,%d) posses an WFE_RMS of %f.\n"
+                % (x, y, self.sim_psf_toolkit.max_wfe_rms - dif_wfe_rms)
             )
             print(
-                "It exceeds the maximum allowed error (max WFE_RMS=%.4f [um])" %
-                (self.sim_psf_toolkit.max_wfe_rms)
+                "It exceeds the maximum allowed error (max WFE_RMS=%.4f [um])"
+                % (self.sim_psf_toolkit.max_wfe_rms)
             )
 
         if self.verbose > 0:
             print("Info for position: (%d, %d)" % (x, y))
-            print("WFE_RMS: %.4f [um]" % (self.sim_psf_toolkit.max_wfe_rms - dif_wfe_rms))
+            print(
+                "WFE_RMS: %.4f [um]" % (self.sim_psf_toolkit.max_wfe_rms - dif_wfe_rms)
+            )
             print("MAX_WFE_RMS: %.4f [um]" % (self.sim_psf_toolkit.max_wfe_rms))
 
     def compute_wfe_rms(self, x, y):
@@ -143,7 +158,9 @@ class GenFieldPSF(object):
         x_norm = (x - self.xlim / 2) / (self.xlim / 2)
         y_norm = (y - self.ylim / 2) / (self.ylim / 2)
 
-        self.new_z_coef = self.z_coeffs[0] * x_norm + self.z_coeffs[1] * y_norm + self.z_coeffs[2]
+        self.new_z_coef = (
+            self.z_coeffs[0] * x_norm + self.z_coeffs[1] * y_norm + self.z_coeffs[2]
+        )
 
         dif_wfe_rms = self.sim_psf_toolkit.check_wfe_rms(z_coeffs=self.new_z_coef)
 
@@ -153,21 +170,22 @@ class GenFieldPSF(object):
         if self.new_z_coef is not None:
             return self.new_z_coef
         else:
-            print('Coeff map has not been calculated yet.')
+            print("Coeff map has not been calculated yet.")
 
     def get_mono_PSF(self, x, y, lambda_obs=0.725):
-
         # Calculate the specific field's zernike coeffs
         self.zernike_coeff_map(x, y)
         # Set the Z coefficients to the PSF toolkit generator
         self.sim_psf_toolkit.set_z_coeffs(self.get_zernike_coeff_map())
         # Generate the monochromatic psf
-        self.sim_psf_toolkit.generate_mono_PSF(lambda_obs=lambda_obs, regen_sample=False)
+        self.sim_psf_toolkit.generate_mono_PSF(
+            lambda_obs=lambda_obs, regen_sample=False
+        )
         # Return the generated PSF
 
         return self.sim_psf_toolkit.get_psf()
 
-    def inspect_opd_map(self, cmap='viridis', save_img=False):
+    def inspect_opd_map(self, cmap="viridis", save_img=False):
         """Plot the last saved OPD map."""
         self.sim_psf_toolkit.plot_opd_phase(cmap, save_img)
 
@@ -178,25 +196,28 @@ class GenFieldPSF(object):
 
         x_mesh, y_mesh = np.meshgrid(x_coord, y_coord)
 
-        wfe_rms_field = np.array([
-            self.compute_wfe_rms(_x, _y) for _x, _y in zip(x_mesh.flatten(), y_mesh.flatten())
-        ])
+        wfe_rms_field = np.array(
+            [
+                self.compute_wfe_rms(_x, _y)
+                for _x, _y in zip(x_mesh.flatten(), y_mesh.flatten())
+            ]
+        )
 
         wfe_rms_field_mesh = wfe_rms_field.reshape((mesh_bins, mesh_bins))
 
         # Plot the field
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111)
-        im1 = ax1.imshow(wfe_rms_field_mesh, interpolation='None')
+        im1 = ax1.imshow(wfe_rms_field_mesh, interpolation="None")
         divider = make_axes_locatable(ax1)
-        cax = divider.append_axes('right', size='5%', pad=0.05)
-        fig.colorbar(im1, cax=cax, orientation='vertical')
-        ax1.set_title('PSF field WFE RMS [um]')
-        ax1.set_xlabel('x axis')
-        ax1.set_ylabel('y axis')
+        cax = divider.append_axes("right", size="5%", pad=0.05)
+        fig.colorbar(im1, cax=cax, orientation="vertical")
+        ax1.set_title("PSF field WFE RMS [um]")
+        ax1.set_xlabel("x axis")
+        ax1.set_ylabel("y axis")
 
         if save_img:
-            plt.savefig('./WFE_field_meshdim_%d.pdf' % mesh_bins, bbox_inches='tight')
+            plt.savefig("./WFE_field_meshdim_%d.pdf" % mesh_bins, bbox_inches="tight")
 
         plt.show()
 

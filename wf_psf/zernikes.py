@@ -9,19 +9,18 @@ import numpy as np
 import zernike as zk
 import tensorflow as tf
 
- # Prepare the inputs
+# Prepare the inputs
 # Generate Zernike maps
 zernikes = zernike_generator(
-    n_zernikes=args['n_zernikes'], wfe_dim=args['pupil_diameter']
+    n_zernikes=args["n_zernikes"], wfe_dim=args["pupil_diameter"]
 )
 # Now as cubes
-np_zernike_cube = np.zeros(
-    (len(zernikes), zernikes[0].shape[0], zernikes[0].shape[1]))
+np_zernike_cube = np.zeros((len(zernikes), zernikes[0].shape[0], zernikes[0].shape[1]))
 for it in range(len(zernikes)):
     np_zernike_cube[it, :, :] = zernikes[it]
 np_zernike_cube[np.isnan(np_zernike_cube)] = 0
 tf_zernike_cube = tf.convert_to_tensor(np_zernike_cube, dtype=tf.float32)
-print('Zernike cube:')
+print("Zernike cube:")
 print(tf_zernike_cube.shape)
 
 

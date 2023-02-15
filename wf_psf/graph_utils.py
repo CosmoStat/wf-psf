@@ -48,7 +48,7 @@ class GraphBuilder(object):
         ea_gridsize=10,
         distances=None,
         auto_run=True,
-        verbose=2
+        verbose=2,
     ):
         r"""Initialize class attributes."""
         self.obs_data = obs_data
@@ -57,7 +57,9 @@ class GraphBuilder(object):
         self.obs_weights = obs_weights
         # change to same format as that we will use for
         # residual matrix R later on
-        self.obs_weights = np.transpose(self.obs_weights.reshape((shap[0] * shap[1], shap[2])))
+        self.obs_weights = np.transpose(
+            self.obs_weights.reshape((shap[0] * shap[1], shap[2]))
+        )
         self.n_comp = n_comp
         if n_eigenvects is None:
             self.n_eigenvects = self.obs_data.shape[2]
@@ -110,8 +112,8 @@ class GraphBuilder(object):
             R -= vect.T.dot(vect.dot(R))
             if self.verbose:
                 print(
-                    " > selected e: {}\tselected a:".format(e) +
-                    "{}\t chosen index: {}/{}".format(a, j, self.n_eigenvects)
+                    " > selected e: {}\tselected a:".format(e)
+                    + "{}\t chosen index: {}/{}".format(a, j, self.n_eigenvects)
                 )
         self.VT = np.vstack((eigenvect for eigenvect in list_eigenvects))
         self.alpha = np.zeros((self.n_comp, self.VT.shape[0]))
@@ -134,7 +136,7 @@ class GraphBuilder(object):
         # r_med = np.min(dist_ratios**2)
         # return np.log(epsilon)/np.log(r_med)
 
-        return 1.
+        return 1.0
 
     def select_params(self, R, e_range, a_range):
         r"""Select best graph parameters.
@@ -163,7 +165,9 @@ class GraphBuilder(object):
             # optimize over a
             Peas = np.array([gen_Pea(self.distances, current_e, a) for a in a_range])
             all_eigenvects = np.array([self.gen_eigenvects(Pea) for Pea in Peas])
-            ea_idx, eigen_idx, best_VT = select_vstar(all_eigenvects, R, self.obs_weights)
+            ea_idx, eigen_idx, best_VT = select_vstar(
+                all_eigenvects, R, self.obs_weights
+            )
             current_a = a_range[ea_idx]
 
         return current_e, current_a, eigen_idx, best_VT
@@ -175,7 +179,7 @@ class GraphBuilder(object):
         with the smallest eigenvalues.
         """
         U, s, vT = np.linalg.svd(mat, full_matrices=True)
-        vT = vT[-self.n_eigenvects:]
+        vT = vT[-self.n_eigenvects :]
         return vT
 
 
@@ -193,11 +197,13 @@ def select_vstar(eigenvects, R, weights):
     weights: numpy.ndarray
         Entry-wise weights for :math:`R_i`.
     """
-    loss = np.sum((weights * R)**2)
+    loss = np.sum((weights * R) ** 2)
     for i, Pea_eigenvects in enumerate(eigenvects):
         for j, vect in enumerate(Pea_eigenvects):
             colvect = np.copy(vect).reshape(1, -1)
-            current_loss = np.sum((weights * R - colvect.T.dot(colvect.dot(weights * R)))**2)
+            current_loss = np.sum(
+                (weights * R - colvect.T.dot(colvect.dot(weights * R))) ** 2
+            )
             if current_loss < loss:
                 loss = current_loss
                 eigen_idx = j
@@ -212,7 +218,7 @@ def pairwise_distances(obs_pos):
     ones = np.ones(obs_pos.shape[0])
     out0 = np.outer(obs_pos[:, 0], ones)
     out1 = np.outer(obs_pos[:, 1], ones)
-    return np.sqrt((out0 - out0.T)**2 + (out1 - out1.T)**2)
+    return np.sqrt((out0 - out0.T) ** 2 + (out1 - out1.T) ** 2)
 
 
 def gen_Pea(distances, e, a):
@@ -242,8 +248,8 @@ def gen_Pea(distances, e, a):
 
     """
     Pea = np.copy(distances**e)
-    np.fill_diagonal(Pea, 1.)
-    Pea = -1. / Pea
+    np.fill_diagonal(Pea, 1.0)
+    Pea = -1.0 / Pea
     for i in range(Pea.shape[0]):
-        Pea[i, i] = a * (np.sum(-1. * Pea[i]) - 1.)
+        Pea[i, i] = a * (np.sum(-1.0 * Pea[i]) - 1.0)
     return Pea
