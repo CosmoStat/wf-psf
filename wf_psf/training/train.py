@@ -1,8 +1,9 @@
-"""
-:file: wf_psf/train.py
+"""Train
 
-:date: 18/01/23
-:author: jpollack
+A module which defines the classes and methods
+to manage training of the psf model.
+
+:Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 
 """
 
@@ -15,71 +16,123 @@ from wf_psf.read_config import read_conf
 import os
 import logging
 import wf_psf.io as io
-import wf_psf.psf_models.psf_models as psf_models
+from wf_psf.psf_models import psf_models
 
 logger = logging.getLogger(__name__)
 
 
+def setup_training():
+    """Setup Training.
+
+    A function to setup training.
+
+
+    """
+    device_name = get_gpu_info()
+    logger.info("Found GPU at: {}".format(device_name))
+
+
 class TrainingParamsHandler:
-    def __init__(self, training_params, id_name='-coherent_euclid_200stars'):
-        """
-        A class to handle training parameters accessed:
+    """Training Parameters Handler.
 
-        - training_params: a Recursive Simplenamespace storing 
-        training input params
-        """
+    A class to handle training parameters accessed:
 
+    Parameters
+    ----------
+    - training_params: Recursive Namespace
+        Recursive namespace object containing training input params
+    - id_name: str
+        ID name
+    - run_id_name: str
+        Run ID name
+    - output_dirs: FileIOHandler
+        FileIOHandler instance
+    - saving_optim_hist: dict
+        Dictionary storing optimiser parameters
+
+    """
+
+    def __init__(
+        self, training_params, output_dirs, id_name="-coherent_euclid_200stars"
+    ):
         self.training_params = training_params.training
         self.id_name = id_name
         self.run_id_name = self.model_name + self.id_name
-        self.model_save_file = io.get_model_save_file()
+        self.checkpoint_dir = output_dirs.get_checkpoint_dir()
         self.saving_optim_hist = {}
 
     @property
     def model_name(self):
-        """PSF Model Name"""
+        """PSF Model Name."""
         return self.training_params.model_params.model_name
 
     @property
     def model_params(self):
-        """PSF Model Params"""
+        """PSF Model Params."""
         return self.training_params.model_params
 
     @property
     def training_hparams(self):
-        """Training Hyperparameters"""
+        """Training Hyperparameters."""
         return self.training_params.training_hparams
 
     @property
     def training_data_params(self):
-        """Training Data Params"""
+        """Training Data Params."""
         return self.training_params.data.training
 
     @property
     def test_data_params(self):
-        """Test Data Params"""
+        """Test Data Params."""
         return self.training_params.data.test
 
 
-def train(training_params):
-    # Print GPU and tensorflow info
+def get_gpu_info():
+    """Get GPU Information.
+
+    A function to return GPU
+    device name.
+
+    Returns
+    -------
+    device_name
+        Name of GPU device
+
+    """
     device_name = tf.test.gpu_device_name()
-    logger.info('Found GPU at: {}'.format(device_name))
-    logger.info('tf_version: ' + str(tf.__version__))
-
-    training_handler = TrainingParamsHandler(training_params)
-
-    psf_model = psf_models.get_psf_model(training_handler.model_name,
-                                         training_handler.model_params,
-                                         training_handler.training_hparams)
+    return device_name
 
 
+def train(training_params, output_dirs):
+    """Train.
+
+    A function to train the psf model.
+
+    Parameters
+    ----------
+    training_params: Recursive Namespace
+        Recursive Namespace object containing training parameters
+    output_dirs: str
+        Absolute paths to training output directories
+
+    """
+
+    training_handler = TrainingParamsHandler(training_params, output_dirs)
+
+    psf_model = psf_models.get_psf_model(
+        training_handler.model_name,
+        training_handler.model_params,
+        training_handler.training_hparams,
+    )
+
+    logger.info(f"PSF Model class: `{training_handler.model_name}` initialized...")
 
 if __name__ == "__main__":
-    workdir = os.getenv('HOME')
+    workdir = os.getenv("HOME")
 
     # prtty print
-    training_params = read_conf(os.path.join(
-        workdir, "Projects/wf-psf/wf_psf/config/training_config.yaml"))
+    training_params = read_conf(
+        os.path.join(workdir, "Projects/wf-psf/wf_psf/config/training_config.yaml")
+    )
 
     training_params = TrainingParams(training_params)
