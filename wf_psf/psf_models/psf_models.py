@@ -1,10 +1,12 @@
-"""
-:file: wf_psf/psf_models/psf_models.py
+"""PSF_Models.
 
-:date: 18/01/23
-:author: jpollack
+A module which defines the classes and methods
+to manage the parameters of psf model.
+
+:Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 
 """
+
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
@@ -22,7 +24,19 @@ class PsfModelError(Exception):
 
 
 def register_psfclass(psf_class):
-    """Wrapper to register all PSF model classes.
+    """Register PSF Class.
+
+    A function to register all PSF model classes.
+
+    Parameters
+    ----------
+    psf_class: Class
+        PSF Class
+
+    Returns
+    -------
+    psf_class
+
     """
     for id in psf_class.ids:
         PSF_CLASS[id] = psf_class
@@ -30,13 +44,42 @@ def register_psfclass(psf_class):
 
 
 def set_psf_model(model_name):
-    """Set PSF Model Class"""
+    """Set PSF Model Class.
+
+    A function to select the class of
+    the PSF model.
+
+    Parameters
+    ----------
+    model_name
+        Name of PSF model
+
+    Returns
+    -------
+    psf_class: class
+        Name of PSF model class
+
+    """
     psf_class = PSF_CLASS[model_name]
     return psf_class
 
 
 def get_psf_model(model_name, model_params, training_hparams):
-    """Instantiate PSF Model Class"""
+    """Get PSF Model Class Instance.
+
+    A function to instantiate a
+    PSF model class.
+
+    Parameters
+    ----------
+    model_name: str
+        Short name of PSF model
+    model_params: Recursive Namespace
+        Recursive Namespace object containing PSF model parameters
+    training_hparams: Recursive Namespace
+        Recursive Namespace object containing training hyperparameters
+
+    """
     psf_class = set_psf_model(model_name)
     return psf_class(model_params, training_hparams)
 
@@ -44,12 +87,11 @@ def get_psf_model(model_name, model_params, training_hparams):
 def tf_zernike_cube(n_zernikes, pupil_diam):
     # Prepare the inputs
     # Generate Zernike maps
-    zernikes = zernike_generator(
-        n_zernikes=n_zernikes, wfe_dim=pupil_diam
-    )
+    zernikes = zernike_generator(n_zernikes=n_zernikes, wfe_dim=pupil_diam)
     # Now as cubes
     np_zernike_cube = np.zeros(
-        (len(zernikes), zernikes[0].shape[0], zernikes[0].shape[1]))
+        (len(zernikes), zernikes[0].shape[0], zernikes[0].shape[1])
+    )
 
     for it in range(len(zernikes)):
         np_zernike_cube[it, :, :] = zernikes[it]
@@ -61,16 +103,16 @@ def tf_zernike_cube(n_zernikes, pupil_diam):
 
 def tf_obscurations(pupil_diam, N_filter=2):
     obscurations = SimPSFToolkit.generate_pupil_obscurations(
-        N_pix=pupil_diam, N_filter=N_filter)
+        N_pix=pupil_diam, N_filter=N_filter
+    )
     return tf.convert_to_tensor(obscurations, dtype=tf.complex64)
 
 
 @register_psfclass
 class TF_SemiParam_field(tf.keras.Model):
+    """PSF field forward model.
 
-    """ PSF field forward model!
-
-    Semi parametric model based on the Zernike polynomial basis. The
+    Semi parametric model based on the Zernike polynomial basis.
 
     Parameters
     ----------
@@ -111,29 +153,26 @@ class TF_SemiParam_field(tf.keras.Model):
         field model.
 
     """
-    ids = ('poly',)
+
+    ids = ("poly",)
 
     def __init__(
-        self,
-        model_params,
-        training_params,
-        coeff_mat=None,
-        name='TF_SemiParam_field'
+        self, model_params, training_params, coeff_mat=None, name="TF_SemiParam_field"
     ):
         super(TF_SemiParam_field, self).__init__()
 
-        self.pupil_diam = model_params.param_params.pupil_diameter
+        self.pupil_diam = model_params.pupil_diameter
         # Inputs: oversampling used
         self.output_Q = model_params.output_q
 
         # Inputs: TF_poly_Z_field
-        self.n_zernikes = model_params.param_params.n_zernikes
-        self.d_max = model_params.param_params.d_max
-        self.x_lims = model_params.param_params.x_lims
-        self.y_lims = model_params.param_params.y_lims
+        self.n_zernikes = model_params.param_hparams.n_zernikes
+        self.d_max = model_params.param_hparams.d_max
+        self.x_lims = model_params.x_lims
+        self.y_lims = model_params.y_lims
 
         # Inputs: TF_NP_poly_OPD
-        self.d_max_nonparam = model_params.nonparam_params.d_max_nonparam
+        self.d_max_nonparam = model_params.nonparam_hparams.d_max_nonparam
         self.zernike_maps = tf_zernike_cube(self.n_zernikes, self.pupil_diam)
         self.opd_dim = tf.shape(self.zernike_maps)[1].numpy()
 
@@ -151,7 +190,10 @@ class TF_SemiParam_field(tf.keras.Model):
 
         # Initialize the first layer
         self.tf_poly_Z_field = TF_poly_Z_field(
-            x_lims=self.x_lims, y_lims=self.y_lims, n_zernikes=self.n_zernikes, d_max=self.d_max
+            x_lims=self.x_lims,
+            y_lims=self.y_lims,
+            n_zernikes=self.n_zernikes,
+            d_max=self.d_max,
         )
 
         # Initialize the zernike to OPD layer
@@ -159,12 +201,17 @@ class TF_SemiParam_field(tf.keras.Model):
 
         # Initialize the non-parametric layer
         self.tf_np_poly_opd = TF_NP_poly_OPD(
-            x_lims=self.x_lims, y_lims=self.y_lims, d_max=self.d_max_nonparam, opd_dim=self.opd_dim
+            x_lims=self.x_lims,
+            y_lims=self.y_lims,
+            d_max=self.d_max_nonparam,
+            opd_dim=self.opd_dim,
         )
 
         # Initialize the batch opd to batch polychromatic PSF layer
         self.tf_batch_poly_PSF = TF_batch_poly_PSF(
-            obscurations=self.obscurations, output_Q=self.output_Q, output_dim=self.output_dim
+            obscurations=self.obscurations,
+            output_Q=self.output_Q,
+            output_dim=self.output_dim,
         )
 
         # Initialize the model parameters with non-default value
@@ -179,28 +226,28 @@ class TF_SemiParam_field(tf.keras.Model):
         #     self.call = self.call_l2_opd_loss
 
     def get_coeff_matrix(self):
-        """ Get coefficient matrix."""
+        """Get coefficient matrix."""
         return self.tf_poly_Z_field.get_coeff_matrix()
 
     def assign_coeff_matrix(self, coeff_mat):
-        """ Assign coefficient matrix."""
+        """Assign coefficient matrix."""
         self.tf_poly_Z_field.assign_coeff_matrix(coeff_mat)
 
     def set_zero_nonparam(self):
-        """ Set to zero the non-parametric part."""
+        """Set to zero the non-parametric part."""
         self.tf_np_poly_opd.set_alpha_zero()
 
     def set_nonzero_nonparam(self):
-        """ Set to non-zero the non-parametric part."""
+        """Set to non-zero the non-parametric part."""
         self.tf_np_poly_opd.set_alpha_identity()
 
     def set_trainable_layers(self, param_bool=True, nonparam_bool=True):
-        """ Set the layers to be trainable or not."""
+        """Set the layers to be trainable or not."""
         self.tf_np_poly_opd.trainable = nonparam_bool
         self.tf_poly_Z_field.trainable = param_bool
 
     def set_output_Q(self, output_Q, output_dim=None):
-        """ Set the value of the output_Q parameter.
+        """Set the value of the output_Q parameter.
         Useful for generating/predicting PSFs at a different sampling wrt the
         observation sampling.
         """
@@ -210,11 +257,13 @@ class TF_SemiParam_field(tf.keras.Model):
 
         # Reinitialize the PSF batch poly generator
         self.tf_batch_poly_PSF = TF_batch_poly_PSF(
-            obscurations=self.obscurations, output_Q=self.output_Q, output_dim=self.output_dim
+            obscurations=self.obscurations,
+            output_Q=self.output_Q,
+            output_dim=self.output_dim,
         )
 
     def predict_mono_psfs(self, input_positions, lambda_obs, phase_N):
-        """ Predict a set of monochromatic PSF at desired positions.
+        """Predict a set of monochromatic PSF at desired positions.
 
         input_positions: Tensor(batch_dim x 2)
 
@@ -229,7 +278,9 @@ class TF_SemiParam_field(tf.keras.Model):
 
         # Initialise the monochromatic PSF batch calculator
         tf_batch_mono_psf = TF_batch_mono_PSF(
-            obscurations=self.obscurations, output_Q=self.output_Q, output_dim=self.output_dim
+            obscurations=self.obscurations,
+            output_Q=self.output_Q,
+            output_dim=self.output_dim,
         )
         # Set the lambda_obs and the phase_N parameters
         tf_batch_mono_psf.set_lambda_phaseN(phase_N, lambda_obs)
@@ -248,7 +299,7 @@ class TF_SemiParam_field(tf.keras.Model):
         return mono_psf_batch
 
     def predict_opd(self, input_positions):
-        """ Predict the OPD at some positions.
+        """Predict the OPD at some positions.
 
         Parameters
         ----------
@@ -272,7 +323,7 @@ class TF_SemiParam_field(tf.keras.Model):
         return opd_maps
 
     def assign_S_mat(self, S_mat):
-        """ Assign DD features matrix."""
+        """Assign DD features matrix."""
         self.tf_np_poly_opd.assign_S_mat(S_mat)
 
     def project_DD_features(self, tf_zernike_cube):
@@ -282,23 +333,29 @@ class TF_SemiParam_field(tf.keras.Model):
 
         """
         # Compute Zernike norm for projections
-        n_pix_zernike = PI_zernikes(
-            tf_zernike_cube[0, :, :], tf_zernike_cube[0, :, :])
+        n_pix_zernike = PI_zernikes(tf_zernike_cube[0, :, :], tf_zernike_cube[0, :, :])
         # Multiply Alpha matrix with DD features matrix S
         inter_res_v2 = tf.tensordot(
-            self.tf_np_poly_opd.alpha_mat[:self.tf_poly_Z_field.coeff_mat.shape[1], :],
+            self.tf_np_poly_opd.alpha_mat[: self.tf_poly_Z_field.coeff_mat.shape[1], :],
             self.tf_np_poly_opd.S_mat,
-            axes=1
+            axes=1,
         )
         # Project over first n_z Zernikes
         delta_C_poly = tf.constant(
-            np.array([[
-                PI_zernikes(tf_zernike_cube[i, :, :],
-                            inter_res_v2[j, :, :], n_pix_zernike)
-                for j in range(self.tf_poly_Z_field.coeff_mat.shape[1])
-            ]
-                for i in range(self.n_zernikes)]),
-            dtype=tf.float32
+            np.array(
+                [
+                    [
+                        PI_zernikes(
+                            tf_zernike_cube[i, :, :],
+                            inter_res_v2[j, :, :],
+                            n_pix_zernike,
+                        )
+                        for j in range(self.tf_poly_Z_field.coeff_mat.shape[1])
+                    ]
+                    for i in range(self.n_zernikes)
+                ]
+            ),
+            dtype=tf.float32,
         )
         old_C_poly = self.tf_poly_Z_field.coeff_mat
         # Corrected parametric coeff matrix
@@ -307,22 +364,27 @@ class TF_SemiParam_field(tf.keras.Model):
 
         # Remove extracted features from non-parametric model
         # Mix DD features with matrix alpha
-        S_tilde = tf.tensordot(self.tf_np_poly_opd.alpha_mat,
-                               self.tf_np_poly_opd.S_mat, axes=1)
+        S_tilde = tf.tensordot(
+            self.tf_np_poly_opd.alpha_mat, self.tf_np_poly_opd.S_mat, axes=1
+        )
         # Get beta tilde as the protection of the first n_param_poly_terms (6 for d_max=2) onto the first n_zernikes.
-        beta_tilde_inner = np.array([[
-            PI_zernikes(
-                tf_zernike_cube[j, :, :],
-                S_tilde_slice,
-                n_pix_zernike
-            ) for j in range(self.n_zernikes)
-        ] for S_tilde_slice in S_tilde[:self.tf_poly_Z_field.coeff_mat.shape[1], :, :]])
+        beta_tilde_inner = np.array(
+            [
+                [
+                    PI_zernikes(tf_zernike_cube[j, :, :], S_tilde_slice, n_pix_zernike)
+                    for j in range(self.n_zernikes)
+                ]
+                for S_tilde_slice in S_tilde[
+                    : self.tf_poly_Z_field.coeff_mat.shape[1], :, :
+                ]
+            ]
+        )
 
         # Only pad in the first dimension so we get a matrix of size (d_max_nonparam_terms)x(n_zernikes)  --> 21x15 or 21x45.
         beta_tilde = np.pad(
             beta_tilde_inner,
             [(0, S_tilde.shape[0] - beta_tilde_inner.shape[0]), (0, 0)],
-            mode='constant'
+            mode="constant",
         )
 
         # Unmix beta tilde with the inverse of alpha
@@ -356,8 +418,9 @@ class TF_SemiParam_field(tf.keras.Model):
         zernike_coeffs = self.tf_poly_Z_field(input_positions)
         param_opd_maps = self.tf_zernike_OPD(zernike_coeffs)
         # Add l2 loss on the parametric OPD
-        self.add_loss(self.l2_param *
-                      tf.math.reduce_sum(tf.math.square(param_opd_maps)))
+        self.add_loss(
+            self.l2_param * tf.math.reduce_sum(tf.math.square(param_opd_maps))
+        )
         # Calculate the non parametric part
         nonparam_opd_maps = self.tf_np_poly_opd(input_positions)
         # Add the estimations
@@ -370,4 +433,4 @@ class TF_SemiParam_field(tf.keras.Model):
 
 @register_psfclass
 class TF_GenPSF_field(tf.keras.Model):
-    ids = ('gen',)
+    ids = ("gen",)
