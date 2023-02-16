@@ -39,51 +39,94 @@ class TrainingParamsHandler:
 
     Parameters
     ----------
-    - training_params: Recursive Namespace
-        Recursive namespace object containing training input params
-    - id_name: str
+    training_params: type
+        Type containing training input parameters
+    id_name: str
         ID name
-    - run_id_name: str
-        Run ID name
-    - output_dirs: FileIOHandler
+    output_dirs: FileIOHandler
         FileIOHandler instance
-    - saving_optim_hist: dict
-        Dictionary storing optimiser parameters
+
 
     """
 
     def __init__(
         self, training_params, output_dirs, id_name="-coherent_euclid_200stars"
     ):
-        self.training_params = training_params.training
+        self.training_params = training_params
         self.id_name = id_name
         self.run_id_name = self.model_name + self.id_name
         self.checkpoint_dir = output_dirs.get_checkpoint_dir()
-        self.saving_optim_hist = {}
+        self.optimizer_params = {}
 
     @property
     def model_name(self):
-        """PSF Model Name."""
+        """PSF Model Name.
+
+        Set model_name.
+
+        Returns
+        -------
+        model_name: str
+            Name of PSF model
+
+        """
         return self.training_params.model_params.model_name
 
     @property
     def model_params(self):
-        """PSF Model Params."""
+        """PSF Model Params.
+
+        Set PSF model training parameters
+
+        Returns
+        -------
+        model_params: type
+            Recursive Namespace object
+
+        """
         return self.training_params.model_params
 
     @property
     def training_hparams(self):
-        """Training Hyperparameters."""
+        """Training Hyperparameters.
+
+        Set training hyperparameters
+
+        Returns
+        -------
+        training_hparams: type
+            Recursive Namespace object
+
+        """
         return self.training_params.training_hparams
 
     @property
     def training_data_params(self):
-        """Training Data Params."""
+        """Training Data Params.
+
+        Set training data parameters
+
+        Returns
+        -------
+        training_data_params: type
+            Recursive Namespace object
+
+        """
         return self.training_params.data.training
 
     @property
     def test_data_params(self):
-        """Test Data Params."""
+        """Test Data Params.
+
+        Set test data parameters
+
+        Returns
+        -------
+        test_data_params: type
+            Recursive Namespace object
+
+
+        """
         return self.training_params.data.test
 
 
@@ -95,7 +138,7 @@ def get_gpu_info():
 
     Returns
     -------
-    device_name
+    device_name: str
         Name of GPU device
 
     """
@@ -110,8 +153,8 @@ def train(training_params, output_dirs):
 
     Parameters
     ----------
-    training_params: Recursive Namespace
-        Recursive Namespace object containing training parameters
+    training_params: type
+        Recursive Namespace object
     output_dirs: str
         Absolute paths to training output directories
 
@@ -126,13 +169,3 @@ def train(training_params, output_dirs):
     )
 
     logger.info(f"PSF Model class: `{training_handler.model_name}` initialized...")
-
-if __name__ == "__main__":
-    workdir = os.getenv("HOME")
-
-    # prtty print
-    training_params = read_conf(
-        os.path.join(workdir, "Projects/wf-psf/wf_psf/config/training_config.yaml")
-    )
-
-    training_params = TrainingParams(training_params)
