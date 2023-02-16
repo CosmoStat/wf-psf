@@ -80,11 +80,10 @@ def mainMethod():
 
     for conf in configs:
         if hasattr(conf, "training_conf"):
-            # load training_conf
             training_params = read_conf(os.path.join(args.repodir, conf.training_conf))
-            logger.info(training_params)
+            logger.info(training_params.training)
 
-    train.train(training_params, file_handler)
+    train.train(training_params.training, file_handler)
 
     logger.info("#")
     logger.info("# Exiting wavediff mainMethod()")
