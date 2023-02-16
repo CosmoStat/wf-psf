@@ -9,11 +9,8 @@ manage wf-psf inputs and outputs.
 
 import pathlib
 import os
-from dotenv import load_dotenv
 import logging
 from datetime import datetime
-
-load_dotenv("./.env")
 
 
 class FileIOHandler:
@@ -24,12 +21,15 @@ class FileIOHandler:
 
     Parameters
     ----------
+    repodir_path: str
+        Absolute path to the code repository directory
     output_path: str
         Absolute path to output directory
 
     """
 
-    def __init__(self, output_path):
+    def __init__(self, repodir_path, output_path):
+        self._repodir_path = repodir_path
         self._output_path = output_path
         self._wf_outputs = "wf-outputs"
         self._checkpoint = "checkpoint"
@@ -39,7 +39,7 @@ class FileIOHandler:
         self._plots = "plots"
 
     def setup_outputs(self):
-        """Set up Outputs.
+        """Setup Outputs.
 
         A function to call
         specific functions
@@ -91,8 +91,6 @@ class FileIOHandler:
         logging.
 
         """
-        repodir = os.getenv("REPODIR")
-
         logfile = datetime.now().strftime("train_%Y%m%d%H%M.log")
 
         logfile = os.path.join(
@@ -100,7 +98,7 @@ class FileIOHandler:
         )
 
         logging.config.fileConfig(
-            os.path.join(repodir, "config/logging.conf"),
+            os.path.join(self._repodir_path, "config/logging.conf"),
             defaults={"filename": logfile},
             disable_existing_loggers=False,
         )
@@ -148,7 +146,3 @@ class FileIOHandler:
 
         """
         return os.path.join(self._output_path, self._wf_outputs, self._optimizer)
-
-
-if __name__ == "__main__":
-    _setup_dirs()
