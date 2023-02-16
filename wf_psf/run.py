@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """WF_PSF Run.
 
 This module setups the run of the WF_PSF pipeline.
@@ -15,48 +14,83 @@ import logging.config
 import logging
 from wf_psf.training import train
 
-# load .env variables
-load_dotenv("./.env")
 
-# set repo directory
-repodir = os.getenv("REPODIR")
+def setProgramOptions():
+    """Define Program Options.
 
-parser = argparse.ArgumentParser()
+    Set command-line options for
+    this program.
 
-parser.add_argument(
-    "--conffile",
-    "-c",
-    type=str,
-    required=True,
-    help="a configuration file containing program settings.",
-)
+    Returns
+    -------
+    args: type
+        Argument Parser Namespace
 
-parser.add_argument(
-    "--outputdir",
-    "-o",
-    type=str,
-    required=True,
-    help="the path of the output directory.",
-)
+    """
+    parser = argparse.ArgumentParser()
 
-args = parser.parse_args()
+    parser.add_argument(
+        "--conffile",
+        "-c",
+        type=str,
+        required=True,
+        help="a configuration file containing program settings.",
+    )
 
-# make wf-psf output dirs
-file_handler = FileIOHandler(args.outputdir)
-file_handler.setup_outputs()
+    parser.add_argument(
+        "--repodir",
+        "-r",
+        type=str,
+        required=True,
+        help="the path of the code repository directory.",
+    )
 
-logger = logging.getLogger("wavediff")
+    parser.add_argument(
+        "--outputdir",
+        "-o",
+        type=str,
+        required=True,
+        help="the path of the output directory.",
+    )
 
-logger.info("#")
-logger.info("# Entering wavediff mainMethod()")
-logger.info("#")
+    args = parser.parse_args()
 
-configs = read_stream(os.path.join(repodir, args.conffile))
+    return args
 
-for conf in configs:
-    if hasattr(conf, "training_conf"):
-        # load training_conf
-        training_params = read_conf(os.path.join(repodir, conf.training_conf))
-        logger.info(training_params)
 
-train.train(training_params, file_handler)
+def mainMethod():
+    """Main Method.
+
+    The main entry point to wavediff program.
+
+
+    """
+
+    args = setProgramOptions()
+
+    file_handler = FileIOHandler(args.repodir, args.outputdir)
+    file_handler.setup_outputs()
+
+    logger = logging.getLogger("wavediff")
+
+    logger.info("#")
+    logger.info("# Entering wavediff mainMethod()")
+    logger.info("#")
+
+    configs = read_stream(os.path.join(args.repodir, args.conffile))
+
+    for conf in configs:
+        if hasattr(conf, "training_conf"):
+            # load training_conf
+            training_params = read_conf(os.path.join(args.repodir, conf.training_conf))
+            logger.info(training_params)
+
+    train.train(training_params, file_handler)
+
+    logger.info("#")
+    logger.info("# Exiting wavediff mainMethod()")
+    logger.info("#")
+
+
+if __name__ == "__main__":
+    mainMethod()
