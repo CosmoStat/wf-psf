@@ -10,9 +10,9 @@ to manage the parameters of psf model.
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
-from wf_psf.tf_layers import TF_poly_Z_field, TF_zernike_OPD, TF_batch_poly_PSF
-from wf_psf.tf_layers import TF_NP_poly_OPD, TF_batch_mono_PSF, TF_physical_layer
-from wf_psf.utils import PI_zernikes, zernike_generator
+from wf_psf.training.tf_layers import TF_poly_Z_field, TF_zernike_OPD, TF_batch_poly_PSF
+from wf_psf.training.tf_layers import TF_NP_poly_OPD, TF_batch_mono_PSF, TF_physical_layer
+from wf_psf.utils.utils import PI_zernikes, zernike_generator
 from wf_psf.SimPSFToolkit import SimPSFToolkit
 
 

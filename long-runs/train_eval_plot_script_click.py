@@ -5,7 +5,7 @@
 
 import wf_psf as wf
 import click
-from wf_psf.io import make_wfpsf_file_struct
+from wf_psf.utils.io import make_wfpsf_file_struct
 
 # from absl import app
 # from absl import flags

@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
-from wf_psf.tf_psf_field import build_PSF_model
-from wf_psf.utils import NoiseEstimator
+from tf_psf_field import build_PSF_model
+from wf_psf.utils.utils import NoiseEstimator
 
 
 class L1ParamScheduler(tf.keras.callbacks.Callback):

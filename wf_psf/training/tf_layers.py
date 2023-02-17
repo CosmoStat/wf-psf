@@ -1,9 +1,9 @@
 import numpy as np
 import tensorflow as tf
 import tensorflow_addons as tfa
-from wf_psf.tf_modules import TF_mono_PSF
-from wf_psf.utils import calc_poly_position_mat
-import wf_psf.utils as utils
+from wf_psf.psf_models.tf_modules import TF_mono_PSF
+from wf_psf.utils.utils import calc_poly_position_mat
+import wf_psf.utils.utils as utils
 
 
 class TF_poly_Z_field(tf.keras.layers.Layer):

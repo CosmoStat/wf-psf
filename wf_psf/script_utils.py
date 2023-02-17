@@ -6,9 +6,9 @@ import tensorflow as tf
 import tensorflow_addons as tfa
 
 import wf_psf.SimPSFToolkit as SimPSFToolkit
-import wf_psf.utils as wf_utils
-import wf_psf.tf_mccd_psf_field as tf_mccd_psf_field
-import wf_psf.tf_psf_field as tf_psf_field
+import wf_psf.utils.utils as wf_utils
+import tf_mccd_psf_field as tf_mccd_psf_field
+import tf_psf_field as tf_psf_field
 import wf_psf.metrics as wf_metrics
 import training.train_utils as wf_train_utils
 

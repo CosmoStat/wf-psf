@@ -1,11 +1,11 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
-from wf_psf.tf_layers import TF_poly_Z_field, TF_zernike_OPD, TF_batch_poly_PSF
-from wf_psf.tf_layers import TF_NP_MCCD_OPD_v2, TF_NP_GRAPH_OPD
-from wf_psf.tf_layers import TF_batch_mono_PSF
-from wf_psf.graph_utils import GraphBuilder
-from wf_psf.utils import calc_poly_position_mat
+from tf_layers import TF_poly_Z_field, TF_zernike_OPD, TF_batch_poly_PSF
+from tf_layers import TF_NP_MCCD_OPD_v2, TF_NP_GRAPH_OPD
+from tf_layers import TF_batch_mono_PSF
+from wf_psf.utils.graph_utils import GraphBuilder
+from wf_psf.utils.utils import calc_poly_position_mat
 
 
 class TF_SP_MCCD_field(tf.keras.Model):

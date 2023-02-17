@@ -6,8 +6,8 @@ This module setups the run of the WF_PSF pipeline.
 
 """
 import argparse
-from wf_psf.read_config import read_stream, read_conf
-from wf_psf.io import FileIOHandler
+from wf_psf.utils.read_config import read_stream, read_conf
+from wf_psf.utils.io import FileIOHandler
 import os
 import logging.config
 import logging

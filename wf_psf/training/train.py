@@ -12,10 +12,10 @@ import numpy as np
 import time
 import tensorflow as tf
 import tensorflow_addons as tfa
-from wf_psf.read_config import read_conf
+from wf_psf.utils.read_config import read_conf
 import os
 import logging
-import wf_psf.io as io
+import wf_psf.utils.io as io
 from wf_psf.psf_models import psf_models
 
 logger = logging.getLogger(__name__)
