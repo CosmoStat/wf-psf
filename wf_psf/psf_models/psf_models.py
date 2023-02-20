@@ -1,7 +1,7 @@
 """PSF_Models.
 
 A module which defines the classes and methods
-to manage the parameters of psf model.
+to manage the parameters of the psf model.
 
 :Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 
@@ -26,32 +26,35 @@ class PsfModelError(Exception):
 def register_psfclass(psf_class):
     """Register PSF Class.
 
-    A function to register all PSF model classes.
+    A function to register all PSF model classes
+    in a dictionary.
 
     Parameters
     ----------
-    psf_class: Class
+    psf_class: type
         PSF Class
 
     Returns
     -------
-    psf_class
+    psf_class: type
+        PSF class 
 
     """
     for id in psf_class.ids:
         PSF_CLASS[id] = psf_class
+
     return psf_class
 
 
 def set_psf_model(model_name):
     """Set PSF Model Class.
 
-    A function to select the class of
-    the PSF model.
+    A function to select a class of
+    the PSF model from a dictionary.
 
     Parameters
     ----------
-    model_name
+    model_name: str
         Name of PSF model
 
     Returns
@@ -74,17 +77,41 @@ def get_psf_model(model_name, model_params, training_hparams):
     ----------
     model_name: str
         Short name of PSF model
-    model_params: Recursive Namespace
-        Recursive Namespace object containing PSF model parameters
-    training_hparams: Recursive Namespace
-        Recursive Namespace object containing training hyperparameters
+    model_params: type
+        Recursive Namespace object 
+    training_hparams: type
+        Recursive Namespace object
+
+    Returns
+    -------
+    psf_class: class instance
+        PSF model class instance
 
     """
     psf_class = set_psf_model(model_name)
+
     return psf_class(model_params, training_hparams)
 
 
 def tf_zernike_cube(n_zernikes, pupil_diam):
+    """Tensor Flow Zernike Cube.
+
+    A function to generate Zernike maps on
+    a three-dimensional tensor.
+
+    Parameters
+    ----------
+    n_zernikes: int
+        Number of Zernike polynomials
+    pupil_diam: float
+        Size of the pupil diameter
+    
+    Returns
+    -------
+    Zernike map tensor
+        TensorFlow type EagerTensor 
+
+    """
     # Prepare the inputs
     # Generate Zernike maps
     zernikes = zernike_generator(n_zernikes=n_zernikes, wfe_dim=pupil_diam)
@@ -102,6 +129,24 @@ def tf_zernike_cube(n_zernikes, pupil_diam):
 
 
 def tf_obscurations(pupil_diam, N_filter=2):
+    """Tensor Flow Obscurations.
+
+    A function to generate obscurations and
+    convert to a tensor.
+
+    Parameters
+    ----------
+    pupil_diam: float
+        Size of the pupil diameter
+    N_filters: int
+        Number of filters
+
+    Returns
+    -------
+    Obscurations tensor
+        TensorFlow type of EagerTensor
+    
+    """
     obscurations = SimPSFToolkit.generate_pupil_obscurations(
         N_pix=pupil_diam, N_filter=N_filter
     )
@@ -116,41 +161,12 @@ class TF_SemiParam_field(tf.keras.Model):
 
     Parameters
     ----------
-    ids: tuple(psf_model_name id,)
-    zernike_maps: Tensor(n_batch, opd_dim, opd_dim)
-        Zernike polynomial maps.
-    obscurations: Tensor(opd_dim, opd_dim)
-        Predefined obscurations of the phase.
-    batch_size: int
-        Batch size
-    output_Q: float
-        Oversampling used. This should match the oversampling Q used to generate
-        the diffraction zero padding that is found in the input `packed_SEDs`.
-        We call this other Q the `input_Q`.
-        In that case, we replicate the original sampling of the model used to
-        calculate the input `packed_SEDs`.
-        The final oversampling of the generated PSFs with respect to the
-        original instrument sampling depend on the division `input_Q/output_Q`.
-        It is not recommended to use `output_Q < 1`.
-        Although it works with float values it is better to use integer values.
-    d_max_nonparam: int
-        Maximum degree of the polynomial for the non-parametric variations.
-    l2_param: float
-        Parameter going with the l2 loss on the opd. If it is `0.` the loss
-        is not added. Default is `0.`.
-    output_dim: int
-        Output dimension of the PSF stamps.
-    n_zernikes: int
-        Order of the Zernike polynomial for the parametric model.
-    d_max: int
-        Maximum degree of the polynomial for the Zernike coefficient variations.
-    x_lims: [float, float]
-        Limits for the x coordinate of the PSF field.
-    y_lims: [float, float]
-        Limits for the x coordinate of the PSF field.
+    model_params: type
+        Recursive Namespace object containing parameters for this PSF model class
+    training_params: type
+        Recursive Namespace object containing training hyperparameters for this PSF model class
     coeff_mat: Tensor or None
-        Initialization of the coefficient matrix defining the parametric psf
-        field model.
+        Initialization of the coefficient matrix defining the parametric psf field model
 
     """
 
