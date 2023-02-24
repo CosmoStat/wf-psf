@@ -60,7 +60,7 @@ training:
 
     batch_size: 32
 
-    multicycle_params:
+    multi_cycle_params:
       total_cycles: 2
       #"Saved cycle to use for the evaluation. Can be 'cycle1' or 'cycle2'."
       saved_cycle: cycle2
