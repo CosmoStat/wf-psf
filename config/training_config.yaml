@@ -25,10 +25,10 @@ training:
     interpolation_type: None
 
     #Limits of the PSF field coordinates for the x axis.
-    x_lims: [0, 1e3]
+    x_lims: [0.0, 1.0e+3]
     
     #Limits of the PSF field coordinates for the y axis.
-    y_lims: [0, 1e3]
+    y_lims: [0.0, 1.0e+3]
     
     # Hyperparameters for Parametric model 
     param_hparams:
@@ -50,16 +50,14 @@ training:
       num_graph_features: 10
       
       #L1 regularisation parameter for the non-parametric part."
-      l1_rate: 1e-8
+      l1_rate: 1.0e-8
 
   # Training hyperparameters
   training_hparams:
-    n_epochs_non_param:
-      - 2 
-      - 2
-    n_epochs_param:
-      - 2 
-      - 2
+    n_epochs_non_param: [2, 2] 
+  
+    n_epochs_param: [2, 2]
+
     batch_size: 32
 
     multicycle_params:
@@ -68,24 +66,17 @@ training:
       saved_cycle: cycle2
    
       # Learning rates for the parametric parts. It should be a str where numeric values are separated by spaces.
-      l_rate_param_multi_cycle:
-        1e-2
-        1e-2
+      l_rate_param_multi_cycle: [1.0e-2, 1.0e-2]
  
       # Learning rates for the non-parametric parts. It should be a str where numeric values are separated by spaces." 
-      l_rate_non_param_multi_cycle:
-        1e-1 
-        1e-1
+      l_rate_non_param_multi_cycle: [1.0e-1, 1.0e-1]
  
       # Number of training epochs of the parametric parts. It should be a strign where numeric values are separated by spaces."
-      n_epochs_param_multi_cycle:
-        20 
-        20
+      n_epochs_param_multi_cycle: [20, 20] 
+  
  
       # Number of training epochs of the non-parametric parts. It should be a str where numeric values are separated by spaces."
-      n_epochs_non_param_multi_cycle:
-        100 
-        120
+      n_epochs_non_param_multi_cycle: [100, 120]
  
       # Make checkpoint at every cycle or just save the checkpoint at the end of the training."
       save_all_cycles: False
