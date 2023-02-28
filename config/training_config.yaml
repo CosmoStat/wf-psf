@@ -7,7 +7,7 @@ training:
     n_bins_lda: 8 
 
     #Downsampling rate to match the oversampled model to the specified telescope's sampling.
-    output_q: 3
+    output_Q: 3
   
     #Oversampling rate used for the OPD/WFE PSF model.
     oversampling_rate: 3 
@@ -23,6 +23,18 @@ training:
 
     #Interpolation type for the physical poly model. Options are: 'none', 'all', 'top_K', 'independent_Zk'."
     interpolation_type: None
+
+    # Intepolation points per bin
+    interp_pts_per_bin: 0
+
+    # Extrapolate
+    extrapolate: True
+    
+    # SED interpolate kind
+    sed_interp_kind: linear
+
+    # Standard deviation of the multiplicative SED Gaussian noise.
+    sed_sigma: 0
 
     #Limits of the PSF field coordinates for the x axis.
     x_lims: [0.0, 1.0e+3]
@@ -66,15 +78,14 @@ training:
       saved_cycle: cycle2
    
       # Learning rates for the parametric parts. It should be a str where numeric values are separated by spaces.
-      l_rate_param_multi_cycle: [1.0e-2, 1.0e-2]
+      learning_rate_param_multi_cycle: [1.0e-2, 1.0e-2]
  
       # Learning rates for the non-parametric parts. It should be a str where numeric values are separated by spaces." 
-      l_rate_non_param_multi_cycle: [1.0e-1, 1.0e-1]
+      learning_rate_non_param_multi_cycle: [1.0e-1, 1.0e-1]
  
       # Number of training epochs of the parametric parts. It should be a strign where numeric values are separated by spaces."
       n_epochs_param_multi_cycle: [20, 20] 
   
- 
       # Number of training epochs of the non-parametric parts. It should be a str where numeric values are separated by spaces."
       n_epochs_non_param_multi_cycle: [100, 120]
  
@@ -112,7 +123,7 @@ training:
         euclid_obsc: true
         n_stars: 200
     test:
-      file: test_Euclid_res_id_001.npy
+      file: data/coherent_euclid_dataset/test_Euclid_res_id_001.npy
       # If test dataset file not provided produce a new one
       stars: null
       noisy_stars: null
