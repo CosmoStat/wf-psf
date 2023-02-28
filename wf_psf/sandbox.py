@@ -3,6 +3,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 from wf_psf.utils import generate_packed_elems
 from wf_psf.tf_psf_field import build_PSF_model
+
 """ Place to temporarily save some useful functions.
 """
 
@@ -10,11 +11,11 @@ from wf_psf.tf_psf_field import build_PSF_model
 class L1ParamScheduler(tf.keras.callbacks.Callback):
     """L1 rate scheduler which sets the L1 rate according to schedule.
 
-  Arguments:
-      l1_schedule_rule: a function that takes an epoch index
-          (integer, indexed from 0) and current l1_rate
-          as inputs and returns a new l1_rate as output (float).
-  """
+    Arguments:
+        l1_schedule_rule: a function that takes an epoch index
+            (integer, indexed from 0) and current l1_rate
+            as inputs and returns a new l1_rate as output (float).
+    """
 
     def __init__(self, l1_schedule_rule):
         super(L1ParamScheduler, self).__init__()
@@ -49,9 +50,8 @@ def first_train_cycle(
     n_epochs_param,
     n_epochs_non_param,
     param_callback=None,
-    non_param_callback=None
+    non_param_callback=None,
 ):
-
     ## First parametric train
 
     # Define the model optimisation
@@ -60,7 +60,11 @@ def first_train_cycle(
 
     loss = tf.keras.losses.MeanSquaredError()
     optimizer = tf.keras.optimizers.Adam(
-        learning_rate=l_rate_param, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=False
+        learning_rate=l_rate_param,
+        beta_1=0.9,
+        beta_2=0.999,
+        epsilon=1e-07,
+        amsgrad=False,
     )
     metrics = [tf.keras.metrics.MeanSquaredError()]
 
@@ -79,19 +83,23 @@ def first_train_cycle(
 
     # Train the parametric part
     history_param = tf_semiparam_field.fit(
-        x=inputs, y=outputs, batch_size=batch_size, epochs=n_epochs_param, callbacks=param_callback
+        x=inputs,
+        y=outputs,
+        batch_size=batch_size,
+        epochs=n_epochs_param,
+        callbacks=param_callback,
     )
 
     # Plot losses
     plt.figure()
     plt.subplot(211)
-    plt.plot(history_param.history['loss'])
-    plt.xlabel('Number of iterations')
-    plt.ylabel('Total loss')
+    plt.plot(history_param.history["loss"])
+    plt.xlabel("Number of iterations")
+    plt.ylabel("Total loss")
     plt.subplot(212)
-    plt.loglog(history_param.history['loss'])
-    plt.xlabel('Number of iterations')
-    plt.ylabel('Total loss')
+    plt.loglog(history_param.history["loss"])
+    plt.xlabel("Number of iterations")
+    plt.ylabel("Total loss")
     plt.show()
 
     ## Non parametric train
@@ -110,7 +118,11 @@ def first_train_cycle(
     # Define the model optimisation
     loss = tf.keras.losses.MeanSquaredError()
     optimizer = tf.keras.optimizers.Adam(
-        learning_rate=l_rate_non_param, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=False
+        learning_rate=l_rate_non_param,
+        beta_1=0.9,
+        beta_2=0.999,
+        epsilon=1e-07,
+        amsgrad=False,
     )
     metrics = [tf.keras.metrics.MeanSquaredError()]
 
@@ -125,19 +137,19 @@ def first_train_cycle(
         y=outputs,
         batch_size=batch_size,
         epochs=n_epochs_non_param,
-        callbacks=non_param_callback
+        callbacks=non_param_callback,
     )
 
     # Plot losses
     plt.figure()
     plt.subplot(211)
-    plt.plot(history_non_param.history['loss'])
-    plt.xlabel('Number of iterations')
-    plt.ylabel('Total loss')
+    plt.plot(history_non_param.history["loss"])
+    plt.xlabel("Number of iterations")
+    plt.ylabel("Total loss")
     plt.subplot(212)
-    plt.loglog(history_non_param.history['loss'])
-    plt.xlabel('Number of iterations')
-    plt.ylabel('Total loss')
+    plt.loglog(history_non_param.history["loss"])
+    plt.xlabel("Number of iterations")
+    plt.ylabel("Total loss")
     plt.show()
 
     return tf_semiparam_field
@@ -153,9 +165,8 @@ def train_cycle(
     n_epochs_param,
     n_epochs_non_param,
     param_callback=None,
-    non_param_callback=None
+    non_param_callback=None,
 ):
-
     ## Parametric train
 
     # Define the model optimisation
@@ -164,7 +175,11 @@ def train_cycle(
 
     loss = tf.keras.losses.MeanSquaredError()
     optimizer = tf.keras.optimizers.Adam(
-        learning_rate=l_rate_param, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=False
+        learning_rate=l_rate_param,
+        beta_1=0.9,
+        beta_2=0.999,
+        epsilon=1e-07,
+        amsgrad=False,
     )
     metrics = [tf.keras.metrics.MeanSquaredError()]
 
@@ -178,19 +193,23 @@ def train_cycle(
 
     # Train the parametric part
     history_param = tf_semiparam_field.fit(
-        x=inputs, y=outputs, batch_size=batch_size, epochs=n_epochs_param, callbacks=param_callback
+        x=inputs,
+        y=outputs,
+        batch_size=batch_size,
+        epochs=n_epochs_param,
+        callbacks=param_callback,
     )
 
     # Plot losses
     plt.figure()
     plt.subplot(211)
-    plt.plot(history_param.history['loss'])
-    plt.xlabel('Number of iterations')
-    plt.ylabel('Total loss')
+    plt.plot(history_param.history["loss"])
+    plt.xlabel("Number of iterations")
+    plt.ylabel("Total loss")
     plt.subplot(212)
-    plt.loglog(history_param.history['loss'])
-    plt.xlabel('Number of iterations')
-    plt.ylabel('Total loss')
+    plt.loglog(history_param.history["loss"])
+    plt.xlabel("Number of iterations")
+    plt.ylabel("Total loss")
     plt.show()
 
     ## Non parametric train
@@ -204,7 +223,11 @@ def train_cycle(
     # Define the model optimisation
     loss = tf.keras.losses.MeanSquaredError()
     optimizer = tf.keras.optimizers.Adam(
-        learning_rate=l_rate_non_param, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=False
+        learning_rate=l_rate_non_param,
+        beta_1=0.9,
+        beta_2=0.999,
+        epsilon=1e-07,
+        amsgrad=False,
     )
     metrics = [tf.keras.metrics.MeanSquaredError()]
 
@@ -219,19 +242,19 @@ def train_cycle(
         y=outputs,
         batch_size=batch_size,
         epochs=n_epochs_non_param,
-        callbacks=non_param_callback
+        callbacks=non_param_callback,
     )
 
     # Plot losses
     plt.figure()
     plt.subplot(211)
-    plt.plot(history_non_param.history['loss'])
-    plt.xlabel('Number of iterations')
-    plt.ylabel('Total loss')
+    plt.plot(history_non_param.history["loss"])
+    plt.xlabel("Number of iterations")
+    plt.ylabel("Total loss")
     plt.subplot(212)
-    plt.loglog(history_non_param.history['loss'])
-    plt.xlabel('Number of iterations')
-    plt.ylabel('Total loss')
+    plt.loglog(history_non_param.history["loss"])
+    plt.xlabel("Number of iterations")
+    plt.ylabel("Total loss")
     plt.show()
 
     return tf_semiparam_field
@@ -247,17 +270,21 @@ def compute_metrics(
     tf_test_stars,
     tf_train_stars,
     n_bins_lda,
-    batch_size=16
+    batch_size=16,
 ):
     # Generate SED data list
     test_packed_SED_data = [
         generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_lda) for _sed in test_SEDs
     ]
 
-    tf_test_packed_SED_data = tf.convert_to_tensor(test_packed_SED_data, dtype=tf.float32)
+    tf_test_packed_SED_data = tf.convert_to_tensor(
+        test_packed_SED_data, dtype=tf.float32
+    )
     tf_test_packed_SED_data = tf.transpose(tf_test_packed_SED_data, perm=[0, 2, 1])
     test_pred_inputs = [tf_test_pos, tf_test_packed_SED_data]
-    test_predictions = tf_semiparam_field.predict(x=test_pred_inputs, batch_size=batch_size)
+    test_predictions = tf_semiparam_field.predict(
+        x=test_pred_inputs, batch_size=batch_size
+    )
 
     # Initialize the SED data list
     packed_SED_data = [
@@ -270,18 +297,18 @@ def compute_metrics(
     train_predictions = tf_semiparam_field.predict(x=inputs, batch_size=batch_size)
 
     # Calculate RMSE values
-    test_res = np.sqrt(np.mean((tf_test_stars - test_predictions)**2))
-    train_res = np.sqrt(np.mean((tf_train_stars - train_predictions)**2))
+    test_res = np.sqrt(np.mean((tf_test_stars - test_predictions) ** 2))
+    train_res = np.sqrt(np.mean((tf_train_stars - train_predictions) ** 2))
 
     # Pritn RMSE values
-    print('Test stars RMSE:\t %.4e' % test_res)
-    print('Training stars RMSE:\t %.4e' % train_res)
+    print("Test stars RMSE:\t %.4e" % test_res)
+    print("Training stars RMSE:\t %.4e" % train_res)
 
     return test_res, train_res
 
 
 def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, test_pos, train_pos):
-    """ Compute the OPD metrics. """
+    """Compute the OPD metrics."""
 
     np_obscurations = np.real(tf_semiparam_field.obscurations.numpy())
 
@@ -305,7 +332,7 @@ def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, test_pos, tra
     test_opd_rmse = np.sqrt(np.mean(res_opd**2))
 
     # Pritn RMSE values
-    print('Test stars OPD RMSE:\t %.4e' % test_opd_rmse)
+    print("Test stars OPD RMSE:\t %.4e" % test_opd_rmse)
 
     ## For train part
     # Param part
@@ -327,13 +354,15 @@ def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, test_pos, tra
     train_opd_rmse = np.sqrt(np.mean(res_opd**2))
 
     # Pritn RMSE values
-    print('Train stars OPD RMSE:\t %.4e' % train_opd_rmse)
+    print("Train stars OPD RMSE:\t %.4e" % train_opd_rmse)
 
     return test_opd_rmse, train_opd_rmse
 
 
-def compute_opd_metrics_polymodel(tf_semiparam_field, GT_tf_semiparam_field, test_pos, train_pos):
-    """ Compute the OPD metrics. """
+def compute_opd_metrics_polymodel(
+    tf_semiparam_field, GT_tf_semiparam_field, test_pos, train_pos
+):
+    """Compute the OPD metrics."""
 
     np_obscurations = np.real(tf_semiparam_field.obscurations.numpy())
 
@@ -357,7 +386,7 @@ def compute_opd_metrics_polymodel(tf_semiparam_field, GT_tf_semiparam_field, tes
     test_opd_rmse = np.sqrt(np.mean(res_opd**2))
 
     # Pritn RMSE values
-    print('Test stars OPD RMSE:\t %.4e' % test_opd_rmse)
+    print("Test stars OPD RMSE:\t %.4e" % test_opd_rmse)
 
     ## For train part
     # Param part
@@ -379,13 +408,13 @@ def compute_opd_metrics_polymodel(tf_semiparam_field, GT_tf_semiparam_field, tes
     train_opd_rmse = np.sqrt(np.mean(res_opd**2))
 
     # Pritn RMSE values
-    print('Train stars OPD RMSE:\t %.4e' % train_opd_rmse)
+    print("Train stars OPD RMSE:\t %.4e" % train_opd_rmse)
 
     return test_opd_rmse, train_opd_rmse
 
 
 def compute_one_opd_rmse(GT_tf_semiparam_field, tf_semiparam_field, pos, is_poly=False):
-    """ Compute the OPD map for one position!. """
+    """Compute the OPD map for one position!."""
 
     np_obscurations = np.real(tf_semiparam_field.obscurations.numpy())
 
@@ -416,7 +445,7 @@ def compute_one_opd_rmse(GT_tf_semiparam_field, tf_semiparam_field, pos, is_poly
     return opd_rmse
 
 
-def plot_function(mesh_pos, residual, tf_train_pos, tf_test_pos, title='Error'):
+def plot_function(mesh_pos, residual, tf_train_pos, tf_test_pos, title="Error"):
     vmax = np.max(residual)
     vmin = np.min(residual)
 
@@ -426,19 +455,31 @@ def plot_function(mesh_pos, residual, tf_train_pos, tf_test_pos, title='Error'):
         mesh_pos[:, 1],
         s=100,
         c=residual.reshape(-1, 1),
-        cmap='viridis',
-        marker='s',
+        cmap="viridis",
+        marker="s",
         vmax=vmax,
-        vmin=vmin
+        vmin=vmin,
     )
     plt.colorbar()
     plt.scatter(
-        tf_train_pos[:, 0], tf_train_pos[:, 1], c='k', marker='*', s=10, label='Train stars'
+        tf_train_pos[:, 0],
+        tf_train_pos[:, 1],
+        c="k",
+        marker="*",
+        s=10,
+        label="Train stars",
     )
-    plt.scatter(tf_test_pos[:, 0], tf_test_pos[:, 1], c='r', marker='*', s=10, label='Test stars')
+    plt.scatter(
+        tf_test_pos[:, 0],
+        tf_test_pos[:, 1],
+        c="r",
+        marker="*",
+        s=10,
+        label="Test stars",
+    )
     plt.title(title)
-    plt.xlabel('x-axis')
-    plt.ylabel('y-axis')
+    plt.xlabel("x-axis")
+    plt.ylabel("y-axis")
     plt.show()
 
 
@@ -451,9 +492,8 @@ def plot_residual_maps(
     tf_test_pos,
     n_bins_lda=20,
     n_points_per_dim=30,
-    is_poly=False
+    is_poly=False,
 ):
-
     # Recover teh grid limits
     x_lims = tf_semiparam_field.x_lims
     y_lims = tf_semiparam_field.y_lims
@@ -463,8 +503,9 @@ def plot_residual_maps(
     y = np.linspace(y_lims[0], y_lims[1], n_points_per_dim)
     x_pos, y_pos = np.meshgrid(x, y)
 
-    mesh_pos = np.concatenate((x_pos.flatten().reshape(-1, 1), y_pos.flatten().reshape(-1, 1)),
-                              axis=1)
+    mesh_pos = np.concatenate(
+        (x_pos.flatten().reshape(-1, 1), y_pos.flatten().reshape(-1, 1)), axis=1
+    )
     tf_mesh_pos = tf.convert_to_tensor(mesh_pos, dtype=tf.float32)
 
     # Testing the positions
@@ -484,7 +525,9 @@ def plot_residual_maps(
     ]
 
     # Generate inputs
-    tf_mesh_packed_SED_data = tf.convert_to_tensor(mesh_packed_SED_data, dtype=tf.float32)
+    tf_mesh_packed_SED_data = tf.convert_to_tensor(
+        mesh_packed_SED_data, dtype=tf.float32
+    )
     tf_mesh_packed_SED_data = tf.transpose(tf_mesh_packed_SED_data, perm=[0, 2, 1])
     mesh_pred_inputs = [tf_mesh_pos, tf_mesh_packed_SED_data]
 
@@ -493,36 +536,52 @@ def plot_residual_maps(
     GT_mesh_preds = GT_tf_semiparam_field.predict(x=mesh_pred_inputs, batch_size=16)
 
     # Calculate pixel RMSE for each star
-    pix_rmse = np.array([
-        np.sqrt(np.mean((_GT_pred - _model_pred)**2))
-        for _GT_pred, _model_pred in zip(GT_mesh_preds, model_mesh_preds)
-    ])
+    pix_rmse = np.array(
+        [
+            np.sqrt(np.mean((_GT_pred - _model_pred) ** 2))
+            for _GT_pred, _model_pred in zip(GT_mesh_preds, model_mesh_preds)
+        ]
+    )
 
-    relative_pix_rmse = np.array([
-        np.sqrt(np.mean((_GT_pred - _model_pred)**2)) / np.sqrt(np.mean((_GT_pred)**2))
-        for _GT_pred, _model_pred in zip(GT_mesh_preds, model_mesh_preds)
-    ])
+    relative_pix_rmse = np.array(
+        [
+            np.sqrt(np.mean((_GT_pred - _model_pred) ** 2))
+            / np.sqrt(np.mean((_GT_pred) ** 2))
+            for _GT_pred, _model_pred in zip(GT_mesh_preds, model_mesh_preds)
+        ]
+    )
 
     # Plot absolute pixel error
-    plot_function(mesh_pos, pix_rmse, tf_train_pos, tf_test_pos, title='Absolute pixel error')
+    plot_function(
+        mesh_pos, pix_rmse, tf_train_pos, tf_test_pos, title="Absolute pixel error"
+    )
     # Plot relative pixel error
     plot_function(
-        mesh_pos, relative_pix_rmse, tf_train_pos, tf_test_pos, title='Relative pixel error'
+        mesh_pos,
+        relative_pix_rmse,
+        tf_train_pos,
+        tf_test_pos,
+        title="Relative pixel error",
     )
 
     # Compute OPD errors
-    opd_rmse = np.array([
-        compute_one_opd_rmse(
-            GT_tf_semiparam_field, tf_semiparam_field, _pos.reshape(1, -1), is_poly
-        ) for _pos in mesh_pos
-    ])
+    opd_rmse = np.array(
+        [
+            compute_one_opd_rmse(
+                GT_tf_semiparam_field, tf_semiparam_field, _pos.reshape(1, -1), is_poly
+            )
+            for _pos in mesh_pos
+        ]
+    )
 
     # Plot absolute pixel error
-    plot_function(mesh_pos, opd_rmse, tf_train_pos, tf_test_pos, title='Absolute OPD error')
+    plot_function(
+        mesh_pos, opd_rmse, tf_train_pos, tf_test_pos, title="Absolute OPD error"
+    )
 
 
-def plot_imgs(mat, cmap='gist_stern', figsize=(20, 20)):
-    """ Function to plot 2D images of a tensor.
+def plot_imgs(mat, cmap="gist_stern", figsize=(20, 20)):
+    """Function to plot 2D images of a tensor.
     The Tensor is (batch,xdim,ydim) and the matrix of subplots is
     chosen "intelligently".
     """
@@ -559,11 +618,10 @@ def plot_imgs(mat, cmap='gist_stern', figsize=(20, 20)):
 
     for _i in range(row_n):
         for _j in range(col_n):
-
             plt.subplot(row_n, col_n, idx + 1)
             plt.imshow(mat[idx, :, :], cmap=cmap)
             plt.colorbar()
-            plt.title('matrix id %d' % idx)
+            plt.title("matrix id %d" % idx)
 
             idx += 1
 
@@ -571,15 +629,16 @@ def plot_imgs(mat, cmap='gist_stern', figsize=(20, 20)):
 
 
 def add_noise(image, desired_SNR):
-    """ Function to add noise to a 2D image in order to have a desired SNR.
-    """
-    sigma_noise = np.sqrt((np.sum(image**2)) / (desired_SNR * image.shape[0] * image.shape[1]))
+    """Function to add noise to a 2D image in order to have a desired SNR."""
+    sigma_noise = np.sqrt(
+        (np.sum(image**2)) / (desired_SNR * image.shape[0] * image.shape[1])
+    )
     noisy_image = image + np.random.standard_normal(image.shape) * sigma_noise
     return noisy_image
 
 
 class MyLRSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
-    """ Learning rate scheduler.
+    """Learning rate scheduler.
 
     To be passed to the optimization algorithm.
 
@@ -599,7 +658,7 @@ class MyLRSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
 
 
 def step_update_strategy(step, params):
-    """ Piecewise constant update strategy.
+    """Piecewise constant update strategy.
 
     Parameters
     ----------
@@ -628,21 +687,23 @@ def step_update_strategy(step, params):
 
     """
     # Calculate the current epoch
-    one_epoch_in_steps = params['input_elements'] / params['batch_size']
+    one_epoch_in_steps = params["input_elements"] / params["batch_size"]
     current_epoch = step / one_epoch_in_steps
 
-    print('step')
+    print("step")
     print(step)
-    print('current_epoch')
+    print("current_epoch")
     print(current_epoch)
 
-    for it in range(len(params['lr_list'])):
-        if params['epoch_list'][it] <= current_epoch and current_epoch < params['epoch_list'][it +
-                                                                                              1]:
-            current_lr = params['lr_list'][it]
+    for it in range(len(params["lr_list"])):
+        if (
+            params["epoch_list"][it] <= current_epoch
+            and current_epoch < params["epoch_list"][it + 1]
+        ):
+            current_lr = params["lr_list"][it]
             break
 
-    print('current_lr')
+    print("current_lr")
     print(current_lr)
 
     return current_lr

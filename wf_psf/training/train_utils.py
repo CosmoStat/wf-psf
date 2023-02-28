@@ -56,19 +56,19 @@ def general_train_cycle(
     non_param_callback=None,
     general_callback=None,
     first_run=False,
-    cycle_def='complete',
+    cycle_def="complete",
     use_sample_weights=False,
-    verbose=1
+    verbose=1,
 ):
-    """ Function to do a BCD iteration on the model.
-    
+    """Function to do a BCD iteration on the model.
+
     Define the model optimisation.
 
     For the parametric part we are using:
     ``l_rate_param = 1e-2``, ``n_epochs_param = 20``.
     For the non-parametric part we are using:
     ``l_rate_non_param = 1.0``, ``n_epochs_non_param = 100``.
-    
+
     Parameters
     ----------
     tf_semiparam_field: tf.keras.Model
@@ -143,7 +143,7 @@ def general_train_cycle(
     # Initialize return variables
     hist_param = None
     hist_non_param = None
-    
+
     # Parametric train
 
     # Define Loss
@@ -197,7 +197,7 @@ def general_train_cycle(
 
         if strategy_opt == 0:
             # Parameters
-            max_w = 2.
+            max_w = 2.0
             min_w = 0.1
             # Epsilon is to avoid outliers
             epsilon = np.median(variances) * 0.1
@@ -217,14 +217,18 @@ def general_train_cycle(
     else:
         sample_weight = None
 
-    # Define the training cycle 
-    if cycle_def == 'parametric' or cycle_def == 'complete' or cycle_def == 'only-parametric':
+    # Define the training cycle
+    if (
+        cycle_def == "parametric"
+        or cycle_def == "complete"
+        or cycle_def == "only-parametric"
+    ):
         # If it is the first run
         if first_run:
             # Set the non-parametric model to zero
             # With alpha to zero its already enough
             tf_semiparam_field.set_zero_nonparam()
-        if cycle_def == 'only-parametric':
+        if cycle_def == "only-parametric":
             # Set the non-parametric part to zero
             tf_semiparam_field.set_zero_nonparam()
 
@@ -239,7 +243,7 @@ def general_train_cycle(
             metrics=metrics,
         )
         # Train the parametric part
-        print('Starting parametric update..')
+        print("Starting parametric update..")
         hist_param = tf_semiparam_field.fit(
             x=inputs,
             y=outputs,
@@ -248,18 +252,22 @@ def general_train_cycle(
             validation_data=val_data,
             callbacks=callbacks,
             sample_weight=sample_weight,
-            verbose=verbose
+            verbose=verbose,
         )
 
     ## Non parametric train
-    # Define the training cycle 
-    if cycle_def == 'non-parametric' or cycle_def == 'complete' or cycle_def == 'only-non-parametric':
+    # Define the training cycle
+    if (
+        cycle_def == "non-parametric"
+        or cycle_def == "complete"
+        or cycle_def == "only-non-parametric"
+    ):
         # If it is the first run
         if first_run:
             # Set the non-parametric model to non-zero
             # With alpha to zero its already enough
             tf_semiparam_field.set_nonzero_nonparam()
-        if cycle_def == 'only-non-parametric':
+        if cycle_def == "only-non-parametric":
             # Set the parametric layer to zero
             coeff_mat = tf_semiparam_field.get_coeff_matrix()
             tf_semiparam_field.assign_coeff_matrix(tf.zeros_like(coeff_mat))
@@ -309,8 +317,8 @@ def general_train_cycle(
             loss=loss,
             metrics=metrics,
         )
-        # Train the parametric part
-        print('Starting non-parametric update..')
+        # Train the nonparametric part
+        print("Starting non-parametric update..")
         hist_non_param = tf_semiparam_field.fit(
             x=inputs,
             y=outputs,
@@ -319,7 +327,7 @@ def general_train_cycle(
             validation_data=val_data,
             callbacks=callbacks,
             sample_weight=sample_weight,
-            verbose=verbose
+            verbose=verbose,
         )
 
     return tf_semiparam_field, hist_param, hist_non_param
@@ -339,11 +347,9 @@ def param_train_cycle(
     param_callback=None,
     general_callback=None,
     use_sample_weights=False,
-    verbose=1
+    verbose=1,
 ):
-    """ Training cycle for parametric model.
-    
-    """
+    """Training cycle for parametric model."""
     # Define Loss
     if param_loss is None:
         loss = tf.keras.losses.MeanSquaredError()
@@ -390,7 +396,7 @@ def param_train_cycle(
 
         if strategy_opt == 0:
             # Parameters
-            max_w = 2.
+            max_w = 2.0
             min_w = 0.1
             # Epsilon is to avoid outliers
             epsilon = np.median(variances) * 0.1
@@ -417,7 +423,7 @@ def param_train_cycle(
     )
 
     # Train the parametric part
-    print('Starting parametric update..')
+    print("Starting parametric update..")
     hist_param = tf_semiparam_field.fit(
         x=inputs,
         y=outputs,
@@ -426,7 +432,7 @@ def param_train_cycle(
         validation_data=val_data,
         callbacks=callbacks,
         sample_weight=sample_weight,
-        verbose=verbose
+        verbose=verbose,
     )
 
     return tf_semiparam_field, hist_param

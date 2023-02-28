@@ -1,0 +1,15 @@
+# Feature: SED interp
+sed_params:
+  interp_pts_per_bin: 0
+  # Number of points per bin to add during the interpolation process. It can take values {0,1,2,3}, where 0 means no interpolation."
+
+  extrapolate: True
+  # Whether extrapolation is performed or not on the borders of the SED."
+
+  SED_interp_kind: linear
+
+# Feature: project parameters
+project_params:
+  project_dd_features: False
+  # Project NP DD features onto parametric model."
+

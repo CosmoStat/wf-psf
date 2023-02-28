@@ -5,7 +5,7 @@ from astropy.io import fits
 import rca
 import mccd
 from wf_psf import method_comp_utils as comp_utils
-from wf_psf import metrics as metrics
+from wf_psf.metrics import metrics as metrics
 from joblib import Parallel, delayed, parallel_backend, cpu_count
 
 import click

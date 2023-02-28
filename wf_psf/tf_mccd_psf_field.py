@@ -9,15 +9,15 @@ from wf_psf.utils import calc_poly_position_mat
 
 
 class TF_SP_MCCD_field(tf.keras.Model):
-    r""" Semi-parametric MCCD PSF field model!
+    r"""Semi-parametric MCCD PSF field model!
 
     Semi parametric model based on the hybrid-MCCD matrix factorization scheme.
 
     The forward model is different for the training procedure and for the
     inference procedure. This makes things more complicated and requires several
-    custom functions. 
-    
-    The prediction step is the forward model for the inference while the 
+    custom functions.
+
+    The prediction step is the forward model for the inference while the
     ``call(inputs, trainable=True)`` is the forward model for the training
     procedure. When calling ``call(inputs, trainable=False)`` we are falling
     back to the predict function for the inference forward model. This is needed
@@ -74,7 +74,7 @@ class TF_SP_MCCD_field(tf.keras.Model):
         obs_pos,
         spatial_dic,
         output_Q,
-        l2_param=0.,
+        l2_param=0.0,
         d_max_nonparam=3,
         graph_features=6,
         l1_rate=1e-3,
@@ -84,7 +84,7 @@ class TF_SP_MCCD_field(tf.keras.Model):
         x_lims=[0, 1e3],
         y_lims=[0, 1e3],
         coeff_mat=None,
-        name='TF_SP_MCCD_field'
+        name="TF_SP_MCCD_field",
     ):
         super(TF_SP_MCCD_field, self).__init__()
 
@@ -117,7 +117,10 @@ class TF_SP_MCCD_field(tf.keras.Model):
 
         # Initialize the first layer
         self.tf_poly_Z_field = TF_poly_Z_field(
-            x_lims=self.x_lims, y_lims=self.y_lims, n_zernikes=self.n_zernikes, d_max=self.d_max
+            x_lims=self.x_lims,
+            y_lims=self.y_lims,
+            n_zernikes=self.n_zernikes,
+            d_max=self.d_max,
         )
 
         # Initialize the zernike to OPD layer
@@ -132,12 +135,14 @@ class TF_SP_MCCD_field(tf.keras.Model):
             d_max=self.d_max_nonparam,
             graph_features=self.graph_features,
             l1_rate=self.l1_rate,
-            opd_dim=self.opd_dim
+            opd_dim=self.opd_dim,
         )
 
         # Initialize the batch opd to batch polychromatic PSF layer
         self.tf_batch_poly_PSF = TF_batch_poly_PSF(
-            obscurations=self.obscurations, output_Q=self.output_Q, output_dim=self.output_dim
+            obscurations=self.obscurations,
+            output_Q=self.output_Q,
+            output_dim=self.output_dim,
         )
 
         # Initialize the model parameters with non-default value
@@ -145,11 +150,11 @@ class TF_SP_MCCD_field(tf.keras.Model):
             self.assign_coeff_matrix(coeff_mat)
 
     def set_zero_nonparam(self):
-        r""" Set to zero the non-parametric part."""
+        r"""Set to zero the non-parametric part."""
         self.tf_NP_mccd_OPD.set_alpha_zero()
 
     def set_output_Q(self, output_Q, output_dim=None):
-        r""" Set the value of the output_Q parameter.
+        r"""Set the value of the output_Q parameter.
         Useful for generating/predicting PSFs at a different sampling wrt the
         observation sampling.
         """
@@ -158,33 +163,35 @@ class TF_SP_MCCD_field(tf.keras.Model):
             self.output_dim = output_dim
         # Reinitialize the PSF batch poly generator
         self.tf_batch_poly_PSF = TF_batch_poly_PSF(
-            obscurations=self.obscurations, output_Q=self.output_Q, output_dim=self.output_dim
+            obscurations=self.obscurations,
+            output_Q=self.output_Q,
+            output_dim=self.output_dim,
         )
 
     def set_l1_rate(self, new_l1_rate):
-        r""" Set l1 rate the non-parametric part."""
+        r"""Set l1 rate the non-parametric part."""
         self.l1_rate = new_l1_rate
         self.tf_NP_mccd_OPD.l1_rate = new_l1_rate
 
     def set_nonzero_nonparam(self):
-        r""" Set to non-zero the non-parametric part."""
+        r"""Set to non-zero the non-parametric part."""
         self.tf_NP_mccd_OPD.set_alpha_identity()
 
     def set_trainable_layers(self, param_bool=True, nonparam_bool=True):
-        r""" Set the layers to be trainable or not."""
+        r"""Set the layers to be trainable or not."""
         self.tf_NP_mccd_OPD.trainable = nonparam_bool
         self.tf_poly_Z_field.trainable = param_bool
 
     def get_coeff_matrix(self):
-        """ Get coefficient matrix."""
+        """Get coefficient matrix."""
         return self.tf_poly_Z_field.get_coeff_matrix()
 
     def assign_coeff_matrix(self, coeff_mat):
-        r""" Assign coefficient matrix."""
+        r"""Assign coefficient matrix."""
         self.tf_poly_Z_field.assign_coeff_matrix(coeff_mat)
 
     def predict_step(self, data, evaluate_step=False):
-        r""" Custom predict (inference) step.
+        r"""Custom predict (inference) step.
 
         It is needed as the non-parametric MCCD part requires a special
         interpolation (different from training).
@@ -216,7 +223,7 @@ class TF_SP_MCCD_field(tf.keras.Model):
         return poly_psfs
 
     def predict_mono_psfs(self, input_positions, lambda_obs, phase_N):
-        r""" Predict a set of monochromatic PSF at desired positions.
+        r"""Predict a set of monochromatic PSF at desired positions.
 
         Parameters
         ----------
@@ -237,7 +244,9 @@ class TF_SP_MCCD_field(tf.keras.Model):
         """
         # Initialise the monochromatic PSF batch calculator
         tf_batch_mono_psf = TF_batch_mono_PSF(
-            obscurations=self.obscurations, output_Q=self.output_Q, output_dim=self.output_dim
+            obscurations=self.obscurations,
+            output_Q=self.output_Q,
+            output_dim=self.output_dim,
         )
         # Set the lambda_obs and the phase_N parameters
         tf_batch_mono_psf.set_lambda_phaseN(phase_N, lambda_obs)
@@ -258,7 +267,7 @@ class TF_SP_MCCD_field(tf.keras.Model):
         return mono_psf_batch
 
     def predict_opd(self, input_positions):
-        r""" Predict the OPD at some positions.
+        r"""Predict the OPD at some positions.
 
         Parameters
         ----------
@@ -305,7 +314,9 @@ class TF_SP_MCCD_field(tf.keras.Model):
             # Calculate the non parametric part
             nonparam_opd_maps = self.tf_NP_mccd_OPD(input_positions)
             # Add l2 loss on the parmetric OPD
-            self.add_loss(self.l2_param * tf.math.reduce_sum(tf.math.square(nonparam_opd_maps)))
+            self.add_loss(
+                self.l2_param * tf.math.reduce_sum(tf.math.square(nonparam_opd_maps))
+            )
             # Add the estimations
             opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
             # Compute the polychromatic PSFs
@@ -332,23 +343,25 @@ def build_mccd_spatial_dic(
 
     # Graph parameters
     graph_kwargs = {
-        'obs_data': obs_stars.swapaxes(0, 1).swapaxes(1, 2),
-        'obs_pos': obs_pos,
-        'obs_weights': np.ones_like(obs_stars),
-        'n_comp': graph_features,
-        'n_eigenvects': 5,
-        'n_iter': 3,
-        'ea_gridsize': 10,
-        'distances': None,
-        'auto_run': True,
-        'verbose': verbose
+        "obs_data": obs_stars.swapaxes(0, 1).swapaxes(1, 2),
+        "obs_pos": obs_pos,
+        "obs_weights": np.ones_like(obs_stars),
+        "n_comp": graph_features,
+        "n_eigenvects": 5,
+        "n_iter": 3,
+        "ea_gridsize": 10,
+        "distances": None,
+        "auto_run": True,
+        "verbose": verbose,
     }
 
     # Compute graph-spatial constraint matrix
     VT = GraphBuilder(**graph_kwargs).VT
 
     # Compute polynomial-spatial constaint matrix
-    tf_Pi = calc_poly_position_mat(pos=obs_pos, x_lims=x_lims, y_lims=y_lims, d_max=d_max)
+    tf_Pi = calc_poly_position_mat(
+        pos=obs_pos, x_lims=x_lims, y_lims=y_lims, d_max=d_max
+    )
 
     # Need to translate to have the batch dimension first
     spatial_dic = np.concatenate((tf_Pi.numpy(), VT), axis=0).T
@@ -369,30 +382,38 @@ def build_mccd_spatial_dic_v2(
 
     # Graph parameters
     graph_kwargs = {
-        'obs_data': obs_stars.swapaxes(0, 1).swapaxes(1, 2),
-        'obs_pos': obs_pos,
-        'obs_weights': np.ones_like(obs_stars),
-        'n_comp': graph_features,
-        'n_eigenvects': 5,
-        'n_iter': 3,
-        'ea_gridsize': 10,
-        'distances': None,
-        'auto_run': True,
-        'verbose': verbose
+        "obs_data": obs_stars.swapaxes(0, 1).swapaxes(1, 2),
+        "obs_pos": obs_pos,
+        "obs_weights": np.ones_like(obs_stars),
+        "n_comp": graph_features,
+        "n_eigenvects": 5,
+        "n_iter": 3,
+        "ea_gridsize": 10,
+        "distances": None,
+        "auto_run": True,
+        "verbose": verbose,
     }
 
     # Compute graph-spatial constraint matrix
     VT = GraphBuilder(**graph_kwargs).VT
 
     # Compute polynomial-spatial constaint matrix
-    tf_Pi = calc_poly_position_mat(pos=obs_pos, x_lims=x_lims, y_lims=y_lims, d_max=d_max)
+    tf_Pi = calc_poly_position_mat(
+        pos=obs_pos, x_lims=x_lims, y_lims=y_lims, d_max=d_max
+    )
 
     # Return the poly dictionary and the graph dictionary
-    return tf.transpose(tf_Pi, perm=[1, 0]), tf.convert_to_tensor(VT.T, dtype=tf.float32)
+    return tf.transpose(tf_Pi, perm=[1, 0]), tf.convert_to_tensor(
+        VT.T, dtype=tf.float32
+    )
+
+
+# @register_psfclass
 
 
 class TF_SP_graph_field(tf.keras.Model):
-    r""" Semi-parametric graph-constraint-only PSF field model!
+    #   ids=("graph",)
+    r"""Semi-parametric graph-constraint-only PSF field model!
 
     Semi parametric model based on the graph-constraint-only matrix factorization scheme.
 
@@ -430,7 +451,7 @@ class TF_SP_graph_field(tf.keras.Model):
         obs_pos,
         spatial_dic,
         output_Q,
-        l2_param=0.,
+        l2_param=0.0,
         graph_features=6,
         l1_rate=1e-3,
         output_dim=64,
@@ -439,7 +460,7 @@ class TF_SP_graph_field(tf.keras.Model):
         x_lims=[0, 1e3],
         y_lims=[0, 1e3],
         coeff_mat=None,
-        name='TF_SP_graph_field'
+        name="TF_SP_graph_field",
     ):
         super(TF_SP_graph_field, self).__init__()
 
@@ -471,7 +492,10 @@ class TF_SP_graph_field(tf.keras.Model):
 
         # Initialize the first layer
         self.tf_poly_Z_field = TF_poly_Z_field(
-            x_lims=self.x_lims, y_lims=self.y_lims, n_zernikes=self.n_zernikes, d_max=self.d_max
+            x_lims=self.x_lims,
+            y_lims=self.y_lims,
+            n_zernikes=self.n_zernikes,
+            d_max=self.d_max,
         )
 
         # Initialize the zernike to OPD layer
@@ -485,12 +509,14 @@ class TF_SP_graph_field(tf.keras.Model):
             y_lims=self.y_lims,
             graph_features=self.graph_features,
             l1_rate=self.l1_rate,
-            opd_dim=self.opd_dim
+            opd_dim=self.opd_dim,
         )
 
         # Initialize the batch opd to batch polychromatic PSF layer
         self.tf_batch_poly_PSF = TF_batch_poly_PSF(
-            obscurations=self.obscurations, output_Q=self.output_Q, output_dim=self.output_dim
+            obscurations=self.obscurations,
+            output_Q=self.output_Q,
+            output_dim=self.output_dim,
         )
 
         # Initialize the model parameters with non-default value
@@ -498,11 +524,11 @@ class TF_SP_graph_field(tf.keras.Model):
             self.assign_coeff_matrix(coeff_mat)
 
     def set_zero_nonparam(self):
-        """ Set to zero the non-parametric part."""
+        """Set to zero the non-parametric part."""
         self.tf_NP_graph_OPD.set_alpha_zero()
 
     def set_output_Q(self, output_Q, output_dim=None):
-        r""" Set the value of the output_Q parameter.
+        r"""Set the value of the output_Q parameter.
         Useful for generating/predicting PSFs at a different sampling wrt the
         observation sampling.
         """
@@ -511,33 +537,35 @@ class TF_SP_graph_field(tf.keras.Model):
             self.output_dim = output_dim
         # Reinitialize the PSF batch poly generator
         self.tf_batch_poly_PSF = TF_batch_poly_PSF(
-            obscurations=self.obscurations, output_Q=self.output_Q, output_dim=self.output_dim
+            obscurations=self.obscurations,
+            output_Q=self.output_Q,
+            output_dim=self.output_dim,
         )
 
     def set_l1_rate(self, new_l1_rate):
-        """ Set l1 rate the non-parametric part."""
+        """Set l1 rate the non-parametric part."""
         self.l1_rate = new_l1_rate
         self.tf_NP_graph_OPD.l1_rate = new_l1_rate
 
     def set_nonzero_nonparam(self):
-        """ Set to non-zero the non-parametric part."""
+        """Set to non-zero the non-parametric part."""
         self.tf_NP_graph_OPD.set_alpha_identity()
 
     def set_trainable_layers(self, param_bool=True, nonparam_bool=True):
-        """ Set the layers to be trainable or not."""
+        """Set the layers to be trainable or not."""
         self.tf_NP_graph_OPD.trainable = nonparam_bool
         self.tf_poly_Z_field.trainable = param_bool
 
     def get_coeff_matrix(self):
-        """ Get coefficient matrix."""
+        """Get coefficient matrix."""
         return self.tf_poly_Z_field.get_coeff_matrix()
 
     def assign_coeff_matrix(self, coeff_mat):
-        """ Assign coefficient matrix."""
+        """Assign coefficient matrix."""
         self.tf_poly_Z_field.assign_coeff_matrix(coeff_mat)
 
     def predict_step(self, data, evaluate_step=False):
-        """ Custom predict (inference) step.
+        """Custom predict (inference) step.
 
         It is needed as the non-parametric MCCD part requires a special
         interpolation (different from training).
@@ -569,7 +597,7 @@ class TF_SP_graph_field(tf.keras.Model):
         return poly_psfs
 
     def predict_mono_psfs(self, input_positions, lambda_obs, phase_N):
-        r""" Predict a set of monochromatic PSF at desired positions.
+        r"""Predict a set of monochromatic PSF at desired positions.
 
         Parameters
         ----------
@@ -590,7 +618,9 @@ class TF_SP_graph_field(tf.keras.Model):
         """
         # Initialise the monochromatic PSF batch calculator
         tf_batch_mono_psf = TF_batch_mono_PSF(
-            obscurations=self.obscurations, output_Q=self.output_Q, output_dim=self.output_dim
+            obscurations=self.obscurations,
+            output_Q=self.output_Q,
+            output_dim=self.output_dim,
         )
         # Set the lambda_obs and the phase_N parameters
         tf_batch_mono_psf.set_lambda_phaseN(phase_N, lambda_obs)
@@ -611,7 +641,7 @@ class TF_SP_graph_field(tf.keras.Model):
         return mono_psf_batch
 
     def predict_opd(self, input_positions):
-        """ Predict the OPD at some positions.
+        """Predict the OPD at some positions.
 
         Parameters
         ----------
@@ -658,7 +688,9 @@ class TF_SP_graph_field(tf.keras.Model):
             # Calculate the non parametric part
             nonparam_opd_maps = self.tf_NP_graph_OPD(input_positions)
             # Add l2 loss on the parmetric OPD
-            self.add_loss(self.l2_param * tf.math.reduce_sum(tf.math.square(nonparam_opd_maps)))
+            self.add_loss(
+                self.l2_param * tf.math.reduce_sum(tf.math.square(nonparam_opd_maps))
+            )
             # Add the estimations
             opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
             # Compute the polychromatic PSFs

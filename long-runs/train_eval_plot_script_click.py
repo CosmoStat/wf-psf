@@ -5,17 +5,18 @@
 
 import wf_psf as wf
 import click
+from wf_psf.io import make_wfpsf_file_struct
 
 # from absl import app
 # from absl import flags
 
 
 @click.command()
-## Script options
+# Script options
 @click.option("--train_opt", default=True, type=bool, help="Train the model.")
 @click.option("--eval_opt", default=True, type=bool, help="Evaluate the model.")
 @click.option("--plot_opt", default=True, type=bool, help="Plot the model results")
-## Training options
+# Training options
 # Model definition
 @click.option(
     "--model",
@@ -61,9 +62,9 @@ import click
     help="Path to save model checkpoints during training."
 )
 @click.option(
-    "--plots_folder", 
-    default="plots/", 
-    type=str, 
+    "--plots_folder",
+    default="plots/",
+    type=str,
     help="Folder name to save the generated plots."
 )
 # Input dataset paths
@@ -251,7 +252,7 @@ import click
     type=str,
     help="Train cycle definition. It can be: 'parametric', 'non-parametric', 'complete', 'only-non-parametric' and 'only-parametric'."
 )
-## Evaluation flags
+# Evaluation flags
 # Saving paths
 @click.option(
     "--model_eval",
@@ -302,14 +303,14 @@ import click
     type=bool,
     help="Save RMS error for each super resolved PSF in the test dataset in addition to the mean across the FOV."
 )
-## Specific parameters
+# Specific parameters
 @click.option(
     "--l2_param",
     default=0.,
     type=float,
     help="Parameter for the l2 loss of the OPD."
 )
-## Plot parameters
+# Plot parameters
 @click.option(
     "--base_id_name",
     default="-coherent_euclid_",
@@ -356,10 +357,9 @@ import click
     type=bool,
     help="Project NP DD features onto parametric model."
 )
-
-
 def main(**args):
     print(args)
+    make_wfpsf_file_struct()
     if args['train_opt']:
         print('Training...')
         wf.script_utils.train_model(**args)

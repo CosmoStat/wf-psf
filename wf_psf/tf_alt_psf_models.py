@@ -5,7 +5,7 @@ from wf_psf.tf_layers import TF_NP_poly_OPD, TF_batch_mono_PSF
 
 
 class TF_SemiParam_field_l2_OPD(tf.keras.Model):
-    """ PSF field forward model!
+    """PSF field forward model!
 
     Semi parametric model based on the Zernike polynomial basis. The
 
@@ -30,7 +30,7 @@ class TF_SemiParam_field_l2_OPD(tf.keras.Model):
     d_max_nonparam: int
         Maximum degree of the polynomial for the non-parametric variations.
     l2_param: float
-        Parameter going with the l2 loss on the opd. 
+        Parameter going with the l2 loss on the opd.
     output_dim: int
         Output dimension of the PSF stamps.
     n_zernikes: int
@@ -61,7 +61,7 @@ class TF_SemiParam_field_l2_OPD(tf.keras.Model):
         x_lims=[0, 1e3],
         y_lims=[0, 1e3],
         coeff_mat=None,
-        name='TF_SemiParam_field_l2_OPD'
+        name="TF_SemiParam_field_l2_OPD",
     ):
         super(TF_SemiParam_field_l2_OPD, self).__init__()
 
@@ -92,7 +92,10 @@ class TF_SemiParam_field_l2_OPD(tf.keras.Model):
 
         # Initialize the first layer
         self.tf_poly_Z_field = TF_poly_Z_field(
-            x_lims=self.x_lims, y_lims=self.y_lims, n_zernikes=self.n_zernikes, d_max=self.d_max
+            x_lims=self.x_lims,
+            y_lims=self.y_lims,
+            n_zernikes=self.n_zernikes,
+            d_max=self.d_max,
         )
 
         # Initialize the zernike to OPD layer
@@ -100,12 +103,17 @@ class TF_SemiParam_field_l2_OPD(tf.keras.Model):
 
         # Initialize the non-parametric layer
         self.tf_np_poly_opd = TF_NP_poly_OPD(
-            x_lims=self.x_lims, y_lims=self.y_lims, d_max=self.d_max_nonparam, opd_dim=self.opd_dim
+            x_lims=self.x_lims,
+            y_lims=self.y_lims,
+            d_max=self.d_max_nonparam,
+            opd_dim=self.opd_dim,
         )
 
         # Initialize the batch opd to batch polychromatic PSF layer
         self.tf_batch_poly_PSF = TF_batch_poly_PSF(
-            obscurations=self.obscurations, output_Q=self.output_Q, output_dim=self.output_dim
+            obscurations=self.obscurations,
+            output_Q=self.output_Q,
+            output_dim=self.output_dim,
         )
 
         # Initialize the model parameters with non-default value
@@ -113,28 +121,28 @@ class TF_SemiParam_field_l2_OPD(tf.keras.Model):
             self.assign_coeff_matrix(coeff_mat)
 
     def get_coeff_matrix(self):
-        """ Get coefficient matrix."""
+        """Get coefficient matrix."""
         return self.tf_poly_Z_field.get_coeff_matrix()
 
     def assign_coeff_matrix(self, coeff_mat):
-        """ Assign coefficient matrix."""
+        """Assign coefficient matrix."""
         self.tf_poly_Z_field.assign_coeff_matrix(coeff_mat)
 
     def set_zero_nonparam(self):
-        """ Set to zero the non-parametric part."""
+        """Set to zero the non-parametric part."""
         self.tf_np_poly_opd.set_alpha_zero()
 
     def set_nonzero_nonparam(self):
-        """ Set to non-zero the non-parametric part."""
+        """Set to non-zero the non-parametric part."""
         self.tf_np_poly_opd.set_alpha_identity()
 
     def set_trainable_layers(self, param_bool=True, nonparam_bool=True):
-        """ Set the layers to be trainable or not."""
+        """Set the layers to be trainable or not."""
         self.tf_np_poly_opd.trainable = nonparam_bool
         self.tf_poly_Z_field.trainable = param_bool
 
     def set_output_Q(self, output_Q, output_dim=None):
-        """ Set the value of the output_Q parameter.
+        """Set the value of the output_Q parameter.
         Useful for generating/predicting PSFs at a different sampling wrt the
         observation sampling.
         """
@@ -144,11 +152,13 @@ class TF_SemiParam_field_l2_OPD(tf.keras.Model):
 
         # Reinitialize the PSF batch poly generator
         self.tf_batch_poly_PSF = TF_batch_poly_PSF(
-            obscurations=self.obscurations, output_Q=self.output_Q, output_dim=self.output_dim
+            obscurations=self.obscurations,
+            output_Q=self.output_Q,
+            output_dim=self.output_dim,
         )
 
     def predict_mono_psfs(self, input_positions, lambda_obs, phase_N):
-        """ Predict a set of monochromatic PSF at desired positions.
+        """Predict a set of monochromatic PSF at desired positions.
 
         input_positions: Tensor(batch_dim x 2)
 
@@ -163,7 +173,9 @@ class TF_SemiParam_field_l2_OPD(tf.keras.Model):
 
         # Initialise the monochromatic PSF batch calculator
         tf_batch_mono_psf = TF_batch_mono_PSF(
-            obscurations=self.obscurations, output_Q=self.output_Q, output_dim=self.output_dim
+            obscurations=self.obscurations,
+            output_Q=self.output_Q,
+            output_dim=self.output_dim,
         )
         # Set the lambda_obs and the phase_N parameters
         tf_batch_mono_psf.set_lambda_phaseN(phase_N, lambda_obs)
@@ -182,7 +194,7 @@ class TF_SemiParam_field_l2_OPD(tf.keras.Model):
         return mono_psf_batch
 
     def predict_opd(self, input_positions):
-        """ Predict the OPD at some positions.
+        """Predict the OPD at some positions.
 
         Parameters
         ----------
@@ -237,7 +249,7 @@ class TF_SemiParam_field_l2_OPD(tf.keras.Model):
 
 
 class TF_PSF_field_model_l2_OPD(tf.keras.Model):
-    """ Parametric PSF field model!
+    """Parametric PSF field model!
 
     Fully parametric model based on the Zernike polynomial basis.
 
@@ -250,7 +262,7 @@ class TF_PSF_field_model_l2_OPD(tf.keras.Model):
     batch_size: int
         Batch size
     l2_param: float
-        Parameter going with the l2 loss on the opd. 
+        Parameter going with the l2 loss on the opd.
     output_dim: int
         Output dimension of the PSF stamps.
     n_zernikes: int
@@ -280,7 +292,7 @@ class TF_PSF_field_model_l2_OPD(tf.keras.Model):
         x_lims=[0, 1e3],
         y_lims=[0, 1e3],
         coeff_mat=None,
-        name='TF_PSF_field_model_l2_OPD'
+        name="TF_PSF_field_model_l2_OPD",
     ):
         super(TF_PSF_field_model_l2_OPD, self).__init__()
 
@@ -306,7 +318,10 @@ class TF_PSF_field_model_l2_OPD(tf.keras.Model):
 
         # Initialize the first layer
         self.tf_poly_Z_field = TF_poly_Z_field(
-            x_lims=self.x_lims, y_lims=self.y_lims, n_zernikes=self.n_zernikes, d_max=self.d_max
+            x_lims=self.x_lims,
+            y_lims=self.y_lims,
+            n_zernikes=self.n_zernikes,
+            d_max=self.d_max,
         )
 
         # Initialize the zernike to OPD layer
@@ -314,7 +329,9 @@ class TF_PSF_field_model_l2_OPD(tf.keras.Model):
 
         # Initialize the batch opd to batch polychromatic PSF layer
         self.tf_batch_poly_PSF = TF_batch_poly_PSF(
-            obscurations=self.obscurations, output_Q=self.output_Q, output_dim=self.output_dim
+            obscurations=self.obscurations,
+            output_Q=self.output_Q,
+            output_dim=self.output_dim,
         )
 
         # Initialize the model parameters with non-default value
@@ -322,15 +339,15 @@ class TF_PSF_field_model_l2_OPD(tf.keras.Model):
             self.assign_coeff_matrix(coeff_mat)
 
     def get_coeff_matrix(self):
-        """ Get coefficient matrix."""
+        """Get coefficient matrix."""
         return self.tf_poly_Z_field.get_coeff_matrix()
 
     def assign_coeff_matrix(self, coeff_mat):
-        """ Assign coefficient matrix."""
+        """Assign coefficient matrix."""
         self.tf_poly_Z_field.assign_coeff_matrix(coeff_mat)
 
     def set_output_Q(self, output_Q, output_dim=None):
-        """ Set the value of the output_Q parameter.
+        """Set the value of the output_Q parameter.
         Useful for generating/predicting PSFs at a different sampling wrt the
         observation sampling.
         """
@@ -339,11 +356,13 @@ class TF_PSF_field_model_l2_OPD(tf.keras.Model):
             self.output_dim = output_dim
         # Reinitialize the PSF batch poly generator
         self.tf_batch_poly_PSF = TF_batch_poly_PSF(
-            obscurations=self.obscurations, output_Q=self.output_Q, output_dim=self.output_dim
+            obscurations=self.obscurations,
+            output_Q=self.output_Q,
+            output_dim=self.output_dim,
         )
 
     def predict_mono_psfs(self, input_positions, lambda_obs, phase_N):
-        """ Predict a set of monochromatic PSF at desired positions.
+        """Predict a set of monochromatic PSF at desired positions.
 
         input_positions: Tensor(batch_dim x 2)
 
@@ -358,7 +377,9 @@ class TF_PSF_field_model_l2_OPD(tf.keras.Model):
 
         # Initialise the monochromatic PSF batch calculator
         tf_batch_mono_psf = TF_batch_mono_PSF(
-            obscurations=self.obscurations, output_Q=self.output_Q, output_dim=self.output_dim
+            obscurations=self.obscurations,
+            output_Q=self.output_Q,
+            output_dim=self.output_dim,
         )
         # Set the lambda_obs and the phase_N parameters
         tf_batch_mono_psf.set_lambda_phaseN(phase_N, lambda_obs)
@@ -373,7 +394,7 @@ class TF_PSF_field_model_l2_OPD(tf.keras.Model):
         return mono_psf_batch
 
     def predict_opd(self, input_positions):
-        """ Predict the OPD at some positions.
+        """Predict the OPD at some positions.
 
         Parameters
         ----------
