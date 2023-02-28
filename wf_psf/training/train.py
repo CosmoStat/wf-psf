@@ -16,7 +16,9 @@ from wf_psf.utils.read_config import read_conf
 import os
 import logging
 import wf_psf.utils.io as io
-from wf_psf.psf_models import psf_models
+from wf_psf.psf_models import *
+import training.train_utils as train_utils
+from wf_psf.data.preprocessing import TrainingDataHandler, TestDataHandler
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +103,20 @@ class TrainingParamsHandler:
         return self.training_params.training_hparams
 
     @property
+    def training_multi_cycle_params(self):
+        """Training Multi Cycle Parameters.
+
+        Set training multi cycle parameters
+
+        Returns
+        -------
+        training_multi_cycle_params: type
+            Recursive Namespace object
+
+        """
+        return self.training_params.training_hparams.multi_cycle_params
+
+    @property
     def training_data_params(self):
         """Training Data Params.
 
@@ -128,6 +144,20 @@ class TrainingParamsHandler:
 
         """
         return self.training_params.data.test
+
+
+def get_training_data():
+    """Get Training Data.
+
+    A function to get the training data.
+
+    Returns
+    -------
+    list
+        List of SED
+
+
+    """
 
 
 def get_gpu_info():
@@ -169,3 +199,72 @@ def train(training_params, output_dirs):
     )
 
     logger.info(f"PSF Model class: `{training_handler.model_name}` initialized...")
+
+    # Model Training
+    # Prepare the saving callback
+    # Prepare to save the model as a callback
+    #-----------------------------------------------------
+    # Can put this into a function
+    filepath_chkp_callback = (
+        training_handler.checkpoint_dir + "/" + "chkp_callback_" + training_handler.model_name + training_handler.id_name + "_cycle1"
+    )
+    model_chkp_callback = tf.keras.callbacks.ModelCheckpoint(
+        filepath_chkp_callback,
+        monitor="mean_squared_error",
+        verbose=1,
+        save_best_only=True,
+        save_weights_only=True,
+        mode="min",
+        save_freq="epoch",
+        options=None,
+     )
+    #-----------------------------------------------------
+   # Instantiate Simulated PSF Toolkit
+    simPSF = psf_models.simPSF(training_handler.model_params)
+
+   # Prepare the optimisers
+    param_optim = tfa.optimizers.RectifiedAdam(learning_rate=training_handler.training_multi_cycle_params.learning_rate_param_multi_cycle[0])
+    non_param_optim = tfa.optimizers.RectifiedAdam(
+        learning_rate=training_handler.training_multi_cycle_params.learning_rate_non_param_multi_cycle[0]
+    )
+    #-----------------------------------------------------
+
+    # Get training data
+    training_data = TrainingDataHandler(training_handler.training_data_params,simPSF,training_handler.model_params.n_bins_lda)
+    test_data = TestDataHandler(training_handler.test_data_params)
+    breakpoint()
+
+    print("Starting training cycle 1..")
+    start_cycle1 = time.time() 
+    
+"""
+
+tf_semiparam_field, hist_param, hist_non_param = train_utils.general_train_cycle(
+# poly model
+tf_semiparam_field,
+# training data
+inputs=[tf_train_pos, tf_packed_SED_data],
+#
+outputs=tf_noisy_train_stars,
+validation_data= ([tf_validation_pos, preprocessing.get_tf_validation_SED_data()], tf_validation_stars),
+batch_size=training_handler.training_hparams.batch_size,
+learning_rate_param=training_handler.training_multi_cycle_params.learning_rate_param_multi_cycle[0],
+learning_rate_non_param=training_handler.training_multi_cycle_params.learning_rate_non_param_multi_cycle[0],
+n_epochs_param=training_handler.training_multi_cycle_params.n_epochs_param[0],
+n_epochs_non_param=training_handler.training_multi_cycle_params.n_epochs_non_param[0],
+param_optim=param_optim,
+non_param_optim=non_param_optim,
+param_loss=None,
+non_param_loss=None,
+param_metrics=None,
+non_param_metrics=None,
+param_callback=None,
+non_param_callback=None,
+general_callback=[model_chkp_callback],
+first_run=True,
+cycle_def=training_handler.training_multi_cycle_params.cycle_def,
+use_sample_weights=training_handler.model_params.use_sample_weights,
+verbose=2,
+) 
+
+"""
