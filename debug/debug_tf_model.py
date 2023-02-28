@@ -12,9 +12,9 @@ from tqdm.notebook import tqdm
 
 # Import wavefront code
 import wf_psf.SimPSFToolkit as wf_sim
-import tf_layers as wf_layers
+import wf_psf.psf_models.tf_layers as wf_layers
 import wf_psf.psf_models.tf_modules as wf_modules
-import tf_psf_field as wf_psf_field
+import wf_psf.psf_models.tf_psf_field as wf_psf_field
 import wf_psf.utils.utils as wf_utils
 import wf_psf.psf_models.GenPolyFieldPSF as wf_gen
 
