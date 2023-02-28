@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-from tf_psf_field import build_PSF_model
+from wf_psf.psf_models.tf_psf_field import build_PSF_model
 from wf_psf.utils.utils import NoiseEstimator
 
 
@@ -40,10 +40,10 @@ def general_train_cycle(
     tf_semiparam_field,
     inputs,
     outputs,
-    val_data,
+    validation_data,
     batch_size,
-    l_rate_param,
-    l_rate_non_param,
+    learning_rate_param,
+    learning_rate_non_param,
     n_epochs_param,
     n_epochs_non_param,
     param_optim=None,
@@ -65,9 +65,9 @@ def general_train_cycle(
     Define the model optimisation.
 
     For the parametric part we are using:
-    ``l_rate_param = 1e-2``, ``n_epochs_param = 20``.
+    ``learning_rate_param = 1e-2``, ``n_epochs_param = 20``.
     For the non-parametric part we are using:
-    ``l_rate_non_param = 1.0``, ``n_epochs_non_param = 100``.
+    ``learning_rate_non_param = 1.0``, ``n_epochs_non_param = 100``.
 
     Parameters
     ----------
@@ -77,14 +77,14 @@ def general_train_cycle(
         Inputs used for Model.fit()
     outputs: Tensor
         Outputs used for Model.fit()
-    val_data: Tuple
-        Validation data used for Model.fit().
+    validation_data: Tuple
+        Validation test data used for Model.fit().
         Tuple of input, output validation data
     batch_size: int
         Batch size for the training.
-    l_rate_param: float
+    learning_rate_param: float
         Learning rate for the parametric part
-    l_rate_non_param: float
+    learning_rate_non_param: float
         Learning rate for the non-parametric part
     n_epochs_param: int
         Number of epochs for the parametric part
@@ -155,7 +155,7 @@ def general_train_cycle(
     # Define optimisers
     if param_optim is None:
         optimizer = tf.keras.optimizers.Adam(
-            learning_rate=l_rate_param,
+            learning_rate=learning_rate_param,
             beta_1=0.9,
             beta_2=0.999,
             epsilon=1e-07,
@@ -249,7 +249,7 @@ def general_train_cycle(
             y=outputs,
             batch_size=batch_size,
             epochs=n_epochs_param,
-            validation_data=val_data,
+            validation_data=validation_data,
             callbacks=callbacks,
             sample_weight=sample_weight,
             verbose=verbose,
@@ -284,7 +284,7 @@ def general_train_cycle(
         # Define optimiser
         if non_param_optim is None:
             optimizer = tf.keras.optimizers.Adam(
-                learning_rate=l_rate_non_param,
+                learning_rate=learning_rate_non_param,
                 beta_1=0.9,
                 beta_2=0.999,
                 epsilon=1e-07,
@@ -324,7 +324,7 @@ def general_train_cycle(
             y=outputs,
             batch_size=batch_size,
             epochs=n_epochs_non_param,
-            validation_data=val_data,
+            validation_data=validation_data,
             callbacks=callbacks,
             sample_weight=sample_weight,
             verbose=verbose,
@@ -337,9 +337,9 @@ def param_train_cycle(
     tf_semiparam_field,
     inputs,
     outputs,
-    val_data,
+    validation_data,
     batch_size,
-    l_rate,
+    learning_rate,
     n_epochs,
     param_optim=None,
     param_loss=None,
@@ -359,7 +359,7 @@ def param_train_cycle(
     # Define optimiser
     if param_optim is None:
         optimizer = tf.keras.optimizers.Adam(
-            learning_rate=l_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=False
+            learning_rate=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=False
         )
     else:
         optimizer = param_optim
@@ -429,7 +429,7 @@ def param_train_cycle(
         y=outputs,
         batch_size=batch_size,
         epochs=n_epochs,
-        validation_data=val_data,
+        validation_data=validation_data,
         callbacks=callbacks,
         sample_weight=sample_weight,
         verbose=verbose,
