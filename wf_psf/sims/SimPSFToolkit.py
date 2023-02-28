@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from wf_psf.utils.utils import PI_zernikes, zernike_generator
 
 try:
     from cv2 import resize, INTER_AREA
@@ -28,8 +29,9 @@ class SimPSFToolkit(object):
 
     Parameters
     ----------
-    zernike_maps: list of np.ndarray
-        Each element of the list should contain a Zernike map of the order
+    Remove zernike_maps
+    XXXzernike_maps: list of np.ndarray
+       Each element of the list should contain a Zernike map of the order
         (OSA/ANSI index convention) corresponding to the position in the list.
     max_order: int
         Maximum Zernike polynomial order. Default is `45`.
@@ -88,7 +90,7 @@ class SimPSFToolkit(object):
 
     def __init__(
         self,
-        zernike_maps,
+     #   zernike_maps,
         max_order=45,
         max_wfe_rms=0.1,
         output_dim=64,
@@ -108,11 +110,20 @@ class SimPSFToolkit(object):
         extrapolate=True,
         SED_interp_kind="linear",
     ):
+      # Telescope characteristics
+        self.oversampling_rate = oversampling_rate  # dimensionless
+        self.output_Q = output_Q  # dimensionless
+        self.pix_sampling = pix_sampling  # In [um]
+        self.tel_diameter = tel_diameter  # In [m]
+        self.tel_focal_length = tel_focal_length  # In [m]
+        self.pupil_diameter = pupil_diameter  # In [pix]
+
         # Input attributes
         self.max_order = max_order
         self.rand_seed = rand_seed
         self.plot_opt = plot_opt
-        self.zernike_maps = zernike_maps
+        self.zernike_maps = zernike_generator(self.max_order, self.pupil_diameter)
+        #self.zernike_maps = zernike_maps
         self.max_wfe_rms = max_wfe_rms  # In [um]
         self.output_dim = output_dim  # In pixels per dimension
         self.verbose = verbose
@@ -123,14 +134,6 @@ class SimPSFToolkit(object):
         )
         self.extrapolate = extrapolate  # SED interpolation mode
         self.SED_interp_kind = SED_interp_kind  # Type of interpolation for the SED
-
-        # Telescope characteristics
-        self.oversampling_rate = oversampling_rate  # dimensionless
-        self.output_Q = output_Q  # dimensionless
-        self.pix_sampling = pix_sampling  # In [um]
-        self.tel_diameter = tel_diameter  # In [m]
-        self.tel_focal_length = tel_focal_length  # In [m]
-        self.pupil_diameter = pupil_diameter  # In [pix]
 
         # Class attributes
         self.z_coeffs = None
@@ -483,6 +486,7 @@ class SimPSFToolkit(object):
         else:
             print("No WF has been computed yet.")
 
+    # This method is a setter
     def gen_random_Z_coeffs(self, max_order=45, rand_seed=None):
         """Generate a random set of Zernike coefficients.
 
@@ -700,9 +704,14 @@ class SimPSFToolkit(object):
         return possible_N
 
     def feasible_wavelength(self, lambda_obs):
-        """Calculate closest fesible wavelength to target wavelength.
+        """Calculate closest feasible wavelength to target wavelength.
 
         Input wavelength must be in [um].
+        
+        Parameters
+        ----------
+        lambda_obs: float
+            
         """
         # Calculate a feasible N for the input lambda_obs
         possible_N = self.feasible_N(lambda_obs)
@@ -839,7 +848,8 @@ class SimPSFToolkit(object):
         )
         wv_step = SED_filt[1, 0] - SED_filt[0, 0]
 
-        # Regenerate the wavelenght points
+        # Regenerate the wavelength points
+        # JP: This can be turned into a function
         if n_points == 1:
             if self.extrapolate:
                 # Add points at the border of each bin : *--o--*--o--*--o--*--o--*
@@ -874,7 +884,7 @@ class SimPSFToolkit(object):
                 SED[::3, 0] = SED_filt[:, 0] - wv_step / 3
                 SED[2::3, 0] = SED_filt[:, 0] + wv_step / 3
                 SED[:, 1] = SED_interpolator(SED[:, 0])
-                # Set weigths for new bins (borders have half the bin size)
+                # Set weights for new bins (borders have half the bin size)
                 SED[:, 2] = np.ones(n_bins * 3)
                 # Apply weights to bins
                 SED[:, 1] *= SED[:, 2]
@@ -953,8 +963,18 @@ class SimPSFToolkit(object):
 
     def calc_SED_wave_values(self, SED, n_bins=35):
         """Calculate feasible wavelength and SED values.
+    
+        Feasible so that the padding number N is integer.
+        Meaning choice of wavelengths matters in speeding
+        up the diffraction computation.
 
-        Feasable so that the padding number N is integer.
+        Parameters
+        ----------
+        SED:
+            Spectral energy distribution for a star
+        n_bins: int
+            Number of bins
+    
         """
         # Generate SED interpolator and wavelength array (use new sampler method)
         wvlength, SED_interp, weights = self.gen_SED_sampler(SED, n_bins)
@@ -979,7 +999,7 @@ class SimPSFToolkit(object):
         """Generate polychromatic PSF with a specific SED.
 
         The wavelength space will be the Euclid VIS instrument band:
-        [550,900]nm and will be sample in ``n_bins``.
+        [550,900]nm and will be sampled in ``n_bins``.
 
         """
         # Calculate the feasible values of wavelength and the corresponding
@@ -1020,7 +1040,7 @@ class SimPSFToolkit(object):
 
 # This pythonic version of the polychromatic calculation is not working
 # The parallelisation with the class with shared variables might not be working
-# It may work if we define a @staticmethod for the diffracvtion
+# It may work if we define a @staticmethod for the diffraction
 #         psf_cube = np.array([_sed*self.generate_mono_PSF(_wv, get_psf=True)
 #                              for _wv, _sed in zip(feasible_wv, SED_norm)])
 #         # Sum to obtain the polychromatic PSFs
