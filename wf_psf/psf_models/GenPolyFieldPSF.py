@@ -6,7 +6,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
 class GenPolyFieldPSF(object):
-    """Generate PSF field with polynomial vairiations of Zernike coefficients."""
+    """Generate PSF field with polynomial variations of Zernike coefficients."""
 
     def __init__(
         self,
