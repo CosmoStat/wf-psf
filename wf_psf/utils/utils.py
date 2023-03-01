@@ -31,10 +31,19 @@ def calc_wfe_rms(zernike_basis, zks, pupil_mask):
 
 
 def generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
-    r"""Generate the SED elements needed for using the TF_poly_PSF.
+    """Generate SED Elements.
+    
+    A function to generate the SED elements needed for using the 
+    Tensor Flow class: TF_poly_PSF.
 
-    sim_psf_toolkit: An instance of the SimPSFToolkit class with the correct
+    Parameters
+    ----------
+    SED:
+    sim_psf_toolkit: 
+        An instance of the SimPSFToolkit class with the correct
     initialization values.
+    n_bins: int
+        Number of wavelength bins
     """
 
     feasible_wv, SED_norm = sim_psf_toolkit.calc_SED_wave_values(SED, n_bins)
@@ -42,19 +51,83 @@ def generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
 
     return feasible_N, feasible_wv, SED_norm
 
+def generate_SED_elems_in_tensorflow(SED, sim_psf_toolkit, n_bins=20, tf_dtype=tf.float64):
+    """Generate SED Elements in Tensor Flow Units.
+    
+    A function to generate the SED elements needed for using the 
+    Tensor Flow class: TF_poly_PSF.
+
+    Parameters
+    ----------
+    SED:
+    sim_psf_toolkit: 
+        An instance of the SimPSFToolkit class with the correct
+    initialization values.
+    n_bins: int
+        Number of wavelength bins
+    tf_dtype: tf.
+        Tensor Flow data type
+    """
+
+    feasible_wv, SED_norm = sim_psf_toolkit.calc_SED_wave_values(SED, n_bins)
+    feasible_N = np.array([sim_psf_toolkit.feasible_N(_wv) for _wv in feasible_wv])
+
+    return convert_to_tf([feasible_N, feasible_wv, SED_norm], tf_dtype)
+
+def convert_to_tf(data,tf_dtype):
+    return [tf.convert_to_tensor(x, dtype=tf_dtype) for x in data ]
+  
+def alternative_generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
+    """Alternative Generate SED Elements.
+
+    A function to test compacting Tobias' two functions
+    to generate SEDS at the optimal wavelengths for diffraction
+    calculation.
+
+    Parameters
+    ----------
+    SED 
+     SEDs
+    sim_psf_toolkit: object
+        SIM PSF Toolkit instance
+    n_bins: int
+        Number of bins
+    
+    """
+    feasible_wv, SED_norm = sim_psf_toolkit.calc_SED_wave_values(SED, n_bins)
+    feasible_N = np.array([sim_psf_toolkit.feasible_N(_wv) for _wv in feasible_wv])
+
+    return convert_to_tf_flt64([feasible_N, feasible_wv, SED_norm])
 
 def generate_packed_elems(SED, sim_psf_toolkit, n_bins=20):
-    r"""Generate the packed values for using the TF_poly_PSF."""
+    """Generate Packed Elements.
+    This name is too generic. may make obsolete
+    
+    A function to store the packed values for using the TF_poly_PSF.
+    
+    Parameters
+    ----------
+    SED:
+    sim_psf_toolkit:
+    n_bins: int
+        Number of wavelength bins
+    
+    Returns
+    -------
+    list
+        List of tensors
+    """
     feasible_N, feasible_wv, SED_norm = generate_SED_elems(
         SED, sim_psf_toolkit, n_bins=n_bins
     )
 
-    tf_feasible_N = tf.convert_to_tensor(feasible_N, dtype=tf.float64)
-    tf_feasible_wv = tf.convert_to_tensor(feasible_wv, dtype=tf.float64)
-    tf_SED_norm = tf.convert_to_tensor(SED_norm, dtype=tf.float64)
+    # is this necessary? 
+    feasible_N = tf.convert_to_tensor(feasible_N, dtype=tf.float64)
+    feasible_wv = tf.convert_to_tensor(feasible_wv, dtype=tf.float64)
+    SED_norm = tf.convert_to_tensor(SED_norm, dtype=tf.float64)
 
-    # returnes the packed tensors
-    return [tf_feasible_N, tf_feasible_wv, tf_SED_norm]
+    # returns the packed tensors
+    return [feasible_N, feasible_wv, SED_norm]
 
 
 def calc_poly_position_mat(pos, x_lims, y_lims, d_max):
