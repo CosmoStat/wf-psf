@@ -1,6 +1,6 @@
 """Zernikes.
 
-A module to make Zernike maps
+A module to make Zernike maps.
 
 :Author: Tobias Liaudat <tobiasliaudat@gmail.com> and Jennifer Pollack <jennifer.pollack@cea.fr>
 
@@ -25,7 +25,7 @@ print(tf_zernike_cube.shape)
 
 
 def zernike_generator(n_zernikes, wfe_dim):
-    r"""
+    """
     Generate Zernike maps.
 
     Based on the zernike github repository.
