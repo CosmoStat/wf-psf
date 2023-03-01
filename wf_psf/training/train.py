@@ -231,7 +231,7 @@ def train(training_params, output_dirs):
 
     # Get training data
     training_data = TrainingDataHandler(training_handler.training_data_params,simPSF,training_handler.model_params.n_bins_lda)
-    test_data = TestDataHandler(training_handler.test_data_params)
+    test_data = TestDataHandler(training_handler.test_data_params, simPSF, training_handler.model_params.n_bins_lda)
     breakpoint()
 
     print("Starting training cycle 1..")
