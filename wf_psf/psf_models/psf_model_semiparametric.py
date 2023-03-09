@@ -38,9 +38,11 @@ class TF_SemiParam_field(tf.keras.Model):
         self, model_params, training_params, coeff_mat=None):
         super(TF_SemiParam_field, self).__init__()
 
+        # Inputs: pupil diameter
         self.pupil_diam = model_params.pupil_diameter
+
         # Inputs: oversampling used
-        self.output_Q = model_params.output_q
+        self.output_Q = model_params.output_Q
 
         # Inputs: TF_poly_Z_field
         self.n_zernikes = model_params.param_hparams.n_zernikes
@@ -158,13 +160,13 @@ class TF_SemiParam_field(tf.keras.Model):
         self.tf_np_poly_opd.trainable = nonparam_bool
         self.tf_poly_Z_field.trainable = param_bool
 
-    @property
-    def output_Q(self):
-        return self._output_Q
+#    @property
+#    def output_Q(self):
+#        return self._output_Q
 
-    @output_Q.setter
-    def output_Q(self, new_output_Q):
-        self._output_Q = new_output_Q
+#    @output_Q.setter
+#    def output_Q(self, new_output_Q):
+#        self._output_Q = new_output_Q
 
 
     def set_output_Q(self, output_Q, output_dim=None):
