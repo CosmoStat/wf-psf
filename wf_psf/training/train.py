@@ -18,6 +18,7 @@ import logging
 import wf_psf.utils.io as io
 from wf_psf.psf_models import *
 import training.train_utils as train_utils
+import wf_psf.data.preprocessing as preprocessing
 from wf_psf.data.preprocessing import TrainingDataHandler, TestDataHandler
 
 logger = logging.getLogger(__name__)
@@ -146,19 +147,6 @@ class TrainingParamsHandler:
         return self.training_params.data.test
 
 
-def get_training_data():
-    """Get Training Data.
-
-    A function to get the training data.
-
-    Returns
-    -------
-    list
-        List of SED
-
-
-    """
-
 
 def get_gpu_info():
     """Get GPU Information.
@@ -232,39 +220,38 @@ def train(training_params, output_dirs):
     # Get training data
     training_data = TrainingDataHandler(training_handler.training_data_params,simPSF,training_handler.model_params.n_bins_lda)
     test_data = TestDataHandler(training_handler.test_data_params, simPSF, training_handler.model_params.n_bins_lda)
-    breakpoint()
-
+   
     print("Starting training cycle 1..")
     start_cycle1 = time.time() 
     
-"""
-
-tf_semiparam_field, hist_param, hist_non_param = train_utils.general_train_cycle(
-# poly model
-tf_semiparam_field,
-# training data
-inputs=[tf_train_pos, tf_packed_SED_data],
-#
-outputs=tf_noisy_train_stars,
-validation_data= ([tf_validation_pos, preprocessing.get_tf_validation_SED_data()], tf_validation_stars),
-batch_size=training_handler.training_hparams.batch_size,
-learning_rate_param=training_handler.training_multi_cycle_params.learning_rate_param_multi_cycle[0],
-learning_rate_non_param=training_handler.training_multi_cycle_params.learning_rate_non_param_multi_cycle[0],
-n_epochs_param=training_handler.training_multi_cycle_params.n_epochs_param[0],
-n_epochs_non_param=training_handler.training_multi_cycle_params.n_epochs_non_param[0],
-param_optim=param_optim,
-non_param_optim=non_param_optim,
-param_loss=None,
-non_param_loss=None,
-param_metrics=None,
-non_param_metrics=None,
-param_callback=None,
-non_param_callback=None,
-general_callback=[model_chkp_callback],
-first_run=True,
-cycle_def=training_handler.training_multi_cycle_params.cycle_def,
-use_sample_weights=training_handler.model_params.use_sample_weights,
-verbose=2,
+ 
+    tf_semiparam_field, hist_param, hist_non_param = train_utils.general_train_cycle(
+    # poly model
+    psf_model,
+    # training data
+    #inputs=[training_data.train_dataset["positions"], training_data.train_dataset["SEDs"]],
+    inputs=training_data.inputs,
+    #
+    #outputs=training_data.train_dataset["noisy_stars"],
+    outputs=training_data.outputs,
+    validation_data= test_data.validation_data,
+    batch_size=training_handler.training_hparams.batch_size,
+    learning_rate_param=training_handler.training_multi_cycle_params.learning_rate_param_multi_cycle[0],
+    learning_rate_non_param=training_handler.training_multi_cycle_params.learning_rate_non_param_multi_cycle[0],
+    n_epochs_param=training_handler.training_hparams.n_epochs_param[0],
+    n_epochs_non_param=training_handler.training_hparams.n_epochs_non_param[0],
+    param_optim=param_optim,
+    non_param_optim=non_param_optim,
+    param_loss=None,
+    non_param_loss=None,
+    param_metrics=None,
+    non_param_metrics=None,
+    param_callback=None,
+    non_param_callback=None,
+    general_callback=[model_chkp_callback],
+    first_run=True,
+    cycle_def=training_handler.training_multi_cycle_params.cycle_def,
+    use_sample_weights=training_handler.model_params.use_sample_weights,
+    verbose=2,
 ) 
 
-"""
