@@ -1,6 +1,6 @@
 """Training Data Processing.
-Rename module to training data processing.
-A module to load and preprocess training and test data.
+
+A module to load and preprocess training and validation test data.
 
 :Authors: Tobias Liaudat <tobiasliaudat@gmail.com> and Jennifer Pollack <jennifer.pollack@cea.fr>
 
@@ -66,32 +66,33 @@ class TrainingDataHandler:
             )
             for _sed in self.train_dataset["SEDs"]
         ]
-
         self.sed_data = tf.convert_to_tensor(self.sed_data, dtype=tf.float32)
         self.sed_data = tf.transpose(self.sed_data, perm=[0, 2, 1])
 
-        train_SEDs = self.train_dataset["SEDs"]
-
 
 class TestDataHandler:
-    """Test Data.
+    """Test Data Handler.
 
       A class to handle test data for model validation.
 
     Parameters
     ----------
-    test_data_params: Recursive Namespace
-        
-    
+    test_data_params: Recursive Namespace object
+        Recursive Namespace object containing test data parameters
+    simPSF: object
+        SimPSFToolkit instance
+    n_bins_lambda: int
+        Number of bins in wavelength
+
     """
 
     def __init__(self, test_data_params, simPSF, n_bins_lambda):
         self.test_data_params = test_data_params
-        
+
         # Load the dictionaries
         self.test_dataset = load_dataset_dict(self.test_data_params.file)
         test_SEDs = self.test_dataset["SEDs"]
-    
+
         # Convert to Tensor Flow units
         self.test_dataset["stars"] = tf.convert_to_tensor(
             self.test_dataset["stars"], dtype=tf.float32
@@ -110,7 +111,5 @@ class TestDataHandler:
             )
             for _sed in self.test_dataset["SEDs"]
         ]
-
-        # Prepare the inputs for the validation
         self.sed_data = tf.convert_to_tensor(self.sed_data, dtype=tf.float32)
         self.sed_data = tf.transpose(self.sed_data, perm=[0, 2, 1])
