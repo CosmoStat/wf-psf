@@ -54,14 +54,12 @@ class TrainingDataHandler:
         Number of bins in wavelength
 
     """
-    
 
-    #JP : inputs = [tf_train_pos, tf_packed_SED_data]
+    # JP : inputs = [tf_train_pos, tf_packed_SED_data]
 
     # Select the observed stars (noisy or noiseless)
     # JP: outputs = tf_noisy_train_stars
     # outputs = tf_train_stars
-
 
     def __init__(self, training_data_params, simPSF, n_bins_lambda):
         self.training_data_params = training_data_params
@@ -84,62 +82,56 @@ class TrainingDataHandler:
         self.sed_data = tf.transpose(self.sed_data, perm=[0, 2, 1])
 
         train_SEDs = self.train_dataset["SEDs"]
-        # Convert to tensor
-        tf_noisy_train_stars = tf.convert_to_tensor(
-            self.train_dataset["noisy_stars"], dtype=tf.float32
-            )
-        tf_train_pos = tf.convert_to_tensor(self.train_dataset["positions"], dtype=tf.float32)
+
         # Initialize the SED data list
         packed_SED_data = [
             utils.generate_packed_elems(_sed, simPSF, n_bins=n_bins_lambda)
             for _sed in train_SEDs
-            ]
+        ]
 
         # Prepare the inputs for the training
         tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
         tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
-        self.inputs = [tf_train_pos, tf_packed_SED_data]
-        self.outputs = tf_noisy_train_stars
+        self.inputs = [self.train_dataset["positions"], tf_packed_SED_data]
+        self.outputs = self.train_dataset["noisy_stars"]
 
 
 class TestDataHandler:
     """Test Data.
 
-    A class to handle test data.
+      A class to handle test data.
 
-
-   
-
-    # Prepare input validation tuple
-  #  validation_x_inputs = [tf_test_pos, tf_validation_packed_SED_data]
-  #  validation_y_inputs = tf_validation_stars
-   # validation_data = ([tf_test_pos, tf_validation_packed_SED_data], tf_test_stars)
-    breakpoint()
+      # Prepare input validation tuple
+    #  validation_x_inputs = [tf_test_pos, tf_validation_packed_SED_data]
+    #  validation_y_inputs = tf_validation_stars
+     # validation_data = ([tf_test_pos, tf_validation_packed_SED_data], tf_test_stars)
 
     """
 
     def __init__(self, test_data_params, simPSF, n_bins_lambda):
         self.test_data_params = test_data_params
         # Load the dictionaries
-        self.test_dataset = load_dataset_dict(self.test_data_params.file)    
+        self.test_dataset = load_dataset_dict(self.test_data_params.file)
         test_SEDs = self.test_dataset["SEDs"]
-      
+
         # Convert to tensor
-        tf_test_stars = tf.convert_to_tensor(self.test_dataset["stars"], dtype=tf.float32)
-        tf_test_pos = tf.convert_to_tensor(self.test_dataset["positions"], dtype=tf.float32)
+        tf_test_stars = tf.convert_to_tensor(
+            self.test_dataset["stars"], dtype=tf.float32
+        )
+        tf_test_pos = tf.convert_to_tensor(
+            self.test_dataset["positions"], dtype=tf.float32
+        )
         self.test_dataset["stars"] = tf.convert_to_tensor(
             self.test_dataset["stars"], dtype=tf.float32
         )
         self.test_dataset["positions"] = tf.convert_to_tensor(
             self.test_dataset["positions"], dtype=tf.float32
         )
-       
-          # Prepare validation data inputs
+
+        # Prepare validation data inputs
 
         # JP: not necessary -- just making a duplicate copy in memory
         validation_SEDs = test_SEDs
-        tf_validation_pos = tf_test_pos
-        tf_validation_stars = tf_test_stars
 
         self.simPSF = simPSF
         self.n_bins_lambda = n_bins_lambda
@@ -148,7 +140,7 @@ class TestDataHandler:
         validation_packed_SED_data = [
             utils.generate_packed_elems(_sed, simPSF, n_bins=n_bins_lambda)
             for _sed in test_SEDs
-            ]
+        ]
 
         self.sed_data = [
             utils.generate_SED_elems_in_tensorflow(
@@ -157,14 +149,20 @@ class TestDataHandler:
             for _sed in self.test_dataset["SEDs"]
         ]
 
-        
-          # Prepare the inputs for the validation
-        tf_validation_packed_SED_data = tf.convert_to_tensor(validation_packed_SED_data, dtype=tf.float32)
-     
-        tf_validation_packed_SED_data = tf.transpose(tf_validation_packed_SED_data, perm=[0, 2, 1])
+        # Prepare the inputs for the validation
+        tf_validation_packed_SED_data = tf.convert_to_tensor(
+            validation_packed_SED_data, dtype=tf.float32
+        )
+
+        tf_validation_packed_SED_data = tf.transpose(
+            tf_validation_packed_SED_data, perm=[0, 2, 1]
+        )
         self.sed_data = tf.transpose(self.sed_data, perm=[0, 2, 1])
 
-        self.validation_data = ([tf_test_pos, tf_validation_packed_SED_data], tf_test_stars)
+        self.validation_data = (
+            [self.test_dataset["positions"], tf_validation_packed_SED_data],
+            self.test_dataset["stars"],
+        )
 
 
 def get_SED_validation_data(simPSF, test_SEDs, nbins_lambda):
