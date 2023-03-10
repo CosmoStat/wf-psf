@@ -7,8 +7,8 @@ import tensorflow_addons as tfa
 
 import wf_psf.SimPSFToolkit as SimPSFToolkit
 import wf_psf.utils.utils as wf_utils
-import tf_mccd_psf_field as tf_mccd_psf_field
-import tf_psf_field as tf_psf_field
+import wf_psf.psf_models.tf_mccd_psf_field as tf_mccd_psf_field
+import wf_psf.psf_models.tf_psf_field as tf_psf_field
 import wf_psf.metrics as wf_metrics
 import training.train_utils as wf_train_utils
 
@@ -55,7 +55,7 @@ def train_model(**args):
     zernikes = wf_utils.zernike_generator(
         n_zernikes=args["n_zernikes"], wfe_dim=args["pupil_diameter"]
     )
-    # Now as cubes
+    # Now as cubes --- DONE
     np_zernike_cube = np.zeros(
         (len(zernikes), zernikes[0].shape[0], zernikes[0].shape[1])
     )
@@ -96,7 +96,7 @@ def train_model(**args):
         args["extrapolate"] = True
         args["sed_interp_kind"] = "linear"
 
-    ## Generate initializations
+    ## Generate initializations -- This looks like it could be moved to PSF model package
     # Prepare np input
     simPSF_np = SimPSFToolkit(
         zernikes,
@@ -104,21 +104,23 @@ def train_model(**args):
         pupil_diameter=args["pupil_diameter"],
         output_dim=args["output_dim"],
         oversampling_rate=args["oversampling_rate"],
-        output_Q=args["output_q"],
+        output_Q=args["output_Q"],
         interp_pts_per_bin=args["interp_pts_per_bin"],
         extrapolate=args["extrapolate"],
         SED_interp_kind=args["sed_interp_kind"],
         SED_sigma=args["sed_sigma"],
     )
 
+    # this method updates simPSF_np.zernikes
     simPSF_np.gen_random_Z_coeffs(max_order=args["n_zernikes"])
+
     z_coeffs = simPSF_np.normalize_zernikes(
         simPSF_np.get_z_coeffs(), simPSF_np.max_wfe_rms
     )
     simPSF_np.set_z_coeffs(z_coeffs)
     simPSF_np.generate_mono_PSF(lambda_obs=0.7, regen_sample=False)
 
-    # Obscurations
+    # Obscurations --> Moved to psf_models/psf_models.py and called static method
     obscurations = simPSF_np.generate_pupil_obscurations(
         N_pix=args["pupil_diameter"], N_filter=2
     )
@@ -134,40 +136,41 @@ def train_model(**args):
     tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
     tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
 
-    inputs = [tf_train_pos, tf_packed_SED_data]
+    #JP : inputs = [tf_train_pos, tf_packed_SED_data]
 
     # Select the observed stars (noisy or noiseless)
-    outputs = tf_noisy_train_stars
+    # JP: outputs = tf_noisy_train_stars
     # outputs = tf_train_stars
 
     # Prepare validation data inputs
-    val_SEDs = test_SEDs
-    tf_val_pos = tf_test_pos
-    tf_val_stars = tf_test_stars
+    # JP: not necessary -- just making a duplicate copy in memory
+   # validation_SEDs = test_SEDs
+   # tf_validation_pos = tf_test_pos
+   # tf_validation_stars = tf_test_stars
 
     # Initialize the SED data list
-    val_packed_SED_data = [
+    validation_packed_SED_data = [
         wf_utils.generate_packed_elems(_sed, simPSF_np, n_bins=args["n_bins_lda"])
-        for _sed in val_SEDs
+        for _sed in test_SEDs
     ]
 
     # Prepare the inputs for the validation
-    tf_val_packed_SED_data = tf.convert_to_tensor(val_packed_SED_data, dtype=tf.float32)
-    tf_val_packed_SED_data = tf.transpose(tf_val_packed_SED_data, perm=[0, 2, 1])
+    tf_validation_packed_SED_data = tf.convert_to_tensor(validation_packed_SED_data, dtype=tf.float32)
+    tf_validation_packed_SED_data = tf.transpose(tf_validation_packed_SED_data, perm=[0, 2, 1])
 
     # Prepare input validation tuple
-    val_x_inputs = [tf_val_pos, tf_val_packed_SED_data]
-    val_y_inputs = tf_val_stars
-    val_data = (val_x_inputs, val_y_inputs)
+  #  validation_x_inputs = [tf_test_pos, tf_validation_packed_SED_data]
+  #  validation_y_inputs = tf_validation_stars
+   # validation_data = ([tf_test_pos, tf_validation_packed_SED_data], tf_test_stars)
 
-    # Select the model
+    # Select the model-- DONE in train.py
     if args["model"] == "poly":
         # Initialize the WaveDiff-original model
         tf_semiparam_field = tf_psf_field.TF_SemiParam_field(
             zernike_maps=tf_zernike_cube,
             obscurations=tf_obscurations,
             batch_size=args["batch_size"],
-            output_Q=args["output_q"],
+            output_Q=args["output_Q"],
             d_max_nonparam=args["d_max_nonparam"],
             l2_param=args["l2_param"],
             output_dim=args["output_dim"],
@@ -211,9 +214,9 @@ def train_model(**args):
     )
 
     # Prepare the optimisers
-    param_optim = tfa.optimizers.RectifiedAdam(learning_rate=args["l_rate_param"][0])
+    param_optim = tfa.optimizers.RectifiedAdam(learning_rate=args["learning_rate_param"][0])
     non_param_optim = tfa.optimizers.RectifiedAdam(
-        learning_rate=args["l_rate_non_param"][0]
+        learning_rate=args["learning_rate_non_param"][0]
     )
 
     print("Starting cycle 1..")
@@ -223,13 +226,13 @@ def train_model(**args):
         # poly model
         tf_semiparam_field,
         # training data
-        inputs=inputs,
+        inputs=[tf_train_pos, tf_packed_SED_data],
         #
-        outputs=outputs,
-        val_data=val_data,
+        outputs=tf_noisy_train_stars,
+        validation_data= ([tf_test_pos, tf_validation_packed_SED_data], tf_test_stars),
         batch_size=args["batch_size"],
-        l_rate_param=args["l_rate_param"][0],
-        l_rate_non_param=args["l_rate_non_param"][0],
+        learning_rate_param=args["learning_rate_param"][0],
+        learning_rate_non_param=args["learning_rate_non_param"][0],
         n_epochs_param=args["n_epochs_param"][0],
         n_epochs_non_param=args["n_epochs_non_param"][0],
         param_optim=param_optim,
@@ -301,10 +304,10 @@ def train_model(**args):
 
         # Prepare the optimisers
         param_optim = tfa.optimizers.RectifiedAdam(
-            learning_rate=args["l_rate_param"][current_cycle - 1]
+            learning_rate=args["learning_rate_param"][current_cycle - 1]
         )
         non_param_optim = tfa.optimizers.RectifiedAdam(
-            learning_rate=args["l_rate_non_param"][current_cycle - 1]
+            learning_rate=args["learning_rate_non_param"][current_cycle - 1]
         )
 
         print("Starting cycle {}..".format(current_cycle))
@@ -319,10 +322,10 @@ def train_model(**args):
             tf_semiparam_field,
             inputs=inputs,
             outputs=outputs,
-            val_data=val_data,
+            validation_data=validation_data,
             batch_size=args["batch_size"],
-            l_rate_param=args["l_rate_param"][current_cycle - 1],
-            l_rate_non_param=args["l_rate_non_param"][current_cycle - 1],
+            learning_rate_param=args["learning_rate_param"][current_cycle - 1],
+            learning_rate_non_param=args["learning_rate_non_param"][current_cycle - 1],
             n_epochs_param=args["n_epochs_param"][current_cycle - 1],
             n_epochs_non_param=args["n_epochs_non_param"][current_cycle - 1],
             param_optim=param_optim,
