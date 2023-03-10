@@ -10,8 +10,16 @@ to manage the parameters of the psf model.
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
-from wf_psf.psf_models.tf_layers import TF_poly_Z_field, TF_zernike_OPD, TF_batch_poly_PSF
-from wf_psf.psf_models.tf_layers import TF_NP_poly_OPD, TF_batch_mono_PSF, TF_physical_layer
+from wf_psf.psf_models.tf_layers import (
+    TF_poly_Z_field,
+    TF_zernike_OPD,
+    TF_batch_poly_PSF,
+)
+from wf_psf.psf_models.tf_layers import (
+    TF_NP_poly_OPD,
+    TF_batch_mono_PSF,
+    TF_physical_layer,
+)
 from wf_psf.utils.utils import PI_zernikes, zernike_generator
 from wf_psf.sims.SimPSFToolkit import SimPSFToolkit
 
@@ -37,7 +45,7 @@ def register_psfclass(psf_class):
     Returns
     -------
     psf_class: type
-        PSF class 
+        PSF class
 
     """
     for id in psf_class.ids:
@@ -78,7 +86,7 @@ def get_psf_model(model_name, model_params, training_hparams):
     model_name: str
         Short name of PSF model
     model_params: type
-        Recursive Namespace object 
+        Recursive Namespace object
     training_hparams: type
         Recursive Namespace object
 
@@ -105,7 +113,7 @@ def tf_zernike_cube(n_zernikes, pupil_diam):
         Number of Zernike polynomials
     pupil_diam: float
         Size of the pupil diameter
-    
+
     Returns
     -------
     Zernike map tensor
@@ -144,17 +152,17 @@ def tf_obscurations(pupil_diam, N_filter=2):
     -------
     Obscurations tensor
         TensorFlow EagerTensor type
-    
+
     """
     obscurations = SimPSFToolkit.generate_pupil_obscurations(
         N_pix=pupil_diam, N_filter=N_filter
     )
     return tf.convert_to_tensor(obscurations, dtype=tf.complex64)
 
-
-     ## Generate initializations -- This looks like it could be moved to PSF model package
+    ## Generate initializations -- This looks like it could be moved to PSF model package
     # Prepare np input
-    
+
+
 def simPSF(model_params):
     """Simulated PSF model.
 
@@ -165,7 +173,7 @@ def simPSF(model_params):
     --------
     model_params: Recursive Namespace object
         Recursive Namespace object storing model parameters
-    
+
     """
 
     simPSF_np = SimPSFToolkit(
@@ -188,5 +196,3 @@ def simPSF(model_params):
     simPSF_np.generate_mono_PSF(lambda_obs=0.7, regen_sample=False)
 
     return simPSF_np
-
-
