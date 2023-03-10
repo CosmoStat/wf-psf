@@ -229,12 +229,9 @@ def train(training_params, output_dirs):
     # poly model
     psf_model,
     # training data
-    #inputs=[training_data.train_dataset["positions"], training_data.train_dataset["SEDs"]],
-    inputs=training_data.inputs,
-    #
-    #outputs=training_data.train_dataset["noisy_stars"],
-    outputs=training_data.outputs,
-    validation_data= test_data.validation_data,
+    inputs=[training_data.train_dataset["positions"], training_data.sed_data],
+    outputs=training_data.train_dataset["noisy_stars"],
+    validation_data=([test_data.test_dataset["positions"], test_data.sed_data], test_data.test_dataset["stars"]),
     batch_size=training_handler.training_hparams.batch_size,
     learning_rate_param=training_handler.training_multi_cycle_params.learning_rate_param_multi_cycle[0],
     learning_rate_non_param=training_handler.training_multi_cycle_params.learning_rate_non_param_multi_cycle[0],
