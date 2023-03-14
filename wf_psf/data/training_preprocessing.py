@@ -2,7 +2,7 @@
 
 A module to load and preprocess training and validation test data.
 
-:Authors: Tobias Liaudat <tobiasliaudat@gmail.com> and Jennifer Pollack <jennifer.pollack@cea.fr>
+:Authors: Jennifer Pollack <jennifer.pollack@cea.fr> and Tobias Liaudat <tobiasliaudat@gmail.com>
 
 """
 import numpy as np
@@ -91,7 +91,6 @@ class TestDataHandler:
 
         # Load the dictionaries
         self.test_dataset = load_dataset_dict(self.test_data_params.file)
-        test_SEDs = self.test_dataset["SEDs"]
 
         # Convert to Tensor Flow units
         self.test_dataset["stars"] = tf.convert_to_tensor(
