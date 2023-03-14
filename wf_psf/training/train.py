@@ -18,8 +18,8 @@ import logging
 import wf_psf.utils.io as io
 from wf_psf.psf_models import *
 import training.train_utils as train_utils
-import wf_psf.data.preprocessing as preprocessing
-from wf_psf.data.preprocessing import TrainingDataHandler, TestDataHandler
+import wf_psf.data.training_preprocessing as training_preprocessing
+from wf_psf.data.training_preprocessing import TrainingDataHandler, TestDataHandler
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +147,6 @@ class TrainingParamsHandler:
         return self.training_params.data.test
 
 
-
 def get_gpu_info():
     """Get GPU Information.
 
@@ -187,14 +186,18 @@ def train(training_params, output_dirs):
     )
 
     logger.info(f"PSF Model class: `{training_handler.model_name}` initialized...")
-
     # Model Training
     # Prepare the saving callback
     # Prepare to save the model as a callback
-    #-----------------------------------------------------
-    # Can put this into a function
+    # -----------------------------------------------------
+    logger.info(f"Preparing Keras model callback...")
     filepath_chkp_callback = (
-        training_handler.checkpoint_dir + "/" + "chkp_callback_" + training_handler.model_name + training_handler.id_name + "_cycle1"
+        training_handler.checkpoint_dir
+        + "/"
+        + "chkp_callback_"
+        + training_handler.model_name
+        + training_handler.id_name
+        + "_cycle1"
     )
     model_chkp_callback = tf.keras.callbacks.ModelCheckpoint(
         filepath_chkp_callback,
@@ -205,50 +208,73 @@ def train(training_params, output_dirs):
         mode="min",
         save_freq="epoch",
         options=None,
-     )
-    #-----------------------------------------------------
-   # Instantiate Simulated PSF Toolkit
+    )
+    # -----------------------------------------------------
+    # Instantiate Simulated PSF Toolkit
+    logger.info(f"Instantiating simPSF toolkit...")
     simPSF = psf_models.simPSF(training_handler.model_params)
 
-   # Prepare the optimisers
-    param_optim = tfa.optimizers.RectifiedAdam(learning_rate=training_handler.training_multi_cycle_params.learning_rate_param_multi_cycle[0])
-    non_param_optim = tfa.optimizers.RectifiedAdam(
-        learning_rate=training_handler.training_multi_cycle_params.learning_rate_non_param_multi_cycle[0]
+    # Prepare the optimisers
+    param_optim = tfa.optimizers.RectifiedAdam(
+        learning_rate=training_handler.training_multi_cycle_params.learning_rate_param_multi_cycle[
+            0
+        ]
     )
-    #-----------------------------------------------------
-
+    non_param_optim = tfa.optimizers.RectifiedAdam(
+        learning_rate=training_handler.training_multi_cycle_params.learning_rate_non_param_multi_cycle[
+            0
+        ]
+    )
+    # -----------------------------------------------------
     # Get training data
-    training_data = TrainingDataHandler(training_handler.training_data_params,simPSF,training_handler.model_params.n_bins_lda)
-    test_data = TestDataHandler(training_handler.test_data_params, simPSF, training_handler.model_params.n_bins_lda)
-   
-    print("Starting training cycle 1..")
-    start_cycle1 = time.time() 
-    
- 
-    tf_semiparam_field, hist_param, hist_non_param = train_utils.general_train_cycle(
-    # poly model
-    psf_model,
-    # training data
-    inputs=[training_data.train_dataset["positions"], training_data.sed_data],
-    outputs=training_data.train_dataset["noisy_stars"],
-    validation_data=([test_data.test_dataset["positions"], test_data.sed_data], test_data.test_dataset["stars"]),
-    batch_size=training_handler.training_hparams.batch_size,
-    learning_rate_param=training_handler.training_multi_cycle_params.learning_rate_param_multi_cycle[0],
-    learning_rate_non_param=training_handler.training_multi_cycle_params.learning_rate_non_param_multi_cycle[0],
-    n_epochs_param=training_handler.training_hparams.n_epochs_param[0],
-    n_epochs_non_param=training_handler.training_hparams.n_epochs_non_param[0],
-    param_optim=param_optim,
-    non_param_optim=non_param_optim,
-    param_loss=None,
-    non_param_loss=None,
-    param_metrics=None,
-    non_param_metrics=None,
-    param_callback=None,
-    non_param_callback=None,
-    general_callback=[model_chkp_callback],
-    first_run=True,
-    cycle_def=training_handler.training_multi_cycle_params.cycle_def,
-    use_sample_weights=training_handler.model_params.use_sample_weights,
-    verbose=2,
-) 
+    logger.info(f"Fetching and preprocessing training and test data...")
+    training_data = TrainingDataHandler(
+        training_handler.training_data_params,
+        simPSF,
+        training_handler.model_params.n_bins_lda,
+    )
+    test_data = TestDataHandler(
+        training_handler.test_data_params,
+        simPSF,
+        training_handler.model_params.n_bins_lda,
+    )
 
+    print("Starting training cycle 1..")
+    start_cycle1 = time.time()
+
+    tf_semiparam_field, hist_param, hist_non_param = train_utils.general_train_cycle(
+        # poly model
+        psf_model,
+        # training data
+        inputs=[training_data.train_dataset["positions"], training_data.sed_data],
+        outputs=training_data.train_dataset["noisy_stars"],
+        validation_data=(
+            [test_data.test_dataset["positions"], test_data.sed_data],
+            test_data.test_dataset["stars"],
+        ),
+        batch_size=training_handler.training_hparams.batch_size,
+        learning_rate_param=training_handler.training_multi_cycle_params.learning_rate_param_multi_cycle[
+            0
+        ],
+        learning_rate_non_param=training_handler.training_multi_cycle_params.learning_rate_non_param_multi_cycle[
+            0
+        ],
+        n_epochs_param=training_handler.training_hparams.n_epochs_param[0],
+        n_epochs_non_param=training_handler.training_hparams.n_epochs_non_param[0],
+        param_optim=param_optim,
+        non_param_optim=non_param_optim,
+        param_loss=None,
+        non_param_loss=None,
+        param_metrics=None,
+        non_param_metrics=None,
+        param_callback=None,
+        non_param_callback=None,
+        general_callback=[model_chkp_callback],
+        first_run=True,
+        cycle_def=training_handler.training_multi_cycle_params.cycle_def,
+        use_sample_weights=training_handler.model_params.use_sample_weights,
+        verbose=2,
+    )
+
+    end_cycle1 = time.time()
+    print("Cycle1 elapsed time: %f" % (end_cycle1 - start_cycle1))
