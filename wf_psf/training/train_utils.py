@@ -7,14 +7,17 @@ from wf_psf.utils.utils import NoiseEstimator
 class L1ParamScheduler(tf.keras.callbacks.Callback):
     """L1 rate scheduler which sets the L1 rate according to schedule.
 
-    Arguments:
-      l1_schedule_rule: a function that takes an epoch index
-          (integer, indexed from 0) and current l1_rate
+    Parameters
+    ----------
+      l1_schedule_rule: function
+        a function that takes an epoch index
+        (integer, indexed from 0) and current l1_rate
           as inputs and returns a new l1_rate as output (float).
     """
 
     def __init__(self, l1_schedule_rule):
         super(L1ParamScheduler, self).__init__()
+        breakpoint()
         self.l1_schedule_rule = l1_schedule_rule
 
     def on_epoch_begin(self, epoch, logs=None):
