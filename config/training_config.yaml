@@ -72,6 +72,10 @@ training:
 
     batch_size: 32
 
+    project_dd_features: False
+
+    reset_dd_features: False
+         
     multi_cycle_params:
       total_cycles: 2
       #"Saved cycle to use for the evaluation. Can be 'cycle1' or 'cycle2'."
@@ -97,7 +101,8 @@ training:
  
        # Train cycle definition. It can be: 'parametric', 'non-parametric', 'complete', 'only-non-parametric' and 'only-parametric'."
       cycle_def: complete
-         
+
+
   data:
     training:
       file: data/coherent_euclid_dataset/train_Euclid_res_200_TrainStars_id_001.npy

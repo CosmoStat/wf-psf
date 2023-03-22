@@ -280,23 +280,26 @@ def train(training_params, output_dirs):
     print("Cycle1 elapsed time: %f" % (end_cycle1 - start_cycle1))
 
     # Save optimisation history in the saving dict
-    saving_optim_hist={}
+    saving_optim_hist = {}
     if hist_param is not None:
         saving_optim_hist["param_cycle1"] = hist_param.history
-    if  psf_model.ids != "param" and hist_non_param is not None:
+    if psf_model.ids != "param" and hist_non_param is not None:
         saving_optim_hist["nonparam_cycle1"] = hist_non_param.history
 
     # Perform all the necessary cycles
     current_cycle = 1
 
-    while training_handler.training_hparams.multi_cycle_params.total_cycles > current_cycle:
+    while (
+        training_handler.training_hparams.multi_cycle_params.total_cycles
+        > current_cycle
+    ):
         current_cycle += 1
 
         # If projected learning is enabled project DD_features.
-        if args["project_dd_features"] and psf_model.ids == "poly":
+        if training_handler.training_hparams.project_dd_features and psf_model.ids == "poly":
             tf_semiparam_field.project_DD_features(tf_zernike_cube)
             print("Project non-param DD features onto param model: done!")
-            if args["reset_dd_features"]:
+            if training_handler.training_hparams.reset_dd_features:
                 psf_model.tf_np_poly_opd.init_vars()
                 print("DD features reseted to random initialisation.")
 
@@ -323,20 +326,24 @@ def train(training_params, output_dirs):
             save_freq="epoch",
             options=None,
         )
-  
+
         # Prepare the optimisers
         param_optim = tfa.optimizers.RectifiedAdam(
-            learning_rate=args["learning_rate_param"][current_cycle - 1]
+            learning_rate=training_handler.training_multi_cycle_params.learning_rate_param_multi_cycle[
+                current_cycle - 1
+            ]
         )
         non_param_optim = tfa.optimizers.RectifiedAdam(
-            learning_rate=args["learning_rate_non_param"][current_cycle - 1]
+            learning_rate=training_handler.training_multi_cycle_params.learning_rate_non_param_multi_cycle[
+                current_cycle - 1
+            ]
         )
-
         print("Starting cycle {}..".format(current_cycle))
         start_cycle = time.time()
 
         # Compute the next cycle
-        (   psf_model,
+        (
+            psf_model,
             hist_param_2,
             hist_non_param_2,
         ) = wf_train_utils.general_train_cycle(
@@ -345,14 +352,22 @@ def train(training_params, output_dirs):
             inputs=[training_data.train_dataset["positions"], training_data.sed_data],
             outputs=training_data.train_dataset["noisy_stars"],
             validation_data=(
-            [test_data.test_dataset["positions"], test_data.sed_data],
-            test_data.test_dataset["stars"],
-        ),
+                [test_data.test_dataset["positions"], test_data.sed_data],
+                test_data.test_dataset["stars"],
+            ),
             batch_size=training_handler.training_hparams.batch_size,
-            learning_rate_param=training_handler.training_multi_cycle_params.learning_rate_param_multi_cycle[current_cycle - 1],
-            learning_rate_non_param=training_handler.training_multi_cycle_params.learning_rate_non_param[current_cycle - 1],
-            n_epochs_param=training_handler.training_multi_cycle_params.n_epochs_param[current_cycle - 1],
-            n_epochs_non_param=training_handler.training_multi_cycle_params.learning_rate_non_param_multi_cycle[current_cycle - 1],
+            learning_rate_param=training_handler.training_multi_cycle_params.learning_rate_param_multi_cycle[
+                current_cycle - 1
+            ],
+            learning_rate_non_param=training_handler.training_multi_cycle_params.learning_rate_non_param[
+                current_cycle - 1
+            ],
+            n_epochs_param=training_handler.training_multi_cycle_params.n_epochs_param[
+                current_cycle - 1
+            ],
+            n_epochs_non_param=training_handler.training_multi_cycle_params.learning_rate_non_param_multi_cycle[
+                current_cycle - 1
+            ],
             param_optim=param_optim,
             non_param_optim=non_param_optim,
             param_loss=None,
@@ -367,7 +382,7 @@ def train(training_params, output_dirs):
             use_sample_weights=training_handler.model_params.use_sample_weights,
             verbose=2,
         )
-     
+
         # Save the weights at the end of the second cycle
         if training_handler.training_hparams.multi_cycle_params.save_all_cycles:
             psf_model.save_weights(
@@ -403,4 +418,4 @@ def train(training_params, output_dirs):
     # Close log file
     print("\n Good bye..")
     sys.stdout = old_stdout
-    log_file.close()
+    # log_file.close()
