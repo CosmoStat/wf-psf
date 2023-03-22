@@ -176,6 +176,8 @@ def train(training_params, output_dirs):
         Absolute paths to training output directories
 
     """
+    # Start measuring elapsed time
+    starting_time = time.time()
 
     training_handler = TrainingParamsHandler(training_params, output_dirs)
 
