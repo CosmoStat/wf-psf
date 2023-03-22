@@ -278,3 +278,10 @@ def train(training_params, output_dirs):
 
     end_cycle1 = time.time()
     print("Cycle1 elapsed time: %f" % (end_cycle1 - start_cycle1))
+
+    # Save optimisation history in the saving dict
+    saving_optim_hist={}
+    if hist_param is not None:
+        saving_optim_hist["param_cycle1"] = hist_param.history
+    if  psf_model.ids != "param" and hist_non_param is not None:
+        saving_optim_hist["nonparam_cycle1"] = hist_non_param.history
