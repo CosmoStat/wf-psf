@@ -12,29 +12,8 @@ import tensorflow_addons as tfa
 
 import wf_psf.SimPSFToolkit as SimPSFToolkit
 
-
-def load_dataset_dict(filename, allow_pickle_flag=True):
-    """Load Numpy Dataset Dictionary.
-
-    A function to load dataset dictionary.
-
-    Parameters
-    ----------
-    filename: str
-        Name of file
-    allow_pickle_flag: bool
-        Boolean flag to set when loading numpy files
-
-    """
-    dataset = np.load(filename, allow_pickle=allow_pickle_flag)[()]
-    return dataset
-
-
 class TrainingDataHandler:
     """Training Data Handler.
-
-    maybe rename to TensorFlow Handler
-    or TrainingDataSetup
 
     A class to manage training data.
 
@@ -51,7 +30,7 @@ class TrainingDataHandler:
 
     def __init__(self, training_data_params, simPSF, n_bins_lambda):
         self.training_data_params = training_data_params
-        self.train_dataset = load_dataset_dict(self.training_data_params.file)
+        self.train_dataset = np.load(self.training_data_params.file, allow_pickle=True)[()]
         self.train_dataset["positions"] = tf.convert_to_tensor(
             self.train_dataset["positions"], dtype=tf.float32
         )
@@ -90,7 +69,7 @@ class TestDataHandler:
         self.test_data_params = test_data_params
 
         # Load the dictionaries
-        self.test_dataset = load_dataset_dict(self.test_data_params.file)
+        self.test_dataset = np.load(self.test_data_params.file,allow_pickle=True)[()]
 
         # Convert to Tensor Flow units
         self.test_dataset["stars"] = tf.convert_to_tensor(
