@@ -360,12 +360,10 @@ def train(training_params, output_dirs):
             current_cycle - 1],
             learning_rate_non_param=training_handler.training_multi_cycle_params.learning_rate_non_param_multi_cycle[
             current_cycle - 1],
-            n_epochs_param=training_handler.training_multi_cycle_params.n_epochs_param[
+            n_epochs_param=training_handler.training_hparams.n_epochs_param[
                 current_cycle - 1
             ],
-            n_epochs_non_param=training_handler.training_multi_cycle_params.learning_rate_non_param_multi_cycle[
-                current_cycle - 1
-            ],
+            n_epochs_non_param=ttraining_handler.training_hparams.n_epochs_non_param[current_cycle - 1],
             param_optim=param_optim,
             non_param_optim=non_param_optim,
             param_loss=None,
