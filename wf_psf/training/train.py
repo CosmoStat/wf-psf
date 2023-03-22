@@ -357,11 +357,9 @@ def train(training_params, output_dirs):
             ),
             batch_size=training_handler.training_hparams.batch_size,
             learning_rate_param=training_handler.training_multi_cycle_params.learning_rate_param_multi_cycle[
-                current_cycle - 1
-            ],
-            learning_rate_non_param=training_handler.training_multi_cycle_params.learning_rate_non_param[
-                current_cycle - 1
-            ],
+            current_cycle - 1],
+            learning_rate_non_param=training_handler.training_multi_cycle_params.learning_rate_non_param_multi_cycle[
+            current_cycle - 1],
             n_epochs_param=training_handler.training_multi_cycle_params.n_epochs_param[
                 current_cycle - 1
             ],
