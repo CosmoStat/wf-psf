@@ -363,7 +363,7 @@ def train(training_params, output_dirs):
             n_epochs_param=training_handler.training_hparams.n_epochs_param[
                 current_cycle - 1
             ],
-            n_epochs_non_param=ttraining_handler.training_hparams.n_epochs_non_param[current_cycle - 1],
+            n_epochs_non_param=training_handler.training_hparams.n_epochs_non_param[current_cycle - 1],
             param_optim=param_optim,
             non_param_optim=non_param_optim,
             param_loss=None,
