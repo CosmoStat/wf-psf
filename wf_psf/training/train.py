@@ -400,12 +400,12 @@ def train(training_params, output_dirs):
 
     # Save last cycle if no cycles were saved
     if not training_handler.training_hparams.multi_cycle_params.save_all_cycles:
-        tf_semiparam_field.save_weights(
-            model_save_file + "chkp_" + run_id_name + "_cycle" + str(current_cycle)
+        tf_semiparam_field.save_weights(io.get_checkpoint_dir
+            + "/chkp_" + run_id_name + "_cycle" + str(current_cycle)
         )
 
     # Save optimisation history dictionary
-    np.save(optim_hist_file + "optim_hist_" + run_id_name + ".npy", saving_optim_hist)
+    np.save(io.get_optimizer_dir + "/optim_hist_" + run_id_name + ".npy", saving_optim_hist)
 
     # Print final time
     final_time = time.time()
