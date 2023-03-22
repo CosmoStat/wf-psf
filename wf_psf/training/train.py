@@ -346,7 +346,7 @@ def train(training_params, output_dirs):
             psf_model,
             hist_param_2,
             hist_non_param_2,
-        ) = wf_train_utils.general_train_cycle(
+        ) = train_utils.general_train_cycle(
             psf_model,
             # training data
             inputs=[training_data.train_dataset["positions"], training_data.sed_data],
