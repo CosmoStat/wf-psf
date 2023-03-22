@@ -285,3 +285,122 @@ def train(training_params, output_dirs):
         saving_optim_hist["param_cycle1"] = hist_param.history
     if  psf_model.ids != "param" and hist_non_param is not None:
         saving_optim_hist["nonparam_cycle1"] = hist_non_param.history
+
+    # Perform all the necessary cycles
+    current_cycle = 1
+
+    while training_handler.training_hparams.multi_cycle_params.total_cycles > current_cycle:
+        current_cycle += 1
+
+        # If projected learning is enabled project DD_features.
+        if args["project_dd_features"] and psf_model.ids == "poly":
+            tf_semiparam_field.project_DD_features(tf_zernike_cube)
+            print("Project non-param DD features onto param model: done!")
+            if args["reset_dd_features"]:
+                psf_model.tf_np_poly_opd.init_vars()
+                print("DD features reseted to random initialisation.")
+
+            # Prepare the saving callback
+        # Prepare to save the model as a callback
+        # -----------------------------------------------------
+        logger.info(f"Preparing Keras model callback...")
+        filepath_chkp_callback = (
+            training_handler.checkpoint_dir
+            + "/"
+            + "chkp_callback_"
+            + training_handler.model_name
+            + training_handler.id_name
+            + "_cycle"
+            + str(current_cycle)
+        )
+        model_chkp_callback = tf.keras.callbacks.ModelCheckpoint(
+            filepath_chkp_callback,
+            monitor="mean_squared_error",
+            verbose=1,
+            save_best_only=True,
+            save_weights_only=True,
+            mode="min",
+            save_freq="epoch",
+            options=None,
+        )
+  
+        # Prepare the optimisers
+        param_optim = tfa.optimizers.RectifiedAdam(
+            learning_rate=args["learning_rate_param"][current_cycle - 1]
+        )
+        non_param_optim = tfa.optimizers.RectifiedAdam(
+            learning_rate=args["learning_rate_non_param"][current_cycle - 1]
+        )
+
+        print("Starting cycle {}..".format(current_cycle))
+        start_cycle = time.time()
+
+        # Compute the next cycle
+        (   psf_model,
+            hist_param_2,
+            hist_non_param_2,
+        ) = wf_train_utils.general_train_cycle(
+            psf_model,
+            # training data
+            inputs=[training_data.train_dataset["positions"], training_data.sed_data],
+            outputs=training_data.train_dataset["noisy_stars"],
+            validation_data=(
+            [test_data.test_dataset["positions"], test_data.sed_data],
+            test_data.test_dataset["stars"],
+        ),
+            batch_size=training_handler.training_hparams.batch_size,
+            learning_rate_param=training_handler.training_multi_cycle_params.learning_rate_param_multi_cycle[current_cycle - 1],
+            learning_rate_non_param=training_handler.training_multi_cycle_params.learning_rate_non_param[current_cycle - 1],
+            n_epochs_param=training_handler.training_multi_cycle_params.n_epochs_param[current_cycle - 1],
+            n_epochs_non_param=training_handler.training_multi_cycle_params.learning_rate_non_param_multi_cycle[current_cycle - 1],
+            param_optim=param_optim,
+            non_param_optim=non_param_optim,
+            param_loss=None,
+            non_param_loss=None,
+            param_metrics=None,
+            non_param_metrics=None,
+            param_callback=None,
+            non_param_callback=None,
+            general_callback=[model_chkp_callback],
+            first_run=False,
+            cycle_def=training_handler.training_multi_cycle_params.cycle_def,
+            use_sample_weights=training_handler.model_params.use_sample_weights,
+            verbose=2,
+        )
+     
+        # Save the weights at the end of the second cycle
+        if training_handler.training_hparams.multi_cycle_params.save_all_cycles:
+            psf_model.save_weights(
+                model_save_file + "chkp_" + run_id_name + "_cycle" + str(current_cycle)
+            )
+
+        end_cycle = time.time()
+        print("Cycle{} elapsed time: {}".format(current_cycle, end_cycle - start_cycle))
+
+        # Save optimisation history in the saving dict
+        if hist_param_2 is not None:
+            saving_optim_hist[
+                "param_cycle{}".format(current_cycle)
+            ] = hist_param_2.history
+        if psf_model.ids != "param" and hist_non_param_2 is not None:
+            saving_optim_hist[
+                "nonparam_cycle{}".format(current_cycle)
+            ] = hist_non_param_2.history
+
+    # Save last cycle if no cycles were saved
+    if not training_handler.training_hparams.multi_cycle_params.save_all_cycles:
+        tf_semiparam_field.save_weights(
+            model_save_file + "chkp_" + run_id_name + "_cycle" + str(current_cycle)
+        )
+
+    # Save optimisation history dictionary
+    np.save(optim_hist_file + "optim_hist_" + run_id_name + ".npy", saving_optim_hist)
+
+    # Print final time
+    final_time = time.time()
+    print("\nTotal elapsed time: %f" % (final_time - starting_time))
+
+    # Close log file
+    print("\n Good bye..")
+    sys.stdout = old_stdout
+    log_file.close()
