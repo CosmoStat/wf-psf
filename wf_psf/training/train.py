@@ -384,7 +384,7 @@ def train(training_params, output_dirs):
         # Save the weights at the end of the second cycle
         if training_handler.training_hparams.multi_cycle_params.save_all_cycles:
             psf_model.save_weights(
-                model_save_file + "chkp_" + run_id_name + "_cycle" + str(current_cycle)
+                model_save_file + "chkp_" + training_handler.model_name + training_handler.id_name + "_cycle" + str(current_cycle)
             )
 
         end_cycle = time.time()
@@ -403,11 +403,11 @@ def train(training_params, output_dirs):
     # Save last cycle if no cycles were saved
     if not training_handler.training_hparams.multi_cycle_params.save_all_cycles:
         tf_semiparam_field.save_weights(output_dirs.get_checkpoint_dir()
-            + "/chkp_" + training_handler.id_name + "_cycle" + str(current_cycle)
+            + "/chkp_" + training_handler.model_name + training_handler.id_name + "_cycle" + str(current_cycle)
         )
 
     # Save optimisation history dictionary
-    np.save(output_dirs.get_optimizer_dir() + "/optim_hist_" + training_handler.id_name + ".npy", saving_optim_hist)
+    np.save(output_dirs.get_optimizer_dir() + "/optim_hist_" + training_handler.model_name + training_handler.id_name + ".npy", saving_optim_hist)
 
     # Print final time
     final_time = time.time()
@@ -415,5 +415,4 @@ def train(training_params, output_dirs):
 
     # Close log file
     print("\n Good bye..")
-    sys.stdout = old_stdout
     # log_file.close()
