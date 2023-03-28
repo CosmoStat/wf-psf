@@ -146,23 +146,24 @@ class TrainingParamsHandler:
         """
         return self.training_params.data.test
 
-    @property
-    def _filepath_chkp_callback(self):
-         return (self.checkpoint_dir
+
+    def _filepath_chkp_callback(self, current_cycle):
+        return (self.checkpoint_dir
             + "/"
             + "chkp_callback_"
             + self.model_name
             + self.id_name
-            + "_cycle1"
+            + "_cycle"
+            + str(current_cycle)
         )
         
         
-    def _prepare_callbacks(self):
+    def _prepare_callbacks(self, current_cycle):
         # Prepare to save the model as a callback
         # -----------------------------------------------------
         logger.info(f"Preparing Keras model callback...")
         return tf.keras.callbacks.ModelCheckpoint(
-            self._filepath_chkp_callback,
+            self._filepath_chkp_callback(current_cycle),
             monitor="mean_squared_error",
             verbose=1,
             save_best_only=True,
@@ -219,7 +220,6 @@ def train(training_params, output_dirs):
     # Model Training
     # Prepare the saving callback
     #model_chkp_callback = training_handler._prepare_callbacks()    
-
 
     # -----------------------------------------------------
     # Instantiate Simulated PSF Toolkit
@@ -292,7 +292,7 @@ def train(training_params, output_dirs):
     # print("Cycle1 elapsed time: %f" % (end_cycle1 - start_cycle1))
 
     # # Save optimisation history in the saving dict
-    # saving_optim_hist = {}
+    saving_optim_hist = {}
     # if hist_param is not None:
     #     saving_optim_hist["param_cycle1"] = hist_param.history
     # if psf_model.ids != "param" and hist_non_param is not None:
@@ -315,30 +315,30 @@ def train(training_params, output_dirs):
                 psf_model.tf_np_poly_opd.init_vars()
                 print("DD features reseted to random initialisation.")
 
-            # Prepare the saving callback
+        # Prepare the saving callback
         # Prepare to save the model as a callback
         # -----------------------------------------------------
         logger.info(f"Preparing Keras model callback...")
-        filepath_chkp_callback = (
-            training_handler.checkpoint_dir
-            + "/"
-            + "chkp_callback_"
-            + training_handler.model_name
-            + training_handler.id_name
-            + "_cycle"
-            + str(current_cycle)
-        )
-        model_chkp_callback = training_handler._prepare_callbacks()  
+        # filepath_chkp_callback = (
+        #     training_handler.checkpoint_dir
+        #     + "/"
+        #     + "chkp_callback_"
+        #     + training_handler.model_name
+        #     + training_handler.id_name
+        #     + "_cycle"
+        #     + str(current_cycle)
+        # )
+        model_chkp_callback = training_handler._prepare_callbacks(current_cycle)  
 
         # Prepare the optimisers
         param_optim = tfa.optimizers.RectifiedAdam(
             learning_rate=training_handler.training_multi_cycle_params.learning_rate_param_multi_cycle[
-                current_cycle - 1
+                current_cycle-1
             ]
         )
         non_param_optim = tfa.optimizers.RectifiedAdam(
             learning_rate=training_handler.training_multi_cycle_params.learning_rate_non_param_multi_cycle[
-                current_cycle - 1
+                current_cycle-1
             ]
         )
         print("Starting cycle {}..".format(current_cycle))
@@ -347,8 +347,8 @@ def train(training_params, output_dirs):
         # Compute the next cycle
         (
             psf_model,
-            hist_param_2,
-            hist_non_param_2,
+            hist_param,
+            hist_non_param,
         ) = train_utils.general_train_cycle(
             psf_model,
             # training data
@@ -360,13 +360,13 @@ def train(training_params, output_dirs):
             ),
             batch_size=training_handler.training_hparams.batch_size,
             learning_rate_param=training_handler.training_multi_cycle_params.learning_rate_param_multi_cycle[
-            current_cycle - 1],
+            current_cycle-1],
             learning_rate_non_param=training_handler.training_multi_cycle_params.learning_rate_non_param_multi_cycle[
-            current_cycle - 1],
+            current_cycle-1],
             n_epochs_param=training_handler.training_hparams.n_epochs_param[
-                current_cycle - 1
+                current_cycle-1
             ],
-            n_epochs_non_param=training_handler.training_hparams.n_epochs_non_param[current_cycle - 1],
+            n_epochs_non_param=training_handler.training_hparams.n_epochs_non_param[current_cycle-1],
             param_optim=param_optim,
             non_param_optim=non_param_optim,
             param_loss=None,
@@ -392,18 +392,18 @@ def train(training_params, output_dirs):
         print("Cycle{} elapsed time: {}".format(current_cycle, end_cycle - start_cycle))
 
         # Save optimisation history in the saving dict
-        if hist_param_2 is not None:
+        if hist_param is not None:
             saving_optim_hist[
                 "param_cycle{}".format(current_cycle)
-            ] = hist_param_2.history
-        if psf_model.ids != "param" and hist_non_param_2 is not None:
+            ] = hist_param.history
+        if psf_model.ids != "param" and hist_non_param is not None:
             saving_optim_hist[
                 "nonparam_cycle{}".format(current_cycle)
-            ] = hist_non_param_2.history
+            ] = hist_non_param.history
 
     # Save last cycle if no cycles were saved
     if not training_handler.training_hparams.multi_cycle_params.save_all_cycles:
-        tf_semiparam_field.save_weights(output_dirs.get_checkpoint_dir()
+        psf_model.save_weights(output_dirs.get_checkpoint_dir()
             + "/chkp_" + training_handler.model_name + training_handler.id_name + "_cycle" + str(current_cycle)
         )
 
