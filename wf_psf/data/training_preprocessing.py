@@ -52,7 +52,7 @@ class TrainingDataHandler:
 class TestDataHandler:
     """Test Data Handler.
 
-      A class to handle test data for model validation.
+    A class to handle test data for model validation.
 
     Parameters
     ----------
