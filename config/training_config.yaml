@@ -52,6 +52,10 @@ training:
     
       #Max polynomial degree of the parametric part.  chg to max_deg_param
       d_max: 2  
+
+      #Flag to save optimisation history for parametric model
+      save_optim_history_param: true
+
  
     # Hyperparameters for non-parametric model
     nonparam_hparams:
@@ -64,6 +68,15 @@ training:
       #L1 regularisation parameter for the non-parametric part."
       l1_rate: 1.0e-8
 
+      #Flag to enable Projected learning for DD_features to be used with `poly` or `semiparametric` model.
+      project_dd_features: False
+
+      #Flag to reset DD_features to be used with `poly` or `semiparametric` model
+      reset_dd_features: False
+
+      #Flag to save optimisation history for non-parametric model
+      save_optim_history_nonparam: true 
+
   # Training hyperparameters
   training_hparams:
     n_epochs_non_param: [2, 2] 
@@ -71,10 +84,6 @@ training:
     n_epochs_param: [2, 2]
 
     batch_size: 32
-
-    project_dd_features: False
-
-    reset_dd_features: False
          
     multi_cycle_params:
       total_cycles: 2

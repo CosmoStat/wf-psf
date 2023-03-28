@@ -63,6 +63,18 @@ class TF_SemiParam_field(tf.keras.Model):
         # Inputs: Loss
         self.l2_param = model_params.param_hparams.l2_param
 
+        # Inputs: Project DD model features 
+        self.project_dd_features = model_params.nonparam_hparams.project_dd_features
+
+        # Inputs: Reset DD model features
+        self.reset_dd_features = model_params.nonparam_hparams.reset_dd_features
+
+        # Inputs: Save optimiser history Parametric model features
+        self.save_optim_history_param = model_params.param_hparams.save_optim_history_param
+
+        # Inputs: Save optimiser history NonParameteric model features
+        self.save_optim_history_nonparam = model_params.nonparam_hparams.save_optim_history_nonparam
+
         # Initialize the first layer
         self.tf_poly_Z_field = TF_poly_Z_field(
             x_lims=self.x_lims,
@@ -94,10 +106,6 @@ class TF_SemiParam_field(tf.keras.Model):
         if coeff_mat is not None:
             self.assign_coeff_matrix(coeff_mat)
 
-
-    #@property
-    #def coeff_mat(self):
-    #    return self._coeff_mat
 
     def get_coeff_matrix(self):
         """Get coefficient matrix.
@@ -159,14 +167,6 @@ class TF_SemiParam_field(tf.keras.Model):
         """
         self.tf_np_poly_opd.trainable = nonparam_bool
         self.tf_poly_Z_field.trainable = param_bool
-
-#    @property
-#    def output_Q(self):
-#        return self._output_Q
-
-#    @output_Q.setter
-#    def output_Q(self, new_output_Q):
-#        self._output_Q = new_output_Q
 
 
     def set_output_Q(self, output_Q, output_dim=None):
