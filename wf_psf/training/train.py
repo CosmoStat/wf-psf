@@ -330,7 +330,7 @@ def train(training_params, output_dirs):
             saving_optim_hist[
                 "param_cycle{}".format(current_cycle)
             ] = hist_param.history
-        if psf_model.save_optim_history_non_param:
+        if psf_model.save_optim_history_nonparam:
             saving_optim_hist[
                 "nonparam_cycle{}".format(current_cycle)
             ] = hist_non_param.history
