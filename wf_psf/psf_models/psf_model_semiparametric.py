@@ -10,10 +10,23 @@ to manage the parameters of the psf semi-parametric model.
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
-from wf_psf.psf_models.psf_models import register_psfclass, tf_zernike_cube, tf_obscurations
-from wf_psf.psf_models.tf_layers import TF_poly_Z_field, TF_zernike_OPD, TF_batch_poly_PSF
-from wf_psf.psf_models.tf_layers import TF_NP_poly_OPD, TF_batch_mono_PSF, TF_physical_layer
+from wf_psf.psf_models.psf_models import (
+    register_psfclass,
+    tf_zernike_cube,
+    tf_obscurations,
+)
+from wf_psf.psf_models.tf_layers import (
+    TF_poly_Z_field,
+    TF_zernike_OPD,
+    TF_batch_poly_PSF,
+)
+from wf_psf.psf_models.tf_layers import (
+    TF_NP_poly_OPD,
+    TF_batch_mono_PSF,
+    TF_physical_layer,
+)
 from wf_psf.utils.utils import PI_zernikes, zernike_generator
+
 
 @register_psfclass
 class TF_SemiParam_field(tf.keras.Model):
@@ -34,8 +47,7 @@ class TF_SemiParam_field(tf.keras.Model):
 
     ids = ("poly",)
 
-    def __init__(
-        self, model_params, training_params, coeff_mat=None):
+    def __init__(self, model_params, training_params, coeff_mat=None):
         super(TF_SemiParam_field, self).__init__()
 
         # Inputs: pupil diameter
@@ -63,17 +75,21 @@ class TF_SemiParam_field(tf.keras.Model):
         # Inputs: Loss
         self.l2_param = model_params.param_hparams.l2_param
 
-        # Inputs: Project DD model features 
+        # Inputs: Project DD model features
         self.project_dd_features = model_params.nonparam_hparams.project_dd_features
 
         # Inputs: Reset DD model features
         self.reset_dd_features = model_params.nonparam_hparams.reset_dd_features
 
         # Inputs: Save optimiser history Parametric model features
-        self.save_optim_history_param = model_params.param_hparams.save_optim_history_param
+        self.save_optim_history_param = (
+            model_params.param_hparams.save_optim_history_param
+        )
 
         # Inputs: Save optimiser history NonParameteric model features
-        self.save_optim_history_nonparam = model_params.nonparam_hparams.save_optim_history_nonparam
+        self.save_optim_history_nonparam = (
+            model_params.nonparam_hparams.save_optim_history_nonparam
+        )
 
         # Initialize the first layer
         self.tf_poly_Z_field = TF_poly_Z_field(
@@ -102,17 +118,16 @@ class TF_SemiParam_field(tf.keras.Model):
         )
 
         # Initialize the model parameters with non-default value
-       # self._coeff_mat = coeff_mat
+        # self._coeff_mat = coeff_mat
         if coeff_mat is not None:
             self.assign_coeff_matrix(coeff_mat)
-
 
     def get_coeff_matrix(self):
         """Get coefficient matrix.
 
         A function to get the coefficient matrix
         for parametric model.
-        
+
         Returns
         -------
         coefficient matrix: float
@@ -123,20 +138,20 @@ class TF_SemiParam_field(tf.keras.Model):
 
     def assign_coeff_matrix(self, coeff_mat):
         """Assign coefficient matrix.
-        
+
         A function to set the coefficient matrix.
 
         Parameters
         ----------
         coeff_mat: float
             Tensor Flow coefficient matrix for the parametric PSF field model
-        
+
         """
         self.tf_poly_Z_field.assign_coeff_matrix(coeff_mat)
 
     def set_zero_nonparam(self):
         """Set to zero the non-parametric part.
-        
+
         A function to set non-parametric alpha parameters
         equal to zero.
 
@@ -145,18 +160,18 @@ class TF_SemiParam_field(tf.keras.Model):
 
     def set_nonzero_nonparam(self):
         """Set to non-zero the non-parametric part.
-        
+
         A function to set non-parametric alpha parameters
         equal to non-zero values.
-        
+
         """
         self.tf_np_poly_opd.set_alpha_identity()
 
     def set_trainable_layers(self, param_bool=True, nonparam_bool=True):
         """Set Trainable Layers.
-        
+
         A function to set the layers to be trainable or not.
-        
+
         Parameters
         ----------
         param_bool: bool
@@ -167,7 +182,6 @@ class TF_SemiParam_field(tf.keras.Model):
         """
         self.tf_np_poly_opd.trainable = nonparam_bool
         self.tf_poly_Z_field.trainable = param_bool
-
 
     def set_output_Q(self, output_Q, output_dim=None):
         """Set the value of the output_Q parameter.
@@ -181,8 +195,8 @@ class TF_SemiParam_field(tf.keras.Model):
         and method to reinitialize PSF batch poly generator
 
         """
-        
-        self.output_Q = output_Q 
+
+        self.output_Q = output_Q
         if output_dim is not None:
             self.output_dim = output_dim
 
@@ -193,15 +207,12 @@ class TF_SemiParam_field(tf.keras.Model):
             output_dim=self.output_dim,
         )
 
-
-    
-
     def predict_mono_psfs(self, input_positions, lambda_obs, phase_N):
         """Predict a set of monochromatic PSF at desired positions.
 
         Parameters
         ----------
-        input_positions: 
+        input_positions:
             Tensor(batch_dim x 2)
 
         lambda_obs: float
@@ -228,7 +239,7 @@ class TF_SemiParam_field(tf.keras.Model):
 
         # Calculate the non parametric part
         nonparam_opd_maps = self.tf_np_poly_opd(input_positions)
-        
+
         # Add the estimations
         opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
 
