@@ -308,7 +308,6 @@ def train(training_params, output_dirs):
     # -----------------------------------------------------
     # Instantiate Simulated PSF Toolkit
     logger.info(f"Instantiating simPSF toolkit...")
-    # simPSF = training_handler._get_simPSF()
 
     # -----------------------------------------------------
     # Get training data
