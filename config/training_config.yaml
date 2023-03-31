@@ -79,10 +79,10 @@ training:
 
   # Training hyperparameters
   training_hparams:
-    n_epochs_non_param: [2, 2] 
+    n_epochs_params: [2, 2]
+   
+    n_epochs_non_params: [2, 2] 
   
-    n_epochs_param: [2, 2]
-
     batch_size: 32
          
     multi_cycle_params:
@@ -91,16 +91,16 @@ training:
       saved_cycle: cycle2
    
       # Learning rates for the parametric parts. It should be a str where numeric values are separated by spaces.
-      learning_rate_param_multi_cycle: [1.0e-2, 1.0e-2]
+      learning_rate_params: [1.0e-2, 1.0e-2]
  
       # Learning rates for the non-parametric parts. It should be a str where numeric values are separated by spaces." 
-      learning_rate_non_param_multi_cycle: [1.0e-1, 1.0e-1]
+      learning_rate_non_params: [1.0e-1, 1.0e-1]
  
       # Number of training epochs of the parametric parts. It should be a strign where numeric values are separated by spaces."
-      n_epochs_param_multi_cycle: [20, 20] 
+      n_epochs_params: [20, 20] 
   
       # Number of training epochs of the non-parametric parts. It should be a str where numeric values are separated by spaces."
-      n_epochs_non_param_multi_cycle: [100, 120]
+      n_epochs_non_params: [100, 120]
  
       # Make checkpoint at every cycle or just save the checkpoint at the end of the training."
       save_all_cycles: False

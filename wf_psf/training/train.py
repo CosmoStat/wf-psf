@@ -115,7 +115,81 @@ class TrainingParamsHandler:
             Recursive Namespace object
 
         """
-        return self.training_params.training_hparams.multi_cycle_params
+        return self.training_hparams.multi_cycle_params
+
+    @property
+    def total_cycles(self):
+        """Total Number of Cycles.
+
+        Set total number of cycles for
+        training.
+
+        Returns
+        -------
+        total_cycles: int
+            Total number of cycles for training
+        """
+        return self.training_multi_cycle_params.total_cycles
+
+    @property
+    def n_epochs_params(self):
+        """Number of Epochs for Pparametric PSF model.
+
+        Set the number of epochs for
+        training parametric PSF model.
+
+        Returns
+        -------
+        n_epochs_params: list
+            List of number of epochs for training parametric PSF model.
+
+        """
+        return self.training_hparams.n_epochs_params
+
+    @property
+    def n_epochs_non_params(self):
+        """Number of Epochs for Non-parametric PSF model.
+
+        Set the number of epochs for
+        training non-parametric PSF model.
+
+        Returns
+        -------
+        n_epochs_non_params: list
+            List of number of epochs for training non-parametric PSF model.
+
+        """
+        return self.training_hparams.n_epochs_non_params
+
+    @property
+    def learning_rate_params(self):
+        """Parametric Model Learning Rate.
+
+        Set learning rate for parametric
+        PSF model.
+
+        Returns
+        -------
+        learning_rate_params: list
+            List containing learning rate for parametric PSF model
+
+        """
+        return self.training_multi_cycle_params.learning_rate_params
+
+    @property
+    def learning_rate_non_params(self):
+        """Non-parametric Model Learning Rate.
+
+        Set learning rate for non-parametric
+        PSF model.
+
+        Returns
+        -------
+        learning_rate_non_params: list
+            List containing learning rate for non-parametric PSF model
+
+        """
+        return self.training_multi_cycle_params.learning_rate_non_params
 
     @property
     def training_data_params(self):
@@ -146,9 +220,9 @@ class TrainingParamsHandler:
         """
         return self.training_params.data.test
 
-
     def _filepath_chkp_callback(self, current_cycle):
-        return (self.checkpoint_dir
+        return (
+            self.checkpoint_dir
             + "/"
             + "chkp_callback_"
             + self.model_name
@@ -156,8 +230,7 @@ class TrainingParamsHandler:
             + "_cycle"
             + str(current_cycle)
         )
-        
-        
+
     def _prepare_callbacks(self, current_cycle):
         # Prepare to save the model as a callback
         # -----------------------------------------------------
@@ -173,6 +246,25 @@ class TrainingParamsHandler:
             options=None,
         )
 
+    def _get_psf_model(self):
+        return psf_models.get_psf_model(
+            self.model_name,
+            self.model_params,
+            self.training_hparams,
+        )
+
+    def _get_simPSF(self):
+        return psf_models.simPSF(self.model_params)
+
+    def _get_training_data(self):
+        return TrainingDataHandler(
+            self.training_data_params, self._get_simPSF(), self.model_params.n_bins_lda
+        )
+
+    def _get_test_data(self):
+        return TestDataHandler(
+            self.test_data_params, self._get_simPSF(), self.model_params.n_bins_lda
+        )
 
 
 def get_gpu_info():
@@ -189,7 +281,6 @@ def get_gpu_info():
     """
     device_name = tf.test.gpu_device_name()
     return device_name
-
 
 
 def train(training_params, output_dirs):
@@ -210,32 +301,21 @@ def train(training_params, output_dirs):
 
     training_handler = TrainingParamsHandler(training_params, output_dirs)
 
-    psf_model = psf_models.get_psf_model(
-        training_handler.model_name,
-        training_handler.model_params,
-        training_handler.training_hparams,
-    )
+    psf_model = training_handler._get_psf_model()
 
     logger.info(f"PSF Model class: `{training_handler.model_name}` initialized...")
     # Model Training
     # -----------------------------------------------------
     # Instantiate Simulated PSF Toolkit
     logger.info(f"Instantiating simPSF toolkit...")
-    simPSF = psf_models.simPSF(training_handler.model_params)
+    # simPSF = training_handler._get_simPSF()
 
     # -----------------------------------------------------
     # Get training data
     logger.info(f"Fetching and preprocessing training and test data...")
-    training_data = TrainingDataHandler(
-        training_handler.training_data_params,
-        simPSF,
-        training_handler.model_params.n_bins_lda,
-    )
-    test_data = TestDataHandler(
-        training_handler.test_data_params,
-        simPSF,
-        training_handler.model_params.n_bins_lda,
-    )
+    training_data = training_handler._get_training_data()
+
+    test_data = training_handler._get_test_data()
 
     # Save optimisation history in the saving dict
     saving_optim_hist = {}
@@ -243,15 +323,14 @@ def train(training_params, output_dirs):
     # Perform all the necessary cycles
     current_cycle = 0
 
-    while (
-        training_handler.training_hparams.multi_cycle_params.total_cycles
-        > current_cycle
-    ):
+    while training_handler.total_cycles > current_cycle:
         current_cycle += 1
 
         # If projected learning is enabled project DD_features.
-        if psf_model.project_dd_features:  #need to change this
-            psf_model.project_DD_features(psf_model.zernike_maps) #make this a callable function
+        if psf_model.project_dd_features:  # need to change this
+            psf_model.project_DD_features(
+                psf_model.zernike_maps
+            )  # make this a callable function
             logger.info("Project non-param DD features onto param model: done!")
             if psf_model.reset_dd_features:
                 psf_model.tf_np_poly_opd.init_vars()
@@ -261,19 +340,15 @@ def train(training_params, output_dirs):
         # Prepare to save the model as a callback
         # -----------------------------------------------------
         logger.info(f"Preparing Keras model callback...")
-  
-        model_chkp_callback = training_handler._prepare_callbacks(current_cycle)  
+
+        model_chkp_callback = training_handler._prepare_callbacks(current_cycle)
 
         # Prepare the optimisers
         param_optim = tfa.optimizers.RectifiedAdam(
-            learning_rate=training_handler.training_multi_cycle_params.learning_rate_param_multi_cycle[
-                current_cycle-1
-            ]
+            learning_rate=training_handler.learning_rate_params[current_cycle - 1]
         )
         non_param_optim = tfa.optimizers.RectifiedAdam(
-            learning_rate=training_handler.training_multi_cycle_params.learning_rate_non_param_multi_cycle[
-                current_cycle-1
-            ]
+            learning_rate=training_handler.learning_rate_non_params[current_cycle - 1]
         )
         logger.info("Starting cycle {}..".format(current_cycle))
         start_cycle = time.time()
@@ -293,14 +368,14 @@ def train(training_params, output_dirs):
                 test_data.test_dataset["stars"],
             ),
             batch_size=training_handler.training_hparams.batch_size,
-            learning_rate_param=training_handler.training_multi_cycle_params.learning_rate_param_multi_cycle[
-            current_cycle-1],
-            learning_rate_non_param=training_handler.training_multi_cycle_params.learning_rate_non_param_multi_cycle[
-            current_cycle-1],
-            n_epochs_param=training_handler.training_hparams.n_epochs_param[
-                current_cycle-1
+            learning_rate_param=training_handler.learning_rate_params[
+                current_cycle - 1
             ],
-            n_epochs_non_param=training_handler.training_hparams.n_epochs_non_param[current_cycle-1],
+            learning_rate_non_param=training_handler.learning_rate_non_params[
+                current_cycle - 1
+            ],
+            n_epochs_param=training_handler.n_epochs_non_params[current_cycle - 1],
+            n_epochs_non_param=training_handler.n_epochs_non_params[current_cycle - 1],
             param_optim=param_optim,
             non_param_optim=non_param_optim,
             param_loss=None,
@@ -317,13 +392,20 @@ def train(training_params, output_dirs):
         )
 
         # Save the weights at the end of the second cycle
-        if training_handler.training_hparams.multi_cycle_params.save_all_cycles:
+        if training_handler.multi_cycle_params.save_all_cycles:
             psf_model.save_weights(
-                model_save_file + "chkp_" + training_handler.model_name + training_handler.id_name + "_cycle" + str(current_cycle)
+                output_dirs.get_checkpoint_dir()
+                + "chkp_"
+                + training_handler.model_name
+                + training_handler.id_name
+                + "_cycle"
+                + str(current_cycle)
             )
 
         end_cycle = time.time()
-        logger.info("Cycle{} elapsed time: {}".format(current_cycle, end_cycle - start_cycle))
+        logger.info(
+            "Cycle{} elapsed time: {}".format(current_cycle, end_cycle - start_cycle)
+        )
 
         # Save optimisation history in the saving dict
         if psf_model.save_optim_history_param:
@@ -336,13 +418,25 @@ def train(training_params, output_dirs):
             ] = hist_non_param.history
 
     # Save last cycle if no cycles were saved
-    if not training_handler.training_hparams.multi_cycle_params.save_all_cycles:
-        psf_model.save_weights(output_dirs.get_checkpoint_dir()
-            + "/chkp_" + training_handler.model_name + training_handler.id_name + "_cycle" + str(current_cycle)
+    if not training_handler.multi_cycle_params.save_all_cycles:
+        psf_model.save_weights(
+            output_dirs.get_checkpoint_dir()
+            + "/chkp_"
+            + training_handler.model_name
+            + training_handler.id_name
+            + "_cycle"
+            + str(current_cycle)
         )
 
     # Save optimisation history dictionary
-    np.save(output_dirs.get_optimizer_dir() + "/optim_hist_" + training_handler.model_name + training_handler.id_name + ".npy", saving_optim_hist)
+    np.save(
+        output_dirs.get_optimizer_dir()
+        + "/optim_hist_"
+        + training_handler.model_name
+        + training_handler.id_name
+        + ".npy",
+        saving_optim_hist,
+    )
 
     # Print final time
     final_time = time.time()
