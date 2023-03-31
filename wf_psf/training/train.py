@@ -104,14 +104,14 @@ class TrainingParamsHandler:
         return self.training_params.training_hparams
 
     @property
-    def training_multi_cycle_params(self):
+    def multi_cycle_params(self):
         """Training Multi Cycle Parameters.
 
         Set training multi cycle parameters
 
         Returns
         -------
-        training_multi_cycle_params: type
+        multi_cycle_params: type
             Recursive Namespace object
 
         """
@@ -129,7 +129,7 @@ class TrainingParamsHandler:
         total_cycles: int
             Total number of cycles for training
         """
-        return self.training_multi_cycle_params.total_cycles
+        return self.multi_cycle_params.total_cycles
 
     @property
     def n_epochs_params(self):
@@ -174,7 +174,7 @@ class TrainingParamsHandler:
             List containing learning rate for parametric PSF model
 
         """
-        return self.training_multi_cycle_params.learning_rate_params
+        return self.multi_cycle_params.learning_rate_params
 
     @property
     def learning_rate_non_params(self):
@@ -189,7 +189,7 @@ class TrainingParamsHandler:
             List containing learning rate for non-parametric PSF model
 
         """
-        return self.training_multi_cycle_params.learning_rate_non_params
+        return self.multi_cycle_params.learning_rate_non_params
 
     @property
     def training_data_params(self):
@@ -386,7 +386,7 @@ def train(training_params, output_dirs):
             non_param_callback=None,
             general_callback=[model_chkp_callback],
             first_run=False,
-            cycle_def=training_handler.training_multi_cycle_params.cycle_def,
+            cycle_def=training_handler.multi_cycle_params.cycle_def,
             use_sample_weights=training_handler.model_params.use_sample_weights,
             verbose=2,
         )
