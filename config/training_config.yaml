@@ -56,7 +56,6 @@ training:
       #Flag to save optimisation history for parametric model
       save_optim_history_param: true
 
- 
     # Hyperparameters for non-parametric model
     nonparam_hparams:
       #Max polynomial degree of the non-parametric part. chg to max_deg_nonparam
@@ -86,8 +85,17 @@ training:
     batch_size: 32
          
     multi_cycle_params:
-      
-      #"Saved cycle to use for the evaluation. Can be 'cycle1' or 'cycle2'."
+     
+      # Total amount of cycles to perform. For the moment the only available options are '1' or '2'."   
+      total_cycles: 3   
+         
+      # Train cycle definition. It can be: 'parametric', 'non-parametric', 'complete', 'only-non-parametric' and 'only-parametric'."
+      cycle_def: complete
+
+      # Make checkpoint at every cycle or just save the checkpoint at the end of the training."
+      save_all_cycles: False
+
+      #"Saved cycle to use for the evaluation. Can be 'cycle1', 'cycle2', ..."
       saved_cycle: cycle3
    
       # Learning rates for the parametric parts. It should be a str where numeric values are separated by spaces.
@@ -101,21 +109,13 @@ training:
   
       # Number of training epochs of the non-parametric parts. It should be a str where numeric values are separated by spaces."
       n_epochs_non_params: [100, 120, 120]
- 
-      # Make checkpoint at every cycle or just save the checkpoint at the end of the training."
-      save_all_cycles: False
- 
-      # Total amount of cycles to perform. For the moment the only available options are '1' or '2'."   
-      total_cycles: 3       
- 
-       # Train cycle definition. It can be: 'parametric', 'non-parametric', 'complete', 'only-non-parametric' and 'only-parametric'."
-      cycle_def: complete
+  
 
-
+  # Training and test datasets
   data:
     training:
       file: data/coherent_euclid_dataset/train_Euclid_res_200_TrainStars_id_001.npy
-     # if training dataset file does not exist, generate a new one 
+     # if training dataset file does not exist, generate a new one by setting values below
       stars: null
       positions: null
       SEDS: null
