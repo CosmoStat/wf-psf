@@ -36,9 +36,9 @@ class TF_SemiParam_field(tf.keras.Model):
 
     Parameters
     ----------
-    model_params: type
+    model_params: Recursive Namespace
         Recursive Namespace object containing parameters for this PSF model class
-    training_params: type
+    training_params: Recursive Namespace
         Recursive Namespace object containing training hyperparameters for this PSF model class
     coeff_mat: Tensor or None
         Initialization of the coefficient matrix defining the parametric psf field model
@@ -189,13 +189,14 @@ class TF_SemiParam_field(tf.keras.Model):
         Useful for generating/predicting PSFs at a different sampling wrt the
         observation sampling.
 
-        Jennifer: this function doesn't make sense to me.
-        could be broken up into individual methods (i.e. getter/setter for output_Q
-        and output_dim)
-        and method to reinitialize PSF batch poly generator
+        Parameters
+        ----------
+        output_Q: float
+            Oversampling factor
+        output_dim: int
+            Output dimension
 
         """
-
         self.output_Q = output_Q
         if output_dim is not None:
             self.output_dim = output_dim
@@ -208,13 +209,12 @@ class TF_SemiParam_field(tf.keras.Model):
         )
 
     def predict_mono_psfs(self, input_positions, lambda_obs, phase_N):
+        # TO Do Clean up
         """Predict a set of monochromatic PSF at desired positions.
 
         Parameters
         ----------
-        input_positions:
-            Tensor(batch_dim x 2)
-
+        input_positions: Tensor(batch_dim x 2)
         lambda_obs: float
             Observed wavelength in um.
 
@@ -291,6 +291,7 @@ class TF_SemiParam_field(tf.keras.Model):
             axes=1,
         )
         # Project over first n_z Zernikes
+        # TO DO: Clean up
         delta_C_poly = tf.constant(
             np.array(
                 [
@@ -317,6 +318,7 @@ class TF_SemiParam_field(tf.keras.Model):
         S_tilde = tf.tensordot(
             self.tf_np_poly_opd.alpha_mat, self.tf_np_poly_opd.S_mat, axes=1
         )
+        # TO DO: Clean Up
         # Get beta tilde as the protection of the first n_param_poly_terms (6 for d_max=2) onto the first n_zernikes.
         beta_tilde_inner = np.array(
             [
@@ -341,6 +343,7 @@ class TF_SemiParam_field(tf.keras.Model):
         beta = tf.constant(
             np.linalg.inv(self.tf_np_poly_opd.alpha_mat) @ beta_tilde, dtype=tf.float32
         )
+        # To do: Clarify comment or delete.
         # Get the projection for the unmixed features
 
         # Now since beta.shape[1]=n_zernikes we can take the whole beta matrix.

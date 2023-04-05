@@ -42,8 +42,8 @@ class TrainingParamsHandler:
 
     Parameters
     ----------
-    training_params: type
-        Type containing training input parameters
+    training_params: Recursive Namespace object
+        Recursive Namespace object containing training input parameters
     id_name: str
         ID name
     output_dirs: FileIOHandler
@@ -83,8 +83,8 @@ class TrainingParamsHandler:
 
         Returns
         -------
-        model_params: type
-            Recursive Namespace object
+        model_params: Recursive Namespace object
+            Recursive Namespace object storing PSF model parameters
 
         """
         return self.training_params.model_params
@@ -97,8 +97,8 @@ class TrainingParamsHandler:
 
         Returns
         -------
-        training_hparams: type
-            Recursive Namespace object
+        training_hparams: Recursive Namespace object
+            Recursive Namespace object storing training hyper parameters
 
         """
         return self.training_params.training_hparams
@@ -111,8 +111,8 @@ class TrainingParamsHandler:
 
         Returns
         -------
-        multi_cycle_params: type
-            Recursive Namespace object
+        multi_cycle_params: Recursive Namespace object
+            Recursive Namespace object storing training multi-cycle parameters
 
         """
         return self.training_hparams.multi_cycle_params
