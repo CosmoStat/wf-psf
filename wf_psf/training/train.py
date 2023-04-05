@@ -16,7 +16,7 @@ from wf_psf.utils.read_config import read_conf
 import os
 import logging
 import wf_psf.utils.io as io
-from wf_psf.psf_models import *
+from wf_psf.psf_models import psf_models, psf_model_semiparametric
 import training.train_utils as train_utils
 import wf_psf.data.training_preprocessing as training_preprocessing
 from wf_psf.data.training_preprocessing import TrainingDataHandler, TestDataHandler
