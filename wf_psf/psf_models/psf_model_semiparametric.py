@@ -48,7 +48,7 @@ class TF_SemiParam_field(tf.keras.Model):
     ids = ("poly",)
 
     def __init__(self, model_params, training_params, coeff_mat=None):
-        super(TF_SemiParam_field, self).__init__()
+        super().__init__()
 
         # Inputs: pupil diameter
         self.pupil_diam = model_params.pupil_diameter
