@@ -10,25 +10,12 @@ to manage the parameters of the psf semi-parametric model.
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
-from wf_psf.psf_models.psf_models import (
-    register_psfclass,
-    tf_zernike_cube,
-    tf_obscurations,
-)
-from wf_psf.psf_models.tf_layers import (
-    TF_poly_Z_field,
-    TF_zernike_OPD,
-    TF_batch_poly_PSF,
-)
-from wf_psf.psf_models.tf_layers import (
-    TF_NP_poly_OPD,
-    TF_batch_mono_PSF,
-    TF_physical_layer,
-)
+from wf_psf.psf_models import psf_models as psfm
+from wf_psf.psf_models import tf_layers as tfl
 from wf_psf.utils.utils import PI_zernikes, zernike_generator
 
 
-@register_psfclass
+@psfm.register_psfclass
 class TF_SemiParam_field(tf.keras.Model):
     """PSF field forward model.
 
@@ -64,12 +51,12 @@ class TF_SemiParam_field(tf.keras.Model):
 
         # Inputs: TF_NP_poly_OPD
         self.d_max_nonparam = model_params.nonparam_hparams.d_max_nonparam
-        self.zernike_maps = tf_zernike_cube(self.n_zernikes, self.pupil_diam)
+        self.zernike_maps = psfm.tf_zernike_cube(self.n_zernikes, self.pupil_diam)
         self.opd_dim = tf.shape(self.zernike_maps)[1].numpy()
 
         # Inputs: TF_batch_poly_PSF
         self.batch_size = training_params.batch_size
-        self.obscurations = tf_obscurations(self.pupil_diam)
+        self.obscurations = psfm.tf_obscurations(self.pupil_diam)
         self.output_dim = model_params.output_dim
 
         # Inputs: Loss
@@ -92,7 +79,7 @@ class TF_SemiParam_field(tf.keras.Model):
         )
 
         # Initialize the first layer
-        self.tf_poly_Z_field = TF_poly_Z_field(
+        self.tf_poly_Z_field = tfl.TF_poly_Z_field(
             x_lims=self.x_lims,
             y_lims=self.y_lims,
             n_zernikes=self.n_zernikes,
@@ -100,10 +87,10 @@ class TF_SemiParam_field(tf.keras.Model):
         )
 
         # Initialize the zernike to OPD layer
-        self.tf_zernike_OPD = TF_zernike_OPD(zernike_maps=self.zernike_maps)
+        self.tf_zernike_OPD = tfl.TF_zernike_OPD(zernike_maps=self.zernike_maps)
 
         # Initialize the non-parametric (np) layer
-        self.tf_np_poly_opd = TF_NP_poly_OPD(
+        self.tf_np_poly_opd = tfl.TF_NP_poly_OPD(
             x_lims=self.x_lims,
             y_lims=self.y_lims,
             d_max=self.d_max_nonparam,
@@ -111,7 +98,7 @@ class TF_SemiParam_field(tf.keras.Model):
         )
 
         # Initialize the batch opd to batch polychromatic PSF layer
-        self.tf_batch_poly_PSF = TF_batch_poly_PSF(
+        self.tf_batch_poly_PSF = tfl.TF_batch_poly_PSF(
             obscurations=self.obscurations,
             output_Q=self.output_Q,
             output_dim=self.output_dim,
