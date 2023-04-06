@@ -182,8 +182,8 @@ def simPSF(model_params):
         output_dim=model_params.output_dim,
         oversampling_rate=model_params.oversampling_rate,
         output_Q=model_params.output_Q,
-        interp_pts_per_bin=model_params.interp_pts_per_bin,
-        extrapolate=model_params.extrapolate,
+        SED_interp_pts_per_bin=model_params.sed_interp_pts_per_bin,
+        SED_extrapolate=model_params.sed_extrapolate,
         SED_interp_kind=model_params.sed_interp_kind,
         SED_sigma=model_params.sed_sigma,
     )

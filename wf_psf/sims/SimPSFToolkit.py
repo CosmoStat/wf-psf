@@ -79,9 +79,9 @@ class SimPSFToolkit(object):
         Self-explanatory variable. Default is `0`, use a value `>0` to activate.
     SED_sigma: float
         Standard deviation of the multiplicative SED Gaussian noise.
-    interp_pts_per_bin: int
+    SED_interp_pts_per_bin: int
         Number of points to interpolate in between SED values. It can be 0, 1 or 2.
-    extrapolate: bool
+    SED_extrapolate: bool
         SED interpolation mode. Default mode uses extrapolation.
     SED_interp_kind: str
         SED interpolation kind. Options are `'cubic'` or `'linear'`.
@@ -106,8 +106,8 @@ class SimPSFToolkit(object):
         LP_filter_length=3,
         verbose=0,
         SED_sigma=0,
-        interp_pts_per_bin=0,
-        extrapolate=True,
+        SED_interp_pts_per_bin=0,
+        SED_extrapolate=True,
         SED_interp_kind="linear",
     ):
       # Telescope characteristics
@@ -129,10 +129,10 @@ class SimPSFToolkit(object):
         self.verbose = verbose
 
         self.SED_sigma = SED_sigma  # std dev for the SED noise distribution
-        self.interp_pts_per_bin = (
-            interp_pts_per_bin  # Number of points to add to each SED bin
+        self.SED_interp_pts_per_bin = (
+            SED_interp_pts_per_bin  # Number of points to add to each SED bin
         )
-        self.extrapolate = extrapolate  # SED interpolation mode
+        self.SED_extrapolate = SED_extrapolate  # SED interpolation mode
         self.SED_interp_kind = SED_interp_kind  # Type of interpolation for the SED
 
         # Class attributes
@@ -851,7 +851,7 @@ class SimPSFToolkit(object):
         # Regenerate the wavelength points
         # JP: This can be turned into a function
         if n_points == 1:
-            if self.extrapolate:
+            if self.SED_extrapolate:
                 # Add points at the border of each bin : *--o--*--o--*--o--*--o--*
                 SED = np.zeros((n_bins * 2 + 1, 3))
                 # Set wavelength points then interpolate
@@ -877,7 +877,7 @@ class SimPSFToolkit(object):
                 # Apply weights to bins
                 SED[:, 1] *= SED[:, 2]
         elif n_points == 2:
-            if self.extrapolate:
+            if self.SED_extrapolate:
                 # Add 2 points per bin: -*-o-*-*-o-*-*-o-*-*-o-*-
                 SED = np.zeros((n_bins * 3, 3))
                 SED[1::3, 0] = SED_filt[:, 0]
@@ -901,7 +901,7 @@ class SimPSFToolkit(object):
                 # Apply weights to bins
                 SED[:, 1] *= SED[:, 2]
         elif n_points == 3:
-            if self.extrapolate:
+            if self.SED_extrapolate:
                 # Add 3 points inside each bin :  *-*-o-*-*-*-o-*-*-*-o-*-*-*-o-*-*
                 SED = np.zeros((n_bins * 4 + 1, 3))
                 # Set wavelength points then interpolate
@@ -942,7 +942,7 @@ class SimPSFToolkit(object):
 
         # Add inside-bin points - Interpolate
         SED_filt = self.interp_SED(
-            SED_filt, self.interp_pts_per_bin, n_bins, self.SED_interp_kind
+            SED_filt, self.SED_interp_pts_per_bin, n_bins, self.SED_interp_kind
         )
 
         # Add weights if not present
