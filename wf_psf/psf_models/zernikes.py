@@ -1,8 +1,8 @@
-"""
-:file: wf_psf/zernikes.py
+"""Zernikes.
 
-:date: 18/01/23
-:author: jpollack
+A module to make Zernike maps.
+
+:Author: Tobias Liaudat <tobiasliaudat@gmail.com> and Jennifer Pollack <jennifer.pollack@cea.fr>
 
 """
 import numpy as np
@@ -25,7 +25,7 @@ print(tf_zernike_cube.shape)
 
 
 def zernike_generator(n_zernikes, wfe_dim):
-    r"""
+    """
     Generate Zernike maps.
 
     Based on the zernike github repository.

@@ -6,8 +6,8 @@ This module setups the run of the WF_PSF pipeline.
 
 """
 import argparse
-from wf_psf.read_config import read_stream, read_conf
-from wf_psf.io import FileIOHandler
+from wf_psf.utils.read_config import read_stream, read_conf
+from wf_psf.utils.io import FileIOHandler
 import os
 import logging.config
 import logging
@@ -83,7 +83,10 @@ def mainMethod():
             training_params = read_conf(os.path.join(args.repodir, conf.training_conf))
             logger.info(training_params.training)
 
-    train.train(training_params.training, file_handler)
+    try:
+        train.train(training_params.training, file_handler)
+    except NameError:
+        logger.info("Training not correctly set. Please check your config file.")   
 
     logger.info("#")
     logger.info("# Exiting wavediff mainMethod()")

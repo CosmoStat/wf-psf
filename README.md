@@ -21,17 +21,6 @@ A schematic of the proposed framework can be seen below. The PSF model is estima
 <img height=800 src="assets/PSF_reconstruction_example.png" > -->
 
 
-## Install
-
-`wf-psf` is pure python and can be easily installed with `pip`. After cloning the repository, run the following commands:
-
-```bash
-$ cd wf-psf
-$ pip install .
-```
-
-The package can then be imported in Python as `import wf_psf as wf`. We recommend using the release `1.2.0` for stability as the current main branch is under development.
-
 ## Requirements
 - [numpy](https://github.com/numpy/numpy) [>=1.19.2]
 - [scipy](https://github.com/scipy/scipy) [>=1.5.2]
@@ -47,6 +36,22 @@ Optional packages:
 - [matplotlib](https://github.com/matplotlib/matplotlib) [=3.3.2]
 - [seaborn](https://github.com/mwaskom/seaborn) [>=0.11]
 
+## Install
+
+`wf-psf` is pure python and can be easily installed with `pip`. After cloning the repository, run the following commands:
+
+```bash
+$ cd wf-psf
+$ pip install .
+```
+
+The package can then be imported in Python as `import wf_psf as wf`. We recommend using the release `1.2.0` for stability as the current main branch is under development.
+
+## Running `WaveDiff`
+
+To run `WaveDiff`, we prepared a step-by-step [instruction guide](https://github.com/CosmoStat/wf-psf/wiki/Getting-started-tutorial).
+
+[Read the tutorial to get started!](https://github.com/CosmoStat/wf-psf/wiki/Getting-started-tutorial)
 
 ## Reproducible research
 

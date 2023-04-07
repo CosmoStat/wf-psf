@@ -12,11 +12,14 @@ import numpy as np
 import time
 import tensorflow as tf
 import tensorflow_addons as tfa
-from wf_psf.read_config import read_conf
+from wf_psf.utils.read_config import read_conf
 import os
 import logging
-import wf_psf.io as io
-from wf_psf.psf_models import psf_models
+import wf_psf.utils.io as io
+from wf_psf.psf_models import psf_models, psf_model_semiparametric
+import training.train_utils as train_utils
+import wf_psf.data.training_preprocessing as training_preprocessing
+from wf_psf.data.training_preprocessing import TrainingDataHandler, TestDataHandler
 
 logger = logging.getLogger(__name__)
 
@@ -39,8 +42,8 @@ class TrainingParamsHandler:
 
     Parameters
     ----------
-    training_params: type
-        Type containing training input parameters
+    training_params: Recursive Namespace object
+        Recursive Namespace object containing training input parameters
     id_name: str
         ID name
     output_dirs: FileIOHandler
@@ -80,8 +83,8 @@ class TrainingParamsHandler:
 
         Returns
         -------
-        model_params: type
-            Recursive Namespace object
+        model_params: Recursive Namespace object
+            Recursive Namespace object storing PSF model parameters
 
         """
         return self.training_params.model_params
@@ -94,11 +97,99 @@ class TrainingParamsHandler:
 
         Returns
         -------
-        training_hparams: type
-            Recursive Namespace object
+        training_hparams: Recursive Namespace object
+            Recursive Namespace object storing training hyper parameters
 
         """
         return self.training_params.training_hparams
+
+    @property
+    def multi_cycle_params(self):
+        """Training Multi Cycle Parameters.
+
+        Set training multi cycle parameters
+
+        Returns
+        -------
+        multi_cycle_params: Recursive Namespace object
+            Recursive Namespace object storing training multi-cycle parameters
+
+        """
+        return self.training_hparams.multi_cycle_params
+
+    @property
+    def total_cycles(self):
+        """Total Number of Cycles.
+
+        Set total number of cycles for
+        training.
+
+        Returns
+        -------
+        total_cycles: int
+            Total number of cycles for training
+        """
+        return self.multi_cycle_params.total_cycles
+
+    @property
+    def n_epochs_params(self):
+        """Number of Epochs for Pparametric PSF model.
+
+        Set the number of epochs for
+        training parametric PSF model.
+
+        Returns
+        -------
+        n_epochs_params: list
+            List of number of epochs for training parametric PSF model.
+
+        """
+        return self.training_hparams.n_epochs_params
+
+    @property
+    def n_epochs_non_params(self):
+        """Number of Epochs for Non-parametric PSF model.
+
+        Set the number of epochs for
+        training non-parametric PSF model.
+
+        Returns
+        -------
+        n_epochs_non_params: list
+            List of number of epochs for training non-parametric PSF model.
+
+        """
+        return self.training_hparams.n_epochs_non_params
+
+    @property
+    def learning_rate_params(self):
+        """Parametric Model Learning Rate.
+
+        Set learning rate for parametric
+        PSF model.
+
+        Returns
+        -------
+        learning_rate_params: list
+            List containing learning rate for parametric PSF model
+
+        """
+        return self.multi_cycle_params.learning_rate_params
+
+    @property
+    def learning_rate_non_params(self):
+        """Non-parametric Model Learning Rate.
+
+        Set learning rate for non-parametric
+        PSF model.
+
+        Returns
+        -------
+        learning_rate_non_params: list
+            List containing learning rate for non-parametric PSF model
+
+        """
+        return self.multi_cycle_params.learning_rate_non_params
 
     @property
     def training_data_params(self):
@@ -128,6 +219,52 @@ class TrainingParamsHandler:
 
         """
         return self.training_params.data.test
+
+    def _filepath_chkp_callback(self, current_cycle):
+        return (
+            self.checkpoint_dir
+            + "/"
+            + "chkp_callback_"
+            + self.model_name
+            + self.id_name
+            + "_cycle"
+            + str(current_cycle)
+        )
+
+    def _prepare_callbacks(self, current_cycle):
+        # Prepare to save the model as a callback
+        # -----------------------------------------------------
+        logger.info(f"Preparing Keras model callback...")
+        return tf.keras.callbacks.ModelCheckpoint(
+            self._filepath_chkp_callback(current_cycle),
+            monitor="mean_squared_error",
+            verbose=1,
+            save_best_only=True,
+            save_weights_only=True,
+            mode="min",
+            save_freq="epoch",
+            options=None,
+        )
+
+    def _get_psf_model(self):
+        return psf_models.get_psf_model(
+            self.model_name,
+            self.model_params,
+            self.training_hparams,
+        )
+
+    def _get_simPSF(self):
+        return psf_models.simPSF(self.model_params)
+
+    def _get_training_data(self):
+        return TrainingDataHandler(
+            self.training_data_params, self._get_simPSF(), self.model_params.n_bins_lda
+        )
+
+    def _get_test_data(self):
+        return TestDataHandler(
+            self.test_data_params, self._get_simPSF(), self.model_params.n_bins_lda
+        )
 
 
 def get_gpu_info():
@@ -159,13 +296,151 @@ def train(training_params, output_dirs):
         Absolute paths to training output directories
 
     """
+    # Start measuring elapsed time
+    starting_time = time.time()
 
     training_handler = TrainingParamsHandler(training_params, output_dirs)
 
-    psf_model = psf_models.get_psf_model(
-        training_handler.model_name,
-        training_handler.model_params,
-        training_handler.training_hparams,
-    )
+    psf_model = training_handler._get_psf_model()
 
     logger.info(f"PSF Model class: `{training_handler.model_name}` initialized...")
+    # Model Training
+    # -----------------------------------------------------
+    # Instantiate Simulated PSF Toolkit
+    logger.info(f"Instantiating simPSF toolkit...")
+
+    # -----------------------------------------------------
+    # Get training data
+    logger.info(f"Fetching and preprocessing training and test data...")
+    training_data = training_handler._get_training_data()
+
+    test_data = training_handler._get_test_data()
+
+    # Save optimisation history in the saving dict
+    saving_optim_hist = {}
+
+    # Perform all the necessary cycles
+    current_cycle = 0
+
+    while training_handler.total_cycles > current_cycle:
+        current_cycle += 1
+
+        # If projected learning is enabled project DD_features.
+        if psf_model.project_dd_features:  # need to change this
+            psf_model.project_DD_features(
+                psf_model.zernike_maps
+            )  # make this a callable function
+            logger.info("Project non-param DD features onto param model: done!")
+            if psf_model.reset_dd_features:
+                psf_model.tf_np_poly_opd.init_vars()
+                logger.info("DD features reset to random initialisation.")
+
+        # Prepare the saving callback
+        # Prepare to save the model as a callback
+        # -----------------------------------------------------
+        logger.info(f"Preparing Keras model callback...")
+
+        model_chkp_callback = training_handler._prepare_callbacks(current_cycle)
+
+        # Prepare the optimisers
+        param_optim = tfa.optimizers.RectifiedAdam(
+            learning_rate=training_handler.learning_rate_params[current_cycle - 1]
+        )
+        non_param_optim = tfa.optimizers.RectifiedAdam(
+            learning_rate=training_handler.learning_rate_non_params[current_cycle - 1]
+        )
+        logger.info("Starting cycle {}..".format(current_cycle))
+        start_cycle = time.time()
+
+        # Compute the next cycle
+        (
+            psf_model,
+            hist_param,
+            hist_non_param,
+        ) = train_utils.general_train_cycle(
+            psf_model,
+            # training data
+            inputs=[training_data.train_dataset["positions"], training_data.sed_data],
+            outputs=training_data.train_dataset["noisy_stars"],
+            validation_data=(
+                [test_data.test_dataset["positions"], test_data.sed_data],
+                test_data.test_dataset["stars"],
+            ),
+            batch_size=training_handler.training_hparams.batch_size,
+            learning_rate_param=training_handler.learning_rate_params[
+                current_cycle - 1
+            ],
+            learning_rate_non_param=training_handler.learning_rate_non_params[
+                current_cycle - 1
+            ],
+            n_epochs_param=training_handler.n_epochs_non_params[current_cycle - 1],
+            n_epochs_non_param=training_handler.n_epochs_non_params[current_cycle - 1],
+            param_optim=param_optim,
+            non_param_optim=non_param_optim,
+            param_loss=None,
+            non_param_loss=None,
+            param_metrics=None,
+            non_param_metrics=None,
+            param_callback=None,
+            non_param_callback=None,
+            general_callback=[model_chkp_callback],
+            first_run=False,
+            cycle_def=training_handler.multi_cycle_params.cycle_def,
+            use_sample_weights=training_handler.model_params.use_sample_weights,
+            verbose=2,
+        )
+
+        # Save the weights at the end of the second cycle
+        if training_handler.multi_cycle_params.save_all_cycles:
+            psf_model.save_weights(
+                output_dirs.get_checkpoint_dir()
+                + "chkp_"
+                + training_handler.model_name
+                + training_handler.id_name
+                + "_cycle"
+                + str(current_cycle)
+            )
+
+        end_cycle = time.time()
+        logger.info(
+            "Cycle{} elapsed time: {}".format(current_cycle, end_cycle - start_cycle)
+        )
+
+        # Save optimisation history in the saving dict
+        if psf_model.save_optim_history_param:
+            saving_optim_hist[
+                "param_cycle{}".format(current_cycle)
+            ] = hist_param.history
+        if psf_model.save_optim_history_nonparam:
+            saving_optim_hist[
+                "nonparam_cycle{}".format(current_cycle)
+            ] = hist_non_param.history
+
+    # Save last cycle if no cycles were saved
+    if not training_handler.multi_cycle_params.save_all_cycles:
+        psf_model.save_weights(
+            output_dirs.get_checkpoint_dir()
+            + "/chkp_"
+            + training_handler.model_name
+            + training_handler.id_name
+            + "_cycle"
+            + str(current_cycle)
+        )
+
+    # Save optimisation history dictionary
+    np.save(
+        output_dirs.get_optimizer_dir()
+        + "/optim_hist_"
+        + training_handler.model_name
+        + training_handler.id_name
+        + ".npy",
+        saving_optim_hist,
+    )
+
+    # Print final time
+    final_time = time.time()
+    logger.info("\nTotal elapsed time: %f" % (final_time - starting_time))
+
+    # Close log file
+    logger.info("\n Good bye..")
+    # log_file.close()
