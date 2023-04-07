@@ -93,8 +93,6 @@ def mainMethod():
         logger.info("Training not correctly set. Please check your config file.")   
         
 
-    train.train(training_params.training, file_handler)
-
     logger.info("#")
     logger.info("# Exiting wavediff mainMethod()")
     logger.info("#")
