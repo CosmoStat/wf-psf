@@ -83,10 +83,17 @@ def mainMethod():
             training_params = read_conf(os.path.join(args.repodir, conf.training_conf))
             logger.info(training_params.training)
 
+        if hasattr(conf, "metrics_conf"):
+            metrics_params = read_conf(os.path.join(args.repodir, conf.metrics_conf))
+            logger.info(metrics_params.metrics)
+
     try:
         train.train(training_params.training, file_handler)
     except NameError:
         logger.info("Training not correctly set. Please check your config file.")   
+        
+
+    train.train(training_params.training, file_handler)
 
     logger.info("#")
     logger.info("# Exiting wavediff mainMethod()")
