@@ -12,6 +12,7 @@ import os
 import logging.config
 import logging
 from wf_psf.training import train
+from wf_psf.metrics.metrics_refactor import evaluate
 
 
 def setProgramOptions():
@@ -88,10 +89,23 @@ def mainMethod():
             logger.info(metrics_params.metrics)
 
     try:
-        train.train(training_params.training, file_handler)
+        try:
+            train.train(training_params.training, file_handler, metrics_params)
+        except NameError:
+            logger.info(
+                "Metrics config not set in configs.yaml.  Running training-only package."
+            )
+            train.train(training_params.training, file_handler)
     except NameError:
-        logger.info("Training not correctly set. Please check your config file.")   
-        
+        logger.info("Training not set in configs.yaml. Skipping training...")
+
+    try:
+        logger.info("Performing metrics evaluation only...")
+        evaluate(metrics_params.metrics)
+    except NameError:
+        logger.info(
+            "Metrics config not correctly set in configs.yaml.  Please check your config file."
+        )
 
     logger.info("#")
     logger.info("# Exiting wavediff mainMethod()")

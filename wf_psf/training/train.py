@@ -20,6 +20,7 @@ from wf_psf.psf_models import psf_models, psf_model_semiparametric
 import training.train_utils as train_utils
 import wf_psf.data.training_preprocessing as training_preprocessing
 from wf_psf.data.training_preprocessing import TrainingDataHandler, TestDataHandler
+from wf_psf.metrics.metrics_refactor import evaluate_model
 
 logger = logging.getLogger(__name__)
 
@@ -283,7 +284,7 @@ def get_gpu_info():
     return device_name
 
 
-def train(training_params, output_dirs):
+def train(training_params, output_dirs, *metrics_params):
     """Train.
 
     A function to train the psf model.
@@ -306,15 +307,12 @@ def train(training_params, output_dirs):
     logger.info(f"PSF Model class: `{training_handler.model_name}` initialized...")
     # Model Training
     # -----------------------------------------------------
-    # Instantiate Simulated PSF Toolkit
-    logger.info(f"Instantiating simPSF toolkit...")
-
-    # -----------------------------------------------------
     # Get training data
     logger.info(f"Fetching and preprocessing training and test data...")
     training_data = training_handler._get_training_data()
-
     test_data = training_handler._get_test_data()
+
+    breakpoint()
 
     # Save optimisation history in the saving dict
     saving_optim_hist = {}
@@ -390,7 +388,7 @@ def train(training_params, output_dirs):
             verbose=2,
         )
 
-        # Save the weights at the end of the second cycle
+        # Save the weights at the end of the nth cycle
         if training_handler.multi_cycle_params.save_all_cycles:
             psf_model.save_weights(
                 output_dirs.get_checkpoint_dir()
@@ -440,6 +438,17 @@ def train(training_params, output_dirs):
     # Print final time
     final_time = time.time()
     logger.info("\nTotal elapsed time: %f" % (final_time - starting_time))
+
+    try:
+        metrics_refactor.evaluate_model(
+            metrics_params,
+            training_data,
+            test_data,
+            psf_model,
+            training_handler._filepath_chkp_callback(""),
+        )
+    except NameError:
+        log.info("Metrics params not passed. No metrics evaluation.")
 
     # Close log file
     logger.info("\n Good bye..")
