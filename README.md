@@ -46,7 +46,7 @@ $ git checkout dummy_main
 $ pip install .
 ```
 
-The package can then be imported in Python as `import wf_psf as wf`. We recommend using the release `1.2.0` for stability as the current main branch is under development.
+The package can then be imported in Python as `import wf_psf as wf`. ~~We recommend using the release `1.2.0` for stability as the current main branch is under development.
 
 ## Running `WaveDiff`
 
