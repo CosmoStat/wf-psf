@@ -42,6 +42,7 @@ Optional packages:
 
 ```bash
 $ cd wf-psf
+$ git checkout dummy_main
 $ pip install .
 ```
 
