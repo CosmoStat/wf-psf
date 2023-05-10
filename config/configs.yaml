@@ -1,3 +1,3 @@
 ---
+  data_conf: config/data_config.yaml
   training_conf: config/training_config.yaml
-

@@ -17,9 +17,8 @@ import os
 import logging
 import wf_psf.utils.io as io
 from wf_psf.psf_models import psf_models, psf_model_semiparametric
-import training.train_utils as train_utils
+import wf_psf.training.train_utils as train_utils
 import wf_psf.data.training_preprocessing as training_preprocessing
-from wf_psf.data.training_preprocessing import TrainingDataHandler, TestDataHandler
 from wf_psf.metrics.metrics_refactor import evaluate_model
 
 logger = logging.getLogger(__name__)
@@ -54,7 +53,10 @@ class TrainingParamsHandler:
     """
 
     def __init__(
-        self, training_params, output_dirs, id_name="-coherent_euclid_200stars"
+        self,
+        training_params,
+        output_dirs,
+        id_name="-coherent_euclid_200stars",
     ):
         self.training_params = training_params
         self.id_name = id_name
@@ -192,40 +194,10 @@ class TrainingParamsHandler:
         """
         return self.multi_cycle_params.learning_rate_non_params
 
-    @property
-    def training_data_params(self):
-        """Training Data Params.
-
-        Set training data parameters
-
-        Returns
-        -------
-        training_data_params: type
-            Recursive Namespace object
-
-        """
-        return self.training_params.data.training
-
-    @property
-    def test_data_params(self):
-        """Test Data Params.
-
-        Set test data parameters
-
-        Returns
-        -------
-        test_data_params: type
-            Recursive Namespace object
-
-
-        """
-        return self.training_params.data.test
-
     def _filepath_chkp_callback(self, current_cycle):
         return (
             self.checkpoint_dir
-            + "/"
-            + "chkp_callback_"
+            + "/chkp_callback_"
             + self.model_name
             + self.id_name
             + "_cycle"
@@ -254,19 +226,6 @@ class TrainingParamsHandler:
             self.training_hparams,
         )
 
-    def _get_simPSF(self):
-        return psf_models.simPSF(self.model_params)
-
-    def _get_training_data(self):
-        return TrainingDataHandler(
-            self.training_data_params, self._get_simPSF(), self.model_params.n_bins_lda
-        )
-
-    def _get_test_data(self):
-        return TestDataHandler(
-            self.test_data_params, self._get_simPSF(), self.model_params.n_bins_lda
-        )
-
 
 def get_gpu_info():
     """Get GPU Information.
@@ -284,7 +243,7 @@ def get_gpu_info():
     return device_name
 
 
-def train(training_params, output_dirs, *metrics_params):
+def train(training_params, training_data, test_data, output_dirs):
     """Train.
 
     A function to train the psf model.
@@ -293,27 +252,31 @@ def train(training_params, output_dirs, *metrics_params):
     ----------
     training_params: type
         Recursive Namespace object
+    training_data: object
+        TrainingDataHandler object
+    test_data: object
+        TestDataHandler object
     output_dirs: str
         Absolute paths to training output directories
+
+    Returns
+    -------
+    psf_model: object
+
 
     """
     # Start measuring elapsed time
     starting_time = time.time()
 
-    training_handler = TrainingParamsHandler(training_params, output_dirs)
+    training_handler = TrainingParamsHandler(
+        training_params, output_dirs
+    )
 
     psf_model = training_handler._get_psf_model()
 
     logger.info(f"PSF Model class: `{training_handler.model_name}` initialized...")
     # Model Training
     # -----------------------------------------------------
-    # Get training data
-    logger.info(f"Fetching and preprocessing training and test data...")
-    training_data = training_handler._get_training_data()
-    test_data = training_handler._get_test_data()
-
-    breakpoint()
-
     # Save optimisation history in the saving dict
     saving_optim_hist = {}
 
@@ -358,10 +321,16 @@ def train(training_params, output_dirs, *metrics_params):
         ) = train_utils.general_train_cycle(
             psf_model,
             # training data
-            inputs=[training_data.train_dataset["positions"], training_data.sed_data],
+            inputs=[
+                training_data.train_dataset["positions"],
+                training_data.sed_data,
+            ],
             outputs=training_data.train_dataset["noisy_stars"],
             validation_data=(
-                [test_data.test_dataset["positions"], test_data.sed_data],
+                [
+                    test_data.test_dataset["positions"],
+                    test_data.sed_data,
+                ],
                 test_data.test_dataset["stars"],
             ),
             batch_size=training_handler.training_hparams.batch_size,
@@ -439,17 +408,9 @@ def train(training_params, output_dirs, *metrics_params):
     final_time = time.time()
     logger.info("\nTotal elapsed time: %f" % (final_time - starting_time))
 
-    try:
-        metrics_refactor.evaluate_model(
-            metrics_params,
-            training_data,
-            test_data,
-            psf_model,
-            training_handler._filepath_chkp_callback(""),
-        )
-    except NameError:
-        log.info("Metrics params not passed. No metrics evaluation.")
-
-    # Close log file
-    logger.info("\n Good bye..")
-    # log_file.close()
+    logger.info("\n Training complete..")
+    
+    return (
+        psf_model,
+        training_handler._filepath_chkp_callback(current_cycle),
+    )

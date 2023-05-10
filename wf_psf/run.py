@@ -11,8 +11,10 @@ from wf_psf.utils.io import FileIOHandler
 import os
 import logging.config
 import logging
+from wf_psf.data.training_preprocessing import TrainingDataHandler, TestDataHandler
 from wf_psf.training import train
-from wf_psf.metrics.metrics_refactor import evaluate
+from wf_psf.psf_models import psf_models
+from wf_psf.metrics.metrics_refactor import evaluate_model
 
 
 def setProgramOptions():
@@ -65,7 +67,6 @@ def mainMethod():
 
 
     """
-
     args = setProgramOptions()
 
     file_handler = FileIOHandler(args.repodir, args.outputdir)
@@ -80,6 +81,10 @@ def mainMethod():
     configs = read_stream(os.path.join(args.repodir, args.conffile))
 
     for conf in configs:
+        if hasattr(conf, "data_conf"):
+            data_params = read_conf(os.path.join(args.repodir, conf.data_conf))
+            logger.info(data_params)
+
         if hasattr(conf, "training_conf"):
             training_params = read_conf(os.path.join(args.repodir, conf.training_conf))
             logger.info(training_params.training)
@@ -89,19 +94,35 @@ def mainMethod():
             logger.info(metrics_params.metrics)
 
     try:
-        try:
-            train.train(training_params.training, file_handler, metrics_params)
-        except NameError:
-            logger.info(
-                "Metrics config not set in configs.yaml.  Running training-only package."
-            )
-            train.train(training_params.training, file_handler)
+        simPSF = psf_models.simPSF(training_params.training.model_params)
+
+        training_data = TrainingDataHandler(
+            data_params.data.training,
+            simPSF,
+            training_params.training.model_params.n_bins_lda,
+        )
+
+        test_data = TestDataHandler(
+            data_params.data.test,
+            simPSF,
+            training_params.training.model_params.n_bins_lda,
+        )
+
+        trained_psf_model, checkpoint_filepath = train.train(
+            training_params.training, training_data, test_data, file_handler
+        )
     except NameError:
         logger.info("Training not set in configs.yaml. Skipping training...")
 
     try:
-        logger.info("Performing metrics evaluation only...")
-        evaluate(metrics_params.metrics)
+        logger.info("Performing metrics evaluation...")
+        evaluate_model(
+            metrics_params.metrics,
+            training_data,
+            test_data,
+            trained_psf_model,
+            checkpoint_filepath,
+        )
     except NameError:
         logger.info(
             "Metrics config not correctly set in configs.yaml.  Please check your config file."
