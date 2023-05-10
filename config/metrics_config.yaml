@@ -1,8 +1,5 @@
 metrics:
-  # Set flag to evaluate PSF model after training
-  training_run: 
-    use_train_params: true
-  # if use_train_params False, then run is for computing metrics only (i.e. no training) on previously trained model
+metrics:
     # Set flag to evaluate model weights; if False, then final updated model will be evaluated
     use_callback: False
     # if use_callback: True, choose the training cycle for the evaluation. Can be 'cycle1', 'cycle2', ...
@@ -18,8 +15,7 @@ metrics:
     saved_training_cycle: cycle2
     # if use_train_params: False, provide path to saved model checkpoints.
     chkp_save_path: checkpoint
- # Type of saved model to use for the evaluation. Can be 'final' for a full model, 'checkpoint' for model weights or 'external' for a different model not saved under the same base_id as the current one."
-
+ # Type of saved model to use for the evaluation. Can be 'final' for a full model, 'checkpoint' for model weights or 'external' for a different model not saved under the same base_id as the current one.
     # SED intepolation points per bin
     sed_interp_pts_per_bin: 0
 
@@ -33,15 +29,18 @@ metrics:
     sed_sigma: 0
 
   ground_truth_model:
-    #Model used as ground truth for the evaluation. Options are: 'poly', 'physical'.
-    model: poly 
-  # Evaluation parameters
-    # Zernike polynomial modes to use on the ground truth model parametric part.
-    gt_n_zernikes: 45
+    model_params:
+      #Model used as ground truth for the evaluation. Options are: 'poly', 'physical'.
+      model: poly 
+      # Evaluation parameters
+      # Zernike polynomial modes to use on the ground truth model parametric part.
+      n_zernikes: 45
+      #Number of bins used for the ground truth model poly PSF generation
+      n_bins_lda: 20
+
+  metrics_hparams:
     # Batch size to use for the evaluation.
     eval_batch_size: 16
-    #Number of bins used for the ground truth model poly PSF generation
-    n_bins_gt: 20
     #Save RMS error for each super resolved PSF in the test dataset in addition to the mean across the FOV."
     opt_stars_rel_pix_rmse: False
     #Evaluate the monchromatic RMSE metric.
@@ -54,44 +53,4 @@ metrics:
     # Parameter for the l2 loss of the OPD.
     l2_param: 0.
   
- # Specify training and test datasets for evalutate-metrics-only run
-  data:
-    training:
-      file: data/coherent_euclid_dataset/train_Euclid_res_200_TrainStars_id_001.npy
-     # if training dataset file does not exist, generate a new one by setting values below
-      stars: null
-      positions: null
-      SEDS: null
-      zernike_coef: null
-      C_poly: null
-      params: # 
-        d_max: 2
-        max_order: 45
-        x_lims: [0, 1000.0]
-        y_lims: [0, 1000.0]
-        grid_points: [4, 4]
-        n_bins: 20
-        max_wfe_rms: 0.1
-        oversampling_rate: 3.0
-        output_Q: 3.0
-        output_dim: 32
-        LP_filter_length: 2
-        pupil_diameter: 256
-        euclid_obsc: true
-        n_stars: 200
-    test:
-      file: data/coherent_euclid_dataset/test_Euclid_res_id_001.npy
-      # If test dataset file not provided produce a new one
-      stars: null
-      noisy_stars: null
-      positions: null
-      SEDS: null
-      zernike_coef: null
-      C_poly: null
-      parameters:
-        d_max: 2
-        max_order: 45
-        x_lims: [0, 1000.0]
-        y_lims: [0, 1000.0]
-        grid_points: [4,4]
-        max_wfe_rms: 0.1
+
