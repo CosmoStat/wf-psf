@@ -359,7 +359,7 @@ def train(training_params, training_data, test_data, output_dirs):
         if training_handler.multi_cycle_params.save_all_cycles:
             psf_model.save_weights(
                 output_dirs.get_checkpoint_dir()
-                + "chkp_"
+                + "/chkp_"
                 + training_handler.model_name
                 + training_handler.id_name
                 + "_cycle"
