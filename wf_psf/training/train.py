@@ -268,9 +268,7 @@ def train(training_params, training_data, test_data, output_dirs):
     # Start measuring elapsed time
     starting_time = time.time()
 
-    training_handler = TrainingParamsHandler(
-        training_params, output_dirs
-    )
+    training_handler = TrainingParamsHandler(training_params, output_dirs)
 
     psf_model = training_handler._get_psf_model()
 
@@ -313,7 +311,7 @@ def train(training_params, training_data, test_data, output_dirs):
         logger.info("Starting cycle {}..".format(current_cycle))
         start_cycle = time.time()
 
-        # Compute the next cycle
+        # Compute training per cycle
         (
             psf_model,
             hist_param,
@@ -409,7 +407,7 @@ def train(training_params, training_data, test_data, output_dirs):
     logger.info("\nTotal elapsed time: %f" % (final_time - starting_time))
 
     logger.info("\n Training complete..")
-    
+
     return (
         psf_model,
         training_handler._filepath_chkp_callback(current_cycle),
