@@ -75,7 +75,7 @@ def set_psf_model(model_name):
     return psf_class
 
 
-def get_psf_model(model_name, model_params, training_hparams):
+def get_psf_model(model_params, training_hparams):
     """Get PSF Model Class Instance.
 
     A function to instantiate a
@@ -96,7 +96,7 @@ def get_psf_model(model_name, model_params, training_hparams):
         PSF model class instance
 
     """
-    psf_class = set_psf_model(model_name)
+    psf_class = set_psf_model(model_params.model_name)
 
     return psf_class(model_params, training_hparams)
 

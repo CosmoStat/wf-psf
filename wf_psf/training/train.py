@@ -221,7 +221,6 @@ class TrainingParamsHandler:
 
     def _get_psf_model(self):
         return psf_models.get_psf_model(
-            self.model_name,
             self.model_params,
             self.training_hparams,
         )
