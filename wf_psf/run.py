@@ -80,6 +80,9 @@ def mainMethod():
 
     configs = read_stream(os.path.join(args.repodir, args.conffile))
 
+    data_params = None
+    training_params = None
+    metrics_params = None
     for conf in configs:
         if hasattr(conf, "data_conf"):
             data_params = read_conf(os.path.join(args.repodir, conf.data_conf))
@@ -94,6 +97,7 @@ def mainMethod():
             logger.info(metrics_params.metrics)
 
     try:
+        logger.info("Performing training...")
         simPSF = psf_models.simPSF(training_params.training.model_params)
 
         training_data = TrainingDataHandler(
@@ -108,29 +112,58 @@ def mainMethod():
             training_params.training.model_params.n_bins_lda,
         )
 
-        trained_psf_model, checkpoint_filepath = train.train(
+        psf_model, checkpoint_filepath = train.train(
             training_params.training, training_data, test_data, file_handler
         )
+        if metrics_params:
+            logger.info("Performing metrics evaluation of trained PSF model...")
+            evaluate_model(
+                metrics_params.metrics,
+                training_data,
+                test_data,
+                trained_psf_model,
+                checkpoint_filepath,
+            )
     except NameError:
         logger.info("Training not set in configs.yaml. Skipping training...")
 
-    try:
-        logger.info("Performing metrics evaluation...")
-        evaluate_model(
-            metrics_params.metrics,
-            training_data,
-            test_data,
-            trained_psf_model,
-            checkpoint_filepath,
-        )
-    except NameError:
-        logger.info(
-            "Metrics config not correctly set in configs.yaml.  Please check your config file."
-        )
+    if training_params is None:
+        try:
+            logger.info("Performing metrics evaluation only...")
+            simPSF = psf_models.simPSF(metrics_params.metrics.model_params)
+
+            training_data = TrainingDataHandler(
+                data_params.data.training,
+                simPSF,
+                metrics_params.metrics.model_params.n_bins_lda,
+            )
+
+            test_data = TestDataHandler(
+                data_params.data.test,
+                simPSF,
+                metrics_params.metrics.model_params.n_bins_lda,
+            )
+
+            psf_model = psf_models.get_psf_model(
+                metrics_params.metrics.model_params,
+                metrics_params.metrics.training_hparams,
+            )
+            evaluate_model(
+                metrics_params.metrics,
+                training_data,
+                test_data,
+                psf_model,
+                checkpoint_filepath,
+            )
+        except NameError:
+            logger.info(
+                "Metrics config not correctly set in configs.yaml.  Please check your config file."
+            )
 
     logger.info("#")
     logger.info("# Exiting wavediff mainMethod()")
     logger.info("#")
+    file_handler.close()
 
 
 if __name__ == "__main__":
