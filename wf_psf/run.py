@@ -113,7 +113,11 @@ def mainMethod():
         )
 
         psf_model, checkpoint_filepath = train.train(
-            training_params.training, training_data, test_data, file_handler
+            training_params.training,
+            training_data,
+            test_data,
+            file_handler.get_checkpoint_dir(),
+            file_handler.get_optimizer_dir(),
         )
         if metrics_params:
             logger.info("Performing metrics evaluation of trained PSF model...")
@@ -121,7 +125,7 @@ def mainMethod():
                 metrics_params.metrics,
                 training_data,
                 test_data,
-                trained_psf_model,
+                psf_model,
                 checkpoint_filepath,
             )
     except NameError:
