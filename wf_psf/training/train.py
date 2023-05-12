@@ -46,22 +46,17 @@ class TrainingParamsHandler:
         Recursive Namespace object containing training input parameters
     id_name: str
         ID name
-    output_dirs: FileIOHandler
-        FileIOHandler instance
-
 
     """
 
     def __init__(
         self,
         training_params,
-        output_dirs,
         id_name="-coherent_euclid_200stars",
     ):
         self.training_params = training_params
         self.id_name = id_name
         self.run_id_name = self.model_name + self.id_name
-        self.checkpoint_dir = output_dirs.get_checkpoint_dir()
         self.optimizer_params = {}
 
     @property
@@ -194,9 +189,9 @@ class TrainingParamsHandler:
         """
         return self.multi_cycle_params.learning_rate_non_params
 
-    def _filepath_chkp_callback(self, current_cycle):
+    def _filepath_chkp_callback(self, checkpoint_dir, current_cycle):
         return (
-            self.checkpoint_dir
+            checkpoint_dir
             + "/chkp_callback_"
             + self.model_name
             + self.id_name
@@ -204,12 +199,12 @@ class TrainingParamsHandler:
             + str(current_cycle)
         )
 
-    def _prepare_callbacks(self, current_cycle):
+    def _prepare_callbacks(self, checkpoint_dir, current_cycle):
         # Prepare to save the model as a callback
         # -----------------------------------------------------
         logger.info(f"Preparing Keras model callback...")
         return tf.keras.callbacks.ModelCheckpoint(
-            self._filepath_chkp_callback(current_cycle),
+            self._filepath_chkp_callback(checkpoint_dir, current_cycle),
             monitor="mean_squared_error",
             verbose=1,
             save_best_only=True,
@@ -242,7 +237,7 @@ def get_gpu_info():
     return device_name
 
 
-def train(training_params, training_data, test_data, output_dirs):
+def train(training_params, training_data, test_data, checkpoint_dir, optimizer_dir):
     """Train.
 
     A function to train the psf model.
@@ -255,8 +250,10 @@ def train(training_params, training_data, test_data, output_dirs):
         TrainingDataHandler object
     test_data: object
         TestDataHandler object
-    output_dirs: str
-        Absolute paths to training output directories
+    checkpoint_dir: str
+        Absolute path to checkpoint directory
+    optimizer_dir: str
+        Absolute path to optimizer history directory
 
     Returns
     -------
@@ -267,7 +264,7 @@ def train(training_params, training_data, test_data, output_dirs):
     # Start measuring elapsed time
     starting_time = time.time()
 
-    training_handler = TrainingParamsHandler(training_params, output_dirs)
+    training_handler = TrainingParamsHandler(training_params)
 
     psf_model = training_handler._get_psf_model()
 
@@ -298,9 +295,11 @@ def train(training_params, training_data, test_data, output_dirs):
         # -----------------------------------------------------
         logger.info(f"Preparing Keras model callback...")
 
-        model_chkp_callback = training_handler._prepare_callbacks(current_cycle)
+        model_chkp_callback = training_handler._prepare_callbacks(
+            checkpoint_dir, current_cycle
+        )
 
-        # Prepare the optimisers
+        # Prepare the optimizers
         param_optim = tfa.optimizers.RectifiedAdam(
             learning_rate=training_handler.learning_rate_params[current_cycle - 1]
         )
@@ -357,7 +356,7 @@ def train(training_params, training_data, test_data, output_dirs):
         # Save the weights at the end of the nth cycle
         if training_handler.multi_cycle_params.save_all_cycles:
             psf_model.save_weights(
-                output_dirs.get_checkpoint_dir()
+                checkpoint_dir
                 + "/chkp_"
                 + training_handler.model_name
                 + training_handler.id_name
@@ -383,7 +382,7 @@ def train(training_params, training_data, test_data, output_dirs):
     # Save last cycle if no cycles were saved
     if not training_handler.multi_cycle_params.save_all_cycles:
         psf_model.save_weights(
-            output_dirs.get_checkpoint_dir()
+            checkpoint_dir
             + "/chkp_"
             + training_handler.model_name
             + training_handler.id_name
@@ -393,7 +392,7 @@ def train(training_params, training_data, test_data, output_dirs):
 
     # Save optimisation history dictionary
     np.save(
-        output_dirs.get_optimizer_dir()
+        optimizer_dir
         + "/optim_hist_"
         + training_handler.model_name
         + training_handler.id_name
@@ -409,5 +408,5 @@ def train(training_params, training_data, test_data, output_dirs):
 
     return (
         psf_model,
-        training_handler._filepath_chkp_callback(current_cycle),
+        training_handler._filepath_chkp_callback(checkpoint_dir, current_cycle),
     )
