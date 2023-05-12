@@ -168,5 +168,6 @@ def mainMethod():
     logger.info("# Exiting wavediff mainMethod()")
     logger.info("#")
 
+
 if __name__ == "__main__":
     mainMethod()
