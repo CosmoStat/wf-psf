@@ -403,7 +403,6 @@ def train(training_params, training_data, test_data, checkpoint_dir, optimizer_d
     # Print final time
     final_time = time.time()
     logger.info("\nTotal elapsed time: %f" % (final_time - starting_time))
-
     logger.info("\n Training complete..")
 
     return (
