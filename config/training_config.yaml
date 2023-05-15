@@ -87,7 +87,7 @@ training:
     multi_cycle_params:
      
       # Total amount of cycles to perform.  
-      total_cycles: 2
+      total_cycles: 1
          
       # Train cycle definition. It can be: 'parametric', 'non-parametric', 'complete', 'only-non-parametric' and 'only-parametric'."
       cycle_def: complete
@@ -96,7 +96,7 @@ training:
       save_all_cycles: False
 
       #"Saved cycle to use for the evaluation. Can be 'cycle1', 'cycle2', ..."
-      saved_cycle: cycle2
+      saved_cycle: cycle1
    
       # Learning rates for the parametric parts. It should be a str where numeric values are separated by spaces.
       learning_rate_params: [1.0e-2, 1.0e-2]

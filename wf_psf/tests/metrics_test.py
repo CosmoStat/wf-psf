@@ -8,7 +8,9 @@ This module contains unit tests for the wf_psf.metrics module.
 """
 import pytest
 from wf_psf.utils.read_config import RecursiveNamespace
+from wf_psf.metrics.metrics_refactor import evaluate_model
 import tensorflow as tf
+
 
 import numpy as np
 
@@ -37,9 +39,8 @@ metrics_params = RecursiveNamespace(
         eval_opd_metric_rmse=True,
         eval_train_shape_sr_metric_rmse=True,
         l2_param=0.0,
-            ),
+    ),
 )
-
 
 
 @pytest.fixture(scope="module", params=[metrics_params])
@@ -47,9 +48,8 @@ def metrics():
     return metrics_params
 
 
-#@pytest.fixture(scope="module")
-#def training_handler():
-#    t_handler = 
+def test_simPSF(simPSF):
+    assert hasattr(simPSF, "calc_SED_wave_values")
 
 
 def test_metrics_params(metrics: RecursiveNamespace):
@@ -57,6 +57,14 @@ def test_metrics_params(metrics: RecursiveNamespace):
     print(metric_params)
 
 
-def test_training_params(training_params: RecursiveNamespace):
-    x = training_params
-    print(x)
+def test_evaluate_model(
+    training_params: RecursiveNamespace, training_data, test_data, psf_model
+):
+    cycle = 1
+    evaluate_model(
+        metrics_params,
+        training_data,
+        test_data,
+        psf_model,
+        training_params._filepath_chkp_callback(cycle),
+    )

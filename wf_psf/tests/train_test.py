@@ -2,8 +2,11 @@
 
 This module contains unit tests for the wf_psf.train module.
 
-:Author: Jennifer Pollack <samuel.farrens@cea.fr>
+:Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 
 
 """
 
+
+def test_train():
+    pass

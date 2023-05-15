@@ -1,21 +1,43 @@
 metrics:
-metrics:
-    # Set flag to evaluate model weights; if False, then final updated model will be evaluated
-    use_callback: False
-    # if use_callback: True, choose the training cycle for the evaluation. Can be 'cycle1', 'cycle2', ...
-    saved_training_cycle: cycle2
-
-  # Fill compute_metrics_only if use_train_params: False  
-  compute_metrics_only_params:
+  # Set flag to evaluate model weights; if False, then final updated model will be evaluated
+  use_callback: False
+  # Choose the training cycle for the evaluation. Can be 'cycle1', 'cycle2', ...
+  saved_training_cycle: cycle2
+  # Provide path to saved model checkpoints.
+  chkp_save_path: checkpoint
+  # Fill model_params if computing metrics_only on a pre-trained model
+  model_params:
     # Name of model
     model: poly
     # Set flag to evaluate model weights; if False, then final updated model will be evaluated
     use_callback: False
-    # if use_callback: True, choose the training cycle for the evaluation. Can be 'cycle1', 'cycle2', ...
-    saved_training_cycle: cycle2
-    # if use_train_params: False, provide path to saved model checkpoints.
-    chkp_save_path: checkpoint
- # Type of saved model to use for the evaluation. Can be 'final' for a full model, 'checkpoint' for model weights or 'external' for a different model not saved under the same base_id as the current one.
+    # SED intepolation points per bin
+    sed_interp_pts_per_bin: 0
+    # SED extrapolate 
+    sed_extrapolate: True
+    # SED interpolate kind
+    sed_interp_kind: linear
+    # Standard deviation of the multiplicative SED Gaussian noise.
+    sed_sigma: 0
+    #Num of wavelength bins to reconstruct polychromatic objects.
+    n_bins_lda: 8 
+    #Downsampling rate to match the oversampled model to the specified telescope's sampling.
+    output_Q: 3
+    #Oversampling rate used for the OPD/WFE PSF model.
+    oversampling_rate: 3 
+  
+    #Dimension of the pixel PSF postage stamp
+    output_dim: 32
+      
+    #Dimension of the OPD/Wavefront space."
+    pupil_diameter: 256
+
+    #Boolean to define if we use sample weights based on the noise standard deviation estimation
+    use_sample_weights: True 
+
+    #Interpolation type for the physical poly model. Options are: 'none', 'all', 'top_K', 'independent_Zk'."
+    interpolation_type: None
+
     # SED intepolation points per bin
     sed_interp_pts_per_bin: 0
 
@@ -27,6 +49,46 @@ metrics:
 
     # Standard deviation of the multiplicative SED Gaussian noise.
     sed_sigma: 0
+
+    #Limits of the PSF field coordinates for the x axis.
+    x_lims: [0.0, 1.0e+3]
+    
+    #Limits of the PSF field coordinates for the y axis.
+    y_lims: [0.0, 1.0e+3]
+    
+    # Hyperparameters for Parametric model 
+    param_hparams:
+      # Parameter for the l2 loss function for the Optical path differences (OPD)/WFE
+      l2_param: 0.
+    
+      #Zernike polynomial modes to use on the parametric part.
+      n_zernikes: 15
+    
+      #Max polynomial degree of the parametric part.  chg to max_deg_param
+      d_max: 2  
+
+      #Flag to save optimisation history for parametric model
+      save_optim_history_param: true
+
+    # Hyperparameters for non-parametric model
+    nonparam_hparams:
+      #Max polynomial degree of the non-parametric part. chg to max_deg_nonparam
+      d_max_nonparam: 5 
+
+      # Number of graph features
+      num_graph_features: 10
+      
+      #L1 regularisation parameter for the non-parametric part."
+      l1_rate: 1.0e-8
+
+      #Flag to enable Projected learning for DD_features to be used with `poly` or `semiparametric` model.
+      project_dd_features: False
+
+      #Flag to reset DD_features to be used with `poly` or `semiparametric` model
+      reset_dd_features: False
+
+      #Flag to save optimisation history for non-parametric model
+      save_optim_history_nonparam: true 
 
   ground_truth_model:
     model_params:
