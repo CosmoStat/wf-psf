@@ -103,26 +103,16 @@ data = RecursiveNamespace(
     ),
 )
 
-
-chkp_dir = "/Users/jenniferpollack/Projects/wf-outputs/checkpoint"
-optim_dir = "/Users/jenniferpollack/Projects/wf-outputs/optim-hist"
-
-
-@pytest.fixture(scope="module", params=[training_config, chkp_dir])
+@pytest.fixture(scope="module", params=[training_config])
 def training_params():
-    return TrainingParamsHandler(training_config, chkp_dir, optim_dir)
-
-
-@pytest.fixture(scope="module")
-def simPSF():
-    return psf_models.simPSF(training_config.model_params)
+    return TrainingParamsHandler(training_config)
 
 
 @pytest.fixture(scope="module")
 def training_data():
     return TrainingDataHandler(
         data.training,
-        simPSF,
+        psf_models.simPSF(training_config.model_params),
         training_config.model_params.n_bins_lda,
     )
 
@@ -131,7 +121,7 @@ def training_data():
 def test_data():
     return TestDataHandler(
         data.test,
-        simPSF,
+        psf_models.simPSF(training_config.model_params),
         training_config.model_params.n_bins_lda,
     )
 

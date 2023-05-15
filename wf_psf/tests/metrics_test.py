@@ -42,14 +42,13 @@ metrics_params = RecursiveNamespace(
     ),
 )
 
+chkp_dir = "/Users/jenniferpollack/Projects/wf-outputs/checkpoint"
+optim_dir = "/Users/jenniferpollack/Projects/wf-outputs/optim-hist"
+
 
 @pytest.fixture(scope="module", params=[metrics_params])
 def metrics():
     return metrics_params
-
-
-def test_simPSF(simPSF):
-    assert hasattr(simPSF, "calc_SED_wave_values")
 
 
 def test_metrics_params(metrics: RecursiveNamespace):
@@ -66,5 +65,5 @@ def test_evaluate_model(
         training_data,
         test_data,
         psf_model,
-        training_params._filepath_chkp_callback(cycle),
+        training_params._filepath_chkp_callback(chkp_dir, cycle),
     )
