@@ -16,24 +16,68 @@ import numpy as np
 
 
 metrics_params = RecursiveNamespace(
-    training_run=RecursiveNamespace(
-        use_train_params=True, use_callback=False, saved_training_cycle="cycle2"
-    ),
-    compute_metrics_only_params=RecursiveNamespace(
+    use_callback=False,
+    saved_training_cycle="cycle2",
+    chkp_save_path="checkpoint",
+    model_params=RecursiveNamespace(
         model="poly",
         use_callback=False,
-        saved_training_cycle="cycle2",
-        chkp_save_path="checkpoint",
         sed_interp_pts_per_bin=0,
         sed_extrapolate=True,
         sed_interp_kind="linear",
         sed_sigma=0,
+        n_bins_lda=8,
+        output_Q=3,
+        oversampling_rate=3,
+        output_dim=32,
+        pupil_diameter=256,
+        use_sample_weights=True,
+        interpolation_type="None",
+        x_lims=[0.0, 1000.0],
+        y_lims=[0.0, 1000.0],
+        param_hparams=RecursiveNamespace(
+            l2_param=0.0, n_zernikes=15, d_max=2, save_optim_history_param=True
+        ),
+        nonparam_hparams=RecursiveNamespace(
+            d_max_nonparam=5,
+            num_graph_features=10,
+            l1_rate=1e-08,
+            project_dd_features=False,
+            reset_dd_features=False,
+            save_optim_history_nonparam=True,
+        ),
     ),
     ground_truth_model=RecursiveNamespace(
-        model="poly",
-        gt_n_zernikes=45,
-        eval_batch_size=16,
-        n_bins_gt=20,
+        model_params=RecursiveNamespace(
+            model_name="poly",
+            sed_interp_pts_per_bin=0,
+            sed_extrapolate=True,
+            sed_interp_kind="linear",
+            sed_sigma=0,
+            n_bins_lda=20,
+            output_Q=3,
+            oversampling_rate=3,
+            output_dim=32,
+            pupil_diameter=256,
+            use_sample_weights=True,
+            interpolation_type="None",
+            x_lims=[0.0, 1000.0],
+            y_lims=[0.0, 1000.0],
+            param_hparams=RecursiveNamespace(
+                l2_param=0.0, n_zernikes=45, d_max=2, save_optim_history_param=True
+            ),
+            nonparam_hparams=RecursiveNamespace(
+                d_max_nonparam=5,
+                num_graph_features=10,
+                l1_rate=1e-08,
+                project_dd_features=False,
+                reset_dd_features=False,
+                save_optim_history_nonparam=True,
+            ),
+        )
+    ),
+    metrics_hparams=RecursiveNamespace(
+        batch_size=16,
         opt_stars_rel_pix_rmse=False,
         eval_mono_metric_rmse=True,
         eval_opd_metric_rmse=True,
@@ -65,5 +109,5 @@ def test_evaluate_model(
         training_data,
         test_data,
         psf_model,
-        training_params._filepath_chkp_callback(chkp_dir, cycle),
+        training_params.filepath_chkp_callback(chkp_dir, cycle),
     )
