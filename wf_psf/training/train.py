@@ -19,7 +19,6 @@ import wf_psf.utils.io as io
 from wf_psf.psf_models import psf_models, psf_model_semiparametric
 import wf_psf.training.train_utils as train_utils
 import wf_psf.data.training_preprocessing as training_preprocessing
-from wf_psf.metrics.metrics_refactor import evaluate_model
 
 logger = logging.getLogger(__name__)
 
@@ -189,7 +188,7 @@ class TrainingParamsHandler:
         """
         return self.multi_cycle_params.learning_rate_non_params
 
-    def _filepath_chkp_callback(self, checkpoint_dir, current_cycle):
+    def filepath_chkp_callback(self, checkpoint_dir, current_cycle):
         return (
             checkpoint_dir
             + "/chkp_callback_"
@@ -204,7 +203,7 @@ class TrainingParamsHandler:
         # -----------------------------------------------------
         logger.info(f"Preparing Keras model callback...")
         return tf.keras.callbacks.ModelCheckpoint(
-            self._filepath_chkp_callback(checkpoint_dir, current_cycle),
+            self.filepath_chkp_callback(checkpoint_dir, current_cycle),
             monitor="mean_squared_error",
             verbose=1,
             save_best_only=True,
@@ -404,5 +403,5 @@ def train(training_params, training_data, test_data, checkpoint_dir, optimizer_d
 
     return (
         psf_model,
-        training_handler._filepath_chkp_callback(checkpoint_dir, current_cycle),
+        training_handler.filepath_chkp_callback(checkpoint_dir, current_cycle),
     )
