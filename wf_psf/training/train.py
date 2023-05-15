@@ -214,12 +214,6 @@ class TrainingParamsHandler:
             options=None,
         )
 
-    def _get_psf_model(self):
-        return psf_models.get_psf_model(
-            self.model_params,
-            self.training_hparams,
-        )
-
 
 def get_gpu_info():
     """Get GPU Information.
@@ -266,7 +260,10 @@ def train(training_params, training_data, test_data, checkpoint_dir, optimizer_d
 
     training_handler = TrainingParamsHandler(training_params)
 
-    psf_model = training_handler._get_psf_model()
+    psf_model = psf_models.get_psf_model(
+        training_handler.model_params,
+        training_handler.training_hparams.batch_size,
+    )
 
     logger.info(f"PSF Model class: `{training_handler.model_name}` initialized...")
     # Model Training
