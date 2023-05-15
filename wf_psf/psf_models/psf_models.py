@@ -75,7 +75,7 @@ def set_psf_model(model_name):
     return psf_class
 
 
-def get_psf_model(model_params, training_hparams):
+def get_psf_model(model_params, training_hparams, *coeff_matrix):
     """Get PSF Model Class Instance.
 
     A function to instantiate a
@@ -89,6 +89,8 @@ def get_psf_model(model_params, training_hparams):
         Recursive Namespace object
     training_hparams: type
         Recursive Namespace object
+    coeff_matrix: Tensor or None, optional
+        Initialization of the coefficient matrix defining the parametric psf field model
 
     Returns
     -------
@@ -98,7 +100,7 @@ def get_psf_model(model_params, training_hparams):
     """
     psf_class = set_psf_model(model_params.model_name)
 
-    return psf_class(model_params, training_hparams)
+    return psf_class(model_params, training_hparams, *coeff_matrix)
 
 
 def tf_zernike_cube(n_zernikes, pupil_diam):
