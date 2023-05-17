@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import galsim as gs
 import wf_psf.utils.utils as utils
 from wf_psf.psf_models.tf_psf_field import build_PSF_model
-from . import tf_psf_field as psf_field
+from wf_psf.psf_models import tf_psf_field as psf_field
 from wf_psf import SimPSFToolkit as SimPSFToolkit
 
 
