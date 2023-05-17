@@ -8,7 +8,7 @@ This module contains unit tests for the wf_psf.metrics module.
 """
 import pytest
 from wf_psf.utils.read_config import RecursiveNamespace
-from wf_psf.metrics.metrics_refactor import evaluate_model
+from wf_psf.metrics.metrics_refactor import MetricsParamsHandler, evaluate_model
 import tensorflow as tf
 
 
@@ -20,7 +20,7 @@ metrics_params = RecursiveNamespace(
     saved_training_cycle="cycle2",
     chkp_save_path="checkpoint",
     model_params=RecursiveNamespace(
-        model="poly",
+        model_name="poly",
         use_callback=False,
         sed_interp_pts_per_bin=0,
         sed_extrapolate=True,
@@ -100,14 +100,50 @@ def test_metrics_params(metrics: RecursiveNamespace):
     print(metric_params)
 
 
-def test_evaluate_model(
-    training_params: RecursiveNamespace, training_data, test_data, psf_model
+def test_eval_metrics_mono_rmse(
+    training_params, training_data, test_dataset, psf_model
 ):
+    metrics_handler = MetricsParamsHandler(metrics_params)
     cycle = 1
-    evaluate_model(
-        metrics_params,
-        training_data,
-        test_data,
-        psf_model,
-        training_params.filepath_chkp_callback(chkp_dir, cycle),
+
+    ## Prepare models
+    # Prepare np input
+    simPSF_np = training_data.simPSF
+
+    ## Load the model's weights
+    psf_model.load_weights(training_params.filepath_chkp_callback(chkp_dir, cycle))
+
+    mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
+        psf_model, simPSF_np, test_dataset
     )
+
+
+# def test_eval_metrics_polychromatic_lowres(
+#     training_params, training_data, test_dataset, psf_model
+# ):
+#     metrics_handler = MetricsParamsHandler(metrics_params)
+#     cycle = 1
+
+#     ## Prepare models
+#     # Prepare np input
+#     simPSF_np = training_data.simPSF
+
+#     ## Load the model's weights
+#     psf_model.load_weights(training_params.filepath_chkp_callback(chkp_dir, cycle))
+
+#     poly_metric = metrics_handler.evaluate_metrics_polychromatic_lowres(
+#         psf_model, simPSF_np, test_dataset
+#     )
+
+
+# def test_evaluate_model(
+#     training_params: RecursiveNamespace, training_data, test_data, psf_model
+# ):
+#     cycle = 1
+#     evaluate_model(
+#         metrics_params,
+#         training_data,
+#         test_data,
+#         psf_model,
+#         training_params.filepath_chkp_callback(chkp_dir, cycle),
+#     )
