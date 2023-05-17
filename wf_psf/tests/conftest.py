@@ -103,6 +103,7 @@ data = RecursiveNamespace(
     ),
 )
 
+
 @pytest.fixture(scope="module", params=[training_config])
 def training_params():
     return TrainingParamsHandler(training_config)
@@ -124,6 +125,11 @@ def test_data():
         psf_models.simPSF(training_config.model_params),
         training_config.model_params.n_bins_lda,
     )
+
+
+@pytest.fixture(scope="module")
+def test_dataset(test_data):
+    return test_data.test_dataset
 
 
 @pytest.fixture(scope="module")
