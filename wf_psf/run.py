@@ -119,6 +119,7 @@ def mainMethod():
             file_handler.get_checkpoint_dir(),
             file_handler.get_optimizer_dir(),
         )
+
         if metrics_params:
             logger.info("Performing metrics evaluation of trained PSF model...")
             evaluate_model(
@@ -152,6 +153,7 @@ def mainMethod():
                 metrics_params.metrics.model_params,
                 metrics_params.metrics.training_hparams,
             )
+
             evaluate_model(
                 metrics_params.metrics,
                 training_data,
