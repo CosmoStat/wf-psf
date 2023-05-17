@@ -13,6 +13,10 @@ from tensorflow.python.keras.engine import data_adapter
 from wf_psf.psf_models import psf_models as psfm
 from wf_psf.psf_models import tf_layers as tfl
 from wf_psf.utils.utils import PI_zernikes, zernike_generator
+from wf_psf.psf_models.tf_layers import (
+    TF_batch_poly_PSF,
+    TF_batch_mono_PSF,
+)
 
 
 @psfm.register_psfclass
