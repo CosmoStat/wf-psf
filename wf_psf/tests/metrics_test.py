@@ -89,6 +89,7 @@ metrics_params = RecursiveNamespace(
 
 chkp_dir = "/gpfswork/rech/ynx/uuu68hq/wf-outputs/checkpoint"
 optim_dir = "/gpfswork/rech/ynx/uuu68hq/wf-outputs/optim-hist"
+metrics_output = "/gpfswork/rech/ynx/uuu68hq/wf-outputs/metrics"
 
 
 @pytest.fixture(scope="module", params=[metrics_params])
@@ -171,14 +172,15 @@ def test_evaluate_metrics_shape(
     )
 
 
-# def test_evaluate_model(
-#     training_params: RecursiveNamespace, training_data, test_data, psf_model
-# ):
-#     cycle = 1
-#     evaluate_model(
-#         metrics_params,
-#         training_data,
-#         test_data,
-#         psf_model,
-#         training_params.filepath_chkp_callback(chkp_dir, cycle),
-#     )
+def test_evaluate_model(
+    training_params: RecursiveNamespace, training_data, test_data, psf_model
+):
+    cycle = 1
+    evaluate_model(
+        metrics_params,
+        training_data,
+        test_data,
+        psf_model,
+        training_params.filepath_chkp_callback(chkp_dir, cycle),
+        metrics_output,
+    )
