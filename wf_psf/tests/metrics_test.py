@@ -20,6 +20,7 @@ metrics_params = RecursiveNamespace(
     saved_training_cycle="cycle2",
     chkp_save_path="checkpoint",
     model_params=RecursiveNamespace(
+        id_name="-coherent_euclid_200stars",
         model_name="poly",
         use_callback=False,
         sed_interp_pts_per_bin=0,
@@ -100,7 +101,9 @@ def test_metrics_params(metrics: RecursiveNamespace):
     print(metric_params)
 
 
-def test_evaluate_metrics_shape(training_params, training_data, test_dataset, psf_model):
+def test_evaluate_metrics_shape(
+    training_params, training_data, test_dataset, psf_model
+):
     metrics_handler = MetricsParamsHandler(metrics_params)
     cycle = 1
 
@@ -114,6 +117,7 @@ def test_evaluate_metrics_shape(training_params, training_data, test_dataset, ps
     mono_metric = metrics_handler.evaluate_metrics_shape(
         psf_model, simPSF_np, test_dataset, opt_stars_rel_pix_rmse=False
     )
+
 
 # def test_evaluate_metrics_opd(training_params, training_data, test_dataset, psf_model):
 #     metrics_handler = MetricsParamsHandler(metrics_params)
