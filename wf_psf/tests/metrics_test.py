@@ -86,8 +86,8 @@ metrics_params = RecursiveNamespace(
     ),
 )
 
-chkp_dir = "/Users/jenniferpollack/Projects/wf-outputs/checkpoint"
-optim_dir = "/Users/jenniferpollack/Projects/wf-outputs/optim-hist"
+chkp_dir = "/gpfswork/rech/ynx/uuu68hq/wf-outputs/checkpoint"
+optim_dir = "/gpfswork/rech/ynx/uuu68hq/wf-outputs/optim-hist"
 
 
 @pytest.fixture(scope="module", params=[metrics_params])
@@ -140,16 +140,17 @@ def test_evaluate_metrics_opd(training_params, training_data, test_dataset, psf_
 #     metrics_handler = MetricsParamsHandler(metrics_params)
 #     cycle = 1
 
-#     ## Prepare models
-#     # Prepare np input
-#     simPSF_np = training_data.simPSF
 
-#     ## Load the model's weights
-#     psf_model.load_weights(training_params.filepath_chkp_callback(chkp_dir, cycle))
+#    ## Prepare models
+    # Prepare np input
+#    simPSF_np = training_data.simPSF
 
-#     poly_metric = metrics_handler.evaluate_metrics_polychromatic_lowres(
-#         psf_model, simPSF_np, test_dataset
-#     )
+    ## Load the model's weights
+#    psf_model.load_weights(training_params.filepath_chkp_callback(chkp_dir, cycle))
+
+#    poly_metric = metrics_handler.evaluate_metrics_polychromatic_lowres(
+#        psf_model, simPSF_np, test_dataset
+#    )
 
 
 # def test_evaluate_model(
