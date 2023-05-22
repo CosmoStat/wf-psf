@@ -283,7 +283,7 @@ def evaluate_model(
         # Shape metrics
         print("Computing polychromatic high-resolution metrics and shape metrics.")
         shape_results_dict = metrics_handler.evaluate_metrics_shape(
-            psf_model, simPSF_np, test_data, opt_stars_rel_pix_rmse=False
+            psf_model, simPSF_np, test_data.test_dataset, opt_stars_rel_pix_rmse=False
         )
         # Save metrics
         test_metrics = {
@@ -299,7 +299,7 @@ def evaluate_model(
         # Polychromatic star reconstructions
         print("Computing polychromatic metrics at low resolution.")
 
-        train_poly_metric = metrics_handler.eval_metrics_polychromatic_lowres(
+        train_poly_metric = metrics_handler.evaluate_metrics_polychromatic_lowres(
             psf_model, simPSF_np, training_data.train_dataset
         )
 
@@ -315,7 +315,7 @@ def evaluate_model(
 
         # Shape metrics  turn into a class
         train_shape_results_dict = metrics_handler.evaluate_metrics_shape(
-            psf_model, simPSF_np, training_data, opt_stars_rel_pix_rmse=False
+            psf_model, simPSF_np, training_data.train_dataset, opt_stars_rel_pix_rmse=False
         )
 
         # Save metrics into dictionary
