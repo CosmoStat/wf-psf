@@ -141,9 +141,8 @@ def test_eval_metrics_polychromatic_lowres(
     metrics_handler = MetricsParamsHandler(metrics_params)
     cycle = 1
 
-
    ## Prepare models
-    Prepare np input
+   # Prepare np input
    simPSF_np = training_data.simPSF
 
     # Load the model's weights
