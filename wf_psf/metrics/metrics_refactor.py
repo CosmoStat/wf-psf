@@ -148,38 +148,17 @@ def evaluate_model(metrics_params, training_data, test_data, psf_model, weights_
         poly_metric = metrics_handler.eval_metrics_polychromatic_lowres(
             psf_model, simPSF_np, test_data.test_dataset
         )
-        breakpoint()
+      
         # Monochromatic star reconstructions
-        # mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
-        #     psf_model, simPSF_np, test_data.test_dataset
-        # )
         # if metrics_params.metrics_hparams.eval_mono_metric_rmse:
-        #     print("Computing monochromatic metrics.")
-        #     lambda_list = np.arange(0.55, 0.9, 0.01)  # 10nm separation
-        #     (
-        #         rmse_lda,
-        #         rel_rmse_lda,
-        #         std_rmse_lda,
-        #         std_rel_rmse_lda,
-        #     ) = wf_metrics.compute_mono_metric(
-        #         tf_semiparam_field=psf_model,
-        #         GT_tf_semiparam_field=ground_truth_psf_model,
-        #         simPSF_np=simPSF_np,
-        #         tf_pos=test_data.test_dataset["positions"],
-        #         lambda_list=lambda_list,
-        #     )
-
-        #     mono_metric = {
-        #         "rmse_lda": rmse_lda,
-        #         "rel_rmse_lda": rel_rmse_lda,
-        #         "std_rmse_lda": std_rmse_lda,
-        #         "std_rel_rmse_lda": std_rel_rmse_lda,
-        #     }
+        mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
+             psf_model, simPSF_np, test_data.test_dataset
+         )
         # else:
         #     mono_metric = None
 
         # OPD metrics
-        # if metrics_params.metrics_hparamseval_opd_metric_rmse:
+        # if metrics_params.metrics_hparams.eval_opd_metric_rmse:
         #     print("Computing OPD metrics.")
         #     (
         #         rmse_opd,
