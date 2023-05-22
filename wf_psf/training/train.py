@@ -251,6 +251,7 @@ def train(training_params, training_data, test_data, checkpoint_dir, optimizer_d
     Returns
     -------
     psf_model: object
+        A class instance of the PSF Model selected for training.
 
 
     """
