@@ -79,8 +79,8 @@ def compute_poly_metric(
     if dataset_dict is None or "stars" not in dataset_dict:
         print("Regenerating GT stars from model.")
         # Change interpolation parameters for the GT simPSF
-        interp_pts_per_bin = simPSF_np.interp_pts_per_bin
-        simPSF_np.interp_pts_per_bin = 0
+        interp_pts_per_bin = simPSF_np.SED_interp_pts_per_bin
+        simPSF_np.SED_interp_pts_per_bin = 0
         SED_sigma = simPSF_np.SED_sigma
         simPSF_np.SED_sigma = 0
         # Generate SED data list for GT model
@@ -430,8 +430,8 @@ def compute_shape_metrics(
     ):
         print("Generating GT super resolved stars from the GT model.")
         # Change interpolation parameters for the GT simPSF
-        interp_pts_per_bin = simPSF_np.interp_pts_per_bin
-        simPSF_np.interp_pts_per_bin = 0
+        interp_pts_per_bin = simPSF_np.SED_interp_pts_per_bin
+        simPSF_np.SED_interp_pts_per_bin = 0
         SED_sigma = simPSF_np.SED_sigma
         simPSF_np.SED_sigma = 0
         # Generate SED data list for GT model
