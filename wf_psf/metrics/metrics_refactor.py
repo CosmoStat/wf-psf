@@ -260,7 +260,7 @@ def evaluate_model(
         logger.info("\n***\nMetric evaluation on the test dataset\n***\n")
 
         # Polychromatic star reconstructions
-        poly_metric = metrics_handler.eval_metrics_polychromatic_lowres(
+        poly_metric = metrics_handler.evaluate_metrics_polychromatic_lowres(
             psf_model, simPSF_np, test_data.test_dataset
         )
 
