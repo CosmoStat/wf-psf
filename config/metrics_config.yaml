@@ -7,8 +7,10 @@ metrics:
   chkp_save_path: checkpoint
   # Fill model_params if computing metrics_only on a pre-trained model
   model_params: # << -- to be deleted -- >>
+    # ID name
+    id_name: -coherent_euclid_200stars
     # Name of model
-    model: poly
+    model_name: poly
     # Set flag to evaluate model weights; if False, then final updated model will be evaluated
     use_callback: False
     #Num of wavelength bins to reconstruct polychromatic objects.
