@@ -50,6 +50,26 @@ class MetricsParamsHandler:
         return psf_model
 
     def evaluate_metrics_polychromatic_lowres(self, psf_model, simPSF, test_dataset):
+        """Evaluate Polychromatic PSF Low-Res Metrics.
+
+        A function to evaluate metrics for Low-Res Polychromatic PSF.
+
+        Inputs
+        ------
+        psf_model: object
+            PSF model class instance of the psf model selected for metrics evaluation.
+        simPSF: object
+            SimPSFToolkit instance
+        test_dataset: dict
+            Test dataset dictionary
+
+        Returns
+        -------
+        poly_metric: dict
+            Dictionary containing RMSE, Relative RMSE values, and
+            corresponding Standard Deviation values for Low-Res Polychromatic PSF metrics.
+
+        """
         rmse, rel_rmse, std_rmse, std_rel_rmse = wf_metrics.compute_poly_metric(
             tf_semiparam_field=psf_model,
             GT_tf_semiparam_field=self.ground_truth_psf_model,
@@ -71,6 +91,26 @@ class MetricsParamsHandler:
         return poly_metric
 
     def evaluate_metrics_mono_rmse(self, psf_model, simPSF, test_dataset):
+        """Evaluate Monochromatic PSF RMSE Metrics.
+
+        A function to evaluate metrics for Monochromatic PSF.
+
+        Inputs
+        ------
+        psf_model: object
+            PSF model class instance of the psf model selected for metrics evaluation.
+        simPSF: object
+            SimPSFToolkit instance
+        test_dataset: dict
+            Test dataset dictionary
+
+        Returns
+        -------
+        mono_metric: dict
+            Dictionary containing RMSE, Relative RMSE values, and
+            corresponding Standard Deviation values for Monochromatic PSF metrics.
+
+        """
         logger.info("Computing monochromatic metrics.")
         lambda_list = np.arange(0.55, 0.9, 0.01)  # 10nm separation
         (
@@ -95,6 +135,26 @@ class MetricsParamsHandler:
         return mono_metric
 
     def evaluate_metrics_opd(self, psf_model, simPSF, test_dataset):
+        """Evaluate OPD Metrics.
+
+        A function to evaluate metrics for Optical Path Differences.
+
+        Inputs
+        ------
+        psf_model: object
+            PSF model class instance of the psf model selected for metrics evaluation.
+        simPSF: object
+            SimPSFToolkit instance
+        test_dataset: dict
+            Test dataset dictionary
+
+        Returns
+        -------
+        opd_metric: dict
+            Dictionary containing RMSE, Relative RMSE values, and
+            corresponding Standard Deviation values for OPD metrics.
+
+        """
         logger.info("Computing OPD metrics.")
         (
             rmse_opd,
@@ -114,6 +174,48 @@ class MetricsParamsHandler:
             "rmse_std_opd": rmse_std_opd,
             "rel_rmse_std_opd": rel_rmse_std_opd,
         }
+        return opd_metric
+
+    def evaluate_metrics_shape(
+        self, psf_model, simPSF, test_dataset, opt_stars_rel_pix_rmse
+    ):
+        """Evaluate PSF Shape Metrics.
+
+        A function to evaluate metrics for PSF shape.
+
+        Inputs
+        ------
+        psf_model: object
+            PSF model class instance of the psf model selected for metrics evaluation.
+        simPSF: object
+            SimPSFToolkit instance
+        test_dataset: dict
+            Test dataset dictionary
+
+        Returns
+        -------
+        shape_results: dict
+            Dictionary containing RMSE, Relative RMSE values, and
+            corresponding Standard Deviation values for PSF Shape metrics.
+
+        """
+        logger.info("Computing Shape metrics.")
+
+        shape_results = wf_metrics.compute_shape_metrics(
+            tf_semiparam_field=psf_model,
+            GT_tf_semiparam_field=self.ground_truth_psf_model,
+            simPSF_np=simPSF,
+            SEDs=test_dataset["SEDs"],
+            tf_pos=test_dataset["positions"],
+            n_bins_lda=self.metrics_params.model_params.n_bins_lda,
+            n_bins_gt=self.metrics_params.ground_truth_model.model_params.n_bins_lda,
+            batch_size=self.metrics_params.metrics_hparams.batch_size,
+            output_Q=1,
+            output_dim=64,
+            opt_stars_rel_pix_rmse=opt_stars_rel_pix_rmse,
+            dataset_dict=test_dataset,
+        )
+        return shape_results
 
 
 def evaluate_model(metrics_params, training_data, test_data, psf_model, weights_path):
@@ -148,16 +250,19 @@ def evaluate_model(metrics_params, training_data, test_data, psf_model, weights_
         poly_metric = metrics_handler.eval_metrics_polychromatic_lowres(
             psf_model, simPSF_np, test_data.test_dataset
         )
-      
+
         # Monochromatic star reconstructions
         # if metrics_params.metrics_hparams.eval_mono_metric_rmse:
         mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
-             psf_model, simPSF_np, test_data.test_dataset
-         )
+            psf_model, simPSF_np, test_data.test_dataset
+        )
         # else:
         #     mono_metric = None
 
         # OPD metrics
+        opd_metric = metrics_handler.evaluate_metrics_opd(
+            psf_model, simPSF_np, test_data.test_dataset
+        )
         # if metrics_params.metrics_hparams.eval_opd_metric_rmse:
         #     print("Computing OPD metrics.")
         #     (
@@ -182,25 +287,28 @@ def evaluate_model(metrics_params, training_data, test_data, psf_model, weights_
         #     opd_metric = None
 
         # Check if all stars SR pixel RMSE are needed
-        if "opt_stars_rel_pix_rmse" not in args:
-            args["opt_stars_rel_pix_rmse"] = False
+        # if "opt_stars_rel_pix_rmse" not in args:
+        #    args["opt_stars_rel_pix_rmse"] = False
 
         # Shape metrics
         print("Computing polychromatic high-resolution metrics and shape metrics.")
-        shape_results_dict = wf_metrics.compute_shape_metrics(
-            tf_semiparam_field=psf_model,
-            GT_tf_semiparam_field=GT_tf_semiparam_field,
-            simPSF_np=simPSF_np,
-            SEDs=test_SEDs,
-            tf_pos=tf_test_pos,
-            n_bins_lda=args["n_bins_lda"],
-            n_bins_gt=args["n_bins_gt"],
-            output_Q=1,
-            output_dim=64,
-            batch_size=args["eval_batch_size"],
-            opt_stars_rel_pix_rmse=args["opt_stars_rel_pix_rmse"],
-            dataset_dict=test_dataset,
+        shape_results_dict = metrics_handler.evaluate_metrics_shape(
+            psf_model, simPSF_np, test_data.test_SEDs, opt_stars_rel_pix_rmse=False
         )
+        # shape_results_dict = wf_metrics.compute_shape_metrics(
+        #     tf_semiparam_field=psf_model,
+        #     GT_tf_semiparam_field=GT_tf_semiparam_field,
+        #     simPSF_np=simPSF_np,
+        #     SEDs=test_SEDs,
+        #     tf_pos=tf_test_pos,
+        #     n_bins_lda=args["n_bins_lda"],
+        #     n_bins_gt=args["n_bins_gt"],
+        #     output_Q=1,
+        #     output_dim=64,
+        #     batch_size=args["eval_batch_size"],
+        #     opt_stars_rel_pix_rmse=args["opt_stars_rel_pix_rmse"],
+        #     dataset_dict=test_dataset,
+        # )
 
         # Save metrics
         test_metrics = {
