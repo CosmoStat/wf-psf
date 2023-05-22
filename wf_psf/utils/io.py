@@ -146,3 +146,17 @@ class FileIOHandler:
 
         """
         return os.path.join(self._output_path, self._wf_outputs, self._optimizer)
+
+    def get_metrics_dir(self):
+        """Get Metrics Directory.
+
+        A function that returns path
+        of metrics directory.
+
+        Returns
+        -------
+        str
+            Absolute path to metrics directory
+
+        """
+        return os.path.join(self._output_path, self._wf_outputs, self._metrics)
