@@ -101,6 +101,58 @@ def test_metrics_params(metrics: RecursiveNamespace):
     print(metric_params)
 
 
+def test_evaluate_metrics_opd(training_params, training_data, test_dataset, psf_model):
+    metrics_handler = MetricsParamsHandler(metrics_params)
+    cycle = 1
+
+    ## Prepare models
+    # Prepare np input
+    simPSF_np = training_data.simPSF
+
+    ## Load the model's weights
+    psf_model.load_weights(training_params.filepath_chkp_callback(chkp_dir, cycle))
+
+    mono_metric = metrics_handler.evaluate_metrics_opd(
+        psf_model, simPSF_np, test_dataset
+    )
+
+
+def test_eval_metrics_mono_rmse(
+    training_params, training_data, test_dataset, psf_model
+):
+    metrics_handler = MetricsParamsHandler(metrics_params)
+    cycle = 1
+
+    ## Prepare models
+    # Prepare np input
+    simPSF_np = training_data.simPSF
+
+    ## Load the model's weights
+    psf_model.load_weights(training_params.filepath_chkp_callback(chkp_dir, cycle))
+
+    mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
+        psf_model, simPSF_np, test_dataset
+    )
+
+
+def test_eval_metrics_polychromatic_lowres(
+    training_params, training_data, test_dataset, psf_model
+):
+    metrics_handler = MetricsParamsHandler(metrics_params)
+    cycle = 1
+
+
+   ## Prepare models
+    Prepare np input
+   simPSF_np = training_data.simPSF
+
+    # Load the model's weights
+   psf_model.load_weights(training_params.filepath_chkp_callback(chkp_dir, cycle))
+
+   poly_metric = metrics_handler.evaluate_metrics_polychromatic_lowres(
+       psf_model, simPSF_np, test_dataset
+   )
+
 def test_evaluate_metrics_shape(
     training_params, training_data, test_dataset, psf_model
 ):
@@ -117,60 +169,6 @@ def test_evaluate_metrics_shape(
     mono_metric = metrics_handler.evaluate_metrics_shape(
         psf_model, simPSF_np, test_dataset, opt_stars_rel_pix_rmse=False
     )
-
-
-# def test_evaluate_metrics_opd(training_params, training_data, test_dataset, psf_model):
-#     metrics_handler = MetricsParamsHandler(metrics_params)
-#     cycle = 1
-
-#     ## Prepare models
-#     # Prepare np input
-#     simPSF_np = training_data.simPSF
-
-#     ## Load the model's weights
-#     psf_model.load_weights(training_params.filepath_chkp_callback(chkp_dir, cycle))
-
-#     mono_metric = metrics_handler.evaluate_metrics_opd(
-#         psf_model, simPSF_np, test_dataset
-#     )
-
-
-# def test_eval_metrics_mono_rmse(
-#     training_params, training_data, test_dataset, psf_model
-# ):
-#     metrics_handler = MetricsParamsHandler(metrics_params)
-#     cycle = 1
-
-#     ## Prepare models
-#     # Prepare np input
-#     simPSF_np = training_data.simPSF
-
-#     ## Load the model's weights
-#     psf_model.load_weights(training_params.filepath_chkp_callback(chkp_dir, cycle))
-
-#     mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
-#         psf_model, simPSF_np, test_dataset
-#     )
-
-
-# def test_eval_metrics_polychromatic_lowres(
-#     training_params, training_data, test_dataset, psf_model
-# ):
-#     metrics_handler = MetricsParamsHandler(metrics_params)
-#     cycle = 1
-
-
-#    ## Prepare models
-    # Prepare np input
-#    simPSF_np = training_data.simPSF
-
-    ## Load the model's weights
-#    psf_model.load_weights(training_params.filepath_chkp_callback(chkp_dir, cycle))
-
-#    poly_metric = metrics_handler.evaluate_metrics_polychromatic_lowres(
-#        psf_model, simPSF_np, test_dataset
-#    )
-
 
 # def test_evaluate_model(
 #     training_params: RecursiveNamespace, training_data, test_data, psf_model
