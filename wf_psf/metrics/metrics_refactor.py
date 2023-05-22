@@ -80,7 +80,7 @@ class MetricsParamsHandler:
             n_bins_lda=self.metrics_params.model_params.n_bins_lda,
             n_bins_gt=self.metrics_params.ground_truth_model.model_params.n_bins_lda,
             batch_size=self.metrics_params.metrics_hparams.batch_size,
-            dataset_dict=test_dataset,
+            dataset_dict=dataset,
         )
 
         poly_metric = {

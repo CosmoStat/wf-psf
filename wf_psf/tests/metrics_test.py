@@ -136,7 +136,7 @@ def test_eval_metrics_mono_rmse(
 
 
 def test_eval_metrics_polychromatic_lowres(
-    training_params, training_data, test_dataset, psf_model
+    training_params, training_data, dataset, psf_model
 ):
     metrics_handler = MetricsParamsHandler(metrics_params)
     cycle = 1
@@ -149,7 +149,7 @@ def test_eval_metrics_polychromatic_lowres(
     psf_model.load_weights(training_params.filepath_chkp_callback(chkp_dir, cycle))
 
     poly_metric = metrics_handler.evaluate_metrics_polychromatic_lowres(
-        psf_model, simPSF_np, test_dataset
+        psf_model, simPSF_np, dataset
     )
 
 
