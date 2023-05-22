@@ -128,6 +128,7 @@ def mainMethod():
                 test_data,
                 psf_model,
                 checkpoint_filepath,
+                file_handler.get_metrics_dir(),
             )
     except NameError:
         logger.info("Training not set in configs.yaml. Skipping training...")
