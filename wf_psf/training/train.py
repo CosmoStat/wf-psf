@@ -44,6 +44,7 @@ def filepath_chkp_callback(checkpoint_dir, model_name, id_name, current_cycle):
         + str(current_cycle)
     )
 
+
 class TrainingParamsHandler:
     """Training Parameters Handler.
 
@@ -58,10 +59,7 @@ class TrainingParamsHandler:
 
     """
 
-    def __init__(
-        self,
-        training_params
-    ):
+    def __init__(self, training_params):
         self.training_params = training_params
         self.run_id_name = self.model_name + self.id_name
         self.optimizer_params = {}
@@ -69,7 +67,7 @@ class TrainingParamsHandler:
     @property
     def id_name(self):
         """ID Name.
-        
+
         Set unique ID name.
 
         Returns
@@ -77,7 +75,6 @@ class TrainingParamsHandler:
         """
         return self.training_params.id_name
 
-        
     @property
     def model_name(self):
         """PSF Model Name.
@@ -213,7 +210,9 @@ class TrainingParamsHandler:
         # -----------------------------------------------------
         logger.info(f"Preparing Keras model callback...")
         return tf.keras.callbacks.ModelCheckpoint(
-            filepath_chkp_callback(checkpoint_dir, self.model_name, self.id_name, current_cycle),
+            filepath_chkp_callback(
+                checkpoint_dir, self.model_name, self.id_name, current_cycle
+            ),
             monitor="mean_squared_error",
             verbose=1,
             save_best_only=True,
@@ -414,5 +413,10 @@ def train(training_params, training_data, test_data, checkpoint_dir, optimizer_d
 
     return (
         psf_model,
-        training_handler.filepath_chkp_callback(checkpoint_dir, current_cycle),
+        training_handler.filepath_chkp_callback(
+            checkpoint_dir,
+            training_handler.model_name,
+            training_handler.id_name,
+            current_cycle,
+        ),
     )
