@@ -295,10 +295,7 @@ def evaluate_model(
         # Shape metrics
         print("Computing polychromatic high-resolution metrics and shape metrics.")
         shape_results_dict = metrics_handler.evaluate_metrics_shape(
-            psf_model,
-            simPSF_np,
-            test_data.test_dataset,
-            metrics_params.metrics_hparams.opt_stars_rel_pix_rmse,
+            psf_model, simPSF_np, test_data.test_dataset
         )
         # Save metrics
         test_metrics = {
