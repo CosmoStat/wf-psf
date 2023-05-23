@@ -124,43 +124,59 @@ def mainMethod():
             logger.info("Performing metrics evaluation of trained PSF model...")
             evaluate_model(
                 metrics_params.metrics,
+                training_params.training,
                 training_data,
                 test_data,
                 psf_model,
                 checkpoint_filepath,
                 file_handler.get_metrics_dir(),
             )
-    except NameError:
+    except AttributeError:
         logger.info("Training not set in configs.yaml. Skipping training...")
 
     if training_params is None:
         try:
             logger.info("Performing metrics evaluation only...")
-            simPSF = psf_models.simPSF(metrics_params.metrics.model_params)
+            # Get Config File for Trained PSF Model
+            trained_params = read_conf(
+                os.path.join(args.repodir, metrics_params.metrics.trained_model_config)
+            )
+            logger.info(trained_params.training)
+
+            simPSF = psf_models.simPSF(trained_params.training.model_params)
+
+            checkpoint_filepath = train.filepath_chkp_callback(
+                file_handler.get_checkpoint_dir(),
+                trained_params.training.model_params.model_name,
+                trained_params.training.id_name,
+                metrics_params.metrics.saved_training_cycle,
+            )
 
             training_data = TrainingDataHandler(
                 data_params.data.training,
                 simPSF,
-                metrics_params.metrics.model_params.n_bins_lda,
+                trained_params.training.model_params.n_bins_lda,
             )
 
             test_data = TestDataHandler(
                 data_params.data.test,
                 simPSF,
-                metrics_params.metrics.model_params.n_bins_lda,
+                trained_params.training.model_params.n_bins_lda,
             )
 
             psf_model = psf_models.get_psf_model(
-                metrics_params.metrics.model_params,
-                metrics_params.metrics.training_hparams,
+                trained_params.training.model_params,
+                trained_params.training.training_hparams,
             )
 
             evaluate_model(
                 metrics_params.metrics,
+                trained_params.training,
                 training_data,
                 test_data,
                 psf_model,
                 checkpoint_filepath,
+                file_handler.get_metrics_dir(),
             )
         except NameError:
             logger.info(
