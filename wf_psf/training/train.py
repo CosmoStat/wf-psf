@@ -34,6 +34,16 @@ def setup_training():
     logger.info("Found GPU at: {}".format(device_name))
 
 
+def filepath_chkp_callback(checkpoint_dir, model_name, id_name, current_cycle):
+    return (
+        checkpoint_dir
+        + "/chkp_callback_"
+        + model_name
+        + id_name
+        + "_cycle"
+        + str(current_cycle)
+    )
+
 class TrainingParamsHandler:
     """Training Parameters Handler.
 
@@ -50,14 +60,24 @@ class TrainingParamsHandler:
 
     def __init__(
         self,
-        training_params,
-        id_name="-coherent_euclid_200stars",
+        training_params
     ):
         self.training_params = training_params
-        self.id_name = id_name
         self.run_id_name = self.model_name + self.id_name
         self.optimizer_params = {}
 
+    @property
+    def id_name(self):
+        """ID Name.
+        
+        Set unique ID name.
+
+        Returns
+        -------
+        """
+        return self.training_params.id_name
+
+        
     @property
     def model_name(self):
         """PSF Model Name.
@@ -188,22 +208,12 @@ class TrainingParamsHandler:
         """
         return self.multi_cycle_params.learning_rate_non_params
 
-    def filepath_chkp_callback(self, checkpoint_dir, current_cycle):
-        return (
-            checkpoint_dir
-            + "/chkp_callback_"
-            + self.model_name
-            + self.id_name
-            + "_cycle"
-            + str(current_cycle)
-        )
-
     def _prepare_callbacks(self, checkpoint_dir, current_cycle):
         # Prepare to save the model as a callback
         # -----------------------------------------------------
         logger.info(f"Preparing Keras model callback...")
         return tf.keras.callbacks.ModelCheckpoint(
-            self.filepath_chkp_callback(checkpoint_dir, current_cycle),
+            filepath_chkp_callback(checkpoint_dir, self.model_name, self.id_name, current_cycle),
             monitor="mean_squared_error",
             verbose=1,
             save_best_only=True,
