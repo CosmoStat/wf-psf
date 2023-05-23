@@ -1,4 +1,6 @@
 training:
+  # ID name
+  id_name: -coherent_euclid_200stars
   model_params:
     # Model type. Options are: 'mccd', 'graph', 'poly, 'param', 'poly_physical'."
     model_name: poly
