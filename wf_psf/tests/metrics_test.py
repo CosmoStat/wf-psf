@@ -112,7 +112,14 @@ def test_evaluate_metrics_opd(training_params, training_data, test_dataset, psf_
     simPSF_np = training_data.simPSF
 
     ## Load the model's weights
-    psf_model.load_weights(training_params.filepath_chkp_callback(chkp_dir, cycle))
+    psf_model.load_weights(
+        train.filepath_chkp_callback(
+            chkp_dir,
+            training_params.model_params.model_name,
+            training_params.id_name,
+            cycle,
+        )
+    )
 
     mono_metric = metrics_handler.evaluate_metrics_opd(
         psf_model, simPSF_np, test_dataset
@@ -130,7 +137,14 @@ def test_eval_metrics_mono_rmse(
     simPSF_np = training_data.simPSF
 
     ## Load the model's weights
-    psf_model.load_weights(training_params.filepath_chkp_callback(chkp_dir, cycle))
+    psf_model.load_weights(
+        train.filepath_chkp_callback(
+            chkp_dir,
+            training_params.model_params.model_name,
+            training_params.id_name,
+            cycle,
+        )
+    )
 
     mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
         psf_model, simPSF_np, test_dataset
@@ -148,7 +162,14 @@ def test_eval_metrics_polychromatic_lowres(
     simPSF_np = training_data.simPSF
 
     # Load the model's weights
-    psf_model.load_weights(training_params.filepath_chkp_callback(chkp_dir, cycle))
+    psf_model.load_weights(
+        train.filepath_chkp_callback(
+            chkp_dir,
+            training_params.model_params.model_name,
+            training_params.id_name,
+            cycle,
+        )
+    )
 
     poly_metric = metrics_handler.evaluate_metrics_polychromatic_lowres(
         psf_model, simPSF_np, test_dataset
@@ -166,7 +187,14 @@ def test_evaluate_metrics_shape(
     simPSF_np = training_data.simPSF
 
     ## Load the model's weights
-    psf_model.load_weights(training_params.filepath_chkp_callback(chkp_dir, cycle))
+    psf_model.load_weights(
+        train.filepath_chkp_callback(
+            chkp_dir,
+            training_params.model_params.model_name,
+            training_params.id_name,
+            cycle,
+        )
+    )
 
     mono_metric = metrics_handler.evaluate_metrics_shape(
         psf_model, simPSF_np, test_dataset
@@ -185,8 +213,8 @@ def test_evaluate_model(
         psf_model,
         train.filepath_chkp_callback(
             chkp_dir,
-            training_params.training.model_params.model_name,
-            training_params.training.id_name,
+            training_params.model_params.model_name,
+            training_params.id_name,
             cycle,
         ),
         metrics_output,
