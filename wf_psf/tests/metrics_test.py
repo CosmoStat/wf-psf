@@ -85,6 +85,8 @@ metrics_params = RecursiveNamespace(
         eval_opd_metric_rmse=True,
         eval_train_shape_sr_metric_rmse=True,
         l2_param=0.0,
+        output_Q=1,
+        output_dim=64,
     ),
 )
 

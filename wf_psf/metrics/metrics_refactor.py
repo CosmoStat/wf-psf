@@ -180,9 +180,7 @@ class MetricsParamsHandler:
         }
         return opd_metric
 
-    def evaluate_metrics_shape(
-        self, psf_model, simPSF, dataset
-    ):
+    def evaluate_metrics_shape(self, psf_model, simPSF, dataset):
         """Evaluate PSF Shape Metrics.
 
         A function to evaluate metrics for PSF shape.
@@ -213,9 +211,9 @@ class MetricsParamsHandler:
             n_bins_lda=self.trained_model.model_params.n_bins_lda,
             n_bins_gt=self.metrics_params.ground_truth_model.model_params.n_bins_lda,
             batch_size=self.metrics_params.metrics_hparams.batch_size,
-            output_Q=self.metrics_params.metrics_hparams.output_Q,  
-            output_dim=self.metrics_params.metrics_hparams.output_dim,  
-            opt_stars_rel_pix_rmse=opt_stars_rel_pix_rmse,
+            output_Q=self.metrics_params.metrics_hparams.output_Q,
+            output_dim=self.metrics_params.metrics_hparams.output_dim,
+            opt_stars_rel_pix_rmse=self.metrics_params.metrics_hparams.opt_stars_rel_pix_rmse,
             dataset_dict=dataset,
         )
         return shape_results
@@ -332,9 +330,7 @@ def evaluate_model(
 
         # Shape metrics  turn into a class
         train_shape_results_dict = metrics_handler.evaluate_metrics_shape(
-            psf_model,
-            simPSF_np,
-            training_data.train_dataset
+            psf_model, simPSF_np, training_data.train_dataset
         )
 
         # Save metrics into dictionary

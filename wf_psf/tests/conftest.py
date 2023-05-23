@@ -15,7 +15,7 @@ from wf_psf.data.training_preprocessing import TrainingDataHandler, TestDataHand
 import pdb
 
 training_config = RecursiveNamespace(
-    id_name= "-coherent_euclid_200stars",
+    id_name="-coherent_euclid_200stars",
     model_params=RecursiveNamespace(
         model_name="poly",
         n_bins_lda=8,
