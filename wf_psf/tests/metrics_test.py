@@ -8,6 +8,7 @@ This module contains unit tests for the wf_psf.metrics module.
 """
 import pytest
 from wf_psf.utils.read_config import RecursiveNamespace
+from wf_psf.training import train
 from wf_psf.metrics.metrics_refactor import MetricsParamsHandler, evaluate_model
 import tensorflow as tf
 
@@ -103,7 +104,7 @@ def test_metrics_params(metrics: RecursiveNamespace):
 
 
 def test_evaluate_metrics_opd(training_params, training_data, test_dataset, psf_model):
-    metrics_handler = MetricsParamsHandler(metrics_params)
+    metrics_handler = MetricsParamsHandler(metrics_params, training_params)
     cycle = 1
 
     ## Prepare models
@@ -121,7 +122,7 @@ def test_evaluate_metrics_opd(training_params, training_data, test_dataset, psf_
 def test_eval_metrics_mono_rmse(
     training_params, training_data, test_dataset, psf_model
 ):
-    metrics_handler = MetricsParamsHandler(metrics_params)
+    metrics_handler = MetricsParamsHandler(metrics_params, training_params)
     cycle = 1
 
     ## Prepare models
@@ -139,7 +140,7 @@ def test_eval_metrics_mono_rmse(
 def test_eval_metrics_polychromatic_lowres(
     training_params, training_data, test_dataset, psf_model
 ):
-    metrics_handler = MetricsParamsHandler(metrics_params)
+    metrics_handler = MetricsParamsHandler(metrics_params, training_params)
     cycle = 1
 
     ## Prepare models
@@ -157,7 +158,7 @@ def test_eval_metrics_polychromatic_lowres(
 def test_evaluate_metrics_shape(
     training_params, training_data, test_dataset, psf_model
 ):
-    metrics_handler = MetricsParamsHandler(metrics_params)
+    metrics_handler = MetricsParamsHandler(metrics_params, training_params)
     cycle = 1
 
     ## Prepare models
@@ -168,7 +169,7 @@ def test_evaluate_metrics_shape(
     psf_model.load_weights(training_params.filepath_chkp_callback(chkp_dir, cycle))
 
     mono_metric = metrics_handler.evaluate_metrics_shape(
-        psf_model, simPSF_np, test_dataset, opt_stars_rel_pix_rmse=False
+        psf_model, simPSF_np, test_dataset
     )
 
 
@@ -178,9 +179,15 @@ def test_evaluate_model(
     cycle = 1
     evaluate_model(
         metrics_params,
+        training_params,
         training_data,
         test_data,
         psf_model,
-        training_params.filepath_chkp_callback(chkp_dir, cycle),
+        train.filepath_chkp_callback(
+            chkp_dir,
+            training_params.training.model_params.model_name,
+            training_params.training.id_name,
+            cycle,
+        ),
         metrics_output,
     )
