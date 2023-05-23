@@ -120,7 +120,7 @@ def mainMethod():
             file_handler.get_optimizer_dir(),
         )
 
-        if metrics_params:
+        if metrics_params is not None:
             logger.info("Performing metrics evaluation of trained PSF model...")
             evaluate_model(
                 metrics_params.metrics,
@@ -131,8 +131,9 @@ def mainMethod():
                 checkpoint_filepath,
                 file_handler.get_metrics_dir(),
             )
+
     except AttributeError:
-        logger.info("Training not set in configs.yaml. Skipping training...")
+        logger.info("Training or Metrics not set in configs.yaml. Skipping...")
 
     if training_params is None:
         try:
@@ -141,6 +142,7 @@ def mainMethod():
             trained_params = read_conf(
                 os.path.join(args.repodir, metrics_params.metrics.trained_model_config)
             )
+
             logger.info(trained_params.training)
 
             simPSF = psf_models.simPSF(trained_params.training.model_params)
