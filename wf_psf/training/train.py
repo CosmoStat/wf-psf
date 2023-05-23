@@ -413,7 +413,7 @@ def train(training_params, training_data, test_data, checkpoint_dir, optimizer_d
 
     return (
         psf_model,
-        training_handler.filepath_chkp_callback(
+        filepath_chkp_callback(
             checkpoint_dir,
             training_handler.model_name,
             training_handler.id_name,
