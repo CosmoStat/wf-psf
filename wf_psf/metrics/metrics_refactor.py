@@ -33,12 +33,15 @@ class MetricsParamsHandler:
     ----------
     metrics_params: Recursive Namespace object
         Recursive Namespace object containing metrics input parameters
+    trained_model: Recursive Namespace object
+        Recursive Namespace object containing trained model input parameters
 
 
     """
 
-    def __init__(self, metrics_params):
+    def __init__(self, metrics_params, trained_model):
         self.metrics_params = metrics_params
+        self.trained_model = trained_model
 
     @property
     def ground_truth_psf_model(self):
@@ -77,7 +80,7 @@ class MetricsParamsHandler:
             simPSF_np=simPSF,
             tf_pos=dataset["positions"],
             tf_SEDs=dataset["SEDs"],
-            n_bins_lda=self.metrics_params.model_params.n_bins_lda,
+            n_bins_lda=self.trained_model.model_params.n_bins_lda,
             n_bins_gt=self.metrics_params.ground_truth_model.model_params.n_bins_lda,
             batch_size=self.metrics_params.metrics_hparams.batch_size,
             dataset_dict=dataset,
@@ -178,7 +181,7 @@ class MetricsParamsHandler:
         return opd_metric
 
     def evaluate_metrics_shape(
-        self, psf_model, simPSF, dataset, opt_stars_rel_pix_rmse
+        self, psf_model, simPSF, dataset
     ):
         """Evaluate PSF Shape Metrics.
 
@@ -190,11 +193,10 @@ class MetricsParamsHandler:
             PSF model class instance of the psf model selected for metrics evaluation.
         simPSF: object
             SimPSFToolkit instance
-        test_dataset: dict
+        dataset: dict
             Test dataset dictionary
 
         Returns
-        -------
         shape_results: dict
             Dictionary containing RMSE, Relative RMSE values, and
             corresponding Standard Deviation values for PSF Shape metrics.
@@ -208,11 +210,11 @@ class MetricsParamsHandler:
             simPSF_np=simPSF,
             SEDs=dataset["SEDs"],
             tf_pos=dataset["positions"],
-            n_bins_lda=self.metrics_params.model_params.n_bins_lda,
+            n_bins_lda=self.trained_model.model_params.n_bins_lda,
             n_bins_gt=self.metrics_params.ground_truth_model.model_params.n_bins_lda,
             batch_size=self.metrics_params.metrics_hparams.batch_size,
-            output_Q=1,
-            output_dim=64,
+            output_Q=self.metrics_params.metrics_hparams.output_Q,  
+            output_dim=self.metrics_params.metrics_hparams.output_dim,  
             opt_stars_rel_pix_rmse=opt_stars_rel_pix_rmse,
             dataset_dict=dataset,
         )
@@ -220,7 +222,13 @@ class MetricsParamsHandler:
 
 
 def evaluate_model(
-    metrics_params, training_data, test_data, psf_model, weights_path, metrics_output
+    metrics_params,
+    trained_model_params,
+    training_data,
+    test_data,
+    psf_model,
+    weights_path,
+    metrics_output,
 ):
     r"""Evaluate the trained model.
 
@@ -228,10 +236,16 @@ def evaluate_model(
 
     Inputs
     ------
-    metrics_params
-    training_data
-    test_data
-    psf_model
+    metrics_params: Recursive Namespace object
+        Recursive Namespace object containing metrics input parameters
+    trained_model_params: Recursive Namespace object
+        Recursive Namespace object containing trained model input parameters
+    training_data: object
+        TrainingDataHandler object
+    test_data: object
+        TestDataHandler object
+    psf_model: object
+        PSF model object
     weights_path: str
         Directory location of model weights
     metrics_output: str
@@ -247,7 +261,7 @@ def evaluate_model(
         # Get training data
         logger.info(f"Fetching and preprocessing training and test data...")
 
-        metrics_handler = MetricsParamsHandler(metrics_params)
+        metrics_handler = MetricsParamsHandler(metrics_params, trained_model_params)
 
         ## Prepare models
         # Prepare np input
@@ -265,25 +279,28 @@ def evaluate_model(
         )
 
         # Monochromatic star reconstructions
-        # if metrics_params.metrics_hparams.eval_mono_metric_rmse:
-        mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
-            psf_model, simPSF_np, test_data.test_dataset
-        )
-        # else:
-        #     mono_metric = None
+        if metrics_params.metrics_hparams.eval_mono_metric_rmse:
+            mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
+                psf_model, simPSF_np, test_data.test_dataset
+            )
+        else:
+            mono_metric = None
 
         # OPD metrics
-        # Check if all stars SR pixel RMSE are needed
-        # if "opt_stars_rel_pix_rmse" not in args:
-        #    args["opt_stars_rel_pix_rmse"] = False
-        opd_metric = metrics_handler.evaluate_metrics_opd(
-            psf_model, simPSF_np, test_data.test_dataset
-        )
+        if metrics_params.metrics_hparams.eval_opd_metric_rmse:
+            opd_metric = metrics_handler.evaluate_metrics_opd(
+                psf_model, simPSF_np, test_data.test_dataset
+            )
+        else:
+            opd_metric = None
 
         # Shape metrics
         print("Computing polychromatic high-resolution metrics and shape metrics.")
         shape_results_dict = metrics_handler.evaluate_metrics_shape(
-            psf_model, simPSF_np, test_data.test_dataset, opt_stars_rel_pix_rmse=False
+            psf_model,
+            simPSF_np,
+            test_data.test_dataset,
+            metrics_params.metrics_hparams.opt_stars_rel_pix_rmse,
         )
         # Save metrics
         test_metrics = {
@@ -315,7 +332,9 @@ def evaluate_model(
 
         # Shape metrics  turn into a class
         train_shape_results_dict = metrics_handler.evaluate_metrics_shape(
-            psf_model, simPSF_np, training_data.train_dataset, opt_stars_rel_pix_rmse=False
+            psf_model,
+            simPSF_np,
+            training_data.train_dataset
         )
 
         # Save metrics into dictionary
@@ -331,7 +350,7 @@ def evaluate_model(
         run_id_name = (
             metrics_params.model_params.model_name + metrics_params.model_params.id_name
         )
-        output_path = metrics_output + '/' + "metrics-" + run_id_name
+        output_path = metrics_output + "/" + "metrics-" + run_id_name
         np.save(output_path, metrics, allow_pickle=True)
 
         ## Print final time
