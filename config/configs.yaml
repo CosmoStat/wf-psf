@@ -1,3 +1,4 @@
 ---
   data_conf: config/data_config.yaml
   training_conf: config/training_config.yaml
+  metrics_conf: config/metrics_config.yaml
