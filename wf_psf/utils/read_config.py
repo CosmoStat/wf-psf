@@ -11,14 +11,18 @@ import yaml
 import pprint
 from types import SimpleNamespace
 import os
+import logging
+import sys
+
+logger = logging.getLogger(__name__)
 
 
 class RecursiveNamespace(SimpleNamespace):
     """RecursiveNamespace.
 
-    A child class of the type SimpleNamespace to 
+    A child class of the type SimpleNamespace to
     create nested namespaces (objects).
-    
+
     Parameters
     ----------
     **kwargs
@@ -26,6 +30,7 @@ class RecursiveNamespace(SimpleNamespace):
         a nested namespace.
 
     """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         for key, val in kwargs.items():
@@ -39,7 +44,7 @@ class RecursiveNamespace(SimpleNamespace):
         """Map Entry.
 
         A function to map a dictionary to a
-        RecursiveNamespace object. 
+        RecursiveNamespace object.
 
         Parameters
         ----------
@@ -51,8 +56,8 @@ class RecursiveNamespace(SimpleNamespace):
             RecursiveNamespace object if entry type is a dictionary
         entry: type
             Original type of entry if type is not a dictionary
-        """ 
-        
+        """
+
         if isinstance(entry, dict):
             return RecursiveNamespace(**entry)
 
@@ -61,7 +66,7 @@ class RecursiveNamespace(SimpleNamespace):
 
 def read_yaml(conf_file):
     """Read Yaml.
-    
+
     A function to read a YAML file.
 
     Parameters
@@ -77,7 +82,6 @@ def read_yaml(conf_file):
     with open(conf_file) as f:
         config = yaml.safe_load(f)
 
-
     return config
 
 
@@ -85,28 +89,33 @@ def read_conf(conf_file):
     """Read Conf.
 
     A function to read a yaml configuration file, recursively.
-    
+
     Parameters
     ----------
     conf_file: str
         Name of configuration file
-    
+
     Returns
     -------
     RecursiveNamespace
         Recursive Namespace object
-    
+
     """
     with open(conf_file, "r") as f:
-        my_conf = yaml.safe_load(f)
+        try:
+            my_conf = yaml.safe_load(f)
+        except yaml.scanner.ScannerError as e:
+            logger.exception("Improper syntax in yaml file.")
+            exit()
+
     return RecursiveNamespace(**my_conf)
 
 
 def read_stream(conf_file):
     """Read Stream.
-    
+
     A generator to read multiple docs in a yaml config.
-    
+
     Parameters
     ----------
     conf_file
@@ -122,7 +131,8 @@ def read_stream(conf_file):
     docs = yaml.load_all(stream, yaml.FullLoader)
 
     for doc in docs:
-        yield RecursiveNamespace(**doc)
-  
-
-  
+        try:
+            yield RecursiveNamespace(**doc)
+        except TypeError:
+            logger.exception("configs.yaml file is empty.")
+            exit()

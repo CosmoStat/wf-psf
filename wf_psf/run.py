@@ -84,9 +84,18 @@ def mainMethod():
     training_params = None
     metrics_params = None
     for conf in configs:
-        if hasattr(conf, "data_conf"):
-            data_params = read_conf(os.path.join(args.repodir, conf.data_conf))
-            logger.info(data_params)
+        try:
+            if hasattr(conf, "data_conf"):
+                data_params = read_conf(os.path.join(args.repodir, conf.data_conf))
+                logger.info(data_params)
+            else:
+                raise ValueError("Data Config file not provided...")
+        except FileNotFoundError as e:
+            logger.exception(e)
+            exit()
+        except ValueError as e:
+            logger.exception(e)
+            exit()
 
         if hasattr(conf, "training_conf"):
             training_params = read_conf(os.path.join(args.repodir, conf.training_conf))
@@ -180,8 +189,8 @@ def mainMethod():
                 checkpoint_filepath,
                 file_handler.get_metrics_dir(),
             )
-        except NameError:
-            logger.info(
+        except AttributeError:
+            logger.exception(
                 "Metrics config not correctly set in configs.yaml.  Please check your config file."
             )
 
