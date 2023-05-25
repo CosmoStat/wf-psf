@@ -191,7 +191,7 @@ def mainMethod():
             )
         except AttributeError:
             logger.exception(
-                "Metrics config not correctly set in configs.yaml.  Please check your config file."
+                "Configs are not correctly set in configs.yaml.  Please check your config file."
             )
 
     logger.info("#")
