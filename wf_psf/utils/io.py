@@ -31,7 +31,9 @@ class FileIOHandler:
     def __init__(self, repodir_path, output_path):
         self._repodir_path = repodir_path
         self._output_path = output_path
-        self._wf_outputs = "wf-outputs"
+        self._timestamp = self.get_timestamp()
+        self._parent_output_dir = "wf-outputs"
+        self._run_output_dir = self._parent_output_dir + "-" + self._timestamp
         self._checkpoint = "checkpoint"
         self._log_files = "log-files"
         self._metrics = "metrics"
@@ -53,19 +55,33 @@ class FileIOHandler:
 
         """
         self._make_output_dir()
+        self._make_run_dir()
         self._setup_dirs()
         self._setup_logging()
 
     def _make_output_dir(self):
         """Make Output Directory.
 
-        A function to make the
+        A function to make the parent
         output directory "wf-outputs".
 
         """
-        pathlib.Path(os.path.join(self._output_path, self._wf_outputs)).mkdir(
+        pathlib.Path(os.path.join(self._output_path, self._parent_output_dir)).mkdir(
             exist_ok=True
         )
+
+    def _make_run_dir(self):
+        """Make Run Directory.
+
+        A function to make a unique directory
+        per run.
+
+        """
+        pathlib.Path(
+            os.path.join(
+                self._output_path, self._parent_output_dir, self._run_output_dir
+            )
+        ).mkdir(exist_ok=True)
 
     def _setup_dirs(self):
         """Setup Directories.
@@ -84,6 +100,21 @@ class FileIOHandler:
         for dir in list_of_dirs:
             self._make_dir(dir)
 
+    def get_timestamp(self):
+        """Get Timestamp.
+
+        A function to return the date and
+        time.
+
+        Returns
+        -------
+        timestamp: str
+            A string representation of the date and time.
+        """
+
+        timestamp = datetime.now().strftime("%Y%m%d%H%M")
+        return timestamp
+
     def _setup_logging(self):
         """Setup Logger.
 
@@ -91,10 +122,13 @@ class FileIOHandler:
         logging.
 
         """
-        logfile = datetime.now().strftime("train_%Y%m%d%H%M.log")
-
+        logfile = "wf-psf_" + self._timestamp + ".log"
         logfile = os.path.join(
-            self._output_path, self._wf_outputs, self._log_files, logfile
+            self._output_path,
+            self._parent_output_dir,
+            self._run_output_dir,
+            self._log_files,
+            logfile,
         )
 
         logging.config.fileConfig(
@@ -107,7 +141,7 @@ class FileIOHandler:
         """Make Directory.
 
         A function to make a subdirectory
-        inside the parent directory "wf-outputs".
+        inside the run directory "wf-outputs-xxx".
 
         Parameters
         ----------
@@ -115,9 +149,14 @@ class FileIOHandler:
             Name of directory
 
         """
-        pathlib.Path(os.path.join(self._output_path, self._wf_outputs, dir_name)).mkdir(
-            exist_ok=True
-        )
+        pathlib.Path(
+            os.path.join(
+                self._output_path,
+                self._parent_output_dir,
+                self._run_output_dir,
+                dir_name,
+            )
+        ).mkdir(exist_ok=True)
 
     def get_checkpoint_dir(self):
         """Get Checkpoint Directory.
@@ -131,7 +170,12 @@ class FileIOHandler:
             Absolute path to checkpoint directory
 
         """
-        return os.path.join(self._output_path, self._wf_outputs, self._checkpoint)
+        return os.path.join(
+            self._output_path,
+            self._parent_output_dir,
+            self._run_output_dir,
+            self._checkpoint,
+        )
 
     def get_optimizer_dir(self):
         """Get Optimizer Directory.
@@ -145,7 +189,7 @@ class FileIOHandler:
             Absolute path to optimizer directory
 
         """
-        return os.path.join(self._output_path, self._wf_outputs, self._optimizer)
+        return os.path.join(self._output_path, self._run_output_dir, self._optimizer)
 
     def get_metrics_dir(self):
         """Get Metrics Directory.
@@ -159,4 +203,9 @@ class FileIOHandler:
             Absolute path to metrics directory
 
         """
-        return os.path.join(self._output_path, self._wf_outputs, self._metrics)
+        return os.path.join(
+            self._output_path,
+            self._parent_output_dir,
+            self._run_output_dir,
+            self._metrics,
+        )
