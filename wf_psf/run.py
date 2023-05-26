@@ -98,13 +98,37 @@ def mainMethod():
             logger.exception(e)
             exit()
 
-        if hasattr(conf, "training_conf"):
-            training_params = read_conf(os.path.join(configs_path, conf.training_conf))
-            logger.info(training_params.training)
+        try:
+            if hasattr(conf, "training_conf"):
+                training_params = read_conf(
+                    os.path.join(configs_path, conf.training_conf)
+                )
+                logger.info(training_params.training)
+        except TypeError as e:
+            if conf.training_conf is not None:
+                logger.exception("Invalid Data Type in config file.")
+                exit()
+        except FileNotFoundError as e:
+            logger.exception(
+                "Training config file does not exist.  Please check your config file."
+            )
+            exit()
 
-        if hasattr(conf, "metrics_conf"):
-            metrics_params = read_conf(os.path.join(configs_path, conf.metrics_conf))
-            logger.info(metrics_params.metrics)
+        try:
+            if hasattr(conf, "metrics_conf"):
+                metrics_params = read_conf(
+                    os.path.join(configs_path, conf.metrics_conf)
+                )
+                logger.info(metrics_params.metrics)
+        except TypeError as e:
+            if conf.metrics_conf is not None:
+                logger.exception("Invalid Data Type in config file.")
+                exit()
+        except FileNotFoundError as e:
+            logger.exception(
+                "Metric config file does not exist.  Please check your config file."
+            )
+            exit()
 
     try:
         logger.info("Performing training...")

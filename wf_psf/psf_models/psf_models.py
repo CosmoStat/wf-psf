@@ -12,7 +12,9 @@ import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
 from wf_psf.utils.utils import PI_zernikes, zernike_generator
 from wf_psf.sims.SimPSFToolkit import SimPSFToolkit
+import logging
 
+logger = logging.getLogger(__name__)
 
 PSF_CLASS = {}
 
@@ -61,7 +63,12 @@ def set_psf_model(model_name):
         Name of PSF model class
 
     """
-    psf_class = PSF_CLASS[model_name]
+    try:
+        psf_class = PSF_CLASS[model_name]
+    except KeyError as e:
+        logger.exception("PSF model entered is invalid. Check your config settings.")
+        exit()
+
     return psf_class
 
 
