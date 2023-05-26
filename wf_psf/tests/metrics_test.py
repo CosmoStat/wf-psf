@@ -9,7 +9,7 @@ This module contains unit tests for the wf_psf.metrics module.
 import pytest
 from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.training import train
-from wf_psf.metrics.metrics_refactor import MetricsParamsHandler, evaluate_model
+from wf_psf.metrics.metrics_interface import MetricsParamsHandler, evaluate_model
 import tensorflow as tf
 
 
@@ -90,9 +90,9 @@ metrics_params = RecursiveNamespace(
     ),
 )
 
-chkp_dir = "/gpfswork/rech/ynx/uuu68hq/wf-outputs/checkpoint"
-optim_dir = "/gpfswork/rech/ynx/uuu68hq/wf-outputs/optim-hist"
-metrics_output = "/gpfswork/rech/ynx/uuu68hq/wf-outputs/metrics"
+chkp_dir = "../wf-outputs/checkpoint"
+optim_dir = "../wf-outputs/optim-hist"
+metrics_output = "../wf-outputs/metrics"
 
 
 @pytest.fixture(scope="module", params=[metrics_params])

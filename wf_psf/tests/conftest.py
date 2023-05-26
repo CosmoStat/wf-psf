@@ -62,7 +62,8 @@ training_config = RecursiveNamespace(
 
 data = RecursiveNamespace(
     training=RecursiveNamespace(
-        file="data/coherent_euclid_dataset/train_Euclid_res_200_TrainStars_id_001.npy",
+        data_dir="data",
+        file="coherent_euclid_dataset/train_Euclid_res_200_TrainStars_id_001.npy",
         stars=None,
         positions=None,
         SEDS=None,
@@ -86,7 +87,8 @@ data = RecursiveNamespace(
         ),
     ),
     test=RecursiveNamespace(
-        file="data/coherent_euclid_dataset/test_Euclid_res_id_001.npy",
+        data_dir="data",
+        file="coherent_euclid_dataset/test_Euclid_res_id_001.npy",
         stars=None,
         noisy_stars=None,
         positions=None,
