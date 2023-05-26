@@ -11,6 +11,7 @@ import pathlib
 import os
 import logging
 from datetime import datetime
+import shutil
 
 
 class FileIOHandler:
@@ -34,6 +35,7 @@ class FileIOHandler:
         self._timestamp = self.get_timestamp()
         self._parent_output_dir = "wf-outputs"
         self._run_output_dir = self._parent_output_dir + "-" + self._timestamp
+        self._config = "config"
         self._checkpoint = "checkpoint"
         self._log_files = "log-files"
         self._metrics = "metrics"
@@ -91,6 +93,7 @@ class FileIOHandler:
 
         """
         list_of_dirs = (
+            self._config,
             self._checkpoint,
             self._log_files,
             self._metrics,
@@ -157,6 +160,41 @@ class FileIOHandler:
                 dir_name,
             )
         ).mkdir(exist_ok=True)
+
+    def get_config_dir(self):
+        """Get Config Directory.
+
+        A function that returns path
+        of output config directory.
+
+        Returns
+        -------
+        str
+            Absolute path to checkpoint directory
+
+        """
+        return os.path.join(
+            self._output_path,
+            self._parent_output_dir,
+            self._run_output_dir,
+            self._config,
+        )
+
+    def copy_conffile_to_output_dir(self, source_dir, source_file):
+        """Write File.
+
+        A function to copy a file to
+        the output run directory.
+
+        source_dir: str
+            Location of source file
+        source_file: str
+            Name of source file
+        """
+        source = source_dir + "/" + source_file
+        destination = self.get_config_dir() + "/" + source_file
+
+        shutil.copy(source, destination)
 
     def get_checkpoint_dir(self):
         """Get Checkpoint Directory.

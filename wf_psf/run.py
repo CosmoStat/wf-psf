@@ -80,6 +80,8 @@ def mainMethod():
 
     configs_path = os.path.dirname(args.conffile)
     configs = read_stream(args.conffile)
+    configs_file = os.path.basename(args.conffile)
+    file_handler.copy_conffile_to_output_dir(configs_path, configs_file)
 
     data_params = None
     training_params = None
@@ -89,6 +91,7 @@ def mainMethod():
             if hasattr(conf, "data_conf"):
                 data_params = read_conf(os.path.join(configs_path, conf.data_conf))
                 logger.info(data_params)
+                file_handler.copy_conffile_to_output_dir(configs_path, conf.data_conf)
             else:
                 raise ValueError("Data Config file not provided...")
         except FileNotFoundError as e:
@@ -104,6 +107,9 @@ def mainMethod():
                     os.path.join(configs_path, conf.training_conf)
                 )
                 logger.info(training_params.training)
+                file_handler.copy_conffile_to_output_dir(
+                    configs_path, conf.training_conf
+                )
         except TypeError as e:
             if conf.training_conf is not None:
                 logger.exception("Invalid Data Type in config file.")
@@ -120,6 +126,9 @@ def mainMethod():
                     os.path.join(configs_path, conf.metrics_conf)
                 )
                 logger.info(metrics_params.metrics)
+                file_handler.copy_conffile_to_output_dir(
+                    configs_path, conf.metrics_conf
+                )
         except TypeError as e:
             if conf.metrics_conf is not None:
                 logger.exception("Invalid Data Type in config file.")
