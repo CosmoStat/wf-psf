@@ -14,7 +14,7 @@ import logging
 from wf_psf.data.training_preprocessing import TrainingDataHandler, TestDataHandler
 from wf_psf.training import train
 from wf_psf.psf_models import psf_models
-from wf_psf.metrics.metrics_refactor import evaluate_model
+from wf_psf.metrics.metrics_interface import evaluate_model
 
 
 def setProgramOptions():
@@ -78,7 +78,8 @@ def mainMethod():
     logger.info("# Entering wavediff mainMethod()")
     logger.info("#")
 
-    configs = read_stream(os.path.join(args.repodir, args.conffile))
+    configs_path = os.path.dirname(args.conffile)
+    configs = read_stream(args.conffile)
 
     data_params = None
     training_params = None
@@ -86,7 +87,7 @@ def mainMethod():
     for conf in configs:
         try:
             if hasattr(conf, "data_conf"):
-                data_params = read_conf(os.path.join(args.repodir, conf.data_conf))
+                data_params = read_conf(os.path.join(configs_path, conf.data_conf))
                 logger.info(data_params)
             else:
                 raise ValueError("Data Config file not provided...")
@@ -98,11 +99,11 @@ def mainMethod():
             exit()
 
         if hasattr(conf, "training_conf"):
-            training_params = read_conf(os.path.join(args.repodir, conf.training_conf))
+            training_params = read_conf(os.path.join(configs_path, conf.training_conf))
             logger.info(training_params.training)
 
         if hasattr(conf, "metrics_conf"):
-            metrics_params = read_conf(os.path.join(args.repodir, conf.metrics_conf))
+            metrics_params = read_conf(os.path.join(configs_path, conf.metrics_conf))
             logger.info(metrics_params.metrics)
 
     try:
