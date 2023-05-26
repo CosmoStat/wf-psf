@@ -72,6 +72,8 @@ class TrainingParamsHandler:
 
         Returns
         -------
+        id_name: str
+            A unique ID.
         """
         return self.training_params.id_name
 
