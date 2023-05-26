@@ -189,7 +189,12 @@ class FileIOHandler:
             Absolute path to optimizer directory
 
         """
-        return os.path.join(self._output_path, self._run_output_dir, self._optimizer)
+        return os.path.join(
+            self._output_path,
+            self._parent_output_dir,
+            self._run_output_dir,
+            self._optimizer,
+        )
 
     def get_metrics_dir(self):
         """Get Metrics Directory.
