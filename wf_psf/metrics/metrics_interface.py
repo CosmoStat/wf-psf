@@ -266,7 +266,11 @@ def evaluate_model(
         simPSF_np = training_data.simPSF
 
         ## Load the model's weights
-        psf_model.load_weights(weights_path)
+        try:
+            psf_model.load_weights(weights_path)
+        except:
+            logger.exception("An error occurred with the weights_path file.")
+            exit()
 
         ## Metric evaluation on the test dataset
         logger.info("\n***\nMetric evaluation on the test dataset\n***\n")
