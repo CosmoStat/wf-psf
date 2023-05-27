@@ -12,7 +12,12 @@ metrics:
   trained_model_path: /Users/jenniferpollack/Projects/wf-outputs/wf-outputs-202305262344/
   # Name of Trained Model Config file
   trained_model_config: config/training_config.yaml 
-
+  #Evaluate the monchromatic RMSE metric.
+  eval_mono_metric_rmse: True
+  #Evaluate the OPD RMSE metric.
+  eval_opd_metric_rmse: True
+  #Evaluate the super-resolution and the shape RMSE metrics for the train dataset.
+  eval_train_shape_sr_metric_rmse: True
   ground_truth_model:
     model_params:
       #Model used as ground truth for the evaluation. Options are: 'poly', 'physical'.
@@ -100,15 +105,6 @@ metrics:
     #Flag to get Super-Resolution pixel PSF RMSE for each individual test star. 
     #If `True`, the relative pixel RMSE of each star is added to ther saving dictionary.
     opt_stars_rel_pix_rmse: False
-  
-    #Evaluate the monchromatic RMSE metric.
-    eval_mono_metric_rmse: True
-  
-    #Evaluate the OPD RMSE metric.
-    eval_opd_metric_rmse: True
-  
-    #Evaluate the super-resolution and the shape RMSE metrics for the train dataset.
-    eval_train_shape_sr_metric_rmse: True
   
     ## Specific parameters
     # Parameter for the l2 loss of the OPD.

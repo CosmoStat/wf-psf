@@ -281,7 +281,7 @@ def evaluate_model(
         )
 
         # Monochromatic star reconstructions
-        if metrics_params.metrics_hparams.eval_mono_metric_rmse:
+        if metrics_params.seval_mono_metric_rmse:
             mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
                 psf_model, simPSF_np, test_data.test_dataset
             )
@@ -289,7 +289,7 @@ def evaluate_model(
             mono_metric = None
 
         # OPD metrics
-        if metrics_params.metrics_hparams.eval_opd_metric_rmse:
+        if metrics_params.eval_opd_metric_rmse:
             opd_metric = metrics_handler.evaluate_metrics_opd(
                 psf_model, simPSF_np, test_data.test_dataset
             )
