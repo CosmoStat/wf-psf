@@ -159,8 +159,8 @@ def mainMethod():
             training_params.training,
             training_data,
             test_data,
-            file_handler.get_checkpoint_dir(),
-            file_handler.get_optimizer_dir(),
+            file_handler.get_checkpoint_dir(file_handler._run_output_dir),
+            file_handler.get_optimizer_dir(file_handler._run_output_dir),
         )
 
         if metrics_params is not None:
@@ -172,7 +172,7 @@ def mainMethod():
                 test_data,
                 psf_model,
                 checkpoint_filepath,
-                file_handler.get_metrics_dir(),
+                file_handler.get_metrics_dir(file_handler._run_output_dir),
             )
 
     except AttributeError:
@@ -183,7 +183,10 @@ def mainMethod():
             logger.info("Performing metrics evaluation only...")
             # Get Config File for Trained PSF Model
             trained_params = read_conf(
-                os.path.join(args.repodir, metrics_params.metrics.trained_model_config)
+                os.path.join(
+                    metrics_params.metrics.trained_model_path,
+                    metrics_params.metrics.trained_model_config,
+                )
             )
 
             logger.info(trained_params.training)
@@ -191,7 +194,9 @@ def mainMethod():
             simPSF = psf_models.simPSF(trained_params.training.model_params)
 
             checkpoint_filepath = train.filepath_chkp_callback(
-                file_handler.get_checkpoint_dir(),
+                file_handler.get_checkpoint_dir(
+                    metrics_params.metrics.trained_model_path
+                ),
                 trained_params.training.model_params.model_name,
                 trained_params.training.id_name,
                 metrics_params.metrics.saved_training_cycle,
@@ -221,7 +226,7 @@ def mainMethod():
                 test_data,
                 psf_model,
                 checkpoint_filepath,
-                file_handler.get_metrics_dir(),
+                file_handler.get_metrics_dir(file_handler._run_output_dir),
             )
         except AttributeError:
             logger.exception(

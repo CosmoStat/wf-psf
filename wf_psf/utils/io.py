@@ -30,11 +30,18 @@ class FileIOHandler:
     """
 
     def __init__(self, repodir_path, output_path):
-        self._repodir_path = repodir_path
-        self._output_path = output_path
+        self.repodir_path = repodir_path
+        self.output_path = output_path
         self._timestamp = self.get_timestamp()
         self._parent_output_dir = "wf-outputs"
-        self._run_output_dir = self._parent_output_dir + "-" + self._timestamp
+        self._run_output_dir = (
+            self.output_path
+            + self._parent_output_dir
+            + "/"
+            + self._parent_output_dir
+            + "-"
+            + self._timestamp
+        )
         self._config = "config"
         self._checkpoint = "checkpoint"
         self._log_files = "log-files"
@@ -68,7 +75,7 @@ class FileIOHandler:
         output directory "wf-outputs".
 
         """
-        pathlib.Path(os.path.join(self._output_path, self._parent_output_dir)).mkdir(
+        pathlib.Path(os.path.join(self.output_path, self._parent_output_dir)).mkdir(
             exist_ok=True
         )
 
@@ -79,11 +86,7 @@ class FileIOHandler:
         per run.
 
         """
-        pathlib.Path(
-            os.path.join(
-                self._output_path, self._parent_output_dir, self._run_output_dir
-            )
-        ).mkdir(exist_ok=True)
+        pathlib.Path(os.path.join(self._run_output_dir)).mkdir()
 
     def _setup_dirs(self):
         """Setup Directories.
@@ -127,15 +130,13 @@ class FileIOHandler:
         """
         logfile = "wf-psf_" + self._timestamp + ".log"
         logfile = os.path.join(
-            self._output_path,
-            self._parent_output_dir,
             self._run_output_dir,
             self._log_files,
             logfile,
         )
 
         logging.config.fileConfig(
-            os.path.join(self._repodir_path, "config/logging.conf"),
+            os.path.join(self.repodir_path, "config/logging.conf"),
             defaults={"filename": logfile},
             disable_existing_loggers=False,
         )
@@ -154,8 +155,6 @@ class FileIOHandler:
         """
         pathlib.Path(
             os.path.join(
-                self._output_path,
-                self._parent_output_dir,
                 self._run_output_dir,
                 dir_name,
             )
@@ -165,7 +164,7 @@ class FileIOHandler:
         """Get Config Directory.
 
         A function that returns path
-        of output config directory.
+        of config directory.
 
         Returns
         -------
@@ -174,8 +173,6 @@ class FileIOHandler:
 
         """
         return os.path.join(
-            self._output_path,
-            self._parent_output_dir,
             self._run_output_dir,
             self._config,
         )
@@ -186,6 +183,8 @@ class FileIOHandler:
         A function to copy a file to
         the output run directory.
 
+        Parameters
+        ----------
         source_dir: str
             Location of source file
         source_file: str
@@ -196,11 +195,16 @@ class FileIOHandler:
 
         shutil.copy(source, destination)
 
-    def get_checkpoint_dir(self):
+    def get_checkpoint_dir(self, checkpoint_dir):
         """Get Checkpoint Directory.
 
         A function that returns path
         of checkpoint directory.
+
+        Parameters
+        ----------
+        checkpoint_dir: str
+            Name of checkpoint directory
 
         Returns
         -------
@@ -209,17 +213,20 @@ class FileIOHandler:
 
         """
         return os.path.join(
-            self._output_path,
-            self._parent_output_dir,
-            self._run_output_dir,
+            checkpoint_dir,
             self._checkpoint,
         )
 
-    def get_optimizer_dir(self):
+    def get_optimizer_dir(self, optimizer_dir):
         """Get Optimizer Directory.
 
         A function that returns path
         of optimizer directory.
+
+        Parameters
+        ----------
+        optimizer_dir: str
+            Name of optimiser directory
 
         Returns
         -------
@@ -228,17 +235,20 @@ class FileIOHandler:
 
         """
         return os.path.join(
-            self._output_path,
-            self._parent_output_dir,
-            self._run_output_dir,
+            optimizer_dir,
             self._optimizer,
         )
 
-    def get_metrics_dir(self):
+    def get_metrics_dir(self, metrics_dir):
         """Get Metrics Directory.
 
         A function that returns path
         of metrics directory.
+
+        Parameters
+        ----------
+        metrics_dir: str
+            Name of metrics directory
 
         Returns
         -------
@@ -247,8 +257,6 @@ class FileIOHandler:
 
         """
         return os.path.join(
-            self._output_path,
-            self._parent_output_dir,
-            self._run_output_dir,
+            metrics_dir,
             self._metrics,
         )
