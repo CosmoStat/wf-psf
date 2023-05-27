@@ -2,12 +2,14 @@ metrics:
   # Set flag to evaluate model weights; if False, then final updated model will be evaluated
   use_callback: False
   # Choose the training cycle for the evaluation. Can be: 1, 2, ...
-  saved_training_cycle: 2
+  saved_training_cycle: 1
   # Provide path to saved model checkpoints.
   chkp_save_path: checkpoint
   # Fill model_params if computing metrics_only on a pre-trained model
   # ID name
   id_name: -coherent_euclid_200stars
+  # Path to Trained Model
+  trained_model_path: /Users/jenniferpollack/Projects/wf-outputs/wf-outputs-202305262344/
   # Name of Trained Model Config file
   trained_model_config: config/training_config.yaml 
 
