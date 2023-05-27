@@ -232,6 +232,8 @@ def mainMethod():
             logger.exception(
                 "Configs are not correctly set in configs.yaml.  Please check your config file."
             )
+        except FileNotFoundError as e:
+            logger.exception(e)
 
     logger.info("#")
     logger.info("# Exiting wavediff mainMethod()")
