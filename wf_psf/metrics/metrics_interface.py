@@ -281,7 +281,7 @@ def evaluate_model(
         )
 
         # Monochromatic star reconstructions
-        if metrics_params.seval_mono_metric_rmse:
+        if metrics_params.eval_mono_metric_rmse:
             mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
                 psf_model, simPSF_np, test_data.test_dataset
             )
@@ -320,19 +320,28 @@ def evaluate_model(
         )
 
         # Monochromatic star reconstructions turn into a class
-        train_mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
-            psf_model, simPSF_np, training_data.train_dataset
-        )
+        if metrics_params.eval_mono_metric_rmse:
+            train_mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
+                psf_model, simPSF_np, training_data.train_dataset
+            )
+        else:
+            trained_monoe_metric = None
 
         # OPD metrics turn into a class
-        train_opd_metric = metrics_handler.evaluate_metrics_opd(
-            psf_model, simPSF_np, training_data.train_dataset
-        )
+        if metrics_params.eval_opd_metric_rmse:
+            train_opd_metric = metrics_handler.evaluate_metrics_opd(
+                psf_model, simPSF_np, training_data.train_dataset
+            )
+        else:
+            trained_opd_metric = None
 
         # Shape metrics  turn into a class
-        train_shape_results_dict = metrics_handler.evaluate_metrics_shape(
-            psf_model, simPSF_np, training_data.train_dataset
-        )
+        if metrics_params.eval_train_shape_sr_metric_rmse:
+            train_shape_results_dict = metrics_handler.evaluate_metrics_shape(
+                psf_model, simPSF_np, training_data.train_dataset
+            )
+        else:
+            train_shape_results_dict = None
 
         # Save metrics into dictionary
         train_metrics = {
