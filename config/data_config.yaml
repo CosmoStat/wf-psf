@@ -2,8 +2,8 @@
 data:
   training:
     # Specify directory path to data; Default setting is /path/to/repo/data
-    data_dir: data
-    file: coherent_euclid_dataset/train_Euclid_res_200_TrainStars_id_001.npy
+    data_dir: data/coherent_euclid_dataset/
+    file: train_Euclid_res_200_TrainStars_id_001.npy
     # if training dataset file does not exist, generate a new one by setting values below
     stars: null
     positions: null
@@ -26,8 +26,8 @@ data:
       euclid_obsc: true
       n_stars: 200
   test:
-    data_dir: data
-    file: coherent_euclid_dataset/test_Euclid_res_id_001.npy
+    data_dir: data/coherent_euclid_dataset/
+    file: test_Euclid_res_id_001.npy
     # If test dataset file not provided produce a new one
     stars: null
     noisy_stars: null
