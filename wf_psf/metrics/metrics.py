@@ -6,6 +6,9 @@ import wf_psf.utils.utils as utils
 from wf_psf.psf_models.tf_psf_field import build_PSF_model
 from wf_psf.psf_models import tf_psf_field as psf_field
 from wf_psf import SimPSFToolkit as SimPSFToolkit
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def compute_poly_metric(
@@ -325,7 +328,7 @@ def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, pos, batch_si
     rel_rmse_std = np.std(rel_rmse_vals)
 
     # Print RMSE values
-    logger.info"Absolute RMSE:\t %.4e \t +/- %.4e" % (rmse, rmse_std))
+    logger.info("Absolute RMSE:\t %.4e \t +/- %.4e" % (rmse, rmse_std))
     logger.info("Relative RMSE:\t %.4e %% \t +/- %.4e %%" % (rel_rmse, rel_rmse_std))
 
     return rmse, rel_rmse, rmse_std, rel_rmse_std
