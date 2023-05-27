@@ -86,7 +86,7 @@ class FileIOHandler:
         per run.
 
         """
-        pathlib.Path(os.path.join(self._run_output_dir)).mkdir()
+        pathlib.Path(os.path.join(self._run_output_dir)).mkdir(exist_ok=True)
 
     def _setup_dirs(self):
         """Setup Directories.
