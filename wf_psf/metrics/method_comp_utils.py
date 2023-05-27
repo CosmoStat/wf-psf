@@ -159,7 +159,7 @@ def calc_shapes(matched_psfs, test_stars):
             GT_pred_e2_HSM.append(GT_pred_moments[it].observed_shape.g2)
             GT_pred_R2_HSM.append(2 * (GT_pred_moments[it].moments_sigma ** 2))
 
-    print(
+    logger.info(
         "Total number of stars: %d\t Number of shape measurements problems %d."
         % (len(test_stars), len(test_stars) - len(pred_e1_HSM))
     )

@@ -77,7 +77,7 @@ def compute_poly_metric(
 
     # GT data preparation
     if dataset_dict is None or "stars" not in dataset_dict:
-        print("Regenerating GT stars from model.")
+        logger.info("Regenerating GT stars from model.")
         # Change interpolation parameters for the GT simPSF
         interp_pts_per_bin = simPSF_np.SED_interp_pts_per_bin
         simPSF_np.SED_interp_pts_per_bin = 0
@@ -96,7 +96,7 @@ def compute_poly_metric(
         GT_preds = GT_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
     else:
-        print("Using GT stars from dataset.")
+        logger.info("Using GT stars from dataset.")
         GT_preds = dataset_dict["stars"]
 
     # Calculate residuals
@@ -112,8 +112,8 @@ def compute_poly_metric(
     std_rel_rmse = 100.0 * np.std(residuals / GT_star_mean)
 
     # Print RMSE values
-    print("Absolute RMSE:\t %.4e \t +/- %.4e" % (rmse, std_rmse))
-    print("Relative RMSE:\t %.4e %% \t +/- %.4e %%" % (rel_rmse, std_rel_rmse))
+    logger.info("Absolute RMSE:\t %.4e \t +/- %.4e" % (rmse, std_rmse))
+    logger.info("Relative RMSE:\t %.4e %% \t +/- %.4e %%" % (rel_rmse, std_rel_rmse))
 
     return rmse, rel_rmse, std_rmse, std_rel_rmse
 
@@ -325,8 +325,8 @@ def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, pos, batch_si
     rel_rmse_std = np.std(rel_rmse_vals)
 
     # Print RMSE values
-    print("Absolute RMSE:\t %.4e \t +/- %.4e" % (rmse, rmse_std))
-    print("Relative RMSE:\t %.4e %% \t +/- %.4e %%" % (rel_rmse, rel_rmse_std))
+    logger.info"Absolute RMSE:\t %.4e \t +/- %.4e" % (rmse, rmse_std))
+    logger.info("Relative RMSE:\t %.4e %% \t +/- %.4e %%" % (rel_rmse, rel_rmse_std))
 
     return rmse, rel_rmse, rmse_std, rel_rmse_std
 
@@ -428,7 +428,7 @@ def compute_shape_metrics(
         or "super_res_stars" not in dataset_dict
         or "SR_stars" not in dataset_dict
     ):
-        print("Generating GT super resolved stars from the GT model.")
+        logger.info("Generating GT super resolved stars from the GT model.")
         # Change interpolation parameters for the GT simPSF
         interp_pts_per_bin = simPSF_np.SED_interp_pts_per_bin
         simPSF_np.SED_interp_pts_per_bin = 0
@@ -451,7 +451,7 @@ def compute_shape_metrics(
         )
 
     else:
-        print("Using super resolved stars from dataset.")
+        logger.info("Using super resolved stars from dataset.")
         if "super_res_stars" in dataset_dict:
             GT_predictions = dataset_dict["super_res_stars"]
         elif "SR_stars" in dataset_dict:
@@ -474,8 +474,8 @@ def compute_shape_metrics(
     rel_pix_rmse_std = 100.0 * np.std(residuals / GT_star_mean)
 
     # Print pixel RMSE values
-    print("\nPixel star absolute RMSE:\t %.4e \t +/- %.4e " % (pix_rmse, pix_rmse_std))
-    print(
+    logger.info"\nPixel star absolute RMSE:\t %.4e \t +/- %.4e " % (pix_rmse, pix_rmse_std))
+    logger.info
         "Pixel star relative RMSE:\t %.4e %% \t +/- %.4e %%"
         % (rel_pix_rmse, rel_pix_rmse_std)
     )
@@ -542,25 +542,25 @@ def compute_shape_metrics(
     std_rmse_R2_meanR2 = np.std(R2_res / GT_pred_R2_HSM)
 
     # Print shape/size errors
-    print("\nsigma(e1) RMSE =\t\t %.4e \t +/- %.4e " % (rmse_e1, std_rmse_e1))
-    print("sigma(e2) RMSE =\t\t %.4e \t +/- %.4e " % (rmse_e2, std_rmse_e2))
-    print(
+    logger.info"\nsigma(e1) RMSE =\t\t %.4e \t +/- %.4e " % (rmse_e1, std_rmse_e1))
+    logger.info"sigma(e2) RMSE =\t\t %.4e \t +/- %.4e " % (rmse_e2, std_rmse_e2))
+    logger.info
         "sigma(R2)/<R2> =\t\t %.4e \t +/- %.4e " % (rmse_R2_meanR2, std_rmse_R2_meanR2)
     )
 
     # Print relative shape/size errors
-    print(
+    logger.info
         "\nRelative sigma(e1) RMSE =\t %.4e %% \t +/- %.4e %%"
         % (rel_rmse_e1, std_rel_rmse_e1)
     )
-    print(
+    logger.info
         "Relative sigma(e2) RMSE =\t %.4e %% \t +/- %.4e %%"
         % (rel_rmse_e2, std_rel_rmse_e2)
     )
 
     # Print number of stars
-    print("\nTotal number of stars: \t\t%d" % (len(GT_pred_moments)))
-    print(
+    logger.info"\nTotal number of stars: \t\t%d" % (len(GT_pred_moments)))
+    logger.info
         "Problematic number of stars: \t%d"
         % (len(GT_pred_moments) - GT_pred_e1_HSM.shape[0])
     )
@@ -761,12 +761,12 @@ def compute_metrics(
     relative_train_res = train_res / np.sqrt(np.mean((tf_train_stars) ** 2))
 
     # Print RMSE values
-    print("Test stars absolute RMSE:\t %.4e" % test_res)
-    print("Training stars absolute RMSE:\t %.4e" % train_res)
+    logger.info"Test stars absolute RMSE:\t %.4e" % test_res)
+    logger.info"Training stars absolute RMSE:\t %.4e" % train_res)
 
     # Print RMSE values
-    print("Test stars relative RMSE:\t %.4e %%" % (relative_test_res * 100.0))
-    print("Training stars relative RMSE:\t %.4e %%" % (relative_train_res * 100.0))
+    logger.info"Test stars relative RMSE:\t %.4e %%" % (relative_test_res * 100.0))
+    logger.info("Training stars relative RMSE:\t %.4e %%" % (relative_train_res * 100.0))
 
     return test_res, train_res
 
@@ -803,8 +803,8 @@ def compute_opd_metrics_mccd(
     )
 
     # Print RMSE values
-    print("Test stars absolute OPD RMSE:\t %.4e" % test_opd_rmse)
-    print(
+    logger.info("Test stars absolute OPD RMSE:\t %.4e" % test_opd_rmse)
+    logger.info(
         "Test stars relative OPD RMSE:\t %.4e %%\n" % (relative_test_opd_rmse * 100.0)
     )
 
@@ -833,8 +833,8 @@ def compute_opd_metrics_mccd(
     )
 
     # Print RMSE values
-    print("Train stars absolute OPD RMSE:\t %.4e" % train_opd_rmse)
-    print(
+    logger.info("Train stars absolute OPD RMSE:\t %.4e" % train_opd_rmse)
+    logger.info(
         "Train stars relative OPD RMSE:\t %.4e %%\n" % (relative_train_opd_rmse * 100.0)
     )
 
@@ -873,8 +873,8 @@ def compute_opd_metrics_polymodel(
     )
 
     # Print RMSE values
-    print("Test stars OPD RMSE:\t %.4e" % test_opd_rmse)
-    print(
+    logger.info("Test stars OPD RMSE:\t %.4e" % test_opd_rmse)
+    logger.info(
         "Test stars relative OPD RMSE:\t %.4e %%\n" % (relative_test_opd_rmse * 100.0)
     )
 
@@ -903,8 +903,8 @@ def compute_opd_metrics_polymodel(
     )
 
     # Pritn RMSE values
-    print("Train stars OPD RMSE:\t %.4e" % train_opd_rmse)
-    print(
+    logger.info("Train stars OPD RMSE:\t %.4e" % train_opd_rmse)
+    logger.info(
         "Train stars relative OPD RMSE:\t %.4e %%\n" % (relative_train_opd_rmse * 100.0)
     )
 
@@ -939,8 +939,8 @@ def compute_opd_metrics_param_model(
     )
 
     # Print RMSE values
-    print("Test stars absolute OPD RMSE:\t %.4e" % test_opd_rmse)
-    print(
+    logger.info("Test stars absolute OPD RMSE:\t %.4e" % test_opd_rmse)
+    logger.info(
         "Test stars relative OPD RMSE:\t %.4e %%\n" % (relative_test_opd_rmse * 100.0)
     )
 
@@ -965,8 +965,8 @@ def compute_opd_metrics_param_model(
     )
 
     # Print RMSE values
-    print("Train stars absolute OPD RMSE:\t %.4e" % train_opd_rmse)
-    print(
+    logger.info("Train stars absolute OPD RMSE:\t %.4e" % train_opd_rmse)
+    logger.info(
         "Train stars relative OPD RMSE:\t %.4e %%\n" % (relative_train_opd_rmse * 100.0)
     )
 
