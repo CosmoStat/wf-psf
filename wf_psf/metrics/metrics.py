@@ -477,8 +477,10 @@ def compute_shape_metrics(
     rel_pix_rmse_std = 100.0 * np.std(residuals / GT_star_mean)
 
     # Print pixel RMSE values
-    logger.info"\nPixel star absolute RMSE:\t %.4e \t +/- %.4e " % (pix_rmse, pix_rmse_std))
-    logger.info
+    logger.info(
+        "\nPixel star absolute RMSE:\t %.4e \t +/- %.4e " % (pix_rmse, pix_rmse_std)
+    )
+    logger.info(
         "Pixel star relative RMSE:\t %.4e %% \t +/- %.4e %%"
         % (rel_pix_rmse, rel_pix_rmse_std)
     )
@@ -545,25 +547,25 @@ def compute_shape_metrics(
     std_rmse_R2_meanR2 = np.std(R2_res / GT_pred_R2_HSM)
 
     # Print shape/size errors
-    logger.info"\nsigma(e1) RMSE =\t\t %.4e \t +/- %.4e " % (rmse_e1, std_rmse_e1))
-    logger.info"sigma(e2) RMSE =\t\t %.4e \t +/- %.4e " % (rmse_e2, std_rmse_e2))
-    logger.info
+    logger.info("\nsigma(e1) RMSE =\t\t %.4e \t +/- %.4e " % (rmse_e1, std_rmse_e1))
+    logger.info("sigma(e2) RMSE =\t\t %.4e \t +/- %.4e " % (rmse_e2, std_rmse_e2))
+    logger.info(
         "sigma(R2)/<R2> =\t\t %.4e \t +/- %.4e " % (rmse_R2_meanR2, std_rmse_R2_meanR2)
     )
 
     # Print relative shape/size errors
-    logger.info
+    logger.info(
         "\nRelative sigma(e1) RMSE =\t %.4e %% \t +/- %.4e %%"
         % (rel_rmse_e1, std_rel_rmse_e1)
     )
-    logger.info
+    logger.info(
         "Relative sigma(e2) RMSE =\t %.4e %% \t +/- %.4e %%"
         % (rel_rmse_e2, std_rel_rmse_e2)
     )
 
     # Print number of stars
-    logger.info"\nTotal number of stars: \t\t%d" % (len(GT_pred_moments)))
-    logger.info
+    logger.info("\nTotal number of stars: \t\t%d" % (len(GT_pred_moments)))
+    logger.info(
         "Problematic number of stars: \t%d"
         % (len(GT_pred_moments) - GT_pred_e1_HSM.shape[0])
     )
@@ -764,12 +766,14 @@ def compute_metrics(
     relative_train_res = train_res / np.sqrt(np.mean((tf_train_stars) ** 2))
 
     # Print RMSE values
-    logger.info"Test stars absolute RMSE:\t %.4e" % test_res)
-    logger.info"Training stars absolute RMSE:\t %.4e" % train_res)
+    logger.info("Test stars absolute RMSE:\t %.4e" % test_res)
+    logger.info("Training stars absolute RMSE:\t %.4e" % train_res)
 
     # Print RMSE values
-    logger.info"Test stars relative RMSE:\t %.4e %%" % (relative_test_res * 100.0))
-    logger.info("Training stars relative RMSE:\t %.4e %%" % (relative_train_res * 100.0))
+    logger.info("Test stars relative RMSE:\t %.4e %%" % (relative_test_res * 100.0))
+    logger.info(
+        "Training stars relative RMSE:\t %.4e %%" % (relative_train_res * 100.0)
+    )
 
     return test_res, train_res
 
