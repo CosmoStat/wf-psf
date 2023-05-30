@@ -1,4 +1,4 @@
-"""Metrics.
+"""Metrics Interface.
 
 A module which defines the classes and methods
 to manage metrics evaluation of the trained psf model.
