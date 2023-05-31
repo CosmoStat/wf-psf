@@ -9,8 +9,9 @@ import numpy as np
 import wf_psf.utils.utils as utils
 import tensorflow as tf
 import tensorflow_addons as tfa
-
 import wf_psf.SimPSFToolkit as SimPSFToolkit
+import os
+
 
 class TrainingDataHandler:
     """Training Data Handler.
@@ -30,7 +31,12 @@ class TrainingDataHandler:
 
     def __init__(self, training_data_params, simPSF, n_bins_lambda):
         self.training_data_params = training_data_params
-        self.train_dataset = np.load(self.training_data_params.file, allow_pickle=True)[()]
+        self.train_dataset = np.load(
+            os.path.join(
+                self.training_data_params.data_dir, self.training_data_params.file
+            ),
+            allow_pickle=True,
+        )[()]
         self.train_dataset["positions"] = tf.convert_to_tensor(
             self.train_dataset["positions"], dtype=tf.float32
         )
@@ -67,11 +73,10 @@ class TestDataHandler:
 
     def __init__(self, test_data_params, simPSF, n_bins_lambda):
         self.test_data_params = test_data_params
-
-        # Load the dictionaries
-        self.test_dataset = np.load(self.test_data_params.file,allow_pickle=True)[()]
-
-        # Convert to Tensor Flow units
+        self.test_dataset = np.load(
+            os.path.join(self.test_data_params.data_dir, self.test_data_params.file),
+            allow_pickle=True,
+        )[()]
         self.test_dataset["stars"] = tf.convert_to_tensor(
             self.test_dataset["stars"], dtype=tf.float32
         )

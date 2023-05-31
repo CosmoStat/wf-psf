@@ -13,6 +13,10 @@ from tensorflow.python.keras.engine import data_adapter
 from wf_psf.psf_models import psf_models as psfm
 from wf_psf.psf_models import tf_layers as tfl
 from wf_psf.utils.utils import PI_zernikes, zernike_generator
+from wf_psf.psf_models.tf_layers import (
+    TF_batch_poly_PSF,
+    TF_batch_mono_PSF,
+)
 
 
 @psfm.register_psfclass
@@ -34,7 +38,7 @@ class TF_SemiParam_field(tf.keras.Model):
 
     ids = ("poly",)
 
-    def __init__(self, model_params, training_params, coeff_mat=None):
+    def __init__(self, model_params, batch_size, coeff_mat=None):
         super().__init__()
 
         # Inputs: pupil diameter
@@ -55,7 +59,7 @@ class TF_SemiParam_field(tf.keras.Model):
         self.opd_dim = tf.shape(self.zernike_maps)[1].numpy()
 
         # Inputs: TF_batch_poly_PSF
-        self.batch_size = training_params.batch_size
+        self.batch_size = batch_size
         self.obscurations = psfm.tf_obscurations(self.pupil_diam)
         self.output_dim = model_params.output_dim
 

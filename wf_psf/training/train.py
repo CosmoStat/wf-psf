@@ -17,9 +17,8 @@ import os
 import logging
 import wf_psf.utils.io as io
 from wf_psf.psf_models import psf_models, psf_model_semiparametric
-import training.train_utils as train_utils
+import wf_psf.training.train_utils as train_utils
 import wf_psf.data.training_preprocessing as training_preprocessing
-from wf_psf.data.training_preprocessing import TrainingDataHandler, TestDataHandler
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +34,17 @@ def setup_training():
     logger.info("Found GPU at: {}".format(device_name))
 
 
+def filepath_chkp_callback(checkpoint_dir, model_name, id_name, current_cycle):
+    return (
+        checkpoint_dir
+        + "/chkp_callback_"
+        + model_name
+        + id_name
+        + "_cycle"
+        + str(current_cycle)
+    )
+
+
 class TrainingParamsHandler:
     """Training Parameters Handler.
 
@@ -46,20 +56,26 @@ class TrainingParamsHandler:
         Recursive Namespace object containing training input parameters
     id_name: str
         ID name
-    output_dirs: FileIOHandler
-        FileIOHandler instance
-
 
     """
 
-    def __init__(
-        self, training_params, output_dirs, id_name="-coherent_euclid_200stars"
-    ):
+    def __init__(self, training_params):
         self.training_params = training_params
-        self.id_name = id_name
         self.run_id_name = self.model_name + self.id_name
-        self.checkpoint_dir = output_dirs.get_checkpoint_dir()
         self.optimizer_params = {}
+
+    @property
+    def id_name(self):
+        """ID Name.
+
+        Set unique ID name.
+
+        Returns
+        -------
+        id_name: str
+            A unique ID.
+        """
+        return self.training_params.id_name
 
     @property
     def model_name(self):
@@ -191,52 +207,14 @@ class TrainingParamsHandler:
         """
         return self.multi_cycle_params.learning_rate_non_params
 
-    @property
-    def training_data_params(self):
-        """Training Data Params.
-
-        Set training data parameters
-
-        Returns
-        -------
-        training_data_params: type
-            Recursive Namespace object
-
-        """
-        return self.training_params.data.training
-
-    @property
-    def test_data_params(self):
-        """Test Data Params.
-
-        Set test data parameters
-
-        Returns
-        -------
-        test_data_params: type
-            Recursive Namespace object
-
-
-        """
-        return self.training_params.data.test
-
-    def _filepath_chkp_callback(self, current_cycle):
-        return (
-            self.checkpoint_dir
-            + "/"
-            + "chkp_callback_"
-            + self.model_name
-            + self.id_name
-            + "_cycle"
-            + str(current_cycle)
-        )
-
-    def _prepare_callbacks(self, current_cycle):
+    def _prepare_callbacks(self, checkpoint_dir, current_cycle):
         # Prepare to save the model as a callback
         # -----------------------------------------------------
         logger.info(f"Preparing Keras model callback...")
         return tf.keras.callbacks.ModelCheckpoint(
-            self._filepath_chkp_callback(current_cycle),
+            filepath_chkp_callback(
+                checkpoint_dir, self.model_name, self.id_name, current_cycle
+            ),
             monitor="mean_squared_error",
             verbose=1,
             save_best_only=True,
@@ -244,26 +222,6 @@ class TrainingParamsHandler:
             mode="min",
             save_freq="epoch",
             options=None,
-        )
-
-    def _get_psf_model(self):
-        return psf_models.get_psf_model(
-            self.model_name,
-            self.model_params,
-            self.training_hparams,
-        )
-
-    def _get_simPSF(self):
-        return psf_models.simPSF(self.model_params)
-
-    def _get_training_data(self):
-        return TrainingDataHandler(
-            self.training_data_params, self._get_simPSF(), self.model_params.n_bins_lda
-        )
-
-    def _get_test_data(self):
-        return TestDataHandler(
-            self.test_data_params, self._get_simPSF(), self.model_params.n_bins_lda
         )
 
 
@@ -283,7 +241,7 @@ def get_gpu_info():
     return device_name
 
 
-def train(training_params, output_dirs):
+def train(training_params, training_data, test_data, checkpoint_dir, optimizer_dir):
     """Train.
 
     A function to train the psf model.
@@ -292,30 +250,35 @@ def train(training_params, output_dirs):
     ----------
     training_params: type
         Recursive Namespace object
-    output_dirs: str
-        Absolute paths to training output directories
+    training_data: object
+        TrainingDataHandler object
+    test_data: object
+        TestDataHandler object
+    checkpoint_dir: str
+        Absolute path to checkpoint directory
+    optimizer_dir: str
+        Absolute path to optimizer history directory
+
+    Returns
+    -------
+    psf_model: object
+        A class instance of the PSF Model selected for training.
+
 
     """
     # Start measuring elapsed time
     starting_time = time.time()
 
-    training_handler = TrainingParamsHandler(training_params, output_dirs)
+    training_handler = TrainingParamsHandler(training_params)
 
-    psf_model = training_handler._get_psf_model()
+    psf_model = psf_models.get_psf_model(
+        training_handler.model_params,
+        training_handler.training_hparams.batch_size,
+    )
 
     logger.info(f"PSF Model class: `{training_handler.model_name}` initialized...")
     # Model Training
     # -----------------------------------------------------
-    # Instantiate Simulated PSF Toolkit
-    logger.info(f"Instantiating simPSF toolkit...")
-
-    # -----------------------------------------------------
-    # Get training data
-    logger.info(f"Fetching and preprocessing training and test data...")
-    training_data = training_handler._get_training_data()
-
-    test_data = training_handler._get_test_data()
-
     # Save optimisation history in the saving dict
     saving_optim_hist = {}
 
@@ -340,9 +303,11 @@ def train(training_params, output_dirs):
         # -----------------------------------------------------
         logger.info(f"Preparing Keras model callback...")
 
-        model_chkp_callback = training_handler._prepare_callbacks(current_cycle)
+        model_chkp_callback = training_handler._prepare_callbacks(
+            checkpoint_dir, current_cycle
+        )
 
-        # Prepare the optimisers
+        # Prepare the optimizers
         param_optim = tfa.optimizers.RectifiedAdam(
             learning_rate=training_handler.learning_rate_params[current_cycle - 1]
         )
@@ -352,7 +317,7 @@ def train(training_params, output_dirs):
         logger.info("Starting cycle {}..".format(current_cycle))
         start_cycle = time.time()
 
-        # Compute the next cycle
+        # Compute training per cycle
         (
             psf_model,
             hist_param,
@@ -360,10 +325,16 @@ def train(training_params, output_dirs):
         ) = train_utils.general_train_cycle(
             psf_model,
             # training data
-            inputs=[training_data.train_dataset["positions"], training_data.sed_data],
+            inputs=[
+                training_data.train_dataset["positions"],
+                training_data.sed_data,
+            ],
             outputs=training_data.train_dataset["noisy_stars"],
             validation_data=(
-                [test_data.test_dataset["positions"], test_data.sed_data],
+                [
+                    test_data.test_dataset["positions"],
+                    test_data.sed_data,
+                ],
                 test_data.test_dataset["stars"],
             ),
             batch_size=training_handler.training_hparams.batch_size,
@@ -390,11 +361,11 @@ def train(training_params, output_dirs):
             verbose=2,
         )
 
-        # Save the weights at the end of the second cycle
+        # Save the weights at the end of the nth cycle
         if training_handler.multi_cycle_params.save_all_cycles:
             psf_model.save_weights(
-                output_dirs.get_checkpoint_dir()
-                + "chkp_"
+                checkpoint_dir
+                + "/chkp_"
                 + training_handler.model_name
                 + training_handler.id_name
                 + "_cycle"
@@ -419,7 +390,7 @@ def train(training_params, output_dirs):
     # Save last cycle if no cycles were saved
     if not training_handler.multi_cycle_params.save_all_cycles:
         psf_model.save_weights(
-            output_dirs.get_checkpoint_dir()
+            checkpoint_dir
             + "/chkp_"
             + training_handler.model_name
             + training_handler.id_name
@@ -429,7 +400,7 @@ def train(training_params, output_dirs):
 
     # Save optimisation history dictionary
     np.save(
-        output_dirs.get_optimizer_dir()
+        optimizer_dir
         + "/optim_hist_"
         + training_handler.model_name
         + training_handler.id_name
@@ -440,7 +411,14 @@ def train(training_params, output_dirs):
     # Print final time
     final_time = time.time()
     logger.info("\nTotal elapsed time: %f" % (final_time - starting_time))
+    logger.info("\n Training complete..")
 
-    # Close log file
-    logger.info("\n Good bye..")
-    # log_file.close()
+    return (
+        psf_model,
+        filepath_chkp_callback(
+            checkpoint_dir,
+            training_handler.model_name,
+            training_handler.id_name,
+            current_cycle,
+        ),
+    )

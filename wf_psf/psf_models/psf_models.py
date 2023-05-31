@@ -10,19 +10,11 @@ to manage the parameters of the psf model.
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
-from wf_psf.psf_models.tf_layers import (
-    TF_poly_Z_field,
-    TF_zernike_OPD,
-    TF_batch_poly_PSF,
-)
-from wf_psf.psf_models.tf_layers import (
-    TF_NP_poly_OPD,
-    TF_batch_mono_PSF,
-    TF_physical_layer,
-)
 from wf_psf.utils.utils import PI_zernikes, zernike_generator
 from wf_psf.sims.SimPSFToolkit import SimPSFToolkit
+import logging
 
+logger = logging.getLogger(__name__)
 
 PSF_CLASS = {}
 
@@ -71,11 +63,16 @@ def set_psf_model(model_name):
         Name of PSF model class
 
     """
-    psf_class = PSF_CLASS[model_name]
+    try:
+        psf_class = PSF_CLASS[model_name]
+    except KeyError as e:
+        logger.exception("PSF model entered is invalid. Check your config settings.")
+        exit()
+
     return psf_class
 
 
-def get_psf_model(model_name, model_params, training_hparams):
+def get_psf_model(model_params, training_hparams, *coeff_matrix):
     """Get PSF Model Class Instance.
 
     A function to instantiate a
@@ -89,6 +86,8 @@ def get_psf_model(model_name, model_params, training_hparams):
         Recursive Namespace object
     training_hparams: type
         Recursive Namespace object
+    coeff_matrix: Tensor or None, optional
+        Initialization of the coefficient matrix defining the parametric psf field model
 
     Returns
     -------
@@ -96,9 +95,9 @@ def get_psf_model(model_name, model_params, training_hparams):
         PSF model class instance
 
     """
-    psf_class = set_psf_model(model_name)
+    psf_class = set_psf_model(model_params.model_name)
 
-    return psf_class(model_params, training_hparams)
+    return psf_class(model_params, training_hparams, *coeff_matrix)
 
 
 def tf_zernike_cube(n_zernikes, pupil_diam):
