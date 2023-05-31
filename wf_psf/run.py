@@ -84,10 +84,10 @@ def mainMethod():
     file_handler.copy_conffile_to_output_dir(configs_path, configs_file)
 
     config_types = {
-        "data_conf": data_params,
-        "training_conf": training_params,
-        "metrics_conf": metrics_params,
-        "plotting_conf": plotting_params,
+        "data_conf": None,
+        "training_conf": None,
+        "metrics_conf": None,
+        "plotting_conf": None,
     }
     for conf in configs:
         for k, v in conf.items():
@@ -102,8 +102,8 @@ def mainMethod():
                 logger.exception(e)
                 exit()
             except TypeError as e:
-                logger.exception(e)
                 if v is not None:
+                    logger.exception(e)
                     exit()
 
     try:
@@ -135,7 +135,7 @@ def mainMethod():
             logger.info("Performing metrics evaluation of trained PSF model...")
             evaluate_model(
                 config_types["metrics_conf"].metrics,
-                config_types["training_conf"].training.training,
+                config_types["training_conf"].training,
                 training_data,
                 test_data,
                 psf_model,
