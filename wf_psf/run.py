@@ -83,11 +83,6 @@ def mainMethod():
     configs_file = os.path.basename(args.conffile)
     file_handler.copy_conffile_to_output_dir(configs_path, configs_file)
 
-    data_params = None
-    training_params = None
-    metrics_params = None
-    plotting_params = None
-
     config_types = {
         "data_conf": data_params,
         "training_conf": training_params,
@@ -106,6 +101,10 @@ def mainMethod():
             except ValueError as e:
                 logger.exception(e)
                 exit()
+            except TypeError as e:
+                logger.exception(e)
+                if v is not None:
+                    exit()
 
     try:
         logger.info("Performing training...")
@@ -132,11 +131,11 @@ def mainMethod():
             file_handler.get_optimizer_dir(file_handler._run_output_dir),
         )
 
-        if metrics_params is not None:
+        if config_types["metrics_conf"] is not None:
             logger.info("Performing metrics evaluation of trained PSF model...")
             evaluate_model(
-                metrics_params.metrics,
-                training_params.training,
+                config_types["metrics_conf"].metrics,
+                config_types["training_conf"].training.training,
                 training_data,
                 test_data,
                 psf_model,
@@ -147,14 +146,17 @@ def mainMethod():
     except AttributeError:
         logger.info("Training or Metrics not set in configs.yaml. Skipping...")
 
-    if training_params is None and metrics_params is not None:
+    if (
+        config_types["training_conf"] is None
+        and config_types["metrics_conf"] is not None
+    ):
         try:
             logger.info("Performing metrics evaluation only...")
             # Get Config File for Trained PSF Model
             trained_params = read_conf(
                 os.path.join(
-                    metrics_params.metrics.trained_model_path,
-                    metrics_params.metrics.trained_model_config,
+                    config_types["metrics_conf"].metrics.trained_model_path,
+                    config_types["metrics_conf"].metrics.trained_model_config,
                 )
             )
             logger.info(trained_params.training)
@@ -162,21 +164,21 @@ def mainMethod():
 
             checkpoint_filepath = train.filepath_chkp_callback(
                 file_handler.get_checkpoint_dir(
-                    metrics_params.metrics.trained_model_path
+                    config_types["metrics_conf"].metrics.trained_model_path
                 ),
                 trained_params.training.model_params.model_name,
                 trained_params.training.id_name,
-                metrics_params.metrics.saved_training_cycle,
+                config_types["metrics_conf"].metrics.saved_training_cycle,
             )
 
             training_data = TrainingDataHandler(
-                data_params.data.training,
+                config_types["data_conf"].data.training,
                 simPSF,
                 trained_params.training.model_params.n_bins_lda,
             )
 
             test_data = TestDataHandler(
-                data_params.data.test,
+                config_types["data_conf"].data.test,
                 simPSF,
                 trained_params.training.model_params.n_bins_lda,
             )
@@ -187,7 +189,7 @@ def mainMethod():
             )
 
             evaluate_model(
-                metrics_params.metrics,
+                config_types["metrics_conf"].metrics,
                 trained_params.training,
                 training_data,
                 test_data,
@@ -207,15 +209,15 @@ def mainMethod():
         # Get Config File for Trained PSF Model
         trained_params = read_conf(
             os.path.join(
-                plotting_params.plots.trained_model_path,
-                plotting_params.plots.trained_model_config,
+                config_types["plotting_conf"].plots.trained_model_path,
+                config_types["plotting_conf"].plots.trained_model_config,
             )
         )
 
         metrics_params = read_conf(
             os.path.join(
-                plotting_params.plots.trained_model_path,
-                plotting_params.plots.metrics_config,
+                config_types["plotting_conf"].plots.trained_model_path,
+                config_types["plotting_conf"].plots.metrics_config,
             )
         )
     except AttributeError:
