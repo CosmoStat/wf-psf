@@ -92,9 +92,12 @@ def mainMethod():
     for conf in configs:
         for k, v in conf.items():
             try:
-                config_types[k] = read_conf(os.path.join(configs_path, v))
-                logger.info(config_types[k])
-                file_handler.copy_conffile_to_output_dir(configs_path, v)
+                if k in config_types:
+                    config_types[k] = read_conf(os.path.join(configs_path, v))
+                    logger.info(config_types[k])
+                    file_handler.copy_conffile_to_output_dir(configs_path, v)
+                else:
+                    raise KeyError("Incorrect key values in configs.yaml file.")
             except FileNotFoundError as e:
                 logger.exception("Check your config file settings.")
                 exit()
@@ -102,6 +105,9 @@ def mainMethod():
                 if v is not None:
                     logger.exception(e)
                     exit()
+            except KeyError as e:
+                logger.exception(e)
+                exit()
 
     try:
         logger.info("Performing training...")
