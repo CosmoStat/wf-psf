@@ -123,8 +123,8 @@ def read_stream(conf_file):
 
     Yields
     ------
-    RecursiveNamespace
-        RecursiveNamespace object
+    dict
+        dict
 
     """
     stream = open(conf_file, "r")
@@ -132,7 +132,7 @@ def read_stream(conf_file):
 
     for doc in docs:
         try:
-            yield RecursiveNamespace(**doc)
+            yield doc
         except TypeError:
             logger.exception("configs.yaml file is empty.")
             exit()

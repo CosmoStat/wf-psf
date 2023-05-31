@@ -86,87 +86,46 @@ def mainMethod():
     data_params = None
     training_params = None
     metrics_params = None
+    plotting_params = None
+
+    config_types = {
+        "data_conf": data_params,
+        "training_conf": training_params,
+        "metrics_conf": metrics_params,
+        "plotting_conf": plotting_params,
+    }
     for conf in configs:
-        try:
-            if hasattr(conf, "data_conf"):
-                data_params = read_conf(os.path.join(configs_path, conf.data_conf))
-                logger.info(data_params)
-                file_handler.copy_conffile_to_output_dir(configs_path, conf.data_conf)
-            else:
-                raise ValueError("Data Config file not provided...")
-        except FileNotFoundError as e:
-            logger.exception(e)
-            exit()
-        except ValueError as e:
-            logger.exception(e)
-            exit()
-
-        try:
-            if hasattr(conf, "training_conf"):
-                training_params = read_conf(
-                    os.path.join(configs_path, conf.training_conf)
-                )
-                logger.info(training_params.training)
-                file_handler.copy_conffile_to_output_dir(
-                    configs_path, conf.training_conf
-                )
-            else:
-                raise ValueError("Training Config settings are incorrect.")
-        except TypeError as e:
-            if conf.training_conf is not None:
-                logger.exception("Invalid Data Type in config file.")
+        for k, v in conf.items():
+            try:
+                config_types[k] = read_conf(os.path.join(configs_path, v))
+                logger.info(config_types[k])
+                file_handler.copy_conffile_to_output_dir(configs_path, v)
+            except FileNotFoundError as e:
+                logger.exception(e)
                 exit()
-        except FileNotFoundError as e:
-            logger.exception(
-                "Training config file does not exist.  Please check your config file."
-            )
-            exit()
-        except ValueError as e:
-            logger.exception(e)
-            exit()
-
-        try:
-            if hasattr(conf, "metrics_conf"):
-                metrics_params = read_conf(
-                    os.path.join(configs_path, conf.metrics_conf)
-                )
-                logger.info(metrics_params.metrics)
-                file_handler.copy_conffile_to_output_dir(
-                    configs_path, conf.metrics_conf
-                )
-            else:
-                raise ValueError("Metrics config settings are incorrect.")
-        except TypeError as e:
-            if conf.metrics_conf is not None:
-                logger.exception("Invalid Data Type in config file.")
+            except ValueError as e:
+                logger.exception(e)
                 exit()
-        except FileNotFoundError as e:
-            logger.exception(
-                "Metric config file does not exist.  Please check your config file."
-            )
-            exit()
-        except ValueError as e:
-            logger.exception(e)
-            exit()
 
     try:
         logger.info("Performing training...")
-        simPSF = psf_models.simPSF(training_params.training.model_params)
+
+        simPSF = psf_models.simPSF(config_types["training_conf"].training.model_params)
 
         training_data = TrainingDataHandler(
-            data_params.data.training,
+            config_types["data_conf"].data.training,
             simPSF,
-            training_params.training.model_params.n_bins_lda,
+            config_types["training_conf"].training.model_params.n_bins_lda,
         )
 
         test_data = TestDataHandler(
-            data_params.data.test,
+            config_types["data_conf"].data.test,
             simPSF,
-            training_params.training.model_params.n_bins_lda,
+            config_types["training_conf"].training.model_params.n_bins_lda,
         )
 
         psf_model, checkpoint_filepath = train.train(
-            training_params.training,
+            config_types["training_conf"].training,
             training_data,
             test_data,
             file_handler.get_checkpoint_dir(file_handler._run_output_dir),
@@ -188,7 +147,7 @@ def mainMethod():
     except AttributeError:
         logger.info("Training or Metrics not set in configs.yaml. Skipping...")
 
-    if training_params is None:
+    if training_params is None and metrics_params is not None:
         try:
             logger.info("Performing metrics evaluation only...")
             # Get Config File for Trained PSF Model
@@ -198,9 +157,7 @@ def mainMethod():
                     metrics_params.metrics.trained_model_config,
                 )
             )
-
             logger.info(trained_params.training)
-
             simPSF = psf_models.simPSF(trained_params.training.model_params)
 
             checkpoint_filepath = train.filepath_chkp_callback(
@@ -244,6 +201,29 @@ def mainMethod():
             )
         except FileNotFoundError as e:
             logger.exception(e)
+
+    try:
+        logger.info("Generating plots...")
+        # Get Config File for Trained PSF Model
+        trained_params = read_conf(
+            os.path.join(
+                plotting_params.plots.trained_model_path,
+                plotting_params.plots.trained_model_config,
+            )
+        )
+
+        metrics_params = read_conf(
+            os.path.join(
+                plotting_params.plots.trained_model_path,
+                plotting_params.plots.metrics_config,
+            )
+        )
+    except AttributeError:
+        logger.exception(
+            "Configs are not correctly set in configs.yaml.  Please check your config file."
+        )
+    except FileNotFoundError as e:
+        logger.exception(e)
 
     logger.info("#")
     logger.info("# Exiting wavediff mainMethod()")
