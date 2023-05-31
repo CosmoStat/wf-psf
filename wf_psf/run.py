@@ -110,6 +110,8 @@ def mainMethod():
                 file_handler.copy_conffile_to_output_dir(
                     configs_path, conf.training_conf
                 )
+            else:
+                raise ValueError("Training Config settings are incorrect.")
         except TypeError as e:
             if conf.training_conf is not None:
                 logger.exception("Invalid Data Type in config file.")
@@ -118,6 +120,9 @@ def mainMethod():
             logger.exception(
                 "Training config file does not exist.  Please check your config file."
             )
+            exit()
+        except ValueError as e:
+            logger.exception(e)
             exit()
 
         try:
@@ -129,6 +134,8 @@ def mainMethod():
                 file_handler.copy_conffile_to_output_dir(
                     configs_path, conf.metrics_conf
                 )
+            else:
+                raise ValueError("Metrics config settings are incorrect.")
         except TypeError as e:
             if conf.metrics_conf is not None:
                 logger.exception("Invalid Data Type in config file.")
@@ -137,6 +144,9 @@ def mainMethod():
             logger.exception(
                 "Metric config file does not exist.  Please check your config file."
             )
+            exit()
+        except ValueError as e:
+            logger.exception(e)
             exit()
 
     try:
