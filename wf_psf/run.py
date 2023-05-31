@@ -96,10 +96,7 @@ def mainMethod():
                 logger.info(config_types[k])
                 file_handler.copy_conffile_to_output_dir(configs_path, v)
             except FileNotFoundError as e:
-                logger.exception(e)
-                exit()
-            except ValueError as e:
-                logger.exception(e)
+                logger.exception("Check your config file settings.")
                 exit()
             except TypeError as e:
                 if v is not None:
