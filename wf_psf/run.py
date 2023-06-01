@@ -11,6 +11,7 @@ from wf_psf.utils.io import FileIOHandler
 import os
 import logging.config
 import logging
+from wf_psf.utils.configs_handler import get_run_config
 from wf_psf.data.training_preprocessing import TrainingDataHandler, TestDataHandler
 from wf_psf.training import train
 from wf_psf.psf_models import psf_models
@@ -84,18 +85,22 @@ def mainMethod():
     file_handler.copy_conffile_to_output_dir(configs_path, configs_file)
 
     config_types = {
-        "data_conf": None,
+        #       "data_conf": None,
         "training_conf": None,
         "metrics_conf": None,
         "plotting_conf": None,
     }
+
     for conf in configs:
         for k, v in conf.items():
             try:
                 if k in config_types:
-                    config_types[k] = read_conf(os.path.join(configs_path, v))
-                    logger.info(config_types[k])
+                    config_class = get_run_config(
+                        k, os.path.join(configs_path, v), file_handler
+                    )
+                    logger.info(config_class)
                     file_handler.copy_conffile_to_output_dir(configs_path, v)
+                    config_class.run()
                 else:
                     raise KeyError("Incorrect key values in configs.yaml file.")
             except FileNotFoundError as e:
@@ -108,127 +113,6 @@ def mainMethod():
             except KeyError as e:
                 logger.exception(e)
                 exit()
-
-    try:
-        logger.info("Performing training...")
-
-        simPSF = psf_models.simPSF(config_types["training_conf"].training.model_params)
-
-        training_data = TrainingDataHandler(
-            config_types["data_conf"].data.training,
-            simPSF,
-            config_types["training_conf"].training.model_params.n_bins_lda,
-        )
-
-        test_data = TestDataHandler(
-            config_types["data_conf"].data.test,
-            simPSF,
-            config_types["training_conf"].training.model_params.n_bins_lda,
-        )
-
-        psf_model, checkpoint_filepath = train.train(
-            config_types["training_conf"].training,
-            training_data,
-            test_data,
-            file_handler.get_checkpoint_dir(file_handler._run_output_dir),
-            file_handler.get_optimizer_dir(file_handler._run_output_dir),
-        )
-
-        if config_types["metrics_conf"] is not None:
-            logger.info("Performing metrics evaluation of trained PSF model...")
-            evaluate_model(
-                config_types["metrics_conf"].metrics,
-                config_types["training_conf"].training,
-                training_data,
-                test_data,
-                psf_model,
-                checkpoint_filepath,
-                file_handler.get_metrics_dir(file_handler._run_output_dir),
-            )
-
-    except AttributeError:
-        logger.info("Training or Metrics not set in configs.yaml. Skipping...")
-
-    if (
-        config_types["training_conf"] is None
-        and config_types["metrics_conf"] is not None
-    ):
-        try:
-            logger.info("Performing metrics evaluation only...")
-            # Get Config File for Trained PSF Model
-            trained_params = read_conf(
-                os.path.join(
-                    config_types["metrics_conf"].metrics.trained_model_path,
-                    config_types["metrics_conf"].metrics.trained_model_config,
-                )
-            )
-            logger.info(trained_params.training)
-            simPSF = psf_models.simPSF(trained_params.training.model_params)
-
-            checkpoint_filepath = train.filepath_chkp_callback(
-                file_handler.get_checkpoint_dir(
-                    config_types["metrics_conf"].metrics.trained_model_path
-                ),
-                trained_params.training.model_params.model_name,
-                trained_params.training.id_name,
-                config_types["metrics_conf"].metrics.saved_training_cycle,
-            )
-
-            training_data = TrainingDataHandler(
-                config_types["data_conf"].data.training,
-                simPSF,
-                trained_params.training.model_params.n_bins_lda,
-            )
-
-            test_data = TestDataHandler(
-                config_types["data_conf"].data.test,
-                simPSF,
-                trained_params.training.model_params.n_bins_lda,
-            )
-
-            psf_model = psf_models.get_psf_model(
-                trained_params.training.model_params,
-                trained_params.training.training_hparams,
-            )
-
-            evaluate_model(
-                config_types["metrics_conf"].metrics,
-                trained_params.training,
-                training_data,
-                test_data,
-                psf_model,
-                checkpoint_filepath,
-                file_handler.get_metrics_dir(file_handler._run_output_dir),
-            )
-        except AttributeError:
-            logger.exception(
-                "Configs are not correctly set in configs.yaml.  Please check your config file."
-            )
-        except FileNotFoundError as e:
-            logger.exception(e)
-
-    try:
-        logger.info("Generating plots...")
-        # Get Config File for Trained PSF Model
-        trained_params = read_conf(
-            os.path.join(
-                config_types["plotting_conf"].plots.trained_model_path,
-                config_types["plotting_conf"].plots.trained_model_config,
-            )
-        )
-
-        metrics_params = read_conf(
-            os.path.join(
-                config_types["plotting_conf"].plots.trained_model_path,
-                config_types["plotting_conf"].plots.metrics_config,
-            )
-        )
-    except AttributeError:
-        logger.exception(
-            "Configs are not correctly set in configs.yaml.  Please check your config file."
-        )
-    except FileNotFoundError as e:
-        logger.exception(e)
 
     logger.info("#")
     logger.info("# Exiting wavediff mainMethod()")
