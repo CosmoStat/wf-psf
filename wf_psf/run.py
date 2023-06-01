@@ -6,16 +6,12 @@ This module setups the run of the WF_PSF pipeline.
 
 """
 import argparse
-from wf_psf.utils.read_config import read_stream, read_conf
+from wf_psf.utils.read_config import read_stream
 from wf_psf.utils.io import FileIOHandler
 import os
 import logging.config
 import logging
 from wf_psf.utils.configs_handler import get_run_config
-from wf_psf.data.training_preprocessing import TrainingDataHandler, TestDataHandler
-from wf_psf.training import train
-from wf_psf.psf_models import psf_models
-from wf_psf.metrics.metrics_interface import evaluate_model
 
 
 def setProgramOptions():
