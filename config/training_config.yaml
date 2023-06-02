@@ -3,7 +3,7 @@ training:
   id_name: -coherent_euclid_200stars
   # Name of Data Config file
   data_config: data_config.yaml 
-  # Metrics Config file
+  # Metrics Config file - Enter file to run metrics evaluation else if empty run train only
   metrics_config: metrics_config.yaml
   model_params:
     # Model type. Options are: 'mccd', 'graph', 'poly, 'param', 'poly_physical'."
