@@ -29,9 +29,10 @@ class FileIOHandler:
 
     """
 
-    def __init__(self, repodir_path, output_path):
+    def __init__(self, repodir_path, output_path, config_path):
         self.repodir_path = repodir_path
         self.output_path = output_path
+        self.config_path = config_path
         self._timestamp = self.get_timestamp()
         self._parent_output_dir = "wf-outputs"
         self._run_output_dir = os.path.join(
@@ -174,7 +175,7 @@ class FileIOHandler:
             self._config,
         )
 
-    def copy_conffile_to_output_dir(self, source_dir, source_file):
+    def copy_conffile_to_output_dir(self, source_file):
         """Write File.
 
         A function to copy a file to
@@ -187,7 +188,8 @@ class FileIOHandler:
         source_file: str
             Name of source file
         """
-        source = os.path.join(source_dir, source_file)
+
+        source = os.path.join(self.config_path, source_file)
         destination = os.path.join(self.get_config_dir(), source_file)
 
         shutil.copy(source, destination)

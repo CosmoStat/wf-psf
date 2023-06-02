@@ -66,8 +66,13 @@ def mainMethod():
     """
     args = setProgramOptions()
 
-    file_handler = FileIOHandler(args.repodir, args.outputdir)
+    configs_path = os.path.dirname(args.conffile)
+    configs = read_stream(args.conffile)
+    configs_file = os.path.basename(args.conffile)
+
+    file_handler = FileIOHandler(args.repodir, args.outputdir, configs_path)
     file_handler.setup_outputs()
+    file_handler.copy_conffile_to_output_dir(configs_file)
 
     logger = logging.getLogger("wavediff")
 
@@ -75,13 +80,7 @@ def mainMethod():
     logger.info("# Entering wavediff mainMethod()")
     logger.info("#")
 
-    configs_path = os.path.dirname(args.conffile)
-    configs = read_stream(args.conffile)
-    configs_file = os.path.basename(args.conffile)
-    file_handler.copy_conffile_to_output_dir(configs_path, configs_file)
-
     config_types = {
-        #       "data_conf": None,
         "training_conf": None,
         "metrics_conf": None,
         "plotting_conf": None,
@@ -95,7 +94,7 @@ def mainMethod():
                         k, os.path.join(configs_path, v), file_handler
                     )
                     logger.info(config_class)
-                    file_handler.copy_conffile_to_output_dir(configs_path, v)
+                    file_handler.copy_conffile_to_output_dir(v)
                     config_class.run()
                 else:
                     raise KeyError("Incorrect key values in configs.yaml file.")

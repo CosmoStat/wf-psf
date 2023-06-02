@@ -138,7 +138,11 @@ class TrainingConfigHandler:
         self.training_conf = read_conf(training_conf)
         self.file_handler = file_handler
         self.data_conf = DataConfigHandler(
-            read_conf(os.path.join(self.training_conf.training.data_config_path)),
+            read_conf(
+                os.path.join(
+                    file_handler.config_path, self.training_conf.training.data_config
+                )
+            ),
             self.training_conf.training.model_params,
         )
         self.checkpoint_dir = file_handler.get_checkpoint_dir(
@@ -147,8 +151,12 @@ class TrainingConfigHandler:
         self.optimizer_dir = file_handler.get_optimizer_dir(
             self.file_handler._run_output_dir
         )
-        self.metrics_conf = read_conf(self.training_conf.training.metrics_config_path)
-    
+        self.metrics_conf = read_conf(
+            os.path.join(
+                file_handler.config_path, self.training_conf.training.metrics_config
+            )
+        )
+
     def run(self):
         psf_model, checkpoint_filepath = train.train(
             self.training_conf.training,

@@ -2,9 +2,9 @@ training:
   # ID name
   id_name: -coherent_euclid_200stars
   # Name of Data Config file
-  data_config_path: /Users/jenniferpollack/Projects/wf-psf/config/data_config.yaml 
+  data_config: data_config.yaml 
   # Metrics Config file
-  metrics_config_path: config/metrics_config.yaml
+  metrics_config: metrics_config.yaml
   model_params:
     # Model type. Options are: 'mccd', 'graph', 'poly, 'param', 'poly_physical'."
     model_name: poly
