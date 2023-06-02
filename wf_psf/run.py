@@ -80,31 +80,21 @@ def mainMethod():
     logger.info("# Entering wavediff mainMethod()")
     logger.info("#")
 
-    config_types = {
-        "training_conf": None,
-        "metrics_conf": None,
-        "plotting_conf": None,
-    }
-
     for conf in configs:
         for k, v in conf.items():
             try:
-                if k in config_types:
-                    config_class = get_run_config(
-                        k, os.path.join(configs_path, v), file_handler
-                    )
-                    logger.info(config_class)
-                    file_handler.copy_conffile_to_output_dir(v)
-                    config_class.run()
-                else:
-                    raise KeyError("Incorrect key values in configs.yaml file.")
+                config_class = get_run_config(
+                    k, os.path.join(configs_path, v), file_handler
+                )
+                logger.info(config_class)
+                file_handler.copy_conffile_to_output_dir(v)
+                config_class.run()
             except FileNotFoundError as e:
                 logger.exception("Check your config file settings.")
                 exit()
             except TypeError as e:
-                if v is not None:
-                    logger.exception(e)
-                    exit()
+                logger.exception(e)
+                exit()
             except KeyError as e:
                 logger.exception(e)
                 exit()
