@@ -248,12 +248,12 @@ def train(training_params, training_data, test_data, checkpoint_dir, optimizer_d
 
     Parameters
     ----------
-    training_params: type
-        Recursive Namespace object
-    training_data: object
-        TrainingDataHandler object
+    training_params: Recursive Namespace object
+        Recursive Namespace object containing the training parameters
+    training_data: obj
+        TrainingDataHandler object containing the training data parameters
     test_data: object
-        TestDataHandler object
+        TestDataHandler object containing the test data parameters
     checkpoint_dir: str
         Absolute path to checkpoint directory
     optimizer_dir: str
