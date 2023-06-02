@@ -209,7 +209,11 @@ class MetricsConfigHandler:
         )
 
         self.data_conf = DataConfigHandler(
-            read_conf(os.path.join(self.training_conf.training.data_config_path)),
+            read_conf(
+                os.path.join(
+                    file_handler.config_path, self.training_conf.training.data_config
+                )
+            ),
             self.training_conf.training.model_params,
         )
 
