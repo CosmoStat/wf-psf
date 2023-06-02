@@ -139,6 +139,8 @@ class TrainingConfigHandler:
 
     Parameters
     ----------
+    ids: tuple
+        A tuple containing a string id for the Configuration Class
     training_conf: str
         Path of the training configuration file
     file_handler: object
@@ -227,6 +229,8 @@ class MetricsConfigHandler:
 
     Parameters
     ----------
+    ids: tuple
+        A tuple containing a string id for the Configuration Class
     metrics_conf: str
         Path of the metrics configuration file
     file_handler: object
@@ -295,6 +299,10 @@ class PlottingConfigHandler:
     A class to handle plotting config
     settings.
 
+    Parameters
+    ----------
+    ids: tuple
+        A tuple containing a string id for the Configuration Class
     """
 
     ids = ("plotting_conf",)
