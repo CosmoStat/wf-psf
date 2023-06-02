@@ -8,7 +8,7 @@ This repository includes:
 - A numpy-based PSF simulator [here](https://github.com/tobias-liaudat/wf-psf/blob/main/wf_psf/SimPSFToolkit.py).
 - All the scripts, jobs and notebooks required to reproduce the results in [arXiv:2203.04908](http://arxiv.org/abs/2203.04908) and [arXiv:2111.12541](https://arxiv.org/abs/2111.12541).
 
-For more information on how to use the WaveDiff model through configurable scripts see the `long-runs` directory's [README](https://github.com/tobias-liaudat/wf-psf/blob/main/long-runs/README.md). 
+~~For more information on how to use the WaveDiff model through configurable scripts see the `long-runs` directory's [README](https://github.com/tobias-liaudat/wf-psf/blob/main/long-runs/README.md).~~ (Scripts will become obsolute with next release.) 
 
 ## Proposed framework
 
@@ -42,10 +42,11 @@ Optional packages:
 
 ```bash
 $ cd wf-psf
+$ git checkout dummy_main
 $ pip install .
 ```
 
-The package can then be imported in Python as `import wf_psf as wf`. We recommend using the release `1.2.0` for stability as the current main branch is under development.
+The package can then be imported in Python as `import wf_psf as wf`. ~~We recommend using the release `1.2.0` for stability as the current main branch is under development.~~
 
 ## Running `WaveDiff`
 

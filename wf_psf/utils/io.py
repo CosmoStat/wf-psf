@@ -34,13 +34,10 @@ class FileIOHandler:
         self.output_path = output_path
         self._timestamp = self.get_timestamp()
         self._parent_output_dir = "wf-outputs"
-        self._run_output_dir = (
-            self.output_path
-            + self._parent_output_dir
-            + "/"
-            + self._parent_output_dir
-            + "-"
-            + self._timestamp
+        self._run_output_dir = os.path.join(
+            self.output_path,
+            self._parent_output_dir,
+            (self._parent_output_dir + "-" + self._timestamp),
         )
         self._config = "config"
         self._checkpoint = "checkpoint"
@@ -86,7 +83,7 @@ class FileIOHandler:
         per run.
 
         """
-        pathlib.Path(os.path.join(self._run_output_dir)).mkdir(exist_ok=True)
+        pathlib.Path(self._run_output_dir).mkdir(exist_ok=True)
 
     def _setup_dirs(self):
         """Setup Directories.
@@ -190,8 +187,8 @@ class FileIOHandler:
         source_file: str
             Name of source file
         """
-        source = source_dir + "/" + source_file
-        destination = self.get_config_dir() + "/" + source_file
+        source = os.path.join(source_dir, source_file)
+        destination = os.path.join(self.get_config_dir(), source_file)
 
         shutil.copy(source, destination)
 
