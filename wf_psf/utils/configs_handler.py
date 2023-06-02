@@ -40,17 +40,15 @@ def register_configclass(config_class):
     """
     for id in config_class.ids:
         CONFIG_CLASS[id] = config_class
-        print(config_class)
 
-    print("Config Class dict", CONFIG_CLASS)
     return config_class
 
 
 def set_run_config(config_name):
     """Set Config Class.
 
-    A function to select a class of
-    the configuration from a dictionary.
+    A function to select the class of
+    a configuration from a dictionary.
 
     Parameters
     ----------
@@ -78,27 +76,23 @@ def get_run_config(run_config, config_params, file_handler):
     A function to get the configuration
     for a wf-psf run.
 
-    Inputs
-    ------
-    run_config
+    Parameters
+    ----------
+    run_config: str
+        Name of the type of run configuraton
+    config_params: str
+        Path of the run configuration file
+    file_handler: object
+        A class instance of FileIOHandler
+
+    Returns
+    -------
+    config_class: object
+        A class instance of the selected Configuration Class.
+
     """
     config_class = set_run_config(run_config)
     return config_class(config_params, file_handler)
-
-
-class ConfigHandler:
-    """ConfigHandler.
-
-    A class to handle different config
-    settings.
-
-
-    """
-
-    def __init__(self, conffile):
-        self.conffile = conffile
-
-    pass
 
 
 class DataConfigHandler:
@@ -107,17 +101,30 @@ class DataConfigHandler:
     A class to handle data config
     settings.
 
+    Parameters
+    ----------
+    data_conf: str
+        Path of the data configuration file
+    training_model_params: Recursive Namespace object
+        Recursive Namespace object containing the training model parameters
+
     """
 
     def __init__(self, data_conf, training_model_params):
+        try:
+            self.data_conf = read_conf(data_conf)
+        except FileNotFoundError as e:
+            logger.exception(e)
+            exit()
+
         self.simPSF = psf_models.simPSF(training_model_params)
         self.training_data = TrainingDataHandler(
-            data_conf.data.training,
+            self.data_conf.data.training,
             self.simPSF,
             training_model_params.n_bins_lda,
         )
         self.test_data = TestDataHandler(
-            data_conf.data.test,
+            self.data_conf.data.test,
             self.simPSF,
             training_model_params.n_bins_lda,
         )
@@ -130,6 +137,13 @@ class TrainingConfigHandler:
     A class to handle training config
     settings.
 
+    Parameters
+    ----------
+    training_conf: str
+        Path of the training configuration file
+    file_handler: object
+        A instance of the FileIOHandler class
+
     """
 
     ids = ("training_conf",)
@@ -137,27 +151,53 @@ class TrainingConfigHandler:
     def __init__(self, training_conf, file_handler):
         self.training_conf = read_conf(training_conf)
         self.file_handler = file_handler
-        self.data_conf = DataConfigHandler(
-            read_conf(
+        try:
+            self.data_conf = DataConfigHandler(
                 os.path.join(
                     file_handler.config_path, self.training_conf.training.data_config
-                )
-            ),
-            self.training_conf.training.model_params,
-        )
+                ),
+                self.training_conf.training.model_params,
+            )
+        except TypeError as e:
+            logger.exception(
+                "Invalid type. Check the data_config param in your training.yaml file."
+            )
+            exit()
+
         self.checkpoint_dir = file_handler.get_checkpoint_dir(
             self.file_handler._run_output_dir
         )
         self.optimizer_dir = file_handler.get_optimizer_dir(
             self.file_handler._run_output_dir
         )
-        self.metrics_conf = read_conf(
-            os.path.join(
-                file_handler.config_path, self.training_conf.training.metrics_config
-            )
-        )
+        if self.training_conf.training.metrics_config is not None:
+            try:
+                self.metrics_conf = read_conf(
+                    os.path.join(
+                        file_handler.config_path,
+                        self.training_conf.training.metrics_config,
+                    )
+                )
+            except FileNotFoundError as e:
+                logger.exception(
+                    "Check the metrics_config param in your training_config.yaml file."
+                )
+                exit()
+            except TypeError as e:
+                logger.exception(
+                    "Invalid type. Check the metrics_config param in your training_config.yaml file."
+                )
+                exit()
+        else:
+            logger.info("Performing training only...")
 
     def run(self):
+        """Run.
+
+        A function to run wave-diff according to the
+        input configuration.
+
+        """
         psf_model, checkpoint_filepath = train.train(
             self.training_conf.training,
             self.data_conf.training_data,
@@ -185,6 +225,13 @@ class MetricsConfigHandler:
     A class to handle metrics config
     settings.
 
+    Parameters
+    ----------
+    metrics_conf: str
+        Path of the metrics configuration file
+    file_handler: object
+        An instance of the FileIOHandler
+
     """
 
     ids = ("metrics_conf",)
@@ -208,14 +255,15 @@ class MetricsConfigHandler:
             self.metrics_conf.metrics.saved_training_cycle,
         )
 
-        self.data_conf = DataConfigHandler(
-            read_conf(
+        try:
+            self.data_conf = DataConfigHandler(
                 os.path.join(
                     file_handler.config_path, self.training_conf.training.data_config
-                )
-            ),
-            self.training_conf.training.model_params,
-        )
+                ),
+                self.training_conf.training.model_params,
+            )
+        except TypeError as e:
+            logger.exception(e)
 
         self.psf_model = psf_models.get_psf_model(
             self.training_conf.training.model_params,
@@ -223,6 +271,12 @@ class MetricsConfigHandler:
         )
 
     def run(self):
+        """Run.
+
+        A function to run wave-diff according to the
+        input configuration.
+
+        """
         evaluate_model(
             self.metrics_conf.metrics,
             self.training_conf.training,
