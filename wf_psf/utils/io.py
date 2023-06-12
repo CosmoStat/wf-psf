@@ -259,3 +259,25 @@ class FileIOHandler:
             metrics_dir,
             self._metrics,
         )
+
+    def get_plots_dir(self, plots_dir):
+        """Get Plots Directory.
+
+        A function that returns path
+        of plots directory.
+
+        Parameters
+        ----------
+        plots_dir: str
+            Name of plots directory
+
+        Returns
+        -------
+        str
+            Absolute path to plots directory
+
+        """
+        return os.path.join(
+            plots_dir,
+            self._plots,
+        )
