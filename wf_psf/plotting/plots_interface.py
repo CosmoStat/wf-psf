@@ -12,11 +12,10 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import matplotlib.ticker as mtick
 import seaborn as sns
-from wf_psf.plotting.plot_metrics_utils import extract_poly_results, define_plot_style
+from wf_psf.plotting.plot_metrics_utils import define_plot_style
 
 import os
 import logging
-import wf_psf.utils.io as io
 
 logger = logging.getLogger(__name__)
 
