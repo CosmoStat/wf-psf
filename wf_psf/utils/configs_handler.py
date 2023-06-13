@@ -155,45 +155,19 @@ class TrainingConfigHandler:
     def __init__(self, training_conf, file_handler):
         self.training_conf = read_conf(training_conf)
         self.file_handler = file_handler
-        try:
-            self.data_conf = DataConfigHandler(
+        self.data_conf = DataConfigHandler(
                 os.path.join(
                     file_handler.config_path, self.training_conf.training.data_config
                 ),
                 self.training_conf.training.model_params,
-            )
-        except TypeError as e:
-            logger.exception(
-                "Invalid type. Check the data_config param in your training.yaml file."
-            )
-            exit()
-
+            ) 
         self.checkpoint_dir = file_handler.get_checkpoint_dir(
             self.file_handler._run_output_dir
         )
         self.optimizer_dir = file_handler.get_optimizer_dir(
             self.file_handler._run_output_dir
         )
-        if self.training_conf.training.metrics_config is not None:
-            try:
-                self.metrics_conf = read_conf(
-                    os.path.join(
-                        file_handler.config_path,
-                        self.training_conf.training.metrics_config,
-                    )
-                )
-            except FileNotFoundError as e:
-                logger.exception(
-                    "Check the metrics_config param in your training_config.yaml file."
-                )
-                exit()
-            except TypeError as e:
-                logger.exception(
-                    "Invalid type. Check the metrics_config param in your training_config.yaml file."
-                )
-                exit()
-        else:
-            logger.info("Performing training only...")
+      
 
     def run(self):
         """Run.
@@ -210,16 +184,22 @@ class TrainingConfigHandler:
             self.optimizer_dir,
         )
 
-        if self.metrics_conf is not None:
-            evaluate_model(
-                self.metrics_conf.metrics,
-                self.training_conf.training,
-                self.data_conf.training_data,
-                self.data_conf.test_data,
-                psf_model,
-                checkpoint_filepath,
-                self.file_handler.get_metrics_dir(self.file_handler._run_output_dir),
-            )
+        if self.training_conf.training.metrics_config is not None:
+            # model_metrics = evaluate_model(
+            #     self.metrics_conf.metrics,
+            #     self.training_conf.training,
+            #     self.data_conf.training_data,
+            #     self.data_conf.test_data,
+            #     psf_model,
+            #     checkpoint_filepath,
+            #     self.file_handler.get_metrics_dir(self.file_handler._run_output_dir),
+            # )
+            metrics = MetricsConfigHandler(os.path.join(
+                        self.file_handler.config_path,
+                        self.training_conf.training.metrics_config,
+                    ),self.file_handler)
+            
+            metrics.run()
 
 
 @register_configclass
@@ -279,6 +259,25 @@ class MetricsConfigHandler:
             self.training_conf.training.training_hparams,
         )
 
+    def make_metrics_plots(self, model_metrics):
+        self.plotting_conf = os.path.join(
+                self.file_handler.config_path,
+                self.metrics_conf.metrics.plotting_config,
+            )
+
+        plots_config_handler = PlottingConfigHandler(
+            self.plotting_conf,
+            self.file_handler,
+            {self.file_handler.workdir: self.metrics_conf},
+        )
+
+        plots_config_handler.list_of_metrics_dict[self.file_handler.workdir] = {
+            self.training_conf.training.model_params.model_name
+            + self.training_conf.training.id_name: [model_metrics]
+        }
+
+        plots_config_handler.run()
+        
     def run(self):
         """Run.
 
@@ -297,23 +296,7 @@ class MetricsConfigHandler:
         )
 
         if self.plotting_conf is not None:
-            self.plotting_conf = os.path.join(
-                self.file_handler.config_path,
-                self.metrics_conf.metrics.plotting_config,
-            )
-
-            plots_config_handler = PlottingConfigHandler(
-                self.plotting_conf,
-                self.file_handler,
-                {self.file_handler.workdir: self.metrics_conf},
-            )
-
-            plots_config_handler.list_of_metrics_dict[self.file_handler.workdir] = {
-                self.training_conf.training.model_params.model_name
-                + self.training_conf.training.id_name: [model_metrics]
-            }
-
-            plots_config_handler.run()
+            self.make_metrics_plots(model_metrics)
 
 
 @register_configclass
