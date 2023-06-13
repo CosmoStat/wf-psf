@@ -286,15 +286,15 @@ class MetricsConfigHandler:
         input configuration.
 
         """
-        # model_metrics = evaluate_model(
-        #     self.metrics_conf.metrics,
-        #     self.training_conf.training,
-        #     self.data_conf.training_data,
-        #     self.data_conf.test_data,
-        #     self.psf_model,
-        #     self.checkpoint_filepath,
-        #     self.metrics_dir,
-        # )
+        model_metrics = evaluate_model(
+            self.metrics_conf.metrics,
+            self.training_conf.training,
+            self.data_conf.training_data,
+            self.data_conf.test_data,
+            self.psf_model,
+            self.checkpoint_filepath,
+            self.metrics_dir,
+        )
 
         if self.plotting_conf is not None:
             self.plotting_conf = os.path.join(
@@ -308,7 +308,7 @@ class MetricsConfigHandler:
 
             plots_config_handler.list_of_metrics_dict[self.file_handler.workdir] = {
                 self.training_conf.training.model_params.model_name
-                + self.training_conf.training.id_name
+                + self.training_conf.training.id_name: model_metrics
             }
 
             plots_config_handler.run()
