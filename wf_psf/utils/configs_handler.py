@@ -6,11 +6,13 @@ to manage the parameters of the config files
 :Authors: Jennifer Pollack <jennifer.pollack@cea.fr>
 
 """
+import numpy as np
 from wf_psf.utils.read_config import read_conf
 from wf_psf.data.training_preprocessing import TrainingDataHandler, TestDataHandler
 from wf_psf.training import train
 from wf_psf.psf_models import psf_models
 from wf_psf.metrics.metrics_interface import evaluate_model
+from wf_psf.plotting.plots_interface import plot_metrics
 import logging
 from wf_psf.utils.io import FileIOHandler
 import os
@@ -249,20 +251,23 @@ class MetricsConfigHandler:
                 self.metrics_conf.metrics.trained_model_config,
             )
         )
+        self.file_handler = file_handler
 
         self.checkpoint_filepath = train.filepath_chkp_callback(
-            file_handler.get_checkpoint_dir(
+            self.file_handler.get_checkpoint_dir(
                 self.metrics_conf.metrics.trained_model_path
             ),
             self.training_conf.training.model_params.model_name,
             self.training_conf.training.id_name,
             self.metrics_conf.metrics.saved_training_cycle,
         )
+        self.plotting_conf = self.metrics_conf.metrics.plotting_config
 
         try:
             self.data_conf = DataConfigHandler(
                 os.path.join(
-                    file_handler.config_path, self.training_conf.training.data_config
+                    self.file_handler.config_path,
+                    self.training_conf.training.data_config,
                 ),
                 self.training_conf.training.model_params,
             )
@@ -281,7 +286,7 @@ class MetricsConfigHandler:
         input configuration.
 
         """
-        evaluate_model(
+        model_metrics = evaluate_model(
             self.metrics_conf.metrics,
             self.training_conf.training,
             self.data_conf.training_data,
@@ -290,6 +295,21 @@ class MetricsConfigHandler:
             self.checkpoint_filepath,
             self.metrics_dir,
         )
+
+        if self.plotting_conf is not None:
+            self.plotting_conf = read_conf(
+                os.path.join(
+                    self.file_handler.config_path,
+                    self.metrics_conf.metrics.plotting_config,
+                )
+            )
+            plots_config_handler = PlottingConfigHandler(
+                self.plotting_conf, self.file_handler
+            )
+            
+            plots_config_handler.list_of_metrics_dict[self.file_handler.workdir]={self.training_conf.training.model_params.model_name + self.training.id_name:model_metrics}
+
+            plots_config_handler.run()
 
 
 @register_configclass
@@ -306,3 +326,75 @@ class PlottingConfigHandler:
     """
 
     ids = ("plotting_conf",)
+
+    def __init__(self, plotting_conf, file_handler):
+        self.plotting_conf = read_conf(plotting_conf)
+        self.metrics_dir = file_handler.get_metrics_dir(file_handler._run_output_dir)
+        self.plots_dir = file_handler.get_plots_dir(file_handler._run_output_dir)
+        self.metrics_confs = self._metrics_confs()
+        self.list_of_metrics_dict = self.load_metrics()
+
+    def _metrics_confs(self):
+        conffile = {}
+
+        for conf in self.plotting_conf.plotting_params.metrics_dir:
+            try:
+                conffile[conf] = read_conf(
+                    os.path.join(
+                        self.plotting_conf.plotting_params.metrics_output_path,
+                        conf,
+                        "config",
+                        self.plotting_conf.plotting_params.metrics_config,
+                    )
+                )
+            except:
+                logger.info("Problem with config file.")
+                exit()
+
+        return conffile
+
+    def load_metrics(self):
+        metrics_files = []
+        metrics_files_dict = {}
+  
+        for k, v in self.metrics_confs.items():
+            training_conf = read_conf(
+                os.path.join(
+                    v.metrics.trained_model_path,
+                    v.metrics.trained_model_config,
+                )
+            )
+            id_name = training_conf.training.id_name
+            model_name = training_conf.training.model_params.model_name
+            run_id_name = model_name + id_name
+
+            output_path = os.path.join(
+                self.plotting_conf.plotting_params.metrics_output_path,
+                k,
+                "metrics",
+                "metrics-" + run_id_name + ".npy",
+            )
+
+            try:
+                metrics_files.append(np.load(output_path, allow_pickle=True)[()])
+            except FileNotFoundError:
+                print(
+                    "The required file for the plots was not found. Please check your configs settings."
+                )
+            metrics_files_dict[k] = {run_id_name: metrics_files}
+
+        return metrics_files_dict
+
+    def run(self):
+        """Run.
+
+        A function to run wave-diff according to the
+        input configuration.
+
+        """
+        plot_metrics(
+            self.plotting_conf.plotting_params,
+            self.list_of_metrics_dict,
+            self.metrics_confs,
+            self.plots_dir,
+        )
