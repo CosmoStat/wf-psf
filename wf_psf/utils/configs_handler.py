@@ -156,18 +156,17 @@ class TrainingConfigHandler:
         self.training_conf = read_conf(training_conf)
         self.file_handler = file_handler
         self.data_conf = DataConfigHandler(
-                os.path.join(
-                    file_handler.config_path, self.training_conf.training.data_config
-                ),
-                self.training_conf.training.model_params,
-            ) 
+            os.path.join(
+                file_handler.config_path, self.training_conf.training.data_config
+            ),
+            self.training_conf.training.model_params,
+        )
         self.checkpoint_dir = file_handler.get_checkpoint_dir(
             self.file_handler._run_output_dir
         )
         self.optimizer_dir = file_handler.get_optimizer_dir(
             self.file_handler._run_output_dir
         )
-      
 
     def run(self):
         """Run.
@@ -185,20 +184,14 @@ class TrainingConfigHandler:
         )
 
         if self.training_conf.training.metrics_config is not None:
-            # model_metrics = evaluate_model(
-            #     self.metrics_conf.metrics,
-            #     self.training_conf.training,
-            #     self.data_conf.training_data,
-            #     self.data_conf.test_data,
-            #     psf_model,
-            #     checkpoint_filepath,
-            #     self.file_handler.get_metrics_dir(self.file_handler._run_output_dir),
-            # )
-            metrics = MetricsConfigHandler(os.path.join(
-                        self.file_handler.config_path,
-                        self.training_conf.training.metrics_config,
-                    ),self.file_handler)
-            
+            metrics = MetricsConfigHandler(
+                os.path.join(
+                    self.file_handler.config_path,
+                    self.training_conf.training.metrics_config,
+                ),
+                self.file_handler,
+            )
+
             metrics.run()
 
 
@@ -261,9 +254,9 @@ class MetricsConfigHandler:
 
     def make_metrics_plots(self, model_metrics):
         self.plotting_conf = os.path.join(
-                self.file_handler.config_path,
-                self.metrics_conf.metrics.plotting_config,
-            )
+            self.file_handler.config_path,
+            self.metrics_conf.metrics.plotting_config,
+        )
 
         plots_config_handler = PlottingConfigHandler(
             self.plotting_conf,
@@ -277,7 +270,7 @@ class MetricsConfigHandler:
         }
 
         plots_config_handler.run()
-        
+
     def run(self):
         """Run.
 
