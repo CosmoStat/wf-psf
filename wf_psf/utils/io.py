@@ -35,10 +35,11 @@ class FileIOHandler:
         self.config_path = config_path
         self._timestamp = self.get_timestamp()
         self._parent_output_dir = "wf-outputs"
+        self.workdir = self._parent_output_dir + "-" + self._timestamp
         self._run_output_dir = os.path.join(
             self.output_path,
             self._parent_output_dir,
-            (self._parent_output_dir + "-" + self._timestamp),
+            self.workdir,
         )
         self._config = "config"
         self._checkpoint = "checkpoint"
