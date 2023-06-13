@@ -303,12 +303,12 @@ class MetricsConfigHandler:
             )
 
             plots_config_handler = PlottingConfigHandler(
-                self.plotting_conf, self.file_handler
+                self.plotting_conf, self.file_handler, {self.file_handler.workdir: self.metrics_conf}
             )
 
             plots_config_handler.list_of_metrics_dict[self.file_handler.workdir] = {
                 self.training_conf.training.model_params.model_name
-                + self.training_conf.training.id_name: model_metrics
+                + self.training_conf.training.id_name: [model_metrics]
             }
 
             plots_config_handler.run()
@@ -329,19 +329,18 @@ class PlottingConfigHandler:
 
     ids = ("plotting_conf",)
 
-    def __init__(self, plotting_conf, file_handler):
+    def __init__(self, plotting_conf, file_handler, metrics_conf=dict()):
         self.plotting_conf = read_conf(plotting_conf)
         self.metrics_dir = file_handler.get_metrics_dir(file_handler._run_output_dir)
         self.plots_dir = file_handler.get_plots_dir(file_handler._run_output_dir)
-        self.metrics_confs = self._metrics_confs()
+        self.metrics_confs = metrics_conf 
+        self._update_metrics_confs()
         self.list_of_metrics_dict = self.load_metrics()
 
-    def _metrics_confs(self):
-        conffile = {}
-
+    def _update_metrics_confs(self):
         for conf in self.plotting_conf.plotting_params.metrics_dir:
             try:
-                conffile[conf] = read_conf(
+                self.metrics_confs[conf] = read_conf(
                     os.path.join(
                         self.plotting_conf.plotting_params.metrics_output_path,
                         conf,
@@ -353,7 +352,6 @@ class PlottingConfigHandler:
                 logger.info("Problem with config file.")
                 exit()
 
-        return conffile
 
     def load_metrics(self):
         metrics_files = []
