@@ -303,7 +303,9 @@ class MetricsConfigHandler:
             )
 
             plots_config_handler = PlottingConfigHandler(
-                self.plotting_conf, self.file_handler, {self.file_handler.workdir: self.metrics_conf}
+                self.plotting_conf,
+                self.file_handler,
+                {self.file_handler.workdir: self.metrics_conf},
             )
 
             plots_config_handler.list_of_metrics_dict[self.file_handler.workdir] = {
@@ -331,11 +333,17 @@ class PlottingConfigHandler:
 
     def __init__(self, plotting_conf, file_handler, metrics_conf=dict()):
         self.plotting_conf = read_conf(plotting_conf)
-        self.metrics_dir = file_handler.get_metrics_dir(file_handler._run_output_dir)
-        self.plots_dir = file_handler.get_plots_dir(file_handler._run_output_dir)
-        self.metrics_confs = metrics_conf 
-        self._update_metrics_confs()
+        self.metrics_confs = metrics_conf
+        self.check_and_update_metrics_confs()
         self.list_of_metrics_dict = self.load_metrics()
+        self.plots_dir = file_handler.get_plots_dir(file_handler._run_output_dir)
+
+    def check_and_update_metrics_confs(self):
+        if self.plotting_conf.plotting_params.metrics_dir:
+            self._update_metrics_confs()
+        if not self.metrics_confs:
+            logger.info("No metrics provided...exiting program")
+            exit()
 
     def _update_metrics_confs(self):
         for conf in self.plotting_conf.plotting_params.metrics_dir:
@@ -351,7 +359,6 @@ class PlottingConfigHandler:
             except:
                 logger.info("Problem with config file.")
                 exit()
-
 
     def load_metrics(self):
         metrics_files = []
