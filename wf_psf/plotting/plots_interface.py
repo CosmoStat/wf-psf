@@ -174,8 +174,8 @@ class MetricsPlotHandler:
                     filename=os.path.join(
                         self.plots_dir,
                         plot_dataset + "-metrics-" + self.metric_name + "_RMSE.png",
-                        self.plotting_params.plot_show,
                     ),
+                    plot_show=self.plotting_params.plot_show,
                 )
 
 
@@ -249,8 +249,8 @@ class MonochromaticMetricsPlotHandler:
                 filename=os.path.join(
                     self.plots_dir,
                     (plot_dataset + "-metrics-" + "monochrom_pixel_RMSE.png"),
-                    self.plotting_params.plot_show,
                 ),
+                plot_show=self.plotting_params.plot_show,
             )
 
 
@@ -361,8 +361,8 @@ class ShapeMetricsPlotHandler:
                 filename=os.path.join(
                     self.plots_dir,
                     plot_dataset + "-metrics_Shape_RMSE.png",
-                    self.plotting_params.plot_show,
                 ),
+                plot_show=self.plotting_params.plot_show,
             )
 
 
