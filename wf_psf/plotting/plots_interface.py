@@ -12,7 +12,6 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import matplotlib.ticker as mtick
 import seaborn as sns
-from wf_psf.plotting.plot_metrics_utils import define_plot_style
 
 import os
 import logging
@@ -20,13 +19,46 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def make_plot(x, y, yerr, label, plot_title, x_label, y_label1, y_label2, filename):
+def define_plot_style():  # type: ignore
+    # Define plot paramters
+    plot_style = {
+        "figure.figsize": (12, 8),
+        "figure.dpi": 200,
+        "figure.autolayout": True,
+        "lines.linewidth": 2,
+        "lines.linestyle": "-",
+        "lines.marker": "o",
+        "lines.markersize": 10,
+        "legend.fontsize": 20,
+        "legend.loc": "best",
+        "axes.titlesize": 24,
+        "font.size": 16,
+    }
+    mpl.rcParams.update(plot_style)
+    # Use seaborn style
+    sns.set()
+
+
+def make_plot(
+    x,
+    y,
+    yerr,
+    label,
+    plot_title,
+    x_label,
+    y_label1,
+    y_label2,
+    filename,
+    plot_show=False,
+):
     """Make Plot.
 
     A function to generate metrics plots.
 
     Parameters
     ----------
+    x = array
+
 
     """
     define_plot_style()
@@ -59,7 +91,8 @@ def make_plot(x, y, yerr, label, plot_title, x_label, y_label1, y_label2, filena
                 ax2.grid(False)
 
         plt.savefig(filename)
-        plt.show()
+        if plot_show is True:
+            plt.show()
     except Exception:
         print(
             "There is a problem rendering a plot for the performance metrics. Please check your config files or your metrics files."
@@ -141,6 +174,7 @@ class MetricsPlotHandler:
                     filename=os.path.join(
                         self.plots_dir,
                         plot_dataset + "-metrics-" + self.metric_name + "_RMSE.png",
+                        self.plotting_params.plot_show,
                     ),
                 )
 
@@ -215,6 +249,7 @@ class MonochromaticMetricsPlotHandler:
                 filename=os.path.join(
                     self.plots_dir,
                     (plot_dataset + "-metrics-" + "monochrom_pixel_RMSE.png"),
+                    self.plotting_params.plot_show,
                 ),
             )
 
@@ -326,6 +361,7 @@ class ShapeMetricsPlotHandler:
                 filename=os.path.join(
                     self.plots_dir,
                     plot_dataset + "-metrics_Shape_RMSE.png",
+                    self.plotting_params.plot_show,
                 ),
             )
 
