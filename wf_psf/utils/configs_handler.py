@@ -286,28 +286,30 @@ class MetricsConfigHandler:
         input configuration.
 
         """
-        model_metrics = evaluate_model(
-            self.metrics_conf.metrics,
-            self.training_conf.training,
-            self.data_conf.training_data,
-            self.data_conf.test_data,
-            self.psf_model,
-            self.checkpoint_filepath,
-            self.metrics_dir,
-        )
+        # model_metrics = evaluate_model(
+        #     self.metrics_conf.metrics,
+        #     self.training_conf.training,
+        #     self.data_conf.training_data,
+        #     self.data_conf.test_data,
+        #     self.psf_model,
+        #     self.checkpoint_filepath,
+        #     self.metrics_dir,
+        # )
 
         if self.plotting_conf is not None:
-            self.plotting_conf = read_conf(
-                os.path.join(
-                    self.file_handler.config_path,
-                    self.metrics_conf.metrics.plotting_config,
-                )
+            self.plotting_conf = os.path.join(
+                self.file_handler.config_path,
+                self.metrics_conf.metrics.plotting_config,
             )
+
             plots_config_handler = PlottingConfigHandler(
                 self.plotting_conf, self.file_handler
             )
-            
-            plots_config_handler.list_of_metrics_dict[self.file_handler.workdir]={self.training_conf.training.model_params.model_name + self.training.id_name:model_metrics}
+
+            plots_config_handler.list_of_metrics_dict[self.file_handler.workdir] = {
+                self.training_conf.training.model_params.model_name
+                + self.training_conf.training.id_name
+            }
 
             plots_config_handler.run()
 
@@ -356,7 +358,7 @@ class PlottingConfigHandler:
     def load_metrics(self):
         metrics_files = []
         metrics_files_dict = {}
-  
+
         for k, v in self.metrics_confs.items():
             training_conf = read_conf(
                 os.path.join(
