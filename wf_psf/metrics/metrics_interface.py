@@ -366,6 +366,7 @@ def evaluate_model(
         ## Close log file
         print("\n Good bye..")
 
+        return train_metrics
     except Exception as e:
         print("Error: %s" % e)
         raise
