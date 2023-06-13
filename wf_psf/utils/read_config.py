@@ -10,9 +10,7 @@ read configuration files.
 import yaml
 import pprint
 from types import SimpleNamespace
-import os
 import logging
-import sys
 
 logger = logging.getLogger(__name__)
 
