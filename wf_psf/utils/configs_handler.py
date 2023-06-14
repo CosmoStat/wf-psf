@@ -295,7 +295,7 @@ class MetricsConfigHandler:
 
         if self.plotting_conf is not None:
             self.file_handler.copy_conffile_to_output_dir(
-                self.training_conf.training.plotting_config
+                self.metrics_conf.metrics.plotting_config
             )
             self.make_metrics_plots(model_metrics)
 
