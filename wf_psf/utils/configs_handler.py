@@ -118,7 +118,6 @@ class DataConfigHandler:
         except FileNotFoundError as e:
             logger.exception(e)
             exit()
-
         self.simPSF = psf_models.simPSF(training_model_params)
         self.training_data = TrainingDataHandler(
             self.data_conf.data.training,
@@ -161,6 +160,9 @@ class TrainingConfigHandler:
             ),
             self.training_conf.training.model_params,
         )
+        self.file_handler.copy_conffile_to_output_dir(
+            self.training_conf.training.data_config
+        )
         self.checkpoint_dir = file_handler.get_checkpoint_dir(
             self.file_handler._run_output_dir
         )
@@ -184,6 +186,9 @@ class TrainingConfigHandler:
         )
 
         if self.training_conf.training.metrics_config is not None:
+            self.file_handler.copy_conffile_to_output_dir(
+                self.training_conf.training.metrics_config
+            )
             metrics = MetricsConfigHandler(
                 os.path.join(
                     self.file_handler.config_path,
@@ -289,6 +294,9 @@ class MetricsConfigHandler:
         )
 
         if self.plotting_conf is not None:
+            self.file_handler.copy_conffile_to_output_dir(
+                self.training_conf.training.plotting_config
+            )
             self.make_metrics_plots(model_metrics)
 
 
