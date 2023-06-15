@@ -50,7 +50,7 @@ def set_run_config(config_name):
     """Set Config Class.
 
     A function to select the class of
-    a configuration from a dictionary.
+    a configuration from CONFIG_CLASS dictionary.
 
     Parameters
     ----------
@@ -90,7 +90,7 @@ def get_run_config(run_config, config_params, file_handler):
     Returns
     -------
     config_class: object
-        A class instance of the selected Configuration Class.
+        A class instance of the selected configuration class.
 
     """
     config_class = set_run_config(run_config)
@@ -100,8 +100,8 @@ def get_run_config(run_config, config_params, file_handler):
 class DataConfigHandler:
     """DataConfigHandler.
 
-    A class to handle data config
-    settings.
+    A class to handle data configuration
+    parameters.
 
     Parameters
     ----------
@@ -118,6 +118,10 @@ class DataConfigHandler:
         except FileNotFoundError as e:
             logger.exception(e)
             exit()
+        except TypeError as e:
+            logger.exception(e)
+            exit()
+
         self.simPSF = psf_models.simPSF(training_model_params)
         self.training_data = TrainingDataHandler(
             self.data_conf.data.training,
@@ -135,8 +139,8 @@ class DataConfigHandler:
 class TrainingConfigHandler:
     """TrainingConfigHandler.
 
-    A class to handle training config
-    settings.
+    A class to handle training configuration
+    parameters.
 
     Parameters
     ----------
@@ -204,15 +208,15 @@ class TrainingConfigHandler:
 class MetricsConfigHandler:
     """MetricsConfigHandler.
 
-    A class to handle metrics config
-    settings.
+    A class to handle metrics configuation
+    parameters.
 
     Parameters
     ----------
     ids: tuple
         A tuple containing a string id for the Configuration Class
     metrics_conf: str
-        Path of the metrics configuration file
+        Path to the metrics configuration file
     file_handler: object
         An instance of the FileIOHandler
 
@@ -257,7 +261,20 @@ class MetricsConfigHandler:
             self.training_conf.training.training_hparams,
         )
 
-    def make_metrics_plots(self, model_metrics):
+    def call_plot_config_handler_run(self, model_metrics):
+        """Make Metrics Plots.
+
+        A function to call the PlottingConfigHandler run
+        command to generate metrics plots.
+
+        Parameters
+        ----------
+        model_metrics: dict
+            A dictionary storing the metrics
+            output generated during evaluation
+            of the trained PSF model.
+
+        """
         self.plotting_conf = os.path.join(
             self.file_handler.config_path,
             self.metrics_conf.metrics.plotting_config,
@@ -297,7 +314,7 @@ class MetricsConfigHandler:
             self.file_handler.copy_conffile_to_output_dir(
                 self.metrics_conf.metrics.plotting_config
             )
-            self.make_metrics_plots(model_metrics)
+            self.call_plot_config_handler_run(model_metrics)
 
 
 @register_configclass
@@ -311,6 +328,12 @@ class PlottingConfigHandler:
     ----------
     ids: tuple
         A tuple containing a string id for the Configuration Class
+    plotting_conf: str
+        Name of plotting configuration file
+    file_handler: obj
+        An instance of the FileIOHandler class
+    metrics_conf: dict
+        A dictionary containing the metrics configuration parameters
     """
 
     ids = ("plotting_conf",)
@@ -323,6 +346,12 @@ class PlottingConfigHandler:
         self.plots_dir = file_handler.get_plots_dir(file_handler._run_output_dir)
 
     def check_and_update_metrics_confs(self):
+        """Check and Update Metrics Confs.
+
+        A function to check if user provided inputs metrics
+        dir to add to metrics_confs dictionary.
+
+        """
         if self.plotting_conf.plotting_params.metrics_dir:
             self._update_metrics_confs()
         if not self.metrics_confs:
@@ -330,6 +359,13 @@ class PlottingConfigHandler:
             exit()
 
     def _update_metrics_confs(self):
+        """Update Metrics Configurations.
+
+        A method to update the metrics_confs dictionary
+        with each set of metrics configuration parameters
+        provided as input.
+
+        """
         for conf in self.plotting_conf.plotting_params.metrics_dir:
             try:
                 self.metrics_confs[conf] = read_conf(
@@ -344,21 +380,49 @@ class PlottingConfigHandler:
                 logger.info("Problem with config file.")
                 exit()
 
+    def _metrics_run_id_name(self, metrics_params):
+        """Get Metrics Run ID Name.
+
+        A function to generate run id name
+        for the metrics of a trained model
+
+        Parameters
+        ----------
+        metrics_params: RecursiveNamespace Object
+            RecursiveNamespace object containing the metrics parameters used to evaluated the trained model.
+
+        Returns
+        -------
+        metrics_run_id_name: str
+            String containing the model name and id of the training run
+        """
+        training_conf = read_conf(
+            os.path.join(
+                metrics_params.metrics.trained_model_path,
+                metrics_params.metrics.trained_model_config,
+            )
+        )
+        id_name = training_conf.training.id_name
+        model_name = training_conf.training.model_params.model_name
+        return model_name + id_name
+
     def load_metrics(self):
+        """Load Metrics.
+
+        A method to load a metrics file of
+        a trained model from a previous run.
+
+        Returns
+        -------
+        metrics_files_dict: dict
+            A dictionary containing all of the metrics from the loaded metrics files.
+
+        """
         metrics_files = []
         metrics_files_dict = {}
 
         for k, v in self.metrics_confs.items():
-            training_conf = read_conf(
-                os.path.join(
-                    v.metrics.trained_model_path,
-                    v.metrics.trained_model_config,
-                )
-            )
-            id_name = training_conf.training.id_name
-            model_name = training_conf.training.model_params.model_name
-            run_id_name = model_name + id_name
-
+            run_id_name = self._metrics_run_id_name(v)
             output_path = os.path.join(
                 self.plotting_conf.plotting_params.metrics_output_path,
                 k,

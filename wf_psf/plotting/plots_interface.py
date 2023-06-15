@@ -20,7 +20,12 @@ logger = logging.getLogger(__name__)
 
 
 def define_plot_style():  # type: ignore
-    # Define plot paramters
+    """Define Plot Style.
+
+    A function to set plot_style
+    parameters.
+
+    """
     plot_style = {
         "figure.figsize": (12, 8),
         "figure.dpi": 200,
@@ -46,8 +51,8 @@ def make_plot(
     label,
     plot_title,
     x_label,
-    y_label1,
-    y_label2,
+    y_label_right_axis,
+    y_label_left_axis,
     filename,
     plot_show=False,
 ):
@@ -57,7 +62,26 @@ def make_plot(
 
     Parameters
     ----------
-    x = array
+    x: list
+        x-axis values
+    y: list
+        y-axis values
+    yerr: list
+        Error values for y-axis points
+    label: str
+        Label for the points
+    plot_title: str
+        Name of plot
+    x_label: str
+        Label for x-axis
+    y_label_left_axis: str
+        Label for left vertical axis of plot
+    y_label_right_axis: str
+        Label for right vertical axis of plot
+    filename: str
+        Name of file to save plot
+    plot_show: bool
+        Boolean flag to set plot display
 
 
     """
@@ -81,16 +105,17 @@ def make_plot(
                 ax1.legend()
                 ax1.set_title(plot_title)
                 ax1.set_xlabel(x_label)
-                ax1.set_ylabel(y_label1)
+                ax1.set_ylabel(y_label_left_axis)
                 ax2 = ax1.twinx()
                 kwargs = dict(
                     linewidth=2, linestyle="dashed", markersize=4, marker="^", alpha=0.5
                 )
                 ax2.plot(x, y[it][k], **kwargs)
-                ax2.set_ylabel(y_label2)
+                ax2.set_ylabel(y_label_right_axis)
                 ax2.grid(False)
 
         plt.savefig(filename)
+
         if plot_show is True:
             plt.show()
     except Exception:
@@ -112,6 +137,12 @@ class MetricsPlotHandler:
     plotting_params: Recursive Namespace object
     metrics: list
         Dictionary containing list of metrics
+    metric_name: str
+        Name of metric
+    rmse: str
+        Root-mean square error label
+    std_rmse: str
+        Standard error on root-mean square error standard label
     plots_dir: str
         Output directory for metrics plots
 
@@ -131,13 +162,19 @@ class MetricsPlotHandler:
     ):
         self.plotting_params = plotting_params
         self.metrics = metrics
-        self.plots_dir = plots_dir
         self.metric_name = metric_name
         self.rmse = rmse
         self.std_rmse = std_rmse
         self.plot_title = plot_title
+        self.plots_dir = plots_dir
 
     def plot(self):
+        """Plot.
+
+        A function to generate plots for the train and test
+        metrics.
+
+        """
         for plot_dataset in ["test_metrics", "train_metrics"]:
             x = [np.array(self.plotting_params.star_numbers)]
             rmse = []
@@ -169,8 +206,8 @@ class MetricsPlotHandler:
                     label=metrics_id,
                     plot_title="Stars " + plot_dataset + self.plot_title,
                     x_label="Number of stars",
-                    y_label1="Absolute error",
-                    y_label2="Relative error [%]",
+                    y_label_left_axis="Absolute error",
+                    y_label_right_axis="Relative error [%]",
                     filename=os.path.join(
                         self.plots_dir,
                         plot_dataset + "-metrics-" + self.metric_name + "_RMSE.png",
@@ -190,6 +227,9 @@ class MonochromaticMetricsPlotHandler:
     id: str
         Class ID name
     plotting_params: Recursive Namespace object
+        RecursiveNamespace object containing plotting parameters
+    metrics_confs: dict
+        Dictionary containing the metric configurations as RecursiveNamespace objects for each run
     metrics: list
         Dictionary containing list of metrics
     plots_dir: str
@@ -206,6 +246,12 @@ class MonochromaticMetricsPlotHandler:
         self.plots_dir = plots_dir
 
     def plot(self):
+        """Plot.
+
+        A function to generate plots for the train and test
+        metrics.
+
+        """
         # Define common data
         # Common data
         lambda_list = np.arange(0.55, 0.9, 0.01)
@@ -244,8 +290,8 @@ class MonochromaticMetricsPlotHandler:
                 + plot_dataset  # type: ignore
                 + "\nMonochromatic pixel RMSE @ Euclid resolution",
                 x_label="Wavelength [um]",
-                y_label1="Absolute error",
-                y_label2="Relative error [%]",
+                y_label_left_axis="Absolute error",
+                y_label_right_axis="Relative error [%]",
                 filename=os.path.join(
                     self.plots_dir,
                     (plot_dataset + "-metrics-" + "monochrom_pixel_RMSE.png"),
@@ -265,6 +311,7 @@ class ShapeMetricsPlotHandler:
     id: str
         Class ID name
     plotting_params: Recursive Namespace object
+        Recursive Namespace Object containing plotting parameters
     metrics: list
         Dictionary containing list of metrics
     plots_dir: str
@@ -280,6 +327,12 @@ class ShapeMetricsPlotHandler:
         self.plots_dir = plots_dir
 
     def plot(self):
+        """Plot.
+
+        A function to generate plots for the train and test
+        metrics.
+
+        """
         # Define common data
         # Common data
         lambda_list = np.arange(0.55, 0.9, 0.01)
@@ -356,8 +409,8 @@ class ShapeMetricsPlotHandler:
                 label=metrics_id,
                 plot_title="Stars " + plot_dataset + ".\nShape RMSE",
                 x_label="Number of stars",
-                y_label1="Absolute error",
-                y_label2="Relative error [%]",
+                y_label_left_axis="Absolute error",
+                y_label_right_axis="Relative error [%]",
                 filename=os.path.join(
                     self.plots_dir,
                     plot_dataset + "-metrics_Shape_RMSE.png",
