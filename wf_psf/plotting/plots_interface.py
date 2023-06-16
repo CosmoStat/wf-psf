@@ -168,6 +168,42 @@ class MetricsPlotHandler:
         self.plot_title = plot_title
         self.plots_dir = plots_dir
 
+    def get_metrics(self, dataset):
+        """Get Metrics.
+
+        A function to get metrics: rmse, rmse_std
+        for each run input, e.g. wf-outputs-xxxxxxxxxxxx.
+
+        Parameters
+        ----------
+        dataset: str
+            A str representing dataset type, i.e. test_metrics or train_metrics.
+
+        Returns
+        -------
+        metrics_id: str
+            A str representing the id of a metrics for a given run.
+        rmse: list
+            A list containing root-mean-square (rms) errors for a metric for each run input.
+        std_rmse: list
+            A list containing standard errors on the root-mean-square (rms) quantites for a metric for each run input.
+
+        """
+        rmse = []
+        std_rmse = []
+        metrics_id = []
+        for k, v in self.metrics.items():
+            run_id = list(v.keys())[0]
+            metrics_id.append(run_id + "-" + k)
+
+            rmse.append(
+                {k: self.metrics[k][run_id][0][dataset][self.metric_name][self.rmse]}
+            )
+            std_rmse.append(
+                {k: self.metrics[k][run_id][0][dataset][self.metric_name][self.rmse]}
+            )
+        return metrics_id, rmse, std_rmse
+
     def plot(self):
         """Plot.
 
@@ -176,44 +212,23 @@ class MetricsPlotHandler:
 
         """
         for plot_dataset in ["test_metrics", "train_metrics"]:
-            x = [np.array(self.plotting_params.star_numbers)]
-            rmse = []
-            std_rmse = []
-            metrics_id = []
-            for k, v in self.metrics.items():
-                run_id = list(v.keys())[0]
-                metrics_id.append(run_id + "-" + k)
+            metrics_id, rmse, std_rmse = self.get_metrics(plot_dataset)
 
-                rmse.append(
-                    {
-                        k: self.metrics[k][run_id][0][plot_dataset][self.metric_name][
-                            self.rmse
-                        ]
-                    }
-                )
-                std_rmse.append(
-                    {
-                        k: self.metrics[k][run_id][0][plot_dataset][self.metric_name][
-                            self.rmse
-                        ]
-                    }
-                )
-
-                make_plot(
-                    x=[np.array(self.plotting_params.star_numbers)],
-                    y=rmse,
-                    yerr=std_rmse,
-                    label=metrics_id,
-                    plot_title="Stars " + plot_dataset + self.plot_title,
-                    x_label="Number of stars",
-                    y_label_left_axis="Absolute error",
-                    y_label_right_axis="Relative error [%]",
-                    filename=os.path.join(
-                        self.plots_dir,
-                        plot_dataset + "-metrics-" + self.metric_name + "_RMSE.png",
-                    ),
-                    plot_show=self.plotting_params.plot_show,
-                )
+            make_plot(
+                x=[np.array(self.plotting_params.star_numbers)],
+                y=rmse,
+                yerr=std_rmse,
+                label=metrics_id,
+                plot_title="Stars " + plot_dataset + self.plot_title,
+                x_label="Number of stars",
+                y_label_left_axis="Absolute error",
+                y_label_right_axis="Relative error [%]",
+                filename=os.path.join(
+                    self.plots_dir,
+                    plot_dataset + "-metrics-" + self.metric_name + "_RMSE.png",
+                ),
+                plot_show=self.plotting_params.plot_show,
+            )
 
 
 class MonochromaticMetricsPlotHandler:
