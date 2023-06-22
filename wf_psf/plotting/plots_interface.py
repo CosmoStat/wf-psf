@@ -17,6 +17,7 @@ import os
 import logging
 
 logger = logging.getLogger(__name__)
+logging.getLogger("matplotlib").setLevel(logging.WARNING)
 
 
 def define_plot_style():  # type: ignore
@@ -167,6 +168,7 @@ class MetricsPlotHandler:
         self.std_rmse = std_rmse
         self.plot_title = plot_title
         self.plots_dir = plots_dir
+        self.x = [np.array(self.plotting_params.star_numbers)]
 
     def get_metrics(self, dataset):
         """Get Metrics.
@@ -200,7 +202,11 @@ class MetricsPlotHandler:
                 {k: self.metrics[k][run_id][0][dataset][self.metric_name][self.rmse]}
             )
             std_rmse.append(
-                {k: self.metrics[k][run_id][0][dataset][self.metric_name][self.rmse]}
+                {
+                    k: self.metrics[k][run_id][0][dataset][self.metric_name][
+                        self.std_rmse
+                    ]
+                }
             )
         return metrics_id, rmse, std_rmse
 
@@ -215,7 +221,7 @@ class MetricsPlotHandler:
             metrics_id, rmse, std_rmse = self.get_metrics(plot_dataset)
 
             make_plot(
-                x=[np.array(self.plotting_params.star_numbers)],
+                x=self.x,
                 y=rmse,
                 yerr=std_rmse,
                 label=metrics_id,
@@ -225,7 +231,7 @@ class MetricsPlotHandler:
                 y_label_right_axis="Relative error [%]",
                 filename=os.path.join(
                     self.plots_dir,
-                    plot_dataset + "-metrics-" + self.metric_name + "_RMSE.png",
+                    plot_dataset + "_" + self.metric_name + "_RMSE.png",
                 ),
                 plot_show=self.plotting_params.plot_show,
             )
@@ -309,7 +315,7 @@ class MonochromaticMetricsPlotHandler:
                 y_label_right_axis="Relative error [%]",
                 filename=os.path.join(
                     self.plots_dir,
-                    (plot_dataset + "-metrics-" + "monochrom_pixel_RMSE.png"),
+                    (plot_dataset + "_monochrom_pixel_RMSE.png"),
                 ),
                 plot_show=self.plotting_params.plot_show,
             )
@@ -428,7 +434,7 @@ class ShapeMetricsPlotHandler:
                 y_label_right_axis="Relative error [%]",
                 filename=os.path.join(
                     self.plots_dir,
-                    plot_dataset + "-metrics_Shape_RMSE.png",
+                    plot_dataset + "_Shape_RMSE.png",
                 ),
                 plot_show=self.plotting_params.plot_show,
             )
@@ -473,7 +479,7 @@ def plot_metrics(plotting_params, list_of_metrics, metrics_confs, plot_saving_pa
             list_of_metrics,
             k,
             v["rmse"],
-            v["rmse"],
+            v["std_rmse"],
             v["plot_title"],
             plot_saving_path,
         )
