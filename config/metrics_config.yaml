@@ -11,13 +11,21 @@ metrics:
   # Path to Trained Model
   trained_model_path: /Users/jenniferpollack/Projects/wf-outputs/wf-outputs-202305262344/
   # Name of Trained Model Config file
-  trained_model_config: config/training_config.yaml 
+  trained_model_config: config/training_config.yaml
+  #Evaluate the polychromatic RMSE metric.
+  eval_poly_metric_rmse: False
   #Evaluate the monchromatic RMSE metric.
-  eval_mono_metric_rmse: True
+  eval_mono_metric_rmse: False
+  #Evaluate the shape results.
+  eval_test_shape_sr_metric_rmse: False
   #Evaluate the OPD RMSE metric.
-  eval_opd_metric_rmse: True
+  eval_opd_metric_rmse: False
+  # Save the predicted PSF images.
+  save_psf_images: True
   #Evaluate the super-resolution and the shape RMSE metrics for the train dataset.
-  eval_train_shape_sr_metric_rmse: True
+  eval_train_shape_sr_metric_rmse: False
+
+
   ground_truth_model:
     model_params:
       #Model used as ground truth for the evaluation. Options are: 'poly', 'physical'.
@@ -119,5 +127,3 @@ metrics:
     # It also depends on the Q values used.
     # Recommended value: 64 or higher
     output_dim: 64
-      
-
