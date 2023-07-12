@@ -333,9 +333,9 @@ def evaluate_model(
         else:
             opd_metric = None
 
-        # Shape metrics
-        print("Computing polychromatic high-resolution metrics and shape metrics.")
         if metrics_params.eval_test_shape_sr_metric_rmse:
+            # Shape metrics
+            print("Computing polychromatic high-resolution metrics and shape metrics.")
             shape_results_dict = metrics_handler.evaluate_metrics_shape(
                 psf_model, simPSF_np, test_data.test_dataset
             )
