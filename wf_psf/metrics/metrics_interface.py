@@ -343,7 +343,7 @@ def evaluate_model(
             shape_results_dict = None
 
         # predicted PSF images
-        if metrics_params.sav_psf_images:
+        if metrics_params.save_psf_images:
             psf_dict = metrics_handler.evaluate_psf(
                 psf_model, simPSF_np, test_data.test_dataset
             )
