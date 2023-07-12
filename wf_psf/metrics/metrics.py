@@ -1200,14 +1200,11 @@ def compute_psf_images(
     tf_semiparam_field,
     GT_tf_semiparam_field,
     simPSF_np,
-    SEDs,
     tf_pos,
-    n_bins_lda,
-    n_bins_gt,
-    output_Q=1,
-    output_dim=64,
+    tf_SEDs,
+    n_bins_lda=20,
+    n_bins_gt=20,
     batch_size=16,
-    opt_stars_rel_pix_rmse=False,
     dataset_dict=None,
 ):
     """Compute the pixel, shape and size RMSE of a PSF model.
@@ -1223,31 +1220,14 @@ def compute_psf_images(
         Ground truth model to produce GT observations at any position
         and wavelength.
     simPSF_np:
-    SEDs: numpy.ndarray [batch x SED_samples x 2]
-        SED samples for the corresponding positions.
     tf_pos: Tensor [batch x 2]
         Positions at where to predict the PSFs.
     n_bins_lda: int
         Number of wavelength bins to use for the polychromatic PSF.
     n_bins_gt: int
         Number of wavelength bins to use for the ground truth polychromatic PSF.
-    output_Q: int
-        Downsampling rate to match the specified telescope's sampling. The value
-        of `output_Q` should be equal to `oversampling_rate` in order to have
-        the right pixel sampling corresponding to the telescope characteristics
-        `pix_sampling`, `tel_diameter`, `tel_focal_length`. The final
-        oversampling obtained is `oversampling_rate/output_Q`.
-        Default is `1`, so the output psf will be super-resolved by a factor of
-        `oversampling_rate`. TLDR: better use `1` and measure shapes on the
-        super-resolved PSFs.
-    output_dim: int
-        Output dimension of the square PSF stamps.
     batch_size: int
         Batch size to process the PSF estimations.
-    opt_stars_rel_pix_rmse: bool
-        If `True`, the relative pixel RMSE of each star is added to ther saving dictionary.
-        The summary statistics are always computed.
-        Default is `False`.
     dataset_dict: dict
         Dictionary containing the dataset information. If provided, and if the `'super_res_stars'`
         key is present, the noiseless super resolved stars from the dataset are used to compute
@@ -1261,40 +1241,21 @@ def compute_psf_images(
 
     """
     print("Generating PSF image from the GT model.")
-    # Save original output_Q and output_dim
-    original_out_Q = tf_semiparam_field.output_Q
-    original_out_dim = tf_semiparam_field.output_dim
-    GT_original_out_Q = GT_tf_semiparam_field.output_Q
-    GT_original_out_dim = GT_tf_semiparam_field.output_dim
-
     # Set the required output_Q and output_dim parameters in the models
-    tf_semiparam_field.set_output_Q(output_Q=output_Q, output_dim=output_dim)
-    GT_tf_semiparam_field.set_output_Q(output_Q=output_Q, output_dim=output_dim)
-
-    # Need to compile the models again
-    tf_semiparam_field = build_PSF_model(tf_semiparam_field)
-    GT_tf_semiparam_field = build_PSF_model(GT_tf_semiparam_field)
-
-    # Generate SED data list
     packed_SED_data = [
-        utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_lda) for _sed in SEDs
+        utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_lda)
+        for _sed in tf_SEDs
     ]
-
-    # Prepare inputs
     tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
     tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
     pred_inputs = [tf_pos, tf_packed_SED_data]
 
-    # PSF model
-    predictions = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
+    # Model prediction
+    preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
     # GT data preparation
-    if (
-        dataset_dict is None
-        or "super_res_stars" not in dataset_dict
-        or "SR_stars" not in dataset_dict
-    ):
-        logger.info("Generating GT super resolved stars from the GT model.")
+    if dataset_dict is None or "stars" not in dataset_dict:
+        logger.info("Regenerating GT stars from model.")
         # Change interpolation parameters for the GT simPSF
         interp_pts_per_bin = simPSF_np.SED_interp_pts_per_bin
         simPSF_np.SED_interp_pts_per_bin = 0
@@ -1303,34 +1264,31 @@ def compute_psf_images(
         # Generate SED data list for GT model
         packed_SED_data = [
             utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_gt)
-            for _sed in SEDs
+            for _sed in tf_SEDs
         ]
-
-        # Prepare inputs
         tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
         tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
         pred_inputs = [tf_pos, tf_packed_SED_data]
 
-        # Ground Truth model
-        GT_predictions = GT_tf_semiparam_field.predict(
-            x=pred_inputs, batch_size=batch_size
-        )
+        # GT model prediction
+        GT_preds = GT_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
     else:
-        logger.info("Using super resolved stars from dataset.")
-        if "super_res_stars" in dataset_dict:
-            GT_predictions = dataset_dict["super_res_stars"]
-        elif "SR_stars" in dataset_dict:
-            GT_predictions = dataset_dict["SR_stars"]
+        logger.info("Using GT stars from dataset.")
+        GT_preds = dataset_dict["stars"]
 
     # Calculate residuals
-    residuals = np.sqrt(np.mean((GT_predictions - predictions) ** 2, axis=(1, 2)))
-    GT_star_mean = np.sqrt(np.mean((GT_predictions) ** 2, axis=(1, 2)))
+    residuals = np.sqrt(np.mean((GT_preds - preds) ** 2, axis=(1, 2)))
+    GT_star_mean = np.sqrt(np.mean((GT_preds) ** 2, axis=(1, 2)))
+
 
     # Moment results
     result_dict = {
-        "psf_GT": GT_predictions,
-        "psf_prediction": predictions,
+        "psf_GT": GT_preds,
+        "psf_prediction": preds,
+        "position": tf_pos,
+        "res": residuals,
+        "star_mean": GT_star_mean,
     }
 
     return result_dict
