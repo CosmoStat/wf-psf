@@ -12,6 +12,9 @@ infopath = os.path.abspath(os.path.join(os.path.dirname(__file__),
 with open(infopath) as open_file:
     exec(open_file.read(), release_info)
 
+with open('requirements.txt') as f:
+    required = f.read().splitlines()
+
 setup(
     name=__name__,
     version=release_info['__version__'],
@@ -22,4 +25,5 @@ setup(
     license=release_info['__license__'],
     packages=find_packages(),
     zip_safe=False,
+    install_requires=required,
 )
