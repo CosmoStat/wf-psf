@@ -218,7 +218,7 @@ class MetricsParamsHandler:
         )
         return shape_results
 
-    def evaluate_psf(self, psf_model, simPSF, dataset):
+    def evaluate_psf(self, psf_model, simPSF, dataset, high_res=False):
         """Calculate PSF images.
 
         A function to evaluate metrics for PSF shape.
@@ -239,17 +239,33 @@ class MetricsParamsHandler:
         """
         logger.info("Computing Shape metrics PSF.")
 
-        psf_results = wf_metrics.compute_psf_images(
-            tf_semiparam_field=psf_model,
-            GT_tf_semiparam_field=self.ground_truth_psf_model,
-            simPSF_np=simPSF,
-            tf_pos=dataset["positions"],
-            tf_SEDs=dataset["SEDs"],
-            n_bins_lda=self.trained_model.model_params.n_bins_lda,
-            n_bins_gt=self.metrics_params.ground_truth_model.model_params.n_bins_lda,
-            batch_size=self.metrics_params.metrics_hparams.batch_size,
-            dataset_dict=dataset,
-        )
+        if high_res:
+            psf_results = wf_metrics.compute_psf_images_super_res(
+                tf_semiparam_field=psf_model,
+                GT_tf_semiparam_field=self.ground_truth_psf_model,
+                simPSF_np=simPSF,
+                SEDs=dataset["SEDs"],
+                tf_pos=dataset["positions"],
+                n_bins_lda=self.trained_model.model_params.n_bins_lda,
+                n_bins_gt=self.metrics_params.ground_truth_model.model_params.n_bins_lda,
+                batch_size=self.metrics_params.metrics_hparams.batch_size,
+                output_Q=self.metrics_params.metrics_hparams.output_Q,
+                output_dim=self.metrics_params.metrics_hparams.output_dim,
+                opt_stars_rel_pix_rmse=self.metrics_params.metrics_hparams.opt_stars_rel_pix_rmse,
+                dataset_dict=dataset,
+            )
+        else:
+            psf_results = wf_metrics.compute_psf_images(
+                tf_semiparam_field=psf_model,
+                GT_tf_semiparam_field=self.ground_truth_psf_model,
+                simPSF_np=simPSF,
+                tf_pos=dataset["positions"],
+                tf_SEDs=dataset["SEDs"],
+                n_bins_lda=self.trained_model.model_params.n_bins_lda,
+                n_bins_gt=self.metrics_params.ground_truth_model.model_params.n_bins_lda,
+                batch_size=self.metrics_params.metrics_hparams.batch_size,
+                dataset_dict=dataset,
+            )
         return psf_results
 
 
@@ -345,7 +361,7 @@ def evaluate_model(
         # predicted PSF images
         if metrics_params.save_psf_images:
             psf_dict = metrics_handler.evaluate_psf(
-                psf_model, simPSF_np, test_data.test_dataset
+                psf_model, simPSF_np, test_data.test_dataset, metrics_params.save_psf_super_res
             )
         else:
             psf_dict = None
@@ -396,7 +412,7 @@ def evaluate_model(
 
         if metrics_params.save_psf_images:
             train_psf_dict = metrics_handler.evaluate_psf(
-                psf_model, simPSF_np, training_data.train_dataset
+                psf_model, simPSF_np, training_data.train_dataset, metrics_params.save_psf_super_res
             )
         else:
             train_psf_dict = None

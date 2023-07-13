@@ -1240,7 +1240,6 @@ def compute_psf_images(
         Dictionary with all the results.
 
     """
-    print("Generating PSF image from the GT model.")
     # Set the required output_Q and output_dim parameters in the models
     packed_SED_data = [
         utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_lda)
@@ -1259,13 +1258,12 @@ def compute_psf_images(
         # Change interpolation parameters for the GT simPSF
         interp_pts_per_bin = simPSF_np.SED_interp_pts_per_bin
         simPSF_np.SED_interp_pts_per_bin = 0
-        SED_sigma = simPSF_np.SED_sigma
         simPSF_np.SED_sigma = 0
         # Generate SED data list for GT model
         packed_SED_data = [
             utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_gt)
             for _sed in tf_SEDs
-        ]
+            ]
         tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
         tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
         pred_inputs = [tf_pos, tf_packed_SED_data]
@@ -1289,6 +1287,125 @@ def compute_psf_images(
         "position": tf_pos,
         "res": residuals,
         "star_mean": GT_star_mean,
+    }
+
+    return result_dict
+
+
+def compute_psf_images_super_res(
+    tf_semiparam_field,
+    GT_tf_semiparam_field,
+    simPSF_np,
+    SEDs,
+    tf_pos,
+    n_bins_lda,
+    n_bins_gt,
+    output_Q=1,
+    output_dim=64,
+    batch_size=16,
+    opt_stars_rel_pix_rmse=False,
+    dataset_dict=None,
+):
+    tf_semiparam_field.set_output_Q(output_Q=output_Q, output_dim=output_dim)
+    GT_tf_semiparam_field.set_output_Q(output_Q=output_Q, output_dim=output_dim)
+
+    # Need to compile the models again
+    tf_semiparam_field = build_PSF_model(tf_semiparam_field)
+    GT_tf_semiparam_field = build_PSF_model(GT_tf_semiparam_field)
+
+    # Generate SED data list
+    packed_SED_data = [
+        utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_lda) for _sed in SEDs
+    ]
+
+    # Prepare inputs
+    tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
+    tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
+    pred_inputs = [tf_pos, tf_packed_SED_data]
+
+    # PSF model
+    preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
+
+    # GT data preparation
+    if (
+            dataset_dict is None
+            or "super_res_stars" not in dataset_dict
+            or "SR_stars" not in dataset_dict
+    ):
+        logger.info("Generating GT super resolved stars from the GT model.")
+        # Change interpolation parameters for the GT simPSF
+        interp_pts_per_bin = simPSF_np.SED_interp_pts_per_bin
+        simPSF_np.SED_interp_pts_per_bin = 0
+        SED_sigma = simPSF_np.SED_sigma
+        simPSF_np.SED_sigma = 0
+        # Generate SED data list for GT model
+        packed_SED_data = [
+            utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_gt)
+            for _sed in SEDs
+        ]
+
+        # Prepare inputs
+        tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
+        tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
+        pred_inputs = [tf_pos, tf_packed_SED_data]
+
+        # Ground Truth model
+        GT_preds = GT_tf_semiparam_field.predict(
+            x=pred_inputs, batch_size=batch_size
+        )
+
+    # Calculate residuals
+    residuals = np.sqrt(np.mean((GT_preds - preds) ** 2, axis=(1, 2)))
+    GT_star_mean = np.sqrt(np.mean((GT_preds) ** 2, axis=(1, 2)))
+
+    # Measure shapes of the reconstructions
+    pred_moments = [
+        gs.hsm.FindAdaptiveMom(gs.Image(_pred), strict=False) for _pred in preds
+    ]
+
+    # Measure shapes of the reconstructions
+    GT_pred_moments = [
+        gs.hsm.FindAdaptiveMom(gs.Image(_pred), strict=False)
+        for _pred in GT_preds
+    ]
+
+    pred_e1_HSM, pred_e2_HSM, pred_R2_HSM = [], [], []
+    GT_pred_e1_HSM, GT_pred_e2_HSM, GT_pred_R2_HSM = [], [], []
+
+    for it in range(len(GT_pred_moments)):
+        if (
+            pred_moments[it].moments_status == 0
+            and GT_pred_moments[it].moments_status == 0
+        ):
+            pred_e1_HSM.append(pred_moments[it].observed_shape.g1)
+            pred_e2_HSM.append(pred_moments[it].observed_shape.g2)
+            pred_R2_HSM.append(2 * (pred_moments[it].moments_sigma ** 2))
+
+            GT_pred_e1_HSM.append(GT_pred_moments[it].observed_shape.g1)
+            GT_pred_e2_HSM.append(GT_pred_moments[it].observed_shape.g2)
+            GT_pred_R2_HSM.append(2 * (GT_pred_moments[it].moments_sigma ** 2))
+
+    pred_e1_HSM = np.array(pred_e1_HSM)
+    pred_e2_HSM = np.array(pred_e2_HSM)
+    pred_R2_HSM = np.array(pred_R2_HSM)
+
+    GT_pred_e1_HSM = np.array(GT_pred_e1_HSM)
+    GT_pred_e2_HSM = np.array(GT_pred_e2_HSM)
+    GT_pred_R2_HSM = np.array(GT_pred_R2_HSM)
+
+    # Moment results
+    result_dict = {
+        "psf_GT": GT_preds,
+        "psf_prediction": preds,
+        "position": tf_pos,
+        "res": residuals,
+        "star_mean": GT_star_mean,
+        "pred_e1_HSM": pred_e1_HSM,
+        "pred_e2_HSM": pred_e2_HSM,
+        "pred_R2_HSM": pred_R2_HSM,
+        "GT_pred_e1_HSM": GT_pred_e1_HSM,
+        "GT_ped_e2_HSM": GT_pred_e2_HSM,
+        "GT_pred_R2_HSM": GT_pred_R2_HSM,
     }
 
     return result_dict
