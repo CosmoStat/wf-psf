@@ -90,7 +90,7 @@ def mainMethod():
         try:
             if hasattr(conf, "data_conf"):
                 data_params = read_conf(os.path.join(configs_path, conf.data_conf))
-                logger.info(data_params)
+                # logger.info(data_params)  # by jw
                 file_handler.copy_conffile_to_output_dir(configs_path, conf.data_conf)
             else:
                 raise ValueError("Data Config file not provided...")
@@ -106,7 +106,7 @@ def mainMethod():
                 training_params = read_conf(
                     os.path.join(configs_path, conf.training_conf)
                 )
-                logger.info(training_params.training)
+                # logger.info(training_params.training) # by jw
                 file_handler.copy_conffile_to_output_dir(
                     configs_path, conf.training_conf
                 )
@@ -130,7 +130,7 @@ def mainMethod():
                 metrics_params = read_conf(
                     os.path.join(configs_path, conf.metrics_conf)
                 )
-                logger.info(metrics_params.metrics)
+                # logger.info(metrics_params.metrics) # by jw
                 file_handler.copy_conffile_to_output_dir(
                     configs_path, conf.metrics_conf
                 )
@@ -199,7 +199,7 @@ def mainMethod():
                 )
             )
 
-            logger.info(trained_params.training)
+            # logger.info(trained_params.training)  # by jw
 
             simPSF = psf_models.simPSF(trained_params.training.model_params)
 
