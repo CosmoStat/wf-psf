@@ -1251,6 +1251,10 @@ def compute_psf_images(
 
     # Model prediction
     preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
+    # Measure shapes of the reconstructions
+    pred_moments = [
+        gs.hsm.FindAdaptiveMom(gs.Image(_pred), strict=False) for _pred in preds
+    ]
 
     # GT data preparation
     if dataset_dict is None or "stars" not in dataset_dict:
@@ -1275,43 +1279,36 @@ def compute_psf_images(
         logger.info("Using GT stars from dataset.")
         GT_preds = dataset_dict["stars"]
 
+    # Measure shapes of the reconstructions
+    '''GT_pred_moments = [
+        gs.hsm.FindAdaptiveMom(gs.Image(_pred), strict=False) for _pred in GT_preds
+    ]'''
+
     # Calculate residuals
     residuals = np.sqrt(np.mean((GT_preds - preds) ** 2, axis=(1, 2)))
     GT_star_mean = np.sqrt(np.mean((GT_preds) ** 2, axis=(1, 2)))
 
     pred_e1_HSM, pred_e2_HSM, pred_R2_HSM = [], [], []
-    GT_pred_e1_HSM, GT_pred_e2_HSM, GT_pred_R2_HSM = [], [], []
+    # GT_pred_e1_HSM, GT_pred_e2_HSM, GT_pred_R2_HSM = [], [], []
 
-    # Measure shapes of the reconstructions
-    pred_moments = [
-        gs.hsm.FindAdaptiveMom(gs.Image(_pred), strict=False) for _pred in preds
-    ]
-
-    # Measure shapes of the reconstructions
-    GT_pred_moments = [
-        gs.hsm.FindAdaptiveMom(gs.Image(_pred), strict=False)
-        for _pred in GT_preds
-    ]
-
-    for it in range(len(GT_pred_moments)):
+    for it in range(len(pred_moments)):
         if (
             pred_moments[it].moments_status == 0
-            and GT_pred_moments[it].moments_status == 0
+            # and GT_pred_moments[it].moments_status == 0
         ):
             pred_e1_HSM.append(pred_moments[it].observed_shape.g1)
             pred_e2_HSM.append(pred_moments[it].observed_shape.g2)
             pred_R2_HSM.append(2 * (pred_moments[it].moments_sigma ** 2))
-
-            GT_pred_e1_HSM.append(GT_pred_moments[it].observed_shape.g1)
+            '''GT_pred_e1_HSM.append(GT_pred_moments[it].observed_shape.g1)
             GT_pred_e2_HSM.append(GT_pred_moments[it].observed_shape.g2)
-            GT_pred_R2_HSM.append(2 * (GT_pred_moments[it].moments_sigma ** 2))
+            GT_pred_R2_HSM.append(2 * (GT_pred_moments[it].moments_sigma ** 2))'''
     pred_e1_HSM = np.array(pred_e1_HSM)
     pred_e2_HSM = np.array(pred_e2_HSM)
     pred_R2_HSM = np.array(pred_R2_HSM)
 
-    GT_pred_e1_HSM = np.array(GT_pred_e1_HSM)
+    '''GT_pred_e1_HSM = np.array(GT_pred_e1_HSM)
     GT_pred_e2_HSM = np.array(GT_pred_e2_HSM)
-    GT_pred_R2_HSM = np.array(GT_pred_R2_HSM)
+    GT_pred_R2_HSM = np.array(GT_pred_R2_HSM)'''
     # Moment results
     result_dict = {
         "psf_GT": GT_preds,
@@ -1322,9 +1319,9 @@ def compute_psf_images(
         "pred_e1_HSM": pred_e1_HSM,
         "pred_e2_HSM": pred_e2_HSM,
         "pred_R2_HSM": pred_R2_HSM,
-        "GT_pred_e1_HSM": GT_pred_e1_HSM,
-        "GT_ped_e2_HSM": GT_pred_e2_HSM,
-        "GT_pred_R2_HSM": GT_pred_R2_HSM,
+        # "GT_pred_e1_HSM": GT_pred_e1_HSM,
+        # "GT_ped_e2_HSM": GT_pred_e2_HSM,
+        # "GT_pred_R2_HSM": GT_pred_R2_HSM,
     }
 
     return result_dict
