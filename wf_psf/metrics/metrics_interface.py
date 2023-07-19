@@ -377,7 +377,8 @@ def evaluate_model(
 
         # Metric evaluation on the train dataset
         print("\n***\nMetric evaluation on the train dataset\n***\n")
-
+        output_path = metrics_output + "/" + "test-metrics-"
+        np.save(output_path, test_metrics, allow_pickle=True)
         # Polychromatic star reconstructions
         print("Computing polychromatic metrics at low resolution.")
         if metrics_params.eval_poly_metric_rmse:
@@ -425,6 +426,8 @@ def evaluate_model(
             "shape_results_dict": train_shape_results_dict,
             "PSFs": train_psf_dict
         }
+        output_path = metrics_output + "/" + "train-metrics-"
+        np.save(output_path, test_metrics, allow_pickle=True)
 
         ## Save results
         metrics = {"test_metrics": test_metrics, "train_metrics": train_metrics}
