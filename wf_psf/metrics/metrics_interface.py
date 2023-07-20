@@ -427,7 +427,7 @@ def evaluate_model(
             "PSFs": train_psf_dict
         }
         output_path = metrics_output + "/" + "train-metrics-"
-        np.save(output_path, test_metrics, allow_pickle=True)
+        np.save(output_path, train_metrics, allow_pickle=True)
 
         ## Save results
         metrics = {"test_metrics": test_metrics, "train_metrics": train_metrics}
