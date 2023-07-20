@@ -277,6 +277,7 @@ def evaluate_model(
     psf_model,
     weights_path,
     metrics_output,
+    eval_train=None,
 ):
     r"""Evaluate the trained model.
 
@@ -375,73 +376,75 @@ def evaluate_model(
             "PSFs": psf_dict
         }
 
-        # Metric evaluation on the train dataset
-        print("\n***\nMetric evaluation on the train dataset\n***\n")
-        output_path = metrics_output + "/" + "test-metrics-"
+        output_path = metrics_output + "/" + "test-metrics"
         np.save(output_path, test_metrics, allow_pickle=True)
-        # Polychromatic star reconstructions
-        print("Computing polychromatic metrics at low resolution.")
-        if metrics_params.eval_poly_metric_rmse:
-            train_poly_metric = metrics_handler.evaluate_metrics_polychromatic_lowres(
-                psf_model, simPSF_np, training_data.train_dataset
+
+        if eval_train:
+            # Metric evaluation on the train dataset
+            print("\n***\nMetric evaluation on the train dataset\n***\n")
+            # Polychromatic star reconstructions
+            if metrics_params.eval_poly_metric_rmse:
+                print("Computing polychromatic metrics at low resolution.")
+                train_poly_metric = metrics_handler.evaluate_metrics_polychromatic_lowres(
+                    psf_model, simPSF_np, training_data.train_dataset
+                )
+            else:
+                train_poly_metric = None
+            # Monochromatic star reconstructions turn into a class
+            if metrics_params.eval_mono_metric_rmse:
+                train_mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
+                    psf_model, simPSF_np, training_data.train_dataset
+                )
+            else:
+                train_mono_metric = None
+
+            # OPD metrics turn into a class
+            if metrics_params.eval_opd_metric_rmse:
+                train_opd_metric = metrics_handler.evaluate_metrics_opd(
+                    psf_model, simPSF_np, training_data.train_dataset
+                )
+            else:
+                train_opd_metric = None
+
+            # Shape metrics turn into a class
+            if metrics_params.eval_train_shape_sr_metric_rmse:
+                train_shape_results_dict = metrics_handler.evaluate_metrics_shape(
+                    psf_model, simPSF_np, training_data.train_dataset
+                )
+            else:
+                train_shape_results_dict = None
+
+            if metrics_params.save_psf_images:
+                train_psf_dict = metrics_handler.evaluate_psf(
+                    psf_model, simPSF_np, training_data.train_dataset, metrics_params.save_psf_super_res
+                )
+            else:
+                train_psf_dict = None
+
+            # Save metrics into dictionary
+            train_metrics = {
+                "poly_metric": train_poly_metric,
+                "mono_metric": train_mono_metric,
+                "opd_metric": train_opd_metric,
+                "shape_results_dict": train_shape_results_dict,
+                "PSFs": train_psf_dict
+            }
+            output_path = metrics_output + "/" + "train-metrics"
+            np.save(output_path, train_metrics, allow_pickle=True)
+
+            # Save both results
+            metrics = {"test_metrics": test_metrics, "train_metrics": train_metrics}
+            run_id_name = (
+                    trained_model_params.model_params.model_name + metrics_params.id_name
             )
-        else:
-            train_poly_metric = None
-        # Monochromatic star reconstructions turn into a class
-        if metrics_params.eval_mono_metric_rmse:
-            train_mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
-                psf_model, simPSF_np, training_data.train_dataset
-            )
-        else:
-            train_mono_metric = None
+            output_path = metrics_output + "/" + "metrics-" + run_id_name
+            np.save(output_path, metrics, allow_pickle=True)
 
-        # OPD metrics turn into a class
-        if metrics_params.eval_opd_metric_rmse:
-            train_opd_metric = metrics_handler.evaluate_metrics_opd(
-                psf_model, simPSF_np, training_data.train_dataset
-            )
-        else:
-            train_opd_metric = None
-
-        # Shape metrics turn into a class
-        if metrics_params.eval_train_shape_sr_metric_rmse:
-            train_shape_results_dict = metrics_handler.evaluate_metrics_shape(
-                psf_model, simPSF_np, training_data.train_dataset
-            )
-        else:
-            train_shape_results_dict = None
-
-        if metrics_params.save_psf_images:
-            train_psf_dict = metrics_handler.evaluate_psf(
-                psf_model, simPSF_np, training_data.train_dataset, metrics_params.save_psf_super_res
-            )
-        else:
-            train_psf_dict = None
-
-        # Save metrics into dictionary
-        train_metrics = {
-            "poly_metric": train_poly_metric,
-            "mono_metric": train_mono_metric,
-            "opd_metric": train_opd_metric,
-            "shape_results_dict": train_shape_results_dict,
-            "PSFs": train_psf_dict
-        }
-        output_path = metrics_output + "/" + "train-metrics-"
-        np.save(output_path, train_metrics, allow_pickle=True)
-
-        ## Save results
-        metrics = {"test_metrics": test_metrics, "train_metrics": train_metrics}
-        run_id_name = (
-            trained_model_params.model_params.model_name + metrics_params.id_name
-        )
-        output_path = metrics_output + "/" + "metrics-" + run_id_name
-        np.save(output_path, metrics, allow_pickle=True)
-
-        ## Print final time
+        # Print final time
         final_time = time.time()
         print("\nTotal elapsed time: %f" % (final_time - starting_time))
 
-        ## Close log file
+        # Close log file
         print("\n Good bye..")
 
     except Exception as e:
