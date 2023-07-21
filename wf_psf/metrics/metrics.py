@@ -1282,7 +1282,7 @@ def compute_psf_images(
     # Measure shapes of the reconstructions
     print(GT_preds[0])
     GT_pred_moments = [
-        gs.hsm.FindAdaptiveMom(gs.Image(_pred), strict=False) for _pred in GT_preds
+        gs.hsm.FindAdaptiveMom(gs.Image(np.array(_pred)), strict=False) for _pred in GT_preds
     ]
 
     # Calculate residuals
