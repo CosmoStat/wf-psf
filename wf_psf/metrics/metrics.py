@@ -1290,11 +1290,12 @@ def compute_psf_images(
 
     pred_e1_HSM, pred_e2_HSM, pred_R2_HSM = [], [], []
     GT_pred_e1_HSM, GT_pred_e2_HSM, GT_pred_R2_HSM = [], [], []
+    ell_loc = []
+    flag = np.zeros(len(preds))
 
     for it in range(len(pred_moments)):
         if (
-            pred_moments[it].moments_status == 0
-            # and GT_pred_moments[it].moments_status == 0
+            pred_moments[it].moments_status == 0 and GT_pred_moments[it].moments_status == 0
         ):
             pred_e1_HSM.append(pred_moments[it].observed_shape.g1)
             pred_e2_HSM.append(pred_moments[it].observed_shape.g2)
@@ -1302,6 +1303,9 @@ def compute_psf_images(
             GT_pred_e1_HSM.append(GT_pred_moments[it].observed_shape.g1)
             GT_pred_e2_HSM.append(GT_pred_moments[it].observed_shape.g2)
             GT_pred_R2_HSM.append(2 * (GT_pred_moments[it].moments_sigma ** 2))
+            ell_loc.append(it)
+            flag[it] = 1
+
     pred_e1_HSM = np.array(pred_e1_HSM)
     pred_e2_HSM = np.array(pred_e2_HSM)
     pred_R2_HSM = np.array(pred_R2_HSM)
@@ -1309,6 +1313,8 @@ def compute_psf_images(
     GT_pred_e1_HSM = np.array(GT_pred_e1_HSM)
     GT_pred_e2_HSM = np.array(GT_pred_e2_HSM)
     GT_pred_R2_HSM = np.array(GT_pred_R2_HSM)
+
+    ell_loc = np.array(ell_loc)
     # Moment results
     result_dict = {
         "psf_GT": GT_preds,
@@ -1322,6 +1328,8 @@ def compute_psf_images(
         "GT_pred_e1_HSM": GT_pred_e1_HSM,
         "GT_ped_e2_HSM": GT_pred_e2_HSM,
         "GT_pred_R2_HSM": GT_pred_R2_HSM,
+        "Flag": flag,
+        "order_ell": ell_loc,
     }
 
     return result_dict
@@ -1406,6 +1414,8 @@ def compute_psf_images_super_res(
 
     pred_e1_HSM, pred_e2_HSM, pred_R2_HSM = [], [], []
     GT_pred_e1_HSM, GT_pred_e2_HSM, GT_pred_R2_HSM = [], [], []
+    ell_loc = []
+    flag = np.zeros(len(preds))
 
     for it in range(len(GT_pred_moments)):
         if (
@@ -1415,10 +1425,11 @@ def compute_psf_images_super_res(
             pred_e1_HSM.append(pred_moments[it].observed_shape.g1)
             pred_e2_HSM.append(pred_moments[it].observed_shape.g2)
             pred_R2_HSM.append(2 * (pred_moments[it].moments_sigma ** 2))
-
             GT_pred_e1_HSM.append(GT_pred_moments[it].observed_shape.g1)
             GT_pred_e2_HSM.append(GT_pred_moments[it].observed_shape.g2)
             GT_pred_R2_HSM.append(2 * (GT_pred_moments[it].moments_sigma ** 2))
+            ell_loc.append(it)
+            flag[it] = 1
 
     pred_e1_HSM = np.array(pred_e1_HSM)
     pred_e2_HSM = np.array(pred_e2_HSM)
@@ -1441,6 +1452,8 @@ def compute_psf_images_super_res(
         "GT_pred_e1_HSM": GT_pred_e1_HSM,
         "GT_ped_e2_HSM": GT_pred_e2_HSM,
         "GT_pred_R2_HSM": GT_pred_R2_HSM,
+        "Flag": flag,
+        "order_ell": ell_loc,
     }
 
     return result_dict
