@@ -277,7 +277,7 @@ def evaluate_model(
     psf_model,
     weights_path,
     metrics_output,
-    eval_train=None,
+    eval_train=False,
 ):
     r"""Evaluate the trained model.
 
