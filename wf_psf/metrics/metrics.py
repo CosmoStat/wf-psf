@@ -1280,7 +1280,6 @@ def compute_psf_images(
         GT_preds = dataset_dict["stars"]
 
     # Measure shapes of the reconstructions
-    print(GT_preds[0])
     GT_pred_moments = [
         gs.hsm.FindAdaptiveMom(gs.Image(np.array(_pred)), strict=False) for _pred in GT_preds
     ]
