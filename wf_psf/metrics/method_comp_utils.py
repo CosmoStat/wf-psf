@@ -236,7 +236,7 @@ def shape_pix_metrics(exp_psfs, exp_stars):
         "pred_e2_HSM": pred_e2_HSM,
         "pred_R2_HSM": pred_R2_HSM,
         "GT_pred_e1_HSM": GT_pred_e1_HSM,
-        "GT_ped_e2_HSM": GT_pred_e2_HSM,
+        "GT_pred_e2_HSM": GT_pred_e2_HSM,
         "GT_pred_R2_HSM": GT_pred_R2_HSM,
         "rmse_e1": rmse_e1,
         "std_rmse_e1": std_rmse_e1,
