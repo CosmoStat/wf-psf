@@ -1254,13 +1254,12 @@ def compute_psf_images(
     tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
     pred_inputs = [tf_pos, tf_packed_SED_data]
     print(type(pred_inputs))
-    print(pred_inputs[0])
     logger.info("Begin Model prediction")
     # Model prediction
     Nbin = 10
-    step = int(float(len(pred_inputs[0]))/ Nbin)
+    step = int(float(len(pred_inputs[0]))/Nbin)
     print('step= '+str(step))
-    print(pred_inputs[0][0:step])
+    print(tf_packed_SED_data[0:step])
 
     Bpool = multiprocessing.Pool(processes=Nbin)
     res = []
@@ -1271,8 +1270,8 @@ def compute_psf_images(
         '''[pred_inputs[0][i * step: (i + 1) * step],
          pred_inputs[1][i * step: (i + 1) * step]]'''
         tem = Bpool.apply_async(tf_semiparam_field.predict,
-                                (([pred_inputs[0][i*step: (i+1)*step],
-                                pred_inputs[1][i*step: (i+1)*step]], batch_size,)))
+                                (([tf_pos[i*step: (i+1)*step],
+                                  tf_packed_SED_data[i*step: (i+1)*step]], batch_size,)))
         res.append(tem)
         print(tem)
         # print(tem.get())
