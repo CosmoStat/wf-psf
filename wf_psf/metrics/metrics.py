@@ -1198,15 +1198,17 @@ def plot_imgs(mat, cmap="gist_stern", figsize=(20, 20)):
     plt.show()
 
 
-def _apply_df(model, data):
+def _apply_df(model, pos, sed):
+    data = [pos, sed]
     print("run prediction")
     return model.predict(data)
 
 
-def apply_by_multiprocessing(model, data, workers):
+def apply_by_multiprocessing(model, pos, sed, workers):
 
     pool = multiprocessing.Pool(processes=workers)
-    result = pool.map(_apply_df, (model, np.array_split(data, workers)))
+
+    result = pool.map(_apply_df, (model, np.array_split(pos, workers), np.array_split(sed, workers)))
     pool.close()
     return list(result)
 
@@ -1265,11 +1267,10 @@ def compute_psf_images(
     tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
     tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
     pred_inputs = [tf_pos, tf_packed_SED_data]
-    print(type(pred_inputs))
     logger.info("Begin Model prediction")
     # Model prediction
 
-    preds = apply_by_multiprocessing(tf_semiparam_field, pred_inputs, workers=10)
+    preds = apply_by_multiprocessing(tf_semiparam_field, tf_pos, tf_packed_SED_data, workers=10)
     '''Nbin = 10
     step = int(float(len(pred_inputs[0]))/Nbin)
     print('step= '+str(step))
