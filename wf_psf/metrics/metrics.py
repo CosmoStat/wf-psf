@@ -1271,8 +1271,9 @@ def compute_psf_images(
     Bpool.close()
     Bpool.join()
 
-    print(res.type())
-    print(res)
+    print(type(res))
+    print(res[0])
+
     pred = []
     for i in res:
         pred += i.get()
