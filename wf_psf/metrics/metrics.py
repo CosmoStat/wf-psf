@@ -7,6 +7,7 @@ from wf_psf.psf_models.tf_psf_field import build_PSF_model
 from wf_psf.psf_models import tf_psf_field as psf_field
 from wf_psf import SimPSFToolkit as SimPSFToolkit
 import logging
+import multiprocessing
 
 logger = logging.getLogger(__name__)
 
@@ -1255,7 +1256,22 @@ def compute_psf_images(
 
     logger.info("Begin Model prediction")
     # Model prediction
-    preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
+    import multiprocessing
+
+    Nbin = 10
+    step = int(float(len(pred_inputs[0]) / Nbin)
+
+    Bpool = .Pool(processes=Nbin)
+
+    for i in range(Nbin):
+        Bpool.apply_async(tf_semiparam_field.predict,
+                          (([pred_inputs[0][i*step : (i+1)*step], pred_inputs[1][i*step : (i+1)*step]],
+                            batch_size=batch_size, ))
+
+    Bpool.close()
+    Bpool.join()
+
+    # preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
     logger.info("Get pred moments")
     # Measure shapes of the reconstructions
