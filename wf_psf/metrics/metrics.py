@@ -1256,26 +1256,23 @@ def compute_psf_images(
 
     logger.info("Begin Model prediction")
     # Model prediction
-    import multiprocessing
-
     Nbin = 10
     step = int(float(len(pred_inputs[0]))/ Nbin)
 
     Bpool = multiprocessing.Pool(processes=Nbin)
     res = []
     for i in range(Nbin):
-        tem = tf_semiparam_field.predict([pred_inputs[0][i*step : (i+1)*step], pred_inputs[1][i*step : (i+1)*step]],
-                                     batch_size)
-        res.append(tem)
-        #res.append(Bpool.apply_async(tf_semiparam_field.predict,
-
-        #                  (([pred_inputs[0][i*step : (i+1)*step], pred_inputs[1][i*step : (i+1)*step]],
-        #                    batch_size,))))
+        # tem = tf_semiparam_field.predict([pred_inputs[0][i*step : (i+1)*step], pred_inputs[1][i*step : (i+1)*step]],
+                                     # batch_size)
+        # res.append(tem)
+        res.append(Bpool.apply_async(tf_semiparam_field.predict,
+                                     (([pred_inputs[0][i*step : (i+1)*step],
+                                     pred_inputs[1][i*step : (i+1)*step]], batch_size,))))
     Bpool.close()
     Bpool.join()
 
-    print(i.type())
-    print(i)
+    print(res.type())
+    print(res)
     pred = []
     for i in res:
         pred += i.get()
