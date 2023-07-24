@@ -404,6 +404,7 @@ def compute_shape_metrics(
     GT_original_out_Q = GT_tf_semiparam_field.output_Q
     GT_original_out_dim = GT_tf_semiparam_field.output_dim
 
+    logger.info("Begin compute shape metrics")
     # Set the required output_Q and output_dim parameters in the models
     tf_semiparam_field.set_output_Q(output_Q=output_Q, output_dim=output_dim)
     GT_tf_semiparam_field.set_output_Q(output_Q=output_Q, output_dim=output_dim)
@@ -1240,6 +1241,9 @@ def compute_psf_images(
         Dictionary with all the results.
 
     """
+
+    logger.info("Begin compute psf images")
+
     # Set the required output_Q and output_dim parameters in the models
     packed_SED_data = [
         utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_lda)
@@ -1249,8 +1253,11 @@ def compute_psf_images(
     tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
     pred_inputs = [tf_pos, tf_packed_SED_data]
 
+    logger.info("Begin Model prediction")
     # Model prediction
     preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
+
+    logger.info("Get pred moments")
     # Measure shapes of the reconstructions
     pred_moments = [
         gs.hsm.FindAdaptiveMom(gs.Image(_pred), strict=False) for _pred in preds
@@ -1279,14 +1286,15 @@ def compute_psf_images(
         logger.info("Using GT stars from dataset.")
         GT_preds = dataset_dict["stars"]
 
+    logger.info("Get GT moments")
     # Measure shapes of the reconstructions
     GT_pred_moments = [
         gs.hsm.FindAdaptiveMom(gs.Image(np.array(_pred)), strict=False) for _pred in GT_preds
     ]
 
     # Calculate residuals
-    residuals = np.sqrt(np.mean((GT_preds - preds) ** 2, axis=(1, 2)))
-    GT_star_mean = np.sqrt(np.mean((GT_preds) ** 2, axis=(1, 2)))
+    # residuals = np.sqrt(np.mean((GT_preds - preds) ** 2, axis=(1, 2)))
+    # GT_star_mean = np.sqrt(np.mean((GT_preds) ** 2, axis=(1, 2)))
 
     pred_e1_HSM, pred_e2_HSM, pred_R2_HSM = [], [], []
     GT_pred_e1_HSM, GT_pred_e2_HSM, GT_pred_R2_HSM = [], [], []
@@ -1317,11 +1325,11 @@ def compute_psf_images(
     ell_loc = np.array(ell_loc)
     # Moment results
     result_dict = {
-        "psf_GT": GT_preds,
-        "psf_prediction": preds,
+        # "psf_GT": GT_preds,
+        # "psf_prediction": preds,
         "position": tf_pos,
-        "res": residuals,
-        "star_mean": GT_star_mean,
+        # "res": residuals,
+        # "star_mean": GT_star_mean,
         "pred_e1_HSM": pred_e1_HSM,
         "pred_e2_HSM": pred_e2_HSM,
         "pred_R2_HSM": pred_R2_HSM,
