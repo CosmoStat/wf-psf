@@ -1266,7 +1266,7 @@ def compute_psf_images(
     for i in range(Nbin):
         res.append(Bpool.apply_async(tf_semiparam_field.predict,
                           (([pred_inputs[0][i*step : (i+1)*step], pred_inputs[1][i*step : (i+1)*step]],
-                            batch_size=batch_size,))))
+                            batch_size,))))
     Bpool.close()
     Bpool.join()
 
