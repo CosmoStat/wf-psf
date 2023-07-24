@@ -1253,7 +1253,8 @@ def compute_psf_images(
     tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
     tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
     pred_inputs = [tf_pos, tf_packed_SED_data]
-
+    print(type(pred_inputs))
+    print(pred_inputs[0])
     logger.info("Begin Model prediction")
     # Model prediction
     Nbin = 10
@@ -1265,14 +1266,18 @@ def compute_psf_images(
         # tem = tf_semiparam_field.predict([pred_inputs[0][i*step : (i+1)*step], pred_inputs[1][i*step : (i+1)*step]],
                                      # batch_size)
         # res.append(tem)
-        res.append(Bpool.apply_async(tf_semiparam_field.predict,
-                                     (([pred_inputs[0][i*step : (i+1)*step],
-                                     pred_inputs[1][i*step : (i+1)*step]], batch_size,))))
+        '''[pred_inputs[0][i * step: (i + 1) * step],
+         pred_inputs[1][i * step: (i + 1) * step]]'''
+        tem = Bpool.apply_async(tf_semiparam_field.predict,
+                                (([pred_inputs[0][i*step: (i+1)*step],
+                                pred_inputs[1][i*step: (i+1)*step]], batch_size,)))
+        res.append(tem)
+        print(tem.get())
     Bpool.close()
     Bpool.join()
 
-    print(type(res))
-    print(res[0])
+    # print(type(res))
+    print(res[0].get())
 
     pred = []
     for i in res:
