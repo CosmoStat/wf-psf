@@ -1258,7 +1258,7 @@ def compute_psf_images(
     """
 
     logger.info("Begin compute psf images")
-
+    logger.info(type(tf_semiparam_field))
     # Set the required output_Q and output_dim parameters in the models
     packed_SED_data = [
         utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_lda)
@@ -1270,8 +1270,8 @@ def compute_psf_images(
     logger.info("Begin Model prediction")
     # Model prediction
 
-    preds = apply_by_multiprocessing(tf_semiparam_field, tf_pos, tf_packed_SED_data, workers=10)
-    '''Nbin = 10
+    # preds = apply_by_multiprocessing(tf_semiparam_field, tf_pos, tf_packed_SED_data, workers=10)
+    Nbin = 10
     step = int(float(len(pred_inputs[0]))/Nbin)
     print('step= '+str(step))
     print(len(tf_packed_SED_data[0:step]))
@@ -1299,8 +1299,8 @@ def compute_psf_images(
     # print(res[0].get())
 
     preds = []
-    for i in res:
-        preds += i'''
+    for i, job in enumerate(res):
+        preds += job.get() 
     # preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
     logger.info("Get pred moments")
