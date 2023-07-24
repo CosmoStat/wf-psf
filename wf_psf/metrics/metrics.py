@@ -1259,6 +1259,8 @@ def compute_psf_images(
     # Model prediction
     Nbin = 10
     step = int(float(len(pred_inputs[0]))/ Nbin)
+    print('step= '+str(step))
+    print(pred_inputs[0][0:step])
 
     Bpool = multiprocessing.Pool(processes=Nbin)
     res = []
@@ -1279,9 +1281,9 @@ def compute_psf_images(
     # print(type(res))
     print(res[0].get())
 
-    pred = []
+    preds = []
     for i in res:
-        pred += i.get()
+        preds += i.get()
     # preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
     logger.info("Get pred moments")
