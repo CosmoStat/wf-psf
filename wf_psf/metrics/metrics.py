@@ -1206,7 +1206,7 @@ def _apply_df(model, data):
 def apply_by_multiprocessing(model, data, workers):
 
     pool = multiprocessing.Pool(processes=workers)
-    result = pool.map(_apply_df, np.array_split(model, data, workers))
+    result = pool.map(_apply_df, (model, np.array_split(data, workers)))
     pool.close()
     return list(result)
 
