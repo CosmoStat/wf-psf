@@ -52,6 +52,7 @@ metrics_params = RecursiveNamespace(
     ground_truth_model=RecursiveNamespace(
         model_params=RecursiveNamespace(
             model_name="poly",
+            dataset_type="C_poly",
             sed_interp_pts_per_bin=0,
             sed_extrapolate=True,
             sed_interp_kind="linear",
@@ -112,7 +113,7 @@ def test_eval_metrics_polychromatic_lowres(
     cycle = 2
 
     # Load paper results
-    filename = "/Users/jenniferpollack/Projects/wf-psf/wf_psf/tests/data/validation/metrics_paper/wavediff-original/metrics-poly_sample_w_bis1_2k.npy"
+    filename = "/$WORK/wf-psf/wf_psf/tests/data/validation/metrics_paper/wavediff-original/metrics-poly_sample_w_bis1_2k.npy"
 
     truth_poly_metric = {
         "rmse": 6.379096e-05,
@@ -138,8 +139,9 @@ def test_eval_metrics_polychromatic_lowres(
     poly_metric = metrics_handler.evaluate_metrics_polychromatic_lowres(
         psf_model, simPSF_np, test_dataset
     )
-    breakpoint()
-
+    print(poly_metric)
+    print(truth_poly_metric)
+    
 
 def test_evaluate_metrics_opd(training_params, training_data, test_dataset, psf_model):
     metrics_handler = MetricsParamsHandler(metrics_params, training_params)
