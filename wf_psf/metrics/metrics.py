@@ -1274,12 +1274,13 @@ def compute_psf_images(
                                 (([pred_inputs[0][i*step: (i+1)*step],
                                 pred_inputs[1][i*step: (i+1)*step]], batch_size,)))
         res.append(tem)
-        print(tem.get())
+        print(tem)
+        # print(tem.get())
     Bpool.close()
     Bpool.join()
 
     # print(type(res))
-    print(res[0].get())
+    # print(res[0].get())
 
     preds = []
     for i in res:
