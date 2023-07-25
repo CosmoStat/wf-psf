@@ -1198,9 +1198,9 @@ def plot_imgs(mat, cmap="gist_stern", figsize=(20, 20)):
     plt.show()
 
 
-def predict_chunk(brei, model, data_chunk, con):
-    brei = model.predict(data_chunk, batch_size=con)
-    logger.info(brei)
+def predict_chunk(bres, i, model, data_chunk, con):
+    bres[i] = model.predict(data_chunk, batch_size=con)
+    logger.info(bres)
     return
 
 
@@ -1251,7 +1251,7 @@ def compute_psf_images(
 
     logger.info("Begin compute psf images")
     logger.info(type(tf_semiparam_field))
-    # Set the required output_Q and output_dim parameters in the models
+
     packed_SED_data = [
         utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_lda)
         for _sed in tf_SEDs
@@ -1259,6 +1259,8 @@ def compute_psf_images(
     tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
     tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
     pred_inputs = [tf_pos, tf_packed_SED_data]
+
+    # Multiprocessing
     logger.info("Begin Model prediction")
     # Model prediction
 
@@ -1276,8 +1278,8 @@ def compute_psf_images(
     Bpool = multiprocessing.Pool(processes=Nbin)
     for i in range(Nbin):
         Bpool.apply_async(predict_chunk,
-                                    (Bres[i], tf_semiparam_field,[pred_inputs[0][i*step:(i+1)*step], pred_inputs[1][i*step:(i+1)*step]],
-                                      batch_size))
+                          (Bres, i, tf_semiparam_field,[pred_inputs[0][i*step:(i+1)*step], pred_inputs[1][i*step:(i+1)*step]],
+                           batch_size))
         # print(tem.get())
         # res.append(tem)
         # [pred_inputs[0][i * step: (i + 1) * step],
@@ -1298,6 +1300,7 @@ def compute_psf_images(
     for i in Bres:
         preds += i 
     # preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
+    # End of Multiprocessing
 
     logger.info("Get pred moments")
     # Measure shapes of the reconstructions
