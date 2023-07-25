@@ -7,6 +7,7 @@ from wf_psf.psf_models.tf_psf_field import build_PSF_model
 from wf_psf.psf_models import tf_psf_field as psf_field
 from wf_psf import SimPSFToolkit as SimPSFToolkit
 import logging
+import multiprocessing
 logger = logging.getLogger(__name__)
 
 
