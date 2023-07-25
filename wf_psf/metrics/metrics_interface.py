@@ -24,9 +24,7 @@ import wf_psf.utils.io as io
 logger = logging.getLogger(__name__)
 
 
-
-def ground_truth_psf_model(metrics_params,coeff_matrix):
- 
+def ground_truth_psf_model(metrics_params, coeff_matrix):
     psf_model = psf_models.get_psf_model(
         metrics_params.ground_truth_model.model_params,
         metrics_params.metrics_hparams.batch_size,
@@ -38,6 +36,7 @@ def ground_truth_psf_model(metrics_params,coeff_matrix):
     )
 
     return psf_model
+
 
 class MetricsParamsHandler:
     """Metrics Parameters Handler.
@@ -57,7 +56,6 @@ class MetricsParamsHandler:
     def __init__(self, metrics_params, trained_model):
         self.metrics_params = metrics_params
         self.trained_model = trained_model
-
 
     def evaluate_metrics_polychromatic_lowres(self, psf_model, simPSF, dataset):
         """Evaluate Polychromatic PSF Low-Res Metrics.
@@ -84,7 +82,9 @@ class MetricsParamsHandler:
 
         rmse, rel_rmse, std_rmse, std_rel_rmse = wf_metrics.compute_poly_metric(
             tf_semiparam_field=psf_model,
-            GT_tf_semiparam_field= ground_truth_psf_model(self.metrics_params, dataset["C_poly"]),
+            GT_tf_semiparam_field=ground_truth_psf_model(
+                self.metrics_params, dataset["C_poly"]
+            ),
             simPSF_np=simPSF,
             tf_pos=dataset["positions"],
             tf_SEDs=dataset["SEDs"],
@@ -132,7 +132,9 @@ class MetricsParamsHandler:
             std_rel_rmse_lda,
         ) = wf_metrics.compute_mono_metric(
             tf_semiparam_field=psf_model,
-            GT_tf_semiparam_field=ground_truth_psf_model(self.metrics_params, dataset["C_poly"]),
+            GT_tf_semiparam_field=ground_truth_psf_model(
+                self.metrics_params, dataset["C_poly"]
+            ),
             simPSF_np=simPSF,
             tf_pos=dataset["positions"],
             lambda_list=lambda_list,
@@ -175,7 +177,9 @@ class MetricsParamsHandler:
             rel_rmse_std_opd,
         ) = wf_metrics.compute_opd_metrics(
             tf_semiparam_field=psf_model,
-            GT_tf_semiparam_field=ground_truth_psf_model(self.metrics_params, dataset["C_poly"]),
+            GT_tf_semiparam_field=ground_truth_psf_model(
+                self.metrics_params, dataset["C_poly"]
+            ),
             pos=dataset["positions"],
             batch_size=self.metrics_params.metrics_hparams.batch_size,
         )
@@ -212,7 +216,9 @@ class MetricsParamsHandler:
 
         shape_results = wf_metrics.compute_shape_metrics(
             tf_semiparam_field=psf_model,
-            GT_tf_semiparam_field=ground_truth_psf_model(self.metrics_params, dataset["C_poly"]),
+            GT_tf_semiparam_field=ground_truth_psf_model(
+                self.metrics_params, dataset["C_poly"]
+            ),
             simPSF_np=simPSF,
             SEDs=dataset["SEDs"],
             tf_pos=dataset["positions"],
@@ -267,6 +273,7 @@ def evaluate_model(
         # Get training data
         logger.info(f"Fetching and preprocessing training and test data...")
 
+        # Initialize metrics_handler
         metrics_handler = MetricsParamsHandler(metrics_params, trained_model_params)
 
         ## Prepare models

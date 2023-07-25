@@ -120,7 +120,6 @@ def training_data():
         training_config.model_params.n_bins_lda,
     )
 
-
 @pytest.fixture(scope="module")
 def test_data():
     return TestDataHandler(

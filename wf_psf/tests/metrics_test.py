@@ -21,34 +21,11 @@ metrics_params = RecursiveNamespace(
     saved_training_cycle="cycle2",
     chkp_save_path="checkpoint",
     id_name="_sample_w_bis1_2k",
-    model_params=RecursiveNamespace(
-        model_name="poly",
-        use_callback=False,
-        sed_interp_pts_per_bin=0,
-        sed_extrapolate=True,
-        sed_interp_kind="linear",
-        sed_sigma=0,
-        n_bins_lda=20,
-        output_Q=3,
-        oversampling_rate=3,
-        output_dim=32,
-        pupil_diameter=256,
-        use_sample_weights=True,
-        interpolation_type="None",
-        x_lims=[0.0, 1000.0],
-        y_lims=[0.0, 1000.0],
-        param_hparams=RecursiveNamespace(
-            l2_param=0.0, n_zernikes=45, d_max=2, save_optim_history_param=True
-        ),
-        nonparam_hparams=RecursiveNamespace(
-            d_max_nonparam=5,
-            num_graph_features=10,
-            l1_rate=1e-08,
-            project_dd_features=False,
-            reset_dd_features=False,
-            save_optim_history_nonparam=True,
-        ),
-    ),
+    trained_model_path="/Users/jenniferpollack/Projects/wf-outputs/Archive/wf-outputs-202307041437/",
+    trained_model_config="config/training_config.yaml",
+    plotting_config=None,
+    eval_mono_metric_rmse=False,
+    eval_train_shape_sr_metric_rmse=False,
     ground_truth_model=RecursiveNamespace(
         model_params=RecursiveNamespace(
             model_name="poly",
@@ -82,9 +59,6 @@ metrics_params = RecursiveNamespace(
     metrics_hparams=RecursiveNamespace(
         batch_size=16,
         opt_stars_rel_pix_rmse=False,
-        eval_mono_metric_rmse=True,
-        eval_opd_metric_rmse=True,
-        eval_train_shape_sr_metric_rmse=True,
         l2_param=0.0,
         output_Q=1,
         output_dim=64,
@@ -110,6 +84,7 @@ def test_eval_metrics_polychromatic_lowres(
     training_params, training_data, test_dataset, psf_model
 ):
     metrics_handler = MetricsParamsHandler(metrics_params, training_params)
+
     cycle = 2
 
     # Load paper results
