@@ -1198,19 +1198,10 @@ def plot_imgs(mat, cmap="gist_stern", figsize=(20, 20)):
     plt.show()
 
 
-def _apply_df(model, pos, sed):
-    data = [pos, sed]
-    print("run prediction")
-    return model.predict(data)
+def predict_chunk(model, data_chunk, con):
+    predictions = model.predict(data_chunk, batch_size=con)
+    return predictions
 
-
-def apply_by_multiprocessing(model, pos, sed, workers):
-
-    pool = multiprocessing.Pool(processes=workers)
-
-    result = pool.map(_apply_df, (model, np.array_split(pos, workers), np.array_split(sed, workers)))
-    pool.close()
-    return list(result)
 
 def compute_psf_images(
     tf_semiparam_field,
@@ -1275,10 +1266,12 @@ def compute_psf_images(
     step = int(float(len(pred_inputs[0]))/Nbin)
     print('step= '+str(step))
     print(len(tf_packed_SED_data[0:step]))
-    
+    chunks = [tf_pos[i*step: (i+1)*step],
+              tf_packed_SED_data[i*step: (i+1)*step]
+              for i in range(Nbin)]
     Bpool = multiprocessing.Pool(processes=Nbin)
     res = []
-    for i in range(Nbin):
+    #for i in range(Nbin):
         #tem = Bpool.apply_async(tf_semiparam_field.predict,
          #                       ([pred_inputs[0][i*step:(i+1)*step], pred_inputs[1][i*step:(i+1)*step]],
           #                        batch_size))
@@ -1286,11 +1279,12 @@ def compute_psf_images(
         # res.append(tem)
         # [pred_inputs[0][i * step: (i + 1) * step],
         # pred_inputs[1][i * step: (i + 1) * step]]
-        tem = Bpool.apply_async(tf_semiparam_field.predict,
-                                ([tf_pos[i*step: (i+1)*step],
-                                  tf_packed_SED_data[i*step: (i+1)*step]], batch_size))
-        res.append(tem)
-        print("tem: "+str(tem))
+        #tem = Bpool.apply_async(tf_semiparam_field.predict,
+         #                       ([tf_pos[i*step: (i+1)*step],
+          #                        tf_packed_SED_data[i*step: (i+1)*step]], batch_size))
+    tem = np.concatenate(Bpool.map(predict_chunk, (tf_semiparam_field, chunks, batch_size)))
+    res.append(tem)
+    print("tem: "+str(tem))
         # print(tem.get())
     Bpool.close()
     Bpool.join()
