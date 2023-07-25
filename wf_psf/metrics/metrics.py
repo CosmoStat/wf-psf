@@ -1268,7 +1268,7 @@ def compute_psf_images(
 
     logger.info("Begin compute psf images")
     logger.info(type(tf_semiparam_field))
-
+    import tensorflow as tf
     packed_SED_data = [
         utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_lda)
         for _sed in tf_SEDs
@@ -1290,7 +1290,7 @@ def compute_psf_images(
     print('step= '+str(step))
     # multiprocessing.set_start_method('spawn')
     Bres =[[] for i in range(Nbin)]
-    import tensorflow as tf
+
     Bres = multiprocessing.Manager().list(Bres)
     Bpool = multiprocessing.get_context('spawn').Pool(processes=Nbin)
     for i in range(Nbin):
