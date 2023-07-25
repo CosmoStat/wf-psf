@@ -1196,6 +1196,12 @@ def plot_imgs(mat, cmap="gist_stern", figsize=(20, 20)):
     plt.show()
 
 
+def predict_chunk(fun, data_chunk, bres, i):
+    logger.info("predict_chunk")
+    bres[i] =fun(data_chunk[0], batch_size=data_chunk[1], use_multiprocessing=True)
+    return
+
+
 def compute_psf_images(
     tf_semiparam_field,
     GT_tf_semiparam_field,
@@ -1252,7 +1258,46 @@ def compute_psf_images(
     tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
     pred_inputs = [tf_pos, tf_packed_SED_data]
 
+<<<<<<< HEAD
+    # Multiprocessing
+    logger.info("Begin Model prediction")
+    # Model prediction
+
+    # preds = apply_by_multiprocessing(tf_semiparam_field, tf_pos, tf_packed_SED_data, workers=10)
+    Nbin = 10
+    step = int(float(len(pred_inputs[0]))/Nbin)
+    print('step= '+str(step))
+    print(len(tf_packed_SED_data[0:step]))
+    Bres =[[] for i in range(Nbin)]
+    Bres = multiprocessing.Manager().list(Bres)
+    Bpool = multiprocessing.Pool(processes=Nbin)
+    for i in range(Nbin):
+        datai = [[pred_inputs[0][i*step:(i+1)*step], pred_inputs[1][i*step:(i+1)*step]], batch_size]
+        Bpool.apply_async(predict_chunk, 
+                          (tf_semiparam_field.predict, datai, Bres, i, ))
+        # print(tem.get())
+        # res.append(tem)
+        # [pred_inputs[0][i * step: (i + 1) * step],
+        # pred_inputs[1][i * step: (i + 1) * step]]
+        #tem = Bpool.apply_async(tf_semiparam_field.predict,
+         #                       ([tf_pos[i*step: (i+1)*step],
+          #                        tf_packed_SED_data[i*step: (i+1)*step]], batch_size))
+    #tem = np.concatenate(Bpool.map(predict_chunk, (tf_semiparam_field, chunks, batch_size)))
+    #res.append(tem)
+    # print("tem: "+str(tem))
+        # print(tem.get())
+    Bpool.close()
+    Bpool.join()
+
+    logger.info(Bres)
+
+    preds = []
+    for i in Bres:
+        preds += i 
+    # preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
+=======
     preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size, use_multiprocessing=True)
+>>>>>>> 4b61f954102df5c98087fb88e6bd72e053a793c6
     # End of Multiprocessing
 
     logger.info("Get pred moments")
