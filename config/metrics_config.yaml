@@ -1,33 +1,32 @@
 metrics:
   # Set flag to evaluate model weights; if False, then final updated model will be evaluated
-  use_callback: False
+  use_callback: True
   # Choose the training cycle for the evaluation. Can be: 1, 2, ...
-  saved_training_cycle: 1
+  saved_training_cycle: 2
   # Provide path to saved model checkpoints.
   chkp_save_path: checkpoint
   # Fill model_params if computing metrics_only on a pre-trained model
   # ID name
-  id_name: -coherent_euclid_200stars
+  id_name: _sample_w_bis1_2k #-coherent_euclid_2000stars
   # Path to Trained Model
-  trained_model_path: /Users/jw274171/rho-stats/Euclid/jwsfork/wf-psf
+  trained_model_path: /Users/jw274171/rho-stats/Euclid/Alex/model/wf-outputs-202307041437
+  # trained_model_path: /gpfswork/rech/prk/uzk69cg/wf_test/test2/tobias_Archive/wf-outputs-202307041437 #/gpfswork/rech/prk/uzk69cg/wf_test/test2/wf-outputs/right_config_2000/ 
   # Name of Trained Model Config file
-  trained_model_config: config/training_config.yaml
-  #Evaluate the polychromatic RMSE metric.
+  trained_model_config: config/training_config.yaml 
+  # Evaluate the polychromatic RMSE metric.
   eval_poly_metric_rmse: False
   #Evaluate the monchromatic RMSE metric.
   eval_mono_metric_rmse: False
-  #Evaluate the shape results.
-  eval_test_shape_sr_metric_rmse: False
   #Evaluate the OPD RMSE metric.
   eval_opd_metric_rmse: False
-  # Save the predicted PSF images.
-  save_psf_images: True
-  # super resolution or not ?
-  save_psf_super_res: False
   #Evaluate the super-resolution and the shape RMSE metrics for the train dataset.
   eval_train_shape_sr_metric_rmse: False
-
-
+  #Evaluate the super-resolution and the shape RMSE metrics for the train dataset.
+  eval_test_shape_sr_metric_rmse: False
+  # predicted PSF images
+  save_psf_images: True
+  # save_psf_super_res
+  save_psf_super_res: False
   ground_truth_model:
     model_params:
       #Model used as ground truth for the evaluation. Options are: 'poly', 'physical'.
@@ -129,3 +128,5 @@ metrics:
     # It also depends on the Q values used.
     # Recommended value: 64 or higher
     output_dim: 64
+      
+
