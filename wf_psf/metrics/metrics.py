@@ -1272,6 +1272,7 @@ def compute_psf_images(
     Nbin = 10
     step = int(float(len(pred_inputs[0]))/Nbin)
     print('step= '+str(step))
+    multiprocessing.set_start_method('spawn')
     Bres =[[] for i in range(Nbin)]
     Bres = multiprocessing.Manager().list(Bres)
     Bpool = multiprocessing.Pool(processes=Nbin)
