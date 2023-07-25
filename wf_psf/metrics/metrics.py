@@ -1269,12 +1269,15 @@ def compute_psf_images(
     chunks = [[tf_pos[i*step: (i+1)*step],
               tf_packed_SED_data[i*step: (i+1)*step]]
               for i in range(Nbin)]
+
+    Bres =[[] for i in range(Nbin)]
+    Bres = multiprocessing.Manager().list(Bres)
     Bpool = multiprocessing.Pool(processes=Nbin)
     res = []
-    #for i in range(Nbin):
-        #tem = Bpool.apply_async(tf_semiparam_field.predict,
-         #                       ([pred_inputs[0][i*step:(i+1)*step], pred_inputs[1][i*step:(i+1)*step]],
-          #                        batch_size))
+    for i in range(Nbin):
+        Bpool.apply_async(tf_semiparam_field.predict,
+                          ([pred_inputs[0][i*step:(i+1)*step], pred_inputs[1][i*step:(i+1)*step]],
+                            batch_size))
         # print(tem.get())
         # res.append(tem)
         # [pred_inputs[0][i * step: (i + 1) * step],
@@ -1282,13 +1285,13 @@ def compute_psf_images(
         #tem = Bpool.apply_async(tf_semiparam_field.predict,
          #                       ([tf_pos[i*step: (i+1)*step],
           #                        tf_packed_SED_data[i*step: (i+1)*step]], batch_size))
-    tem = np.concatenate(Bpool.map(predict_chunk, (tf_semiparam_field, chunks, batch_size)))
-    res.append(tem)
-    print("tem: "+str(tem))
+    #tem = np.concatenate(Bpool.map(predict_chunk, (tf_semiparam_field, chunks, batch_size)))
+    #res.append(tem)
+    # print("tem: "+str(tem))
         # print(tem.get())
     Bpool.close()
     Bpool.join()
-
+    print(Bres)
     # print(type(res))
     # print(res[0].get())
 
