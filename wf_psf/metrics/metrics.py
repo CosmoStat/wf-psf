@@ -7,8 +7,6 @@ from wf_psf.psf_models.tf_psf_field import build_PSF_model
 from wf_psf.psf_models import tf_psf_field as psf_field
 from wf_psf import SimPSFToolkit as SimPSFToolkit
 import logging
-import multiprocessing
-
 logger = logging.getLogger(__name__)
 
 
@@ -1198,12 +1196,6 @@ def plot_imgs(mat, cmap="gist_stern", figsize=(20, 20)):
     plt.show()
 
 
-def predict_chunk(fun, data_chunk, bs, bres, i):
-    logger.info("predict_chunk")
-    bres[i] =fun(data_chunk, batch_size=bs)
-    return
-
-
 def compute_psf_images(
     tf_semiparam_field,
     GT_tf_semiparam_field,
@@ -1260,46 +1252,7 @@ def compute_psf_images(
     tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
     pred_inputs = [tf_pos, tf_packed_SED_data]
 
-    # Multiprocessing
-    logger.info("Begin Model prediction")
-    # Model prediction
-
-    # preds = apply_by_multiprocessing(tf_semiparam_field, tf_pos, tf_packed_SED_data, workers=10)
-    Nbin = 10
-    step = int(float(len(pred_inputs[0]))/Nbin)
-    print('step= '+str(step))
-    print(len(tf_packed_SED_data[0:step]))
-    chunks = [[tf_pos[i*step: (i+1)*step],
-              tf_packed_SED_data[i*step: (i+1)*step]]
-              for i in range(Nbin)]
-
-    Bres =[[] for i in range(Nbin)]
-    Bres = multiprocessing.Manager().list(Bres)
-    Bpool = multiprocessing.Pool(processes=Nbin)
-    for i in range(Nbin):
-        Bpool.apply_async(predict_chunk,
-                          (tf_semiparam_field.predict,[pred_inputs[0][i*step:(i+1)*step], pred_inputs[1][i*step:(i+1)*step]],
-                           batch_size, Bres, i, ))
-        # print(tem.get())
-        # res.append(tem)
-        # [pred_inputs[0][i * step: (i + 1) * step],
-        # pred_inputs[1][i * step: (i + 1) * step]]
-        #tem = Bpool.apply_async(tf_semiparam_field.predict,
-         #                       ([tf_pos[i*step: (i+1)*step],
-          #                        tf_packed_SED_data[i*step: (i+1)*step]], batch_size))
-    #tem = np.concatenate(Bpool.map(predict_chunk, (tf_semiparam_field, chunks, batch_size)))
-    #res.append(tem)
-    # print("tem: "+str(tem))
-        # print(tem.get())
-    Bpool.close()
-    Bpool.join()
-
-    logger.info(Bres)
-
-    preds = []
-    for i in Bres:
-        preds += i 
-    # preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
+    preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size, use_multiprocessing=True)
     # End of Multiprocessing
 
     logger.info("Get pred moments")
