@@ -1266,8 +1266,8 @@ def compute_psf_images(
     step = int(float(len(pred_inputs[0]))/Nbin)
     print('step= '+str(step))
     print(len(tf_packed_SED_data[0:step]))
-    chunks = [tf_pos[i*step: (i+1)*step],
-              tf_packed_SED_data[i*step: (i+1)*step]
+    chunks = [[tf_pos[i*step: (i+1)*step],
+              tf_packed_SED_data[i*step: (i+1)*step]]
               for i in range(Nbin)]
     Bpool = multiprocessing.Pool(processes=Nbin)
     res = []
