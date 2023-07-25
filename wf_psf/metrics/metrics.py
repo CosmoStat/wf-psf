@@ -1282,17 +1282,7 @@ def compute_psf_images(
         Bpool.apply_async(predict_chunk, 
                           args=(tf_semiparam_field.predict, datai, Bres, i, ),
                           error_callback=custom_callback)
-        # print(tem.get())
-        # res.append(tem)
-        # [pred_inputs[0][i * step: (i + 1) * step],
-        # pred_inputs[1][i * step: (i + 1) * step]]
-        #tem = Bpool.apply_async(tf_semiparam_field.predict,
-         #                       ([tf_pos[i*step: (i+1)*step],
-          #                        tf_packed_SED_data[i*step: (i+1)*step]], batch_size))
-    #tem = np.concatenate(Bpool.map(predict_chunk, (tf_semiparam_field, chunks, batch_size)))
-    #res.append(tem)
-    # print("tem: "+str(tem))
-        # print(tem.get())
+
     Bpool.close()
     Bpool.join()
 
@@ -1300,7 +1290,8 @@ def compute_psf_images(
 
     preds = []
     for i in Bres:
-        preds += i 
+        preds += i
+    logger.info(preds)
     # preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size, use_multiprocessing=True)
     # End of Multiprocessing
 
