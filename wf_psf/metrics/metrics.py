@@ -1288,7 +1288,7 @@ def compute_psf_images(
         # pred_inputs[1][i * step: (i + 1) * step]]
         tem = Bpool.apply_async(tf_semiparam_field.predict,
                                 ([tf_pos[i*step: (i+1)*step],
-                                  tf_packed_SED_data[i*step: (i+1)*step]], batch_size,)).get()
+                                  tf_packed_SED_data[i*step: (i+1)*step]], batch_size))
         res.append(tem)
         print("tem: "+str(tem))
         # print(tem.get())
