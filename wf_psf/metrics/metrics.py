@@ -1209,6 +1209,18 @@ def custom_callback(error):
     return
 
 
+def run_session(data):
+    gpu_options = tf.GPUOptions(allow_growth=True, visible_device_list=device)
+    sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+    model = data[2]
+    prei = model.predict(data[0], batch_size=data[1], use_multiprocessing=True)
+    a = tf.placeholder(tf.int16, name='a')
+    y = tf.identity(a, name='y')
+    sess.close()
+    print('Done.')
+    return prei
+
+
 def compute_psf_images(
     tf_semiparam_field,
     GT_tf_semiparam_field,
@@ -1271,17 +1283,24 @@ def compute_psf_images(
 
     # preds = apply_by_multiprocessing(tf_semiparam_field, tf_pos, tf_packed_SED_data, workers=10)
     Nbin = 10
+
+    p = multiprocessing.Pool(Nbin)
+
     step = int(float(len(pred_inputs[0]))/Nbin)
     print('step= '+str(step))
     # multiprocessing.set_start_method('spawn')
     Bres =[[] for i in range(Nbin)]
+    import tensorflow as tf
     Bres = multiprocessing.Manager().list(Bres)
     Bpool = multiprocessing.get_context('spawn').Pool(processes=Nbin)
     for i in range(Nbin):
+
         datai = [[pred_inputs[0][i*step:(i+1)*step], pred_inputs[1][i*step:(i+1)*step]], batch_size]
         Bpool.apply_async(predict_chunk, 
                           args=(tf_semiparam_field.predict, datai, Bres, i, ),
                           error_callback=custom_callback)
+        dataiplus = [[pred_inputs[0][i*step:(i+1)*step], pred_inputs[1][i*step:(i+1)*step]], batch_size, tf_semiparam_field]
+        run_session()
 
     Bpool.close()
     Bpool.join()
