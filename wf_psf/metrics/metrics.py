@@ -1291,13 +1291,12 @@ def compute_psf_images(
         # print(tem.get())
     Bpool.close()
     Bpool.join()
-    print(Bres)
-    # print(type(res))
-    # print(res[0].get())
+
+    logger.info(Bres)
 
     preds = []
-    for i, job in enumerate(res):
-        preds += job.get() 
+    for i in Bres:
+        preds += i 
     # preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
     logger.info("Get pred moments")
