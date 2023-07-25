@@ -1198,9 +1198,9 @@ def plot_imgs(mat, cmap="gist_stern", figsize=(20, 20)):
     plt.show()
 
 
-def predict_chunk(model, data_chunk, con):
-    predictions = model.predict(data_chunk, batch_size=con)
-    return predictions
+def predict_chunk(brei, model, data_chunk, con):
+    brei = model.predict(data_chunk, batch_size=con)
+    return
 
 
 def compute_psf_images(
@@ -1273,11 +1273,10 @@ def compute_psf_images(
     Bres =[[] for i in range(Nbin)]
     Bres = multiprocessing.Manager().list(Bres)
     Bpool = multiprocessing.Pool(processes=Nbin)
-    res = []
     for i in range(Nbin):
-        Bpool.apply_async(tf_semiparam_field.predict,
-                          ([pred_inputs[0][i*step:(i+1)*step], pred_inputs[1][i*step:(i+1)*step]],
-                            batch_size))
+        Bpool.apply_async(predict_chunk,
+                                    (Bres[i], tf_semiparam_field,[pred_inputs[0][i*step:(i+1)*step], pred_inputs[1][i*step:(i+1)*step]],
+                                      batch_size))
         # print(tem.get())
         # res.append(tem)
         # [pred_inputs[0][i * step: (i + 1) * step],
