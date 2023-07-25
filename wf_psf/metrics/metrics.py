@@ -1258,7 +1258,6 @@ def compute_psf_images(
     tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
     pred_inputs = [tf_pos, tf_packed_SED_data]
 
-<<<<<<< HEAD
     # Multiprocessing
     logger.info("Begin Model prediction")
     # Model prediction
@@ -1294,10 +1293,7 @@ def compute_psf_images(
     preds = []
     for i in Bres:
         preds += i 
-    # preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
-=======
-    preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size, use_multiprocessing=True)
->>>>>>> 4b61f954102df5c98087fb88e6bd72e053a793c6
+    # preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size, use_multiprocessing=True)
     # End of Multiprocessing
 
     logger.info("Get pred moments")
