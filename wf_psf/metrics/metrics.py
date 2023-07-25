@@ -1200,6 +1200,7 @@ def plot_imgs(mat, cmap="gist_stern", figsize=(20, 20)):
 
 def predict_chunk(brei, model, data_chunk, con):
     brei = model.predict(data_chunk, batch_size=con)
+    logger.info(brei)
     return
 
 
