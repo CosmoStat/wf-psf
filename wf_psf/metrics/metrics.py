@@ -1197,23 +1197,6 @@ def plot_imgs(mat, cmap="gist_stern", figsize=(20, 20)):
     plt.show()
 
 
-def custom_callback(error):
-    print(f'Got error: {error}')
-    return
-
-
-def run_session(data):
-    gpu_options = tf.GPUOptions(allow_growth=True, visible_device_list=device)
-    sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
-    model = data[2]
-    prei = model.predict(data[0], batch_size=data[1], use_multiprocessing=True)
-    a = tf.placeholder(tf.int16, name='a')
-    y = tf.identity(a, name='y')
-    sess.close()
-    print('Done.')
-    return prei
-
-
 def compute_psf_images(
     tf_semiparam_field,
     GT_tf_semiparam_field,
@@ -1275,7 +1258,7 @@ def compute_psf_images(
     # Begin Multiprocessing
     logger.info("Begin Model prediction")
     # preds = apply_by_multiprocessing(tf_semiparam_field, tf_pos, tf_packed_SED_data, workers=10)
-    Nbin = 2
+    Nbin = 10
     # p = pathos.multiprocessing.Pool()
     step = int(float(len(pred_inputs[0]))/Nbin)
 
