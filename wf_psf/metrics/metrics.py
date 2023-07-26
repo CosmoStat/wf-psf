@@ -1262,6 +1262,8 @@ def compute_psf_images(
     logger.info("Begin compute psf images")
     logger.info(type(tf_semiparam_field))
     import pathos
+    import threading
+
     packed_SED_data = [
         utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_lda)
         for _sed in tf_SEDs
@@ -1275,21 +1277,28 @@ def compute_psf_images(
     logger.info("Begin Model prediction")
     # preds = apply_by_multiprocessing(tf_semiparam_field, tf_pos, tf_packed_SED_data, workers=10)
     Nbin = 10
-    p = pathos.multiprocessing.Pool()
+    # p = pathos.multiprocessing.Pool()
     step = int(float(len(pred_inputs[0]))/Nbin)
-    print('step= '+str(step))
+    # print('step= '+str(step))
+
     def predict_chunk(i):
         datai = [tf_pos[i * step:(i + 1) * step], tf_packed_SED_data[i * step:(i + 1) * step, batch_size]]
         logger.info("predict_chunk")
         model = tf_semiparam_field
         prei = model.predict(datai, batch_size=batch_size, use_multiprocessing=True)
-        return prei
+        res.append(prei)
+        return
 
     I = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-    result = p.map(predict_chunk,  I).get()
+    # result = p.map(predict_chunk,  I).get()
+    res = []
+    for i in range(Nbin):
+        t1 = threading.Thread(target=predict_chunk, args=(i,))
+        t1.start()
+        print(threading.active_count())
 
-    p.close()
-    p.join()
+    # p.close()
+    # p.join()
 
     preds = []
     for i in result:
