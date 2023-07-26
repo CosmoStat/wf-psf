@@ -1284,7 +1284,7 @@ def compute_psf_images(
 
     preds = res[0]
     for i in range(1, Nbin):
-        preds += res[i]
+        preds = np.concatenate((preds, res[i]))
 
     logger.info(type(res[0]))
     logger.info(type(res))
