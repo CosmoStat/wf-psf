@@ -1261,6 +1261,7 @@ def compute_psf_images(
     Nbin = 10
     step = int(float(len(pred_inputs[0]))/Nbin)
 
+    res = []
     def predict_chunk(i):
         datai = [tf_pos[i * step:(i + 1) * step], tf_packed_SED_data[i * step:(i + 1) * step]]
         logger.info("predict_chunk")
@@ -1272,16 +1273,16 @@ def compute_psf_images(
 
     # I = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
     # result = p.map(predict_chunk,  I).get()
-    res = []
+
     for i in range(Nbin):
         ti = threading.Thread(target=predict_chunk, args=(i,))
         ti.start()
         print(threading.active_count())
         # ti.join()
 
-    preds = []
-    for i in res:
-        preds += i
+    preds = res[0]
+    for i in range(1, Nbin):
+        preds += res[i]
     logger.info(preds)
     # preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size, use_multiprocessing=True)
     logger.info("End of Multiprocessing")
