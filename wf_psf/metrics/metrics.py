@@ -1267,7 +1267,7 @@ def compute_psf_images(
         logger.info("predict_chunk")
         logger.info(len(datai))
         prei = tf_semiparam_field.predict(x=datai, batch_size=batch_size, use_multiprocessing=True)
-        logger.info(prei)
+        # logger.info(prei)
         res.append(prei)
         return
 
@@ -1285,8 +1285,10 @@ def compute_psf_images(
     preds = res[0]
     for i in range(1, Nbin):
         preds += res[i]
+        logger.info(len(res[i]))
     print("length of preds")
     logger.info(len(preds))
+    logger.info(len(res))
     # preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size, use_multiprocessing=True)
     logger.info("End of Multiprocessing")
     # End of Multiprocessing
