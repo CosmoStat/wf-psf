@@ -1259,7 +1259,6 @@ def compute_psf_images(
     logger.info("Begin Model prediction")
     # preds = apply_by_multiprocessing(tf_semiparam_field, tf_pos, tf_packed_SED_data, workers=10)
     Nbin = 10
-    # p = pathos.multiprocessing.Pool()
     step = int(float(len(pred_inputs[0]))/Nbin)
 
     def predict_chunk(i):
@@ -1278,9 +1277,7 @@ def compute_psf_images(
         ti = threading.Thread(target=predict_chunk, args=(i,))
         ti.start()
         print(threading.active_count())
-        ti.join()
-    # p.close()
-    # p.join()
+        # ti.join()
 
     preds = []
     for i in res:
