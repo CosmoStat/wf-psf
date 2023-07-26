@@ -25,6 +25,7 @@ metrics_params = RecursiveNamespace(
     trained_model_config="config/training_config.yaml",
     plotting_config=None,
     eval_mono_metric_rmse=False,
+    eval_opd_metric_rmse= True,
     eval_train_shape_sr_metric_rmse=False,
     ground_truth_model=RecursiveNamespace(
         model_params=RecursiveNamespace(
@@ -113,7 +114,7 @@ def test_eval_metrics_polychromatic_lowres(
         psf_model, simPSF_np, test_dataset
     )
     print(poly_metric)
-    print(truth_poly_metric)
+    print(paper_poly_metric)
 
 
 def test_evaluate_metrics_opd(training_params, training_data, test_dataset, psf_model):
@@ -144,8 +145,18 @@ def test_evaluate_metrics_opd(training_params, training_data, test_dataset, psf_
     opd_metric = metrics_handler.evaluate_metrics_opd(
         psf_model, simPSF_np, test_dataset
     )
-    print(opd_metric)
+    #print(opd_metric)
+    #print(paper_opd_metrics)
+    tol = 1.e-5
+    ratio_rmse_opd = abs(1-paper_opd_metrics["rmse_opd"]/opd_metric["rmse_opd"])
+    ratio_rmse_rel_rmse_opd = abs(1.-paper_opd_metrics["rel_rmse_opd"]/opd_metric["rel_rmse_opd"])
+    ratio_rmse_std_opd = abs(1.-paper_opd_metrics["rmse_std_opd"]/opd_metric["rmse_std_opd"])
+    ratio_rel_rmse_std_opd = abs(1.-paper_opd_metrics["rel_rmse_std_opd"]/opd_metric["rel_rmse_std_opd"])
 
+    assert ratio_rmse_opd < tol
+    assert ratio_rel_rmse_std_opd < tol
+    assert ratio_rmse_std_opd < tol
+    assert ratio_rel_rmse_std_opd < tol
 
 def test_eval_metrics_mono_rmse(
     training_params, training_data, test_dataset, psf_model
@@ -176,7 +187,7 @@ def test_evaluate_metrics_shape(
     training_params, training_data, test_dataset, psf_model
 ):
     metrics_handler = MetricsParamsHandler(metrics_params, training_params)
-    cycle = 1
+    cycle = 2
 
     paper_shape_metrics = {
         "rmse_e1": 0.0023064037656687175,
@@ -212,24 +223,38 @@ def test_evaluate_metrics_shape(
     shape_metric = metrics_handler.evaluate_metrics_shape(
         psf_model, simPSF_np, test_dataset
     )
-    print(shape_metric)
+    print(
+        shape_metric["rmse_e1"],
+        shape_metric["std_rmse_e1"],
+        shape_metric["rel_rmse_e1"],
+        shape_metric["std_rel_rmse_e1"],
+        shape_metric["rmse_e2"],
+        shape_metric["std_rmse_e2"],
+        shape_metric["rel_rmse_e2"],
+        shape_metric["std_rel_rmse_e2"],
+        shape_metric["rmse_R2_meanR2"],
+        shape_metric["std_rmse_R2_meanR2"],
+        shape_metric["pix_rmse"],
+        shape_metric["pix_rmse_std"],
+        shape_metric["rel_pix_rmse"],
+        shape_metric["rel_pix_rmse_std"]
+        )
+    print(paper_shape_metrics)
+    print(" ")
+    tol = 1.e-5
+    ratio_rmse_e1 = abs(1.-paper_shape_metrics["rmse_e1"]/shape_metric["rmse_e1"])
+    ratio_std_rmse_e1 = abs(1.-paper_shape_metrics["std_rmse_e1"]/shape_metric["std_rmse_e1"])
+    ratio_rel_rmse_e1 = abs(1.-paper_shape_metrics["rel_rmse_e1"]/shape_metric["rel_rmse_e1"])
+    ratio_std_rel_rmse_e1 = abs(1.-paper_shape_metrics["std_rel_rmse_e1"]/shape_metric["std_rel_rmse_e1"])
+    ratio_rmse_e2 = abs(1.-paper_shape_metrics["rmse_e2"]/shape_metric["rmse_e2"])
+    ratio_std_rmse_e2 = abs(1.-paper_shape_metrics["std_rmse_e2"]/shape_metric["std_rmse_e2"])
+    ratio_rmse_R2_meanR2=abs(1.-paper_shape_metrics["rmse_R2_meanR2"]/shape_metric["rmse_R2_meanR2"])
 
+    assert ratio_rmse_e1 < tol
+    assert ratio_std_rmse_e1 < tol
+    assert ratio_rel_rmse_e1 < tol
+    assert ratio_std_rel_rmse_e1 < tol
+    assert ratio_rmse_e2 < tol
+    assert ratio_std_rmse_e2 < tol
+    assert ratio_rmse_R2_meanR2 < tol
 
-def test_evaluate_model(
-    training_params: RecursiveNamespace, training_data, test_data, psf_model
-):
-    cycle = 2
-    evaluate_model(
-        metrics_params,
-        training_params,
-        training_data,
-        test_data,
-        psf_model,
-        train.filepath_chkp_callback(
-            chkp_dir,
-            training_params.model_params.model_name,
-            training_params.id_name,
-            cycle,
-        ),
-        metrics_output,
-    )
