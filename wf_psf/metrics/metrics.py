@@ -1284,8 +1284,9 @@ def compute_psf_images(
         model = tf_semiparam_field
         prei = model.predict(datai, batch_size=batch_size, use_multiprocessing=True)
         return prei
+
     I = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-    result = p.map_async(predict_chunk,  I).get()
+    result = p.map(predict_chunk,  I).get()
 
     p.close()
     p.join()
