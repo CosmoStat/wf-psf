@@ -9,5 +9,5 @@ galsim>=2.3.1
 astropy>=4.1
 matplotlib>=3.3.2
 seaborn>=0.11
-
+pathos
 
