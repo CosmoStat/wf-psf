@@ -1259,14 +1259,14 @@ def compute_psf_images(
     logger.info("Begin Model prediction")
     # preds = apply_by_multiprocessing(tf_semiparam_field, tf_pos, tf_packed_SED_data, workers=10)
     Nbin = 10
-    step = int(float(len(pred_inputs[0]))/Nbin)
+    step = int(float(len(tf_pos))/Nbin)
 
     res = []
     def predict_chunk(i):
         datai = [tf_pos[i * step:(i + 1) * step], tf_packed_SED_data[i * step:(i + 1) * step]]
         logger.info("predict_chunk")
         logger.info(len(datai))
-        prei = tf_semiparam_field.predict(x=datai, batch_size=batch_size, use_multiprocessing=True)
+        prei = tf_semiparam_field.predict(x=datai, batch_size=batch_size)
         logger.info(type(prei))
         res.append(prei)
         return
