@@ -1301,7 +1301,7 @@ def compute_psf_images(
     # p.join()
 
     preds = []
-    for i in result:
+    for i in res:
         preds += i
     logger.info(preds)
     # preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size, use_multiprocessing=True)
