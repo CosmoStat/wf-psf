@@ -1243,7 +1243,6 @@ def compute_psf_images(
     """
 
     logger.info("Begin compute psf images")
-    logger.info(type(tf_semiparam_field))
     import threading
 
     packed_SED_data = [
@@ -1252,7 +1251,6 @@ def compute_psf_images(
     ]
     tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
     tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
-    pred_inputs = [tf_pos, tf_packed_SED_data]
     # Model prediction
 
     # Begin Multiprocessing
@@ -1265,14 +1263,10 @@ def compute_psf_images(
     def predict_chunk(i):
         datai = [tf_pos[i * step:(i + 1) * step], tf_packed_SED_data[i * step:(i + 1) * step]]
         logger.info("predict_chunk")
-        logger.info(len(datai))
         prei = tf_semiparam_field.predict(x=datai, batch_size=batch_size)
-        logger.info(type(prei))
         res[i] = prei
         return
 
-    # I = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-    # result = p.map(predict_chunk,  I).get()
     t_obj = []  # 定义列表用于存放子线程实例
     for i in range(Nbin):
         ti = threading.Thread(target=predict_chunk, args=(i,))
@@ -1286,11 +1280,6 @@ def compute_psf_images(
     for i in range(1, Nbin):
         preds = np.concatenate((preds, res[i]))
 
-    logger.info(type(res[0]))
-    logger.info(type(res))
-    print("length of preds")
-    logger.info(len(preds))
-    logger.info(len(res))
     # preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size, use_multiprocessing=True)
     logger.info("End of Multiprocessing")
     # End of Multiprocessing
