@@ -1281,11 +1281,12 @@ def compute_psf_images(
 
     for tmp in t_obj:
         tmp.join()
-        
+
     preds = res[0]
     for i in range(1, Nbin):
         preds += res[i]
-    logger.info(preds)
+    print("length of preds")
+    logger.info(len(preds))
     # preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size, use_multiprocessing=True)
     logger.info("End of Multiprocessing")
     # End of Multiprocessing
@@ -1358,8 +1359,8 @@ def compute_psf_images(
     ell_loc = np.array(ell_loc)
     # Moment results
     result_dict = {
-        # "psf_GT": GT_preds,
-        # "psf_prediction": preds,
+        "psf_GT": GT_preds,
+        "psf_prediction": preds,
         "position": tf_pos,
         # "res": residuals,
         # "star_mean": GT_star_mean,
