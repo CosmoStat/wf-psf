@@ -1261,14 +1261,14 @@ def compute_psf_images(
     Nbin = 10
     step = int(float(len(tf_pos))/Nbin)
 
-    res = []
+    res = [0 for i in range(Nbin)]
     def predict_chunk(i):
         datai = [tf_pos[i * step:(i + 1) * step], tf_packed_SED_data[i * step:(i + 1) * step]]
         logger.info("predict_chunk")
         logger.info(len(datai))
         prei = tf_semiparam_field.predict(x=datai, batch_size=batch_size)
         logger.info(type(prei))
-        res.append(prei)
+        res[i] = prei
         return
 
     # I = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
