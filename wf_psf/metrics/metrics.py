@@ -1273,13 +1273,15 @@ def compute_psf_images(
 
     # I = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
     # result = p.map(predict_chunk,  I).get()
-
+    t_obj = []  # 定义列表用于存放子线程实例
     for i in range(Nbin):
         ti = threading.Thread(target=predict_chunk, args=(i,))
         ti.start()
-        print(threading.active_count())
-        ti.join()
+        t_obj.append(ti)
 
+    for tmp in t_obj:
+        tmp.join()
+        
     preds = res[0]
     for i in range(1, Nbin):
         preds += res[i]
