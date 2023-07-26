@@ -1282,8 +1282,8 @@ def compute_psf_images(
     def predict_chunk(i):
         datai = [tf_pos[i * step:(i + 1) * step], tf_packed_SED_data[i * step:(i + 1) * step]]
         logger.info("predict_chunk")
-        logger.info(datai)
-        prei = tf_semiparam_field.predict(datai, batch_size=batch_size, use_multiprocessing=True)
+        logger.info(len(datai))
+        prei = tf_semiparam_field.predict(x=datai, batch_size=batch_size, use_multiprocessing=True)
         logger.info(prei)
         res.append(prei)
         return
