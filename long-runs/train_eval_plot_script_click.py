@@ -240,6 +240,18 @@ import click
     help="Make checkpoint at every cycle or just save the checkpoint at the end of the training."
 )
 @click.option(
+    "--sed_interp_kind",
+    default="linear",
+    type=str,
+    help="Type of interpolation for the SED."
+)
+@click.option(
+    "--sed_sigma",
+    default=0,
+    type=float,
+    help="Standard deviation of the multiplicative SED Gaussian noise."
+)
+@click.option(
     "--total_cycles",
     default=2,
     type=int,
@@ -343,12 +355,6 @@ import click
     type=bool,
     help="Whether extrapolation is performed or not on the borders of the SED."
 )
-@click.option(
-    "--SED_interp_kind",
-    default="linear",
-    type=str,
-    help="Type of interpolation for the SED."
-)
 # Feature: project parameters
 @click.option(
     "--project_dd_features",
@@ -356,7 +362,24 @@ import click
     type=bool,
     help="Project NP DD features onto parametric model."
 )
-
+@click.option(
+    "--eval_mono_metric_rmse",
+    default=False,
+    type=bool,
+    help="Evaluate the monchromatic RMSE metric."
+)
+@click.option(
+    "--eval_opd_metric_rmse",
+    default=True,
+    type=bool,
+    help="Evaluate the OPD RMSE metric."
+)
+@click.option(
+    "--eval_train_shape_sr_metric_rmse",
+    default=True,
+    type=bool,
+    help="Evaluate the super-resolution and the shape RMSE metrics for the train dataset."
+)
 
 def main(**args):
     print(args)

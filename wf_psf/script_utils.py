@@ -976,6 +976,7 @@ def evaluate_model(**args):
         ## Save results
         metrics = {'test_metrics': test_metrics, 'train_metrics': train_metrics}
         output_path = args['metric_base_path'] + 'metrics-' + run_id_name
+        print('output_path:=', output_path)
         np.save(output_path, metrics, allow_pickle=True)
 
         ## Print final time
