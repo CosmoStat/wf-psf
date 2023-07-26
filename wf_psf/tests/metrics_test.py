@@ -72,6 +72,7 @@ metrics_output = "wf_psf/tests/data/wf-outputs/metrics"
 
 @pytest.fixture(scope="module", params=[metrics_params])
 def metrics():
+    # Load paper results
     return metrics_params
 
 
@@ -87,10 +88,7 @@ def test_eval_metrics_polychromatic_lowres(
 
     cycle = 2
 
-    # Load paper results
-    filename = "/$WORK/wf-psf/wf_psf/tests/data/validation/metrics_paper/wavediff-original/metrics-poly_sample_w_bis1_2k.npy"
-
-    truth_poly_metric = {
+    paper_poly_metric = {
         "rmse": 6.379096e-05,
         "rel_rmse": 0.8615310303866863,
         "std_rmse": 9.822091e-06,
@@ -116,11 +114,18 @@ def test_eval_metrics_polychromatic_lowres(
     )
     print(poly_metric)
     print(truth_poly_metric)
-    
+
 
 def test_evaluate_metrics_opd(training_params, training_data, test_dataset, psf_model):
     metrics_handler = MetricsParamsHandler(metrics_params, training_params)
     cycle = 2
+
+    paper_opd_metrics = {
+        "rmse_opd": 0.10096897128873078,
+        "rel_rmse_opd": 128.57721760031515,
+        "rmse_std_opd": 0.019779305712904472,
+        "rel_rmse_std_opd": 13.43655258447226,
+    }
 
     ## Prepare models
     # Prepare np input
@@ -136,9 +141,10 @@ def test_evaluate_metrics_opd(training_params, training_data, test_dataset, psf_
         )
     )
 
-    mono_metric = metrics_handler.evaluate_metrics_opd(
+    opd_metric = metrics_handler.evaluate_metrics_opd(
         psf_model, simPSF_np, test_dataset
     )
+    print(opd_metric)
 
 
 def test_eval_metrics_mono_rmse(
@@ -172,6 +178,23 @@ def test_evaluate_metrics_shape(
     metrics_handler = MetricsParamsHandler(metrics_params, training_params)
     cycle = 1
 
+    paper_shape_metrics = {
+        "rmse_e1": 0.0023064037656687175,
+        "std_rmse_e1": 0.0023053241656404403,
+        "rel_rmse_e1": 265.3203356146387,
+        "std_rel_rmse_e1": 264.71100899066596,
+        "rmse_e2": 0.001648851481731486,
+        "std_rmse_e2": 0.0013749469782346232,
+        "rel_rmse_e2": 335.0328737049857,
+        "std_rel_rmse_e2": 334.37154808696175,
+        "rmse_R2_meanR2": 0.013229994217695357,
+        "std_rmse_R2_meanR2": 0.0038716948775583057,
+        "pix_rmse": 1.9327308e-05,
+        "pix_rmse_std": 2.7280478e-06,
+        "rel_pix_rmse": 1.2878789566457272,
+        "rel_pix_rmse_std": 0.32910651061683893,
+    }
+
     ## Prepare models
     # Prepare np input
     simPSF_np = training_data.simPSF
@@ -186,9 +209,10 @@ def test_evaluate_metrics_shape(
         )
     )
 
-    mono_metric = metrics_handler.evaluate_metrics_shape(
+    shape_metric = metrics_handler.evaluate_metrics_shape(
         psf_model, simPSF_np, test_dataset
     )
+    print(shape_metric)
 
 
 def test_evaluate_model(
