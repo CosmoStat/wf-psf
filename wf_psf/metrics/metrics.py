@@ -1261,7 +1261,6 @@ def compute_psf_images(
 
     logger.info("Begin compute psf images")
     logger.info(type(tf_semiparam_field))
-    import pathos
     import threading
 
     packed_SED_data = [
@@ -1295,9 +1294,9 @@ def compute_psf_images(
     res = []
     for i in range(Nbin):
         ti = threading.Thread(target=predict_chunk, args=(i,))
-        ti.setDaemon(True)
         ti.start()
         print(threading.active_count())
+        ti.join()
     # p.close()
     # p.join()
 
