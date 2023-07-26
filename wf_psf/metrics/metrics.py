@@ -1284,7 +1284,8 @@ def compute_psf_images(
     # preds = apply_by_multiprocessing(tf_semiparam_field, tf_pos, tf_packed_SED_data, workers=10)
     Nbin = 10
 
-    p = pathos.multiprocessing.ProcessPool(Nbin)
+    # p = pathos.multiprocessing.ProcessPool(Nbin)
+    p = pathos.multiprocessing.Pool()
     step = int(float(len(pred_inputs[0]))/Nbin)
     print('step= '+str(step))
     # multiprocessing.set_start_method('spawn')
