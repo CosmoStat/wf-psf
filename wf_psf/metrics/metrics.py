@@ -1286,6 +1286,7 @@ def compute_psf_images(
         logger.info("predict_chunk")
         model = tf_semiparam_field
         prei = model.predict(datai, batch_size=batch_size, use_multiprocessing=True)
+        logger.info(prei)
         res.append(prei)
         return
 
