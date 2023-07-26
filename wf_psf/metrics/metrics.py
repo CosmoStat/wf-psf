@@ -1278,14 +1278,14 @@ def compute_psf_images(
     p = pathos.multiprocessing.Pool()
     step = int(float(len(pred_inputs[0]))/Nbin)
     print('step= '+str(step))
-
-    def predict_chunk(data_chunk):
+    def predict_chunk(i):
+        datai = [tf_pos[i * step:(i + 1) * step], tf_packed_SED_data[i * step:(i + 1) * step, batch_size]]
         logger.info("predict_chunk")
         model = tf_semiparam_field
-        prei = model.predict([data_chunk[0], data_chunk[1]], batch_size=data_chunk[2], use_multiprocessing=True)
+        prei = model.predict(datai, batch_size=batch_size, use_multiprocessing=True)
         return prei
-    datai = [[tf_pos[i * step:(i + 1) * step], tf_packed_SED_data[i * step:(i + 1) * step, batch_size]] for i in range(Nbin)]
-    result = p.map_async(predict_chunk,  datai).get()
+    I = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+    result = p.map_async(predict_chunk,  I).get()
 
     p.close()
     p.join()
