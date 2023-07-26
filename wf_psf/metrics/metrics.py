@@ -1278,13 +1278,11 @@ def compute_psf_images(
     Nbin = 2
     # p = pathos.multiprocessing.Pool()
     step = int(float(len(pred_inputs[0]))/Nbin)
-    # print('step= '+str(step))
 
     def predict_chunk(i):
         datai = [tf_pos[i * step:(i + 1) * step], tf_packed_SED_data[i * step:(i + 1) * step, batch_size]]
         logger.info("predict_chunk")
-        model = tf_semiparam_field
-        prei = model.predict(datai, batch_size=batch_size, use_multiprocessing=True)
+        prei = tf_semiparam_field.predict(datai, batch_size=batch_size, use_multiprocessing=True)
         logger.info(prei)
         res.append(prei)
         return
@@ -1305,8 +1303,8 @@ def compute_psf_images(
         preds += i
     logger.info(preds)
     # preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size, use_multiprocessing=True)
+    logger.info("End of Multiprocessing")
     # End of Multiprocessing
-    logger.info("nd of Multiprocessing")
 
     logger.info("Get pred moments")
     # Measure shapes of the reconstructions
