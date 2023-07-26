@@ -1278,7 +1278,7 @@ def compute_psf_images(
         ti = threading.Thread(target=predict_chunk, args=(i,))
         ti.start()
         print(threading.active_count())
-        # ti.join()
+        ti.join()
 
     preds = res[0]
     for i in range(1, Nbin):
