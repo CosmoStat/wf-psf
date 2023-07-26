@@ -1197,11 +1197,10 @@ def plot_imgs(mat, cmap="gist_stern", figsize=(20, 20)):
     plt.show()
 
 
-def predict_chunk(fun, data_chunk, bres, i):
-    ret_val = model.predict(input).tolist()[0]
+def predict_chunk(model, data_chunk):
     logger.info("predict_chunk")
-    bres[i] = fun(data_chunk[0], batch_size=data_chunk[1], use_multiprocessing=True)
-    return
+    prei = model([data_chunk[0], data_chunk[1]], batch_size=data_chunk[2], use_multiprocessing=True)
+    return prei
 
 
 def custom_callback(error):
@@ -1269,6 +1268,7 @@ def compute_psf_images(
     logger.info("Begin compute psf images")
     logger.info(type(tf_semiparam_field))
     import tensorflow as tf
+    import pathos
     packed_SED_data = [
         utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_lda)
         for _sed in tf_SEDs
@@ -1284,31 +1284,32 @@ def compute_psf_images(
     # preds = apply_by_multiprocessing(tf_semiparam_field, tf_pos, tf_packed_SED_data, workers=10)
     Nbin = 10
 
-    p = multiprocessing.Pool(Nbin)
-
+    p = pathos.multiprocessing.ProcessPool(Nbin)
     step = int(float(len(pred_inputs[0]))/Nbin)
     print('step= '+str(step))
     # multiprocessing.set_start_method('spawn')
-    Bres =[[] for i in range(Nbin)]
+    # Bpool = multiprocessing.get_context('spawn').Pool(processes=Nbin)
+    datai = [[tf_pos[i * step:(i + 1) * step], tf_packed_SED_data[i * step:(i + 1) * step, batch_size]] for i in range(Nbin)]
+    # p.map(predict_chunk, tf_semiparam_field, datai)
+    result = p.map_async(predict_chunk, tf_semiparam_field, datai).get()
+    #for i in range(Nbin):
+        #datai = [[pred_inputs[0][i*step:(i+1)*step], pred_inputs[1][i*step:(i+1)*step]], batch_size]
+        # Bpool.apply_async(predict_chunk,
+                          # args=(tf_semiparam_field.predict, datai, Bres, i, ),
+                          # error_callback=custom_callback)
+        #dataiplus = [[pred_inputs[0][i*step:(i+1)*step], pred_inputs[1][i*step:(i+1)*step]], batch_size, tf_semiparam_field]
+        # run_session()
 
-    Bres = multiprocessing.Manager().list(Bres)
-    Bpool = multiprocessing.get_context('spawn').Pool(processes=Nbin)
-    for i in range(Nbin):
 
-        datai = [[pred_inputs[0][i*step:(i+1)*step], pred_inputs[1][i*step:(i+1)*step]], batch_size]
-        Bpool.apply_async(predict_chunk, 
-                          args=(tf_semiparam_field.predict, datai, Bres, i, ),
-                          error_callback=custom_callback)
-        dataiplus = [[pred_inputs[0][i*step:(i+1)*step], pred_inputs[1][i*step:(i+1)*step]], batch_size, tf_semiparam_field]
-        run_session()
+    p.close()
+    p.join()
+    #Bpool.close()
+    #Bpool.join()
 
-    Bpool.close()
-    Bpool.join()
-
-    logger.info(Bres)
+    #logger.info(Bres)
 
     preds = []
-    for i in Bres:
+    for i in result:
         preds += i
     logger.info(preds)
     # preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size, use_multiprocessing=True)
