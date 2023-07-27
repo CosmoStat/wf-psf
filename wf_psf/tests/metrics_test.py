@@ -14,6 +14,7 @@ import tensorflow as tf
 
 
 import numpy as np
+import os
 
 
 metrics_params = RecursiveNamespace(
@@ -66,45 +67,18 @@ metrics_params = RecursiveNamespace(
     ),
 )
 
-# paper_metrics = {"poly_metric":{
-#         "rmse": 6.379096e-05,
-#         "rel_rmse": 0.8615310303866863,
-#         "std_rmse": 9.822091e-06,
-#         "std_rel_rmse": 0.21410740446299314,
-#     },
-#     "opd_metrics": {
-#         "rmse_opd": 0.10096897128873078,
-#         "rel_rmse_opd": 128.57721760031515,
-#         "rmse_std_opd": 0.019779305712904472,
-#         "rel_rmse_std_opd": 13.43655258447226,
-#     },
-#     "shape_metrics": {
-#         "rmse_e1": 0.0023064037656687175,
-#         "std_rmse_e1": 0.0023053241656404403,
-#         "rel_rmse_e1": 265.3203356146387,
-#         "std_rel_rmse_e1": 264.71100899066596,
-#         "rmse_e2": 0.001648851481731486,
-#         "std_rmse_e2": 0.0013749469782346232,
-#         "rel_rmse_e2": 335.0328737049857,
-#         "std_rel_rmse_e2": 334.37154808696175,
-#         "rmse_R2_meanR2": 0.013229994217695357,
-#         "std_rmse_R2_meanR2": 0.0038716948775583057,
-#         "pix_rmse": 1.9327308e-05,
-#         "pix_rmse_std": 2.7280478e-06,
-#         "rel_pix_rmse": 1.2878789566457272,
-#         "rel_pix_rmse_std": 0.32910651061683893,
-#     }}
-
 chkp_dir = "wf_psf/tests/data/validation/checkpoint_paper"
 # optim_dir = "../wf-outputs/optim-hist"
 metrics_output = "wf_psf/tests/data/wf-outputs/metrics"
-filename="/papers/article_IOP/data/metrics/wavediff-original/metrics-poly_sample_w_bis1_2k.npy"
-paper_metrics = np.load(filename, allow_pickle=True)[()]
+paper_dir="/gpfswork/rech/ynx/uuu68hq/wf-psf/papers/article_IOP/data/metrics/wavediff-original"
+main_dir="/gpfswork/rech/ynx/uuu68hq/wf-outputs/wf-outputs-bug/metrics"
+filename="metrics-poly_sample_w_bis1_2k.npy"
 
+paper_metrics = np.load(os.path.join(paper_dir,filename), allow_pickle=True)[()]
+main_metrics = np.load(os.path.join(main_dir,filename), allow_pickle=True)[()] 
 
 @pytest.fixture(scope="module", params=[metrics_params])
 def metrics():
-    # Load paper results
     return metrics_params
 
 
@@ -138,8 +112,35 @@ def test_eval_metrics_polychromatic_lowres(
         psf_model, simPSF_np, test_dataset
     )
     print(poly_metric)
-    print(paper_metrics["poly_metric"])
+    print(paper_metrics["test_metrics"]["poly_metric"])
+    
+    tol=1.e-5
+    ratio_rmse = abs(1.-paper_metrics["test_metrics"]["poly_metric"]["rmse"]/poly_metric["rmse"])
+    ratio_rel_rmse = abs(1.-paper_metrics["test_metrics"]["poly_metric"]["rel_rmse"]/poly_metric["rel_rmse"])
+    ratio_std_rmse = abs(1.-paper_metrics["test_metrics"]["poly_metric"]["std_rmse"]/poly_metric["std_rmse"])
+    ratio_rel_std_rmse = abs(1.-paper_metrics["test_metrics"]["poly_metric"]["std_rel_rmse"]/poly_metric["std_rel_rmse"])
 
+    print("ratio_rmse", ratio_rmse)
+    print("ratio_rel_rmse", ratio_rel_rmse)
+    print("ratio_std_rmse", ratio_std_rmse)
+    print("ratio_rel_std_rmse", ratio_rel_std_rmse)
+
+    m_ratio_rmse = abs(1.-paper_metrics["test_metrics"]["poly_metric"]["rmse"]/main_metrics["test_metrics"]["poly_metric"]["rmse"])
+    m_ratio_rel_rmse = abs(1.-paper_metrics["test_metrics"]["poly_metric"]["rel_rmse"]/main_metrics["test_metrics"]["poly_metric"]["rel_rmse"])
+    m_ratio_std_rmse = abs(1.-paper_metrics["test_metrics"]["poly_metric"]["std_rmse"]/main_metrics["test_metrics"]["poly_metric"]["std_rmse"])
+    m_ratio_rel_std_rmse = abs(1.-paper_metrics["test_metrics"]["poly_metric"]["std_rel_rmse"]/main_metrics["test_metrics"]["poly_metric"]["std_rel_rmse"])
+
+    print(" ")
+    print("Main Branch vs. Tag 1.2.0")
+    print("ratio_rmse", m_ratio_rmse)
+    print("ratio_rel_rmse", m_ratio_rel_rmse)
+    print("ratio_std_rmse", m_ratio_std_rmse)
+    print("ratio_rel_std_rmse", m_ratio_rel_std_rmse)
+
+    assert ratio_rmse < tol
+    assert ratio_rel_rmse < tol
+    assert ratio_std_rmse < tol
+    assert ratio_rel_std_rmse < tol
 
 def test_evaluate_metrics_opd(training_params, training_data, test_dataset, psf_model):
     metrics_handler = MetricsParamsHandler(metrics_params, training_params)
@@ -165,13 +166,32 @@ def test_evaluate_metrics_opd(training_params, training_data, test_dataset, psf_
     #print(opd_metric)
     #print(paper_opd_metrics)
     tol = 1.e-5
-    ratio_rmse_opd = abs(1-paper_metrics["rmse_opd"]/opd_metric["rmse_opd"])
-    ratio_rmse_rel_rmse_opd = abs(1.-paper_metrics["rel_rmse_opd"]/opd_metric["rel_rmse_opd"])
-    ratio_rmse_std_opd = abs(1.-paper_metrics["rmse_std_opd"]/opd_metric["rmse_std_opd"])
-    ratio_rel_rmse_std_opd = abs(1.-paper_metrics["rel_rmse_std_opd"]/opd_metric["rel_rmse_std_opd"])
+    ratio_rmse_opd = abs(1-paper_metrics["test_metrics"]["opd_metric"]["rmse_opd"]/opd_metric["rmse_opd"])
+    ratio_rel_rmse_opd = abs(1.-paper_metrics["test_metrics"]["opd_metric"]["rel_rmse_opd"]/opd_metric["rel_rmse_opd"])
+    ratio_rmse_std_opd = abs(1.-paper_metrics["test_metrics"]["opd_metric"]["rmse_std_opd"]/opd_metric["rmse_std_opd"])
+    ratio_rel_rmse_std_opd = abs(1.-paper_metrics["test_metrics"]["opd_metric"]["rel_rmse_std_opd"]/opd_metric["rel_rmse_std_opd"])
+
+    m_ratio_rmse_opd = abs(1-paper_metrics["test_metrics"]["opd_metric"]["rmse_opd"]/main_metrics["test_metrics"]["opd_metric"]["rmse_opd"])
+    m_ratio_rel_rmse_opd = abs(1.-paper_metrics["test_metrics"]["opd_metric"]["rel_rmse_opd"]/main_metrics["test_metrics"]["opd_metric"]["rel_rmse_opd"])
+    m_ratio_rmse_std_opd = abs(1.-paper_metrics["test_metrics"]["opd_metric"]["rmse_std_opd"]/main_metrics["test_metrics"]["opd_metric"]["rmse_std_opd"])
+    m_ratio_rel_rmse_std_opd = abs(1.-paper_metrics["test_metrics"]["opd_metric"]["rel_rmse_std_opd"]/main_metrics["test_metrics"]["opd_metric"]["rel_rmse_std_opd"])
+
+    print(" ")
+    print("ratio_rmse_opd", ratio_rmse_opd)
+    print("ratio_rel_rmse_opd", ratio_rel_rmse_opd)
+    print("ratio_rmse_std_opd", ratio_rmse_std_opd)
+    print("ratio_rel_rmse_std_opd", ratio_rel_rmse_std_opd)
+
+    print(" ")
+
+    print("Main Branch vs. Tag 1.2.0.")
+    print("ratio_rmse_opd", m_ratio_rmse_opd)
+    print("ratio_rel_rmse_opd", m_ratio_rel_rmse_opd)
+    print("ratio_rmse_std_opd", m_ratio_rmse_std_opd)
+    print("ratio_rel_rmse_std_opd", m_ratio_rel_rmse_std_opd)
 
     assert ratio_rmse_opd < tol
-    assert ratio_rel_rmse_std_opd < tol
+    assert ratio_rel_rmse_opd < tol
     assert ratio_rmse_std_opd < tol
     assert ratio_rel_rmse_std_opd < tol
 
@@ -225,21 +245,38 @@ def test_evaluate_metrics_shape(
     )
     
     tol = 1.e-5
-    ratio_rmse_e1 = abs(1.-paper_metrics["rmse_e1"]/shape_metric["rmse_e1"])
+    ratio_rmse_e1 = abs(1.-paper_metrics["test_metrics"]["shape_results_dict"]["rmse_e1"]/shape_metric["rmse_e1"])
     print('ratio rmse e1', ratio_rmse_e1)
-    ratio_std_rmse_e1 = abs(1.-paper_metrics["std_rmse_e1"]/shape_metric["std_rmse_e1"])
+    ratio_std_rmse_e1 = abs(1.-paper_metrics["test_metrics"]["shape_results_dict"]["std_rmse_e1"]/shape_metric["std_rmse_e1"])
     print('ratio std rmse e1', ratio_std_rmse_e1)
-    ratio_rel_rmse_e1 = abs(1.-paper_metrics["rel_rmse_e1"]/shape_metric["rel_rmse_e1"])
+    ratio_rel_rmse_e1 = abs(1.-paper_metrics["test_metrics"]["shape_results_dict"]["rel_rmse_e1"]/shape_metric["rel_rmse_e1"])
     print('ratio rel_rmse_e1', ratio_rel_rmse_e1)
-    ratio_std_rel_rmse_e1 = abs(1.-paper_metrics["std_rel_rmse_e1"]/shape_metric["std_rel_rmse_e1"])
+    ratio_std_rel_rmse_e1 = abs(1.-paper_metrics["test_metrics"]["shape_results_dict"]["std_rel_rmse_e1"]/shape_metric["std_rel_rmse_e1"])
     print('ratio std_rel_rmse_e1', ratio_std_rel_rmse_e1)
-    ratio_rmse_e2 = abs(1.-paper_metrics["rmse_e2"]/shape_metric["rmse_e2"])
+    ratio_rmse_e2 = abs(1.-paper_metrics["test_metrics"]["shape_results_dict"]["rmse_e2"]/shape_metric["rmse_e2"])
     print('ratio rmse_e2', ratio_rmse_e2)
-    ratio_std_rmse_e2 = abs(1.-paper_metrics["std_rmse_e2"]/shape_metric["std_rmse_e2"])
+    ratio_std_rmse_e2 = abs(1.-paper_metrics["test_metrics"]["shape_results_dict"]["std_rmse_e2"]/shape_metric["std_rmse_e2"])
     print('ratio std_rmse_e2', ratio_std_rmse_e2)
-    ratio_rmse_R2_meanR2=abs(1.-paper_metrics["rmse_R2_meanR2"]/shape_metric["rmse_R2_meanR2"])
+    ratio_rmse_R2_meanR2=abs(1.-paper_metrics["test_metrics"]["shape_results_dict"]["rmse_R2_meanR2"]/shape_metric["rmse_R2_meanR2"])
     print('ratio rmse R2 mean R2', ratio_rmse_R2_meanR2)
 
+    print(" ")
+    print("Main branch vs. Tag 1.2.0. (paper)")
+    m_ratio_rmse_e1 = abs(1.-paper_metrics["test_metrics"]["shape_results_dict"]["rmse_e1"]/main_metrics["test_metrics"]["shape_results_dict"]["rmse_e1"])
+    print('ratio rmse e1', m_ratio_rmse_e1)
+    m_ratio_std_rmse_e1 = abs(1.-paper_metrics["test_metrics"]["shape_results_dict"]["std_rmse_e1"]/main_metrics["test_metrics"]["shape_results_dict"]["std_rmse_e1"])
+    print('ratio std rmse e1', m_ratio_std_rmse_e1)
+    m_ratio_rel_rmse_e1 = abs(1.-paper_metrics["test_metrics"]["shape_results_dict"]["rel_rmse_e1"]/main_metrics["test_metrics"]["shape_results_dict"]["rel_rmse_e1"])
+    print('ratio rel_rmse_e1', m_ratio_rel_rmse_e1)
+    m_ratio_std_rel_rmse_e1 = abs(1.-paper_metrics["test_metrics"]["shape_results_dict"]["std_rel_rmse_e1"]/main_metrics["test_metrics"]["shape_results_dict"]["std_rel_rmse_e1"])
+    print('ratio std_rel_rmse_e1', ratio_std_rel_rmse_e1)
+    m_ratio_rmse_e2 = abs(1.-paper_metrics["test_metrics"]["shape_results_dict"]["rmse_e2"]/main_metrics["test_metrics"]["shape_results_dict"]["rmse_e2"])
+    print('ratio rmse_e2', m_ratio_rmse_e2)
+    m_ratio_std_rmse_e2 = abs(1.-paper_metrics["test_metrics"]["shape_results_dict"]["std_rmse_e2"]/main_metrics["test_metrics"]["shape_results_dict"]["std_rmse_e2"])
+    print('ratio std_rmse_e2', m_ratio_std_rmse_e2)
+    m_ratio_rmse_R2_meanR2=abs(1.-paper_metrics["test_metrics"]["shape_results_dict"]["rmse_R2_meanR2"]/main_metrics["test_metrics"]["shape_results_dict"]["rmse_R2_meanR2"])
+    print('ratio rmse R2 mean R2', m_ratio_rmse_R2_meanR2)
+    
     assert ratio_rmse_e1 < tol
     assert ratio_std_rmse_e1 < tol
     assert ratio_rel_rmse_e1 < tol
