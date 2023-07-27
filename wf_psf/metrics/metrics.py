@@ -7,7 +7,6 @@ from wf_psf.psf_models.tf_psf_field import build_PSF_model
 from wf_psf.psf_models import tf_psf_field as psf_field
 from wf_psf import SimPSFToolkit as SimPSFToolkit
 import logging
-import multiprocessing
 logger = logging.getLogger(__name__)
 
 
@@ -1251,38 +1250,40 @@ def compute_psf_images(
     ]
     tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
     tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
+
     # Model prediction
+    multi_thereading = True
+    if multi_thereading:
+        # Begin Multiprocessing
+        logger.info("Begin Model prediction")
+        Nbin = 10
+        step = int(float(len(tf_pos)) / Nbin)
 
-    # Begin Multiprocessing
-    logger.info("Begin Model prediction")
-    # preds = apply_by_multiprocessing(tf_semiparam_field, tf_pos, tf_packed_SED_data, workers=10)
-    Nbin = 10
-    step = int(float(len(tf_pos))/Nbin)
+        res = [0 for i in range(Nbin)]  # To save the results in order
+        def predict_chunk(i):
+            datai = [tf_pos[i * step:(i + 1) * step], tf_packed_SED_data[i * step:(i + 1) * step]]
+            logger.info("predict_chunk")
+            prei = tf_semiparam_field.predict(x=datai, batch_size=batch_size)
+            res[i] = prei
+            return
 
-    res = [0 for i in range(Nbin)]
-    def predict_chunk(i):
-        datai = [tf_pos[i * step:(i + 1) * step], tf_packed_SED_data[i * step:(i + 1) * step]]
-        logger.info("predict_chunk")
-        prei = tf_semiparam_field.predict(x=datai, batch_size=batch_size)
-        res[i] = prei
-        return
+        t_obj = []  # To save the threads
+        for i in range(Nbin):
+            ti = threading.Thread(target=predict_chunk, args=(i,))
+            ti.start()
+            t_obj.append(ti)
 
-    t_obj = []  # 定义列表用于存放子线程实例
-    for i in range(Nbin):
-        ti = threading.Thread(target=predict_chunk, args=(i,))
-        ti.start()
-        t_obj.append(ti)
-
-    for tmp in t_obj:
-        tmp.join()
-
-    preds = res[0]
-    for i in range(1, Nbin):
-        preds = np.concatenate((preds, res[i]))
-
-    # preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size, use_multiprocessing=True)
-    logger.info("End of Multiprocessing")
-    # End of Multiprocessing
+        for tmp in t_obj:
+            tmp.join()
+        preds = res[0]
+        for i in range(1, Nbin):
+            preds = np.concatenate((preds, res[i]))
+        logger.info("End of Multiprocessing")
+        # End of Multiprocessing
+    else:
+        # If not multi therads:
+        pred_inputs = [tf_pos, tf_packed_SED_data]
+        preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size, use_multiprocessing=True)
 
     logger.info("Get pred moments")
     # Measure shapes of the reconstructions
