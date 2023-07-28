@@ -1447,14 +1447,18 @@ def compute_mono_psf(
             GT_mono_psf = GT_tf_semiparam_field.predict_mono_psfs(
                 input_positions=batch_pos, lambda_obs=lambda_obs, phase_N=phase_N
             )
-
+            ''' for test
             model_mono_psf = tf_semiparam_field.predict_mono_psfs(
+                input_positions=batch_pos, lambda_obs=lambda_obs, phase_N=phase_N
+            )'''
+            model_mono_psf = GT_tf_semiparam_field.predict_mono_psfs(
                 input_positions=batch_pos, lambda_obs=lambda_obs, phase_N=phase_N
             )
 
             GT_pred_moments = [
                 gs.hsm.FindAdaptiveMom(gs.Image(np.array(_pred)), strict=False) for _pred in GT_mono_psf
             ]
+
             pred_moments = [
                 gs.hsm.FindAdaptiveMom(gs.Image(np.array(_pred)), strict=False) for _pred in model_mono_psf
             ]
@@ -1475,7 +1479,7 @@ def compute_mono_psf(
 
             # Increase lower limit
             ep_low_lim += batch_size
-
+        logger.info(len(ell_loc))
         result_dictit = {
             "lambdas": lambda_obs,
             "position": tf_pos,
