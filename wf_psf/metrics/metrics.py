@@ -1463,3 +1463,141 @@ def compute_psf_images_super_res(
     }
 
     return result_dict
+
+
+def compute_mono_psf(
+    tf_semiparam_field,
+    GT_tf_semiparam_field,
+    simPSF_np,
+    tf_pos,
+    lambda_list,
+    batch_size=32,
+    high_res=False
+):
+    """Calculate metrics for monochromatic reconstructions.
+
+    The ``tf_semiparam_field`` should be the model to evaluate, and the
+    ``GT_tf_semiparam_field`` should be loaded with the ground truth PSF field.
+
+    Relative values returned in [%] (so multiplied by 100).
+
+    Parameters
+    ----------
+    tf_semiparam_field: PSF field object
+        Trained model to evaluate.
+    GT_tf_semiparam_field: PSF field object
+        Ground truth model to produce GT observations at any position
+        and wavelength.
+    simPSF_np: PSF simulator object
+        Simulation object capable of calculating ``phase_N`` values from
+        wavelength values.
+    tf_pos: list of floats [batch x 2]
+        Positions to evaluate the model.
+    lambda_list: list of floats [wavelength_values]
+        List of wavelength values in [um] to evaluate the model.
+    batch_size: int
+        Batch size to process the monochromatic PSF calculations.
+
+    Returns
+    -------
+    rmse_lda: list of float
+        List of RMSE as a function of wavelength.
+    rel_rmse_lda: list of float
+        List of relative RMSE as a function of wavelength. Values in %.
+    std_rmse_lda: list of float
+        List of standard deviation of RMSEs as a function of wavelength.
+    std_rel_rmse_lda: list of float
+        List of standard deviation of relative RMSEs as a function of
+        wavelength. Values in %.
+
+    """
+    # Initialise lists
+    rmse_lda = []
+    rel_rmse_lda = []
+    std_rmse_lda = []
+    std_rel_rmse_lda = []
+
+    total_samples = tf_pos.shape[0]
+    result_dict = [[] for i in len(lambda_list)]
+    # Main loop for each wavelength
+
+    for it in range(len(lambda_list)):
+        # Set the lambda (wavelength) and the required wavefront N
+        lambda_obs = lambda_list[it]
+        phase_N = simPSF_np.feasible_N(lambda_obs)
+
+        residuals = np.zeros((total_samples))
+        GT_star_mean = np.zeros((total_samples))
+        # Initialise lists
+        pred_e1_HSM = []
+        pred_e2_HSM = []
+        pred_R2_HSM = []
+        GT_pred_e1_HSM = []
+        GT_pred_e2_HSM = []
+        GT_pred_R2_HSM = []
+        ell_loc = []
+        flag = np.zeros(total_samples)
+
+        # Total number of epochs
+        n_epochs = int(np.ceil(total_samples / batch_size))
+        ep_low_lim = 0
+        for ep in range(n_epochs):
+            # Define the upper limit
+            if ep_low_lim + batch_size >= total_samples:
+                ep_up_lim = total_samples
+            else:
+                ep_up_lim = ep_low_lim + batch_size
+            # Extract the batch
+            batch_pos = tf_pos[ep_low_lim:ep_up_lim, :]
+
+            # Estimate the monochromatic PSFs
+            GT_mono_psf = GT_tf_semiparam_field.predict_mono_psfs(
+                input_positions=batch_pos, lambda_obs=lambda_obs, phase_N=phase_N
+            )
+
+            model_mono_psf = tf_semiparam_field.predict_mono_psfs(
+                input_positions=batch_pos, lambda_obs=lambda_obs, phase_N=phase_N
+            )
+
+            num_pixels = GT_mono_psf.shape[1] * GT_mono_psf.shape[2]
+
+            residuals[ep_low_lim:ep_up_lim] = (
+                np.sum((GT_mono_psf - model_mono_psf) ** 2, axis=(1, 2)) / num_pixels
+            )
+            GT_star_mean[ep_low_lim:ep_up_lim] = (
+                np.sum((GT_mono_psf) ** 2, axis=(1, 2)) / num_pixels
+            )
+
+            # Increase lower limit
+            ep_low_lim += batch_size
+
+        pred_moments = gs.hsm.FindAdaptiveMom(gs.Image(model_mono_psf), strict=False)
+        GT_pred_moments =  gs.hsm.FindAdaptiveMom(gs.Image(GT_mono_psf), strict=False)
+        for ii in len(pred_moments):
+            if (
+                pred_moments[ii].moments_status == 0
+                and GT_pred_moments[ii].moments_status == 0
+            ):
+                pred_e1_HSM.append(pred_moments[ii].observed_shape.g1)
+                pred_e2_HSM.append(pred_moments[ii].observed_shape.g2)
+                pred_R2_HSM.append(2 * (pred_moments[ii].moments_sigma ** 2))
+                GT_pred_e1_HSM.append(GT_pred_moments[ii].observed_shape.g1)
+                GT_pred_e2_HSM.append(GT_pred_moments[ii].observed_shape.g2)
+                GT_pred_R2_HSM.append(2 * (GT_pred_moments[ii].moments_sigma ** 2))
+                ell_loc.append()
+                flag[ii] = 1
+
+        result_dict[it] = {
+            "lambdas": lambda_obs,
+            "position": tf_pos,
+            "pred_e1_HSM": pred_e1_HSM,
+            "pred_e2_HSM": pred_e2_HSM,
+            "pred_R2_HSM": pred_R2_HSM,
+            "GT_pred_e1_HSM": GT_pred_e1_HSM,
+            "GT_pred_e2_HSM": GT_pred_e2_HSM,
+            "GT_pred_R2_HSM": GT_pred_R2_HSM,
+            "Flag": flag,
+            "order_ell": ell_loc,
+        }
+    return result_dict
+

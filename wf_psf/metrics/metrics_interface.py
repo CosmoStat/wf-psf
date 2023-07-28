@@ -269,6 +269,38 @@ class MetricsParamsHandler:
             )
         return psf_results
 
+    def evaluate_psf_mono(self, psf_model, simPSF, dataset):
+        """Evaluate Monochromatic PSF RMSE Metrics.
+
+        A function to evaluate metrics for Monochromatic PSF.
+
+        Inputs
+        ------
+        psf_model: object
+            PSF model class instance of the psf model selected for metrics evaluation.
+        simPSF: object
+            SimPSFToolkit instance
+        test_dataset: dict
+            Test dataset dictionary
+
+        Returns
+        -------
+        mono_metric: dict
+            Dictionary containing RMSE, Relative RMSE values, and
+            corresponding Standard Deviation values for Monochromatic PSF metrics.
+
+        """
+        logger.info("Computing monochromatic metrics.")
+        lambda_list = np.arange(0.55, 0.9, 0.01)  # 10nm separation
+        mono_dict = wf_metrics.compute_mono_psf(
+            tf_semiparam_field=psf_model,
+            GT_tf_semiparam_field=self.ground_truth_psf_model,
+            simPSF_np=simPSF,
+            tf_pos=dataset["positions"],
+            lambda_list=lambda_list,
+        )
+        return mono_dict
+
 
 def evaluate_model(
     metrics_params,
@@ -338,6 +370,11 @@ def evaluate_model(
         # Monochromatic star reconstructions
         if metrics_params.eval_mono_metric_rmse:
             mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
+                psf_model, simPSF_np, test_data.test_dataset
+            )
+        elif metrics_params.eval_mono_shape:
+            # get Monochromatic shape
+            mono_metric = metrics_handler.evaluate_psf_mono(
                 psf_model, simPSF_np, test_data.test_dataset
             )
         else:
