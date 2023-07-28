@@ -1512,9 +1512,6 @@ def compute_mono_psf(
 
     """
 
-    logger.info("Calculation of monochromatic prediction begins")
-
-
     total_samples = tf_pos.shape[0]
     num_lambdas = len(lambda_list)
 
@@ -1536,7 +1533,8 @@ def compute_mono_psf(
         GT_pred_R2_HSM = []
         ell_loc = []
         flag = np.zeros(total_samples)
-
+        pred_moments = []
+        GT_pred_moments = []
         # Total number of epochs
         n_epochs = int(np.ceil(total_samples / batch_size))
         ep_low_lim = 0
@@ -1557,15 +1555,17 @@ def compute_mono_psf(
             model_mono_psf = tf_semiparam_field.predict_mono_psfs(
                 input_positions=batch_pos, lambda_obs=lambda_obs, phase_N=phase_N
             )
+
+
+            pred_moments.append([
+                gs.hsm.FindAdaptiveMom(gs.Image(np.array(_pred)), strict=False) for _pred in model_mono_psf
+            ])
+            GT_pred_moments.append(
+                gs.hsm.FindAdaptiveMom(gs.Image(np.array(_pred)), strict=False) for _pred in GT_mono_psf
+            )
             # Increase lower limit
             ep_low_lim += batch_size
-
-        pred_moments = GT_pred_moments = [
-            gs.hsm.FindAdaptiveMom(gs.Image(np.array(_pred)), strict=False) for _pred in model_mono_psf
-        ]
-        GT_pred_moments = [
-            gs.hsm.FindAdaptiveMom(gs.Image(np.array(_pred)), strict=False) for _pred in GT_mono_psf
-        ]
+            
         for ii in range(total_samples):
             if (
                 pred_moments[ii].moments_status == 0
