@@ -1511,6 +1511,8 @@ def compute_mono_psf(
         wavelength. Values in %.
 
     """
+
+    logger.info("Calculation of monochromatic prediction begins")
     # Initialise lists
     total_samples = tf_pos.shape[0]
     result_dict = [[] for i in range(len(lambda_list))]
@@ -1554,8 +1556,12 @@ def compute_mono_psf(
             # Increase lower limit
             ep_low_lim += batch_size
 
-        pred_moments = gs.hsm.FindAdaptiveMom(gs.Image(model_mono_psf.numpy()), strict=False)
-        GT_pred_moments =  gs.hsm.FindAdaptiveMom(gs.Image(GT_mono_psf.numpy()), strict=False)
+        pred_moments = GT_pred_moments = [
+            gs.hsm.FindAdaptiveMom(gs.Image(np.array(_pred)), strict=False) for _pred in model_mono_psf
+        ]
+        GT_pred_moments = [
+            gs.hsm.FindAdaptiveMom(gs.Image(np.array(_pred)), strict=False) for _pred in GT_mono_psf
+        ]
         for ii in len(pred_moments):
             if (
                 pred_moments[ii].moments_status == 0
