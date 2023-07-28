@@ -1517,9 +1517,9 @@ def compute_mono_psf(
 
     # Initialise list of dictionaries
     result_dict = [[] for i in range(num_lambdas)]
-    # Main loop for each wavelength
 
-    for it in range(num_lambdas):
+    # Function to get result for wavelength[it]
+    def get_dic(it):
         # Set the lambda (wavelength) and the required wavefront N
         lambda_obs = lambda_list[it]
         logger.info("Calculation for lambda equal to " + str(lambda_obs))
@@ -1554,7 +1554,6 @@ def compute_mono_psf(
                 input_positions=batch_pos, lambda_obs=lambda_obs, phase_N=phase_N
             )
 
-
             pred_moments = [
                 gs.hsm.FindAdaptiveMom(gs.Image(np.array(_pred)), strict=False) for _pred in model_mono_psf
             ]
@@ -1564,8 +1563,8 @@ def compute_mono_psf(
 
             for ii in range(len(pred_moments)):
                 if (
-                    pred_moments[ii].moments_status == 0
-                    and GT_pred_moments[ii].moments_status == 0
+                        pred_moments[ii].moments_status == 0
+                        and GT_pred_moments[ii].moments_status == 0
                 ):
                     pred_e1_HSM.append(pred_moments[ii].observed_shape.g1)
                     pred_e2_HSM.append(pred_moments[ii].observed_shape.g2)
@@ -1574,11 +1573,11 @@ def compute_mono_psf(
                     GT_pred_e2_HSM.append(GT_pred_moments[ii].observed_shape.g2)
                     GT_pred_R2_HSM.append(2 * (GT_pred_moments[ii].moments_sigma ** 2))
                     ell_loc.append()
-                    flag[ii+ep_low_lim] = 1
+                    flag[ii + ep_low_lim] = 1
             # Increase lower limit
             ep_low_lim += batch_size
 
-        result_dict[it] = {
+        result_dictit = {
             "lambdas": lambda_obs,
             "position": tf_pos,
             "pred_e1_HSM": pred_e1_HSM,
@@ -1590,5 +1589,11 @@ def compute_mono_psf(
             "Flag": flag,
             "order_ell": ell_loc,
         }
+        return result_dictit
+
+    # Main loop
+    for i in range(num_lambdas):
+        result_dict[i] = get_dic(i)
+
     return result_dict
 

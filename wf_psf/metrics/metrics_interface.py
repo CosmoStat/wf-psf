@@ -290,8 +290,8 @@ class MetricsParamsHandler:
             corresponding Standard Deviation values for Monochromatic PSF metrics.
 
         """
-        logger.info("Computing monochromatic metrics.")
-        lambda_list = np.arange(0.55, 0.9, 0.01)  # 10nm separation
+        logger.info("Computing monochromatic PSF.")
+        lambda_list = np.arange(0.55, 0.9, 0.35)  # for test, 10nm separation
         mono_dict = wf_metrics.compute_mono_psf(
             tf_semiparam_field=psf_model,
             GT_tf_semiparam_field=self.ground_truth_psf_model,
