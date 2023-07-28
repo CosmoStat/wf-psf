@@ -1421,6 +1421,8 @@ def compute_mono_psf(
         logger.info("Calculation for lambda equal to " + str(lambda_obs))
         phase_N = simPSF_np.feasible_N(lambda_obs)
         # Initialise lists
+        pred_PSF = []
+        GT_pred_PSF = []
         pred_e1_HSM = []
         pred_e2_HSM = []
         pred_R2_HSM = []
@@ -1450,11 +1452,11 @@ def compute_mono_psf(
                 input_positions=batch_pos, lambda_obs=lambda_obs, phase_N=phase_N
             )
 
-            pred_moments = [
-                gs.hsm.FindAdaptiveMom(gs.Image(np.array(_pred)), strict=False) for _pred in model_mono_psf
-            ]
             GT_pred_moments = [
                 gs.hsm.FindAdaptiveMom(gs.Image(np.array(_pred)), strict=False) for _pred in GT_mono_psf
+            ]
+            pred_moments = [
+                gs.hsm.FindAdaptiveMom(gs.Image(np.array(_pred)), strict=False) for _pred in model_mono_psf
             ]
 
             for ii in range(len(pred_moments)):
@@ -1462,6 +1464,8 @@ def compute_mono_psf(
                         pred_moments[ii].moments_status == 0
                         and GT_pred_moments[ii].moments_status == 0
                 ):
+                    pred_PSF.append(model_mono_psf[ii])
+                    GT_pred_PSF.append(GT_mono_psf[ii])
                     pred_e1_HSM.append(pred_moments[ii].observed_shape.g1)
                     pred_e2_HSM.append(pred_moments[ii].observed_shape.g2)
                     pred_R2_HSM.append(2 * (pred_moments[ii].moments_sigma ** 2))
@@ -1478,6 +1482,8 @@ def compute_mono_psf(
         result_dictit = {
             "lambdas": lambda_obs,
             "position": tf_pos,
+            "pred_PSF": pred_PSF,
+            "GT_pred_PSF": GT_pred_PSF,
             "pred_e1_HSM": pred_e1_HSM,
             "pred_e2_HSM": pred_e2_HSM,
             "pred_R2_HSM": pred_R2_HSM,
