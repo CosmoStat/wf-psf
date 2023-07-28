@@ -298,7 +298,9 @@ class MetricsParamsHandler:
             simPSF_np=simPSF,
             tf_pos=dataset["positions"],
             lambda_list=lambda_list,
+            batch_size=16,
         )
+
         return mono_dict
 
 

@@ -1447,13 +1447,14 @@ def compute_mono_psf(
             GT_mono_psf = GT_tf_semiparam_field.predict_mono_psfs(
                 input_positions=batch_pos, lambda_obs=lambda_obs, phase_N=phase_N
             )
-            ''' for test
+
             model_mono_psf = tf_semiparam_field.predict_mono_psfs(
                 input_positions=batch_pos, lambda_obs=lambda_obs, phase_N=phase_N
-            )'''
+            )
+            '''for test
             model_mono_psf = GT_tf_semiparam_field.predict_mono_psfs(
                 input_positions=batch_pos, lambda_obs=lambda_obs, phase_N=phase_N
-            )
+            )'''
 
             GT_pred_moments = [
                 gs.hsm.FindAdaptiveMom(gs.Image(np.array(_pred)), strict=False) for _pred in GT_mono_psf
@@ -1464,8 +1465,8 @@ def compute_mono_psf(
             ]
 
             for ii in range(len(pred_moments)):
-                pred_PSF.append(model_mono_psf[ii])
-                GT_pred_PSF.append(GT_mono_psf[ii])
+                pred_PSF.append(np.array(model_mono_psf[ii]))
+                GT_pred_PSF.append(np.array(GT_mono_psf[ii]))
                 if pred_moments[ii].moments_status == 0 and GT_pred_moments[ii].moments_status == 0:
                     pred_e1_HSM.append(pred_moments[ii].observed_shape.g1)
                     pred_e2_HSM.append(pred_moments[ii].observed_shape.g2)
@@ -1479,6 +1480,7 @@ def compute_mono_psf(
 
             # Increase lower limit
             ep_low_lim += batch_size
+
         logger.info(len(ell_loc))
         result_dictit = {
             "lambdas": lambda_obs,
@@ -1494,11 +1496,30 @@ def compute_mono_psf(
             "Flag": flag,
             "order_ell": ell_loc,
         }
+        result_dict[i] = result_dictit
         return result_dictit
 
     # Main loop
-    for i in range(num_lambdas):
-        result_dict[i] = get_dic(i)
+    multi_thereading = True
+    if multi_thereading:
+        import threading
+        # Begin Multiprocessing
+        logger.info("Begin Model prediction")
+        t_obj = []  # To save the threads
+        for i in range(num_lambdas):
+            ti = threading.Thread(target=get_dic, args=(i,))
+            ti.start()
+            t_obj.append(ti)
+
+        for tmp in t_obj:
+            tmp.join()
+
+        logger.info("End of Multiprocessing")
+        # End of Multiprocessing
+    else:
+        # If not multi therads:
+        for i in range(num_lambdas):
+            result_dict[i] = get_dic(i)
 
     return result_dict
 
