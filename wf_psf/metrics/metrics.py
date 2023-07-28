@@ -1533,8 +1533,6 @@ def compute_mono_psf(
         GT_pred_R2_HSM = []
         ell_loc = []
         flag = np.zeros(total_samples)
-        pred_moments = []
-        GT_pred_moments = []
         # Total number of epochs
         n_epochs = int(np.ceil(total_samples / batch_size))
         ep_low_lim = 0
@@ -1557,28 +1555,28 @@ def compute_mono_psf(
             )
 
 
-            pred_moments.append([
+            pred_moments = [
                 gs.hsm.FindAdaptiveMom(gs.Image(np.array(_pred)), strict=False) for _pred in model_mono_psf
-            ])
-            GT_pred_moments.append(
+            ]
+            GT_pred_moments = [
                 gs.hsm.FindAdaptiveMom(gs.Image(np.array(_pred)), strict=False) for _pred in GT_mono_psf
-            )
+            ]
+
+            for ii in range(len(pred_moments)):
+                if (
+                    pred_moments[ii].moments_status == 0
+                    and GT_pred_moments[ii].moments_status == 0
+                ):
+                    pred_e1_HSM.append(pred_moments[ii].observed_shape.g1)
+                    pred_e2_HSM.append(pred_moments[ii].observed_shape.g2)
+                    pred_R2_HSM.append(2 * (pred_moments[ii].moments_sigma ** 2))
+                    GT_pred_e1_HSM.append(GT_pred_moments[ii].observed_shape.g1)
+                    GT_pred_e2_HSM.append(GT_pred_moments[ii].observed_shape.g2)
+                    GT_pred_R2_HSM.append(2 * (GT_pred_moments[ii].moments_sigma ** 2))
+                    ell_loc.append()
+                    flag[ii+ep_low_lim] = 1
             # Increase lower limit
             ep_low_lim += batch_size
-            
-        for ii in range(total_samples):
-            if (
-                pred_moments[ii].moments_status == 0
-                and GT_pred_moments[ii].moments_status == 0
-            ):
-                pred_e1_HSM.append(pred_moments[ii].observed_shape.g1)
-                pred_e2_HSM.append(pred_moments[ii].observed_shape.g2)
-                pred_R2_HSM.append(2 * (pred_moments[ii].moments_sigma ** 2))
-                GT_pred_e1_HSM.append(GT_pred_moments[ii].observed_shape.g1)
-                GT_pred_e2_HSM.append(GT_pred_moments[ii].observed_shape.g2)
-                GT_pred_R2_HSM.append(2 * (GT_pred_moments[ii].moments_sigma ** 2))
-                ell_loc.append()
-                flag[ii] = 1
 
         result_dict[it] = {
             "lambdas": lambda_obs,
