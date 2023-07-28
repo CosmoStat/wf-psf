@@ -1462,7 +1462,7 @@ def compute_mono_psf(
             for ii in range(len(pred_moments)):
                 pred_PSF.append(model_mono_psf[ii])
                 GT_pred_PSF.append(GT_mono_psf[ii])
-                if ( pred_moments[ii].moments_status == 0 and GT_pred_moments[ii].moments_status == 0 ):
+                if pred_moments[ii].moments_status == 0 and GT_pred_moments[ii].moments_status == 0:
                     pred_e1_HSM.append(pred_moments[ii].observed_shape.g1)
                     pred_e2_HSM.append(pred_moments[ii].observed_shape.g2)
                     pred_R2_HSM.append(2 * (pred_moments[ii].moments_sigma ** 2))
