@@ -1513,15 +1513,19 @@ def compute_mono_psf(
     """
 
     logger.info("Calculation of monochromatic prediction begins")
-    # Initialise lists
+
+
     total_samples = tf_pos.shape[0]
-    result_dict = [[] for i in range(len(lambda_list))]
+    num_lambdas = len(lambda_list)
+
+    # Initialise list of dictionaries
+    result_dict = [[] for i in range(num_lambdas)]
     # Main loop for each wavelength
 
-    for it in range(len(lambda_list)):
+    for it in range(num_lambdas):
         # Set the lambda (wavelength) and the required wavefront N
         lambda_obs = lambda_list[it]
-        logger.info("lambda is " + str(lambda_obs))
+        logger.info("Calculation for lambda equal to " + str(lambda_obs))
         phase_N = simPSF_np.feasible_N(lambda_obs)
         # Initialise lists
         pred_e1_HSM = []
@@ -1562,7 +1566,7 @@ def compute_mono_psf(
         GT_pred_moments = [
             gs.hsm.FindAdaptiveMom(gs.Image(np.array(_pred)), strict=False) for _pred in GT_mono_psf
         ]
-        for ii in len(pred_moments):
+        for ii in range(total_samples):
             if (
                 pred_moments[ii].moments_status == 0
                 and GT_pred_moments[ii].moments_status == 0
