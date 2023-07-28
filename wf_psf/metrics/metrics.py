@@ -1572,7 +1572,7 @@ def compute_mono_psf(
                     GT_pred_e1_HSM.append(GT_pred_moments[ii].observed_shape.g1)
                     GT_pred_e2_HSM.append(GT_pred_moments[ii].observed_shape.g2)
                     GT_pred_R2_HSM.append(2 * (GT_pred_moments[ii].moments_sigma ** 2))
-                    ell_loc.append()
+                    ell_loc.append(ii+ep_low_lim)
                     flag[ii + ep_low_lim] = 1
             # Increase lower limit
             ep_low_lim += batch_size
