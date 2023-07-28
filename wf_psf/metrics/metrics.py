@@ -1518,7 +1518,7 @@ def compute_mono_psf(
     std_rel_rmse_lda = []
 
     total_samples = tf_pos.shape[0]
-    result_dict = [[] for i in len(lambda_list)]
+    result_dict = [[] for i in range(len(lambda_list))]
     # Main loop for each wavelength
 
     for it in range(len(lambda_list)):
