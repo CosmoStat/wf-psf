@@ -152,7 +152,6 @@ def mainMethod():
     try:
         logger.info("Performing training...")
         simPSF = psf_models.simPSF(training_params.training.model_params)
-
         training_data = TrainingDataHandler(
             data_params.data.training,
             simPSF,
@@ -198,8 +197,6 @@ def mainMethod():
                     metrics_params.metrics.trained_model_config,
                 )
             )
-
-            # logger.info(trained_params.training)  # by jw
 
             simPSF = psf_models.simPSF(trained_params.training.model_params)
 

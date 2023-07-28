@@ -1242,7 +1242,7 @@ def compute_psf_images(
     """
 
     logger.info("Begin compute psf images")
-    logger.info(type(tf_semiparam_field))
+    import threading
 
     packed_SED_data = [
         utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_lda)
@@ -1250,10 +1250,40 @@ def compute_psf_images(
     ]
     tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
     tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
-    pred_inputs = [tf_pos, tf_packed_SED_data]
 
-    preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size, use_multiprocessing=True)
-    # End of Multiprocessing
+    # Model prediction
+    multi_thereading = True
+    if multi_thereading:
+        # Begin Multiprocessing
+        logger.info("Begin Model prediction")
+        Nbin = 10
+        step = int(float(len(tf_pos)) / Nbin)
+
+        res = [0 for i in range(Nbin)]  # To save the results in order
+        def predict_chunk(i):
+            datai = [tf_pos[i * step:(i + 1) * step], tf_packed_SED_data[i * step:(i + 1) * step]]
+            logger.info("predict_chunk")
+            prei = tf_semiparam_field.predict(x=datai, batch_size=batch_size)
+            res[i] = prei
+            return
+
+        t_obj = []  # To save the threads
+        for i in range(Nbin):
+            ti = threading.Thread(target=predict_chunk, args=(i,))
+            ti.start()
+            t_obj.append(ti)
+
+        for tmp in t_obj:
+            tmp.join()
+        preds = res[0]
+        for i in range(1, Nbin):
+            preds = np.concatenate((preds, res[i]))
+        logger.info("End of Multiprocessing")
+        # End of Multiprocessing
+    else:
+        # If not multi therads:
+        pred_inputs = [tf_pos, tf_packed_SED_data]
+        preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size, use_multiprocessing=True)
 
     logger.info("Get pred moments")
     # Measure shapes of the reconstructions
@@ -1323,8 +1353,8 @@ def compute_psf_images(
     ell_loc = np.array(ell_loc)
     # Moment results
     result_dict = {
-        # "psf_GT": GT_preds,
-        # "psf_prediction": preds,
+        "psf_GT": GT_preds,
+        "psf_prediction": preds,
         "position": tf_pos,
         # "res": residuals,
         # "star_mean": GT_star_mean,
