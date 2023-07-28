@@ -1512,11 +1512,6 @@ def compute_mono_psf(
 
     """
     # Initialise lists
-    rmse_lda = []
-    rel_rmse_lda = []
-    std_rmse_lda = []
-    std_rel_rmse_lda = []
-
     total_samples = tf_pos.shape[0]
     result_dict = [[] for i in range(len(lambda_list))]
     # Main loop for each wavelength
@@ -1524,10 +1519,8 @@ def compute_mono_psf(
     for it in range(len(lambda_list)):
         # Set the lambda (wavelength) and the required wavefront N
         lambda_obs = lambda_list[it]
+        logger.info("lambda is " + str(lambda_obs))
         phase_N = simPSF_np.feasible_N(lambda_obs)
-
-        residuals = np.zeros((total_samples))
-        GT_star_mean = np.zeros((total_samples))
         # Initialise lists
         pred_e1_HSM = []
         pred_e2_HSM = []
@@ -1558,21 +1551,11 @@ def compute_mono_psf(
             model_mono_psf = tf_semiparam_field.predict_mono_psfs(
                 input_positions=batch_pos, lambda_obs=lambda_obs, phase_N=phase_N
             )
-
-            num_pixels = GT_mono_psf.shape[1] * GT_mono_psf.shape[2]
-
-            residuals[ep_low_lim:ep_up_lim] = (
-                np.sum((GT_mono_psf - model_mono_psf) ** 2, axis=(1, 2)) / num_pixels
-            )
-            GT_star_mean[ep_low_lim:ep_up_lim] = (
-                np.sum((GT_mono_psf) ** 2, axis=(1, 2)) / num_pixels
-            )
-
             # Increase lower limit
             ep_low_lim += batch_size
 
-        pred_moments = gs.hsm.FindAdaptiveMom(gs.Image(model_mono_psf), strict=False)
-        GT_pred_moments =  gs.hsm.FindAdaptiveMom(gs.Image(GT_mono_psf), strict=False)
+        pred_moments = gs.hsm.FindAdaptiveMom(gs.Image(model_mono_psf.numpy()), strict=False)
+        GT_pred_moments =  gs.hsm.FindAdaptiveMom(gs.Image(GT_mono_psf.numpy()), strict=False)
         for ii in len(pred_moments):
             if (
                 pred_moments[ii].moments_status == 0
