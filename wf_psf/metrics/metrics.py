@@ -1532,7 +1532,7 @@ def compute_psf_images_super_res(
     tf_pos,
     n_bins_lda,
     n_bins_gt,
-    output_Q=3,
+    output_Q=1,
     output_dim=64,
     batch_size=16,
     opt_stars_rel_pix_rmse=False,
