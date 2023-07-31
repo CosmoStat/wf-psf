@@ -7,25 +7,29 @@ metrics:
   chkp_save_path: checkpoint
   # Fill model_params if computing metrics_only on a pre-trained model
   # ID name
-  id_name: _sample_w_bis1_2k #-coherent_euclid_2000stars
+  id_name: _sample_w_bis1_2k 
+  #  id_name: -coherent_euclid_2000stars
   # Path to Trained Model
-  trained_model_path: /Users/jw274171/rho-stats/Euclid/Alex/model/wf-outputs-202307041437
-  # trained_model_path: /gpfswork/rech/prk/uzk69cg/wf_test/test2/tobias_Archive/wf-outputs-202307041437 #/gpfswork/rech/prk/uzk69cg/wf_test/test2/wf-outputs/right_config_2000/ 
+  trained_model_path: /feynman/work/dap/lcs/jw274171/Euclid/Model_Alex/wf-outputs-202307041437/
+  # /disk/xray0/tl3/outputs/refactor_wf/wf-outputs/wf-outputs-202307041437/ 
+  # trained_model_path: /Users/jenniferpollack/Projects/wf-outputs/wf-outputs-202306011821/
   # Name of Trained Model Config file
   trained_model_config: config/training_config.yaml 
-  # Evaluate the polychromatic RMSE metric.
+  #Evaluate the polychromatic RMSE metric.
   eval_poly_metric_rmse: False
   #Evaluate the monchromatic RMSE metric.
   eval_mono_metric_rmse: False
+  #Evaluate the shape results.
+  eval_test_shape_sr_metric_rmse: False
   #Evaluate the OPD RMSE metric.
   eval_opd_metric_rmse: False
   #Evaluate the super-resolution and the shape RMSE metrics for the train dataset.
   eval_train_shape_sr_metric_rmse: False
-  #Evaluate the super-resolution and the shape RMSE metrics for the train dataset.
-  eval_test_shape_sr_metric_rmse: False
-  # predicted PSF images
-  save_psf_images: True
-  # save_psf_super_res
+  # save predicted PSF images
+  save_psf_images: False
+  # save monochromatic shapes
+  eval_mono_shape: True
+  # super resolution or not ?
   save_psf_super_res: False
   ground_truth_model:
     model_params:
@@ -49,7 +53,7 @@ metrics:
       pupil_diameter: 256
 
       #Boolean to define if we use sample weights based on the noise standard deviation estimation
-      use_sample_weights: True 
+      use_sample_weights: False
 
       #Interpolation type for the physical poly model. Options are: 'none', 'all', 'top_K', 'independent_Zk'."
       interpolation_type: None
@@ -58,7 +62,7 @@ metrics:
       sed_interp_pts_per_bin: 0
 
       # SED extrapolate 
-      sed_extrapolate: True
+      sed_extrapolate: False
       
       # SED interpolate kind
       sed_interp_kind: linear
@@ -84,7 +88,7 @@ metrics:
         d_max: 2  
 
         #Flag to save optimisation history for parametric model
-        save_optim_history_param: true
+        save_optim_history_param: True
 
       # Hyperparameters for non-parametric model
       nonparam_hparams:
