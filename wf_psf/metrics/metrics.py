@@ -1281,7 +1281,7 @@ def compute_psf_images(
         logger.info("End of Multiprocessing")
         # End of Multiprocessing
     else:
-        # If not multi therads:
+        # If not multi threads:
         pred_inputs = [tf_pos, tf_packed_SED_data]
         preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size, use_multiprocessing=True)
 
@@ -1532,7 +1532,7 @@ def compute_psf_images_super_res(
     tf_pos,
     n_bins_lda,
     n_bins_gt,
-    output_Q=1,
+    output_Q=3,
     output_dim=64,
     batch_size=16,
     opt_stars_rel_pix_rmse=False,
@@ -1553,14 +1553,46 @@ def compute_psf_images_super_res(
     # Prepare inputs
     tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
     tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
-    pred_inputs = [tf_pos, tf_packed_SED_data]
+    # pred_inputs = [tf_pos, tf_packed_SED_data]
 
     # PSF model
-    preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
+    # Model prediction
+    multi_thereading = True
+    if multi_thereading:
+        import threading
+        # Begin Multiprocessing
+        logger.info("Begin Model prediction")
+        Nbin = 10
+        step = int(float(len(tf_pos)) / Nbin)
+
+        res = [0 for i in range(Nbin)]  # To save the results in order
+        def predict_chunk(i):
+            datai = [tf_pos[i * step:(i + 1) * step], tf_packed_SED_data[i * step:(i + 1) * step]]
+            logger.info("predict_chunk")
+            prei = tf_semiparam_field.predict(x=datai, batch_size=batch_size)
+            res[i] = prei
+            return
+
+        t_obj = []  # To save the threads
+        for i in range(Nbin):
+            ti = threading.Thread(target=predict_chunk, args=(i,))
+            ti.start()
+            t_obj.append(ti)
+
+        for tmp in t_obj:
+            tmp.join()
+        preds = res[0]
+        for i in range(1, Nbin):
+            preds = np.concatenate((preds, res[i]))
+        logger.info("End of Multiprocessing")
+        # End of Multiprocessing
+    else:
+        # If not multi threads:
+        pred_inputs = [tf_pos, tf_packed_SED_data]
+        preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
     # GT data preparation
-    if (
-            dataset_dict is None
+    if (    dataset_dict is None
             or "super_res_stars" not in dataset_dict
             or "SR_stars" not in dataset_dict
     ):
