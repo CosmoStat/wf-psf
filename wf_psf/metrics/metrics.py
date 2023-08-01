@@ -1641,7 +1641,7 @@ def compute_psf_images_super_res(
             GT_preds = res[0]
             for i in range(1, Nbin):
                 print("save GT_preds, i="+str(i))
-                GT_preds = np.concatenate((preds, res[i]))
+                GT_preds = np.concatenate((GT_preds, res[i]))
             logger.info("End of Multiprocessing")
             # End of Multiprocessing
         else:
