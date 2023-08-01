@@ -1202,6 +1202,7 @@ def compute_psf_images(
         GT_tf_semiparam_field,
         simPSF_np,
         tf_pos,
+        c_poly,
         tf_SEDs,
         n_bins_lda=20,
         n_bins_gt=20,
@@ -1310,6 +1311,10 @@ def compute_psf_images(
         pred_inputs = [tf_pos, tf_packed_SED_data]
 
         # GT model prediction
+        GT_tf_semiparam_field.tf_poly_Z_field.assign_coeff_matrix(c_poly)
+        _ = GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat.assign(
+            np.zeros_like(GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat)
+        )
         GT_preds = GT_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
     else:

@@ -45,18 +45,12 @@ class MetricsParamsHandler:
         self.trained_model = trained_model
 
     @property
-    def ground_truth_psf_model(self, dataset=None):
+    def ground_truth_psf_model(self):
         psf_model = psf_models.get_psf_model(
             self.metrics_params.ground_truth_model.model_params,
             self.metrics_params.metrics_hparams.batch_size,
         )
-        if dataset is None:
-            psf_model.set_zero_nonparam()
-        else:
-            psf_model.tf_poly_Z_field.assign_coeff_matrix(dataset['C_poly'])
-            _ = psf_model.tf_np_poly_opd.alpha_mat.assign(
-                np.zeros_like(psf_model.tf_np_poly_opd.alpha_mat)
-            )
+        psf_model.set_zero_nonparam()
         return psf_model
 
     def evaluate_metrics_polychromatic_lowres(self, psf_model, simPSF, dataset):
@@ -300,9 +294,10 @@ class MetricsParamsHandler:
         lambda_list = np.arange(0.55, 0.9, 0.15)  # for test, 10nm separation
         mono_dict = wf_metrics.compute_mono_psf(
             tf_semiparam_field=psf_model,
-            GT_tf_semiparam_field=self.ground_truth_psf_model(dataset),
+            GT_tf_semiparam_field=self.ground_truth_psf_model,
             simPSF_np=simPSF,
             tf_pos=dataset["positions"],
+            c_poly=dataset["C_poly"],
             lambda_list=lambda_list,
             batch_size=16,
         )
