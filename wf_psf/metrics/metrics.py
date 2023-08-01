@@ -1646,8 +1646,8 @@ def compute_psf_images_super_res(
             GT_preds = GT_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
     # Calculate residuals
-    residuals = np.sqrt(np.mean((GT_preds - preds) ** 2, axis=(1, 2)))
-    GT_star_mean = np.sqrt(np.mean((GT_preds) ** 2, axis=(1, 2)))
+    # residuals = np.sqrt(np.mean((GT_preds - preds) ** 2, axis=(1, 2)))
+    # GT_star_mean = np.sqrt(np.mean((GT_preds) ** 2, axis=(1, 2)))
 
     # Measure shapes of the reconstructions
     pred_moments = [
@@ -1692,8 +1692,8 @@ def compute_psf_images_super_res(
         "psf_GT": GT_preds,
         "psf_prediction": preds,
         "position": tf_pos,
-        "res": residuals,
-        "star_mean": GT_star_mean,
+        # "res": residuals,
+        # "star_mean": GT_star_mean,
         "pred_e1_HSM": pred_e1_HSM,
         "pred_e2_HSM": pred_e2_HSM,
         "pred_R2_HSM": pred_R2_HSM,
