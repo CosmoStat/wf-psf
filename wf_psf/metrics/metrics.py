@@ -1423,6 +1423,7 @@ def compute_mono_psf(
     _ = GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat.assign(
         np.zeros_like(GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat)
     )
+
     def get_dic(it):
         # Set the lambda (wavelength) and the required wavefront N
         lambda_obs = lambda_list[it]
@@ -1504,7 +1505,7 @@ def compute_mono_psf(
             "Flag": flag,
             "order_ell": ell_loc,
         }
-        result_dict[i] = result_dictit
+        result_dict[it] = result_dictit
         return result_dictit
 
     # Main loop
@@ -1518,9 +1519,8 @@ def compute_mono_psf(
             ti = threading.Thread(target=get_dic, args=(i,))
             ti.start()
             t_obj.append(ti)
-
-        for tmp in t_obj:
-            tmp.join()
+            for tmp in t_obj:
+                tmp.join()
 
         logger.info("End of Multiprocessing")
         # End of Multiprocessing
