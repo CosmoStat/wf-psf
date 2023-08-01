@@ -60,7 +60,7 @@ class TF_SemiParam_field(tf.keras.Model):
 
         # Inputs: TF_batch_poly_PSF
         self.batch_size = batch_size
-        self.obscurations = psfm.tf_obscurations(self.pupil_diam)
+        self.obscurations = psfm.tf_obscurations(self.pupil_diam, model_params)
         self.output_dim = model_params.output_dim
 
         # Inputs: Loss

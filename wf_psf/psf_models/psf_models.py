@@ -135,7 +135,7 @@ def tf_zernike_cube(n_zernikes, pupil_diam):
     return tf.convert_to_tensor(np_zernike_cube, dtype=tf.float32)
 
 
-def tf_obscurations(pupil_diam, N_filter=2):
+def tf_obscurations(pupil_diam, model, N_filter=2):
     """Tensor Flow Obscurations.
 
     A function to generate obscurations as a tensor.
@@ -153,7 +153,8 @@ def tf_obscurations(pupil_diam, N_filter=2):
         TensorFlow EagerTensor type
 
     """
-    obscurations = SimPSFToolkit.generate_pupil_obscurations(
+    simPSF_np = simPSF(model)
+    obscurations = simPSF_np.generate_pupil_obscurations(
         N_pix=pupil_diam, N_filter=N_filter
     )
     return tf.convert_to_tensor(obscurations, dtype=tf.complex64)
@@ -188,9 +189,7 @@ def simPSF(model_params):
     )
 
     simPSF_np.gen_random_Z_coeffs(max_order=model_params.param_hparams.n_zernikes)
-    z_coeffs = simPSF_np.normalize_zernikes(
-        simPSF_np.get_z_coeffs(), simPSF_np.max_wfe_rms
-    )
+    z_coeffs = simPSF_np.normalize_zernikes(simPSF_np.get_z_coeffs(), simPSF_np.max_wfe_rms)
     simPSF_np.set_z_coeffs(z_coeffs)
     simPSF_np.generate_mono_PSF(lambda_obs=0.7, regen_sample=False)
 
