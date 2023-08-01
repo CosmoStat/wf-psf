@@ -297,7 +297,6 @@ class MetricsParamsHandler:
             GT_tf_semiparam_field=self.ground_truth_psf_model,
             simPSF_np=simPSF,
             tf_pos=dataset["positions"],
-            c_poly=dataset["C_poly"],
             lambda_list=lambda_list,
             batch_size=16,
         )

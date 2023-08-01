@@ -1383,6 +1383,7 @@ def compute_mono_psf(
         GT_tf_semiparam_field,
         simPSF_np,
         tf_pos,
+        c_poly,
         lambda_list,
         batch_size=32,
 ):
@@ -1422,6 +1423,11 @@ def compute_mono_psf(
     result_dict = [[] for i in range(num_lambdas)]
 
     # Function to get result for wavelength[it]
+
+    GT_tf_semiparam_field.tf_poly_Z_field.assign_coeff_matrix(c_poly)
+    _ = GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat.assign(
+        np.zeros_like(GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat)
+    )
     def get_dic(it):
         # Set the lambda (wavelength) and the required wavefront N
         lambda_obs = lambda_list[it]
