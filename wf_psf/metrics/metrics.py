@@ -7,19 +7,20 @@ from wf_psf.psf_models.tf_psf_field import build_PSF_model
 from wf_psf.psf_models import tf_psf_field as psf_field
 from wf_psf import SimPSFToolkit as SimPSFToolkit
 import logging
+
 logger = logging.getLogger(__name__)
 
 
 def compute_poly_metric(
-    tf_semiparam_field,
-    GT_tf_semiparam_field,
-    simPSF_np,
-    tf_pos,
-    tf_SEDs,
-    n_bins_lda=20,
-    n_bins_gt=20,
-    batch_size=16,
-    dataset_dict=None,
+        tf_semiparam_field,
+        GT_tf_semiparam_field,
+        simPSF_np,
+        tf_pos,
+        tf_SEDs,
+        n_bins_lda=20,
+        n_bins_gt=20,
+        batch_size=16,
+        dataset_dict=None,
 ):
     """Calculate metrics for polychromatic reconstructions.
 
@@ -121,12 +122,12 @@ def compute_poly_metric(
 
 
 def compute_mono_metric(
-    tf_semiparam_field,
-    GT_tf_semiparam_field,
-    simPSF_np,
-    tf_pos,
-    lambda_list,
-    batch_size=32,
+        tf_semiparam_field,
+        GT_tf_semiparam_field,
+        simPSF_np,
+        tf_pos,
+        lambda_list,
+        batch_size=32,
 ):
     """Calculate metrics for monochromatic reconstructions.
 
@@ -206,10 +207,10 @@ def compute_mono_metric(
             num_pixels = GT_mono_psf.shape[1] * GT_mono_psf.shape[2]
 
             residuals[ep_low_lim:ep_up_lim] = (
-                np.sum((GT_mono_psf - model_mono_psf) ** 2, axis=(1, 2)) / num_pixels
+                    np.sum((GT_mono_psf - model_mono_psf) ** 2, axis=(1, 2)) / num_pixels
             )
             GT_star_mean[ep_low_lim:ep_up_lim] = (
-                np.sum((GT_mono_psf) ** 2, axis=(1, 2)) / num_pixels
+                    np.sum((GT_mono_psf) ** 2, axis=(1, 2)) / num_pixels
             )
 
             # Increase lower limit
@@ -334,18 +335,18 @@ def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, pos, batch_si
 
 
 def compute_shape_metrics(
-    tf_semiparam_field,
-    GT_tf_semiparam_field,
-    simPSF_np,
-    SEDs,
-    tf_pos,
-    n_bins_lda,
-    n_bins_gt,
-    output_Q=1,
-    output_dim=64,
-    batch_size=16,
-    opt_stars_rel_pix_rmse=False,
-    dataset_dict=None,
+        tf_semiparam_field,
+        GT_tf_semiparam_field,
+        simPSF_np,
+        SEDs,
+        tf_pos,
+        n_bins_lda,
+        n_bins_gt,
+        output_Q=1,
+        output_dim=64,
+        batch_size=16,
+        opt_stars_rel_pix_rmse=False,
+        dataset_dict=None,
 ):
     """Compute the pixel, shape and size RMSE of a PSF model.
 
@@ -427,9 +428,9 @@ def compute_shape_metrics(
 
     # GT data preparation
     if (
-        dataset_dict is None
-        or "super_res_stars" not in dataset_dict
-        or "SR_stars" not in dataset_dict
+            dataset_dict is None
+            or "super_res_stars" not in dataset_dict
+            or "SR_stars" not in dataset_dict
     ):
         logger.info("Generating GT super resolved stars from the GT model.")
         # Change interpolation parameters for the GT simPSF
@@ -501,8 +502,8 @@ def compute_shape_metrics(
 
     for it in range(len(GT_pred_moments)):
         if (
-            pred_moments[it].moments_status == 0
-            and GT_pred_moments[it].moments_status == 0
+                pred_moments[it].moments_status == 0
+                and GT_pred_moments[it].moments_status == 0
         ):
             pred_e1_HSM.append(pred_moments[it].observed_shape.g1)
             pred_e2_HSM.append(pred_moments[it].observed_shape.g2)
@@ -526,8 +527,8 @@ def compute_shape_metrics(
     e1_res = GT_pred_e1_HSM - pred_e1_HSM
     e1_res_rel = (GT_pred_e1_HSM - pred_e1_HSM) / GT_pred_e1_HSM
 
-    rmse_e1 = np.sqrt(np.mean(e1_res**2))
-    rel_rmse_e1 = 100.0 * np.sqrt(np.mean(e1_res_rel**2))
+    rmse_e1 = np.sqrt(np.mean(e1_res ** 2))
+    rel_rmse_e1 = 100.0 * np.sqrt(np.mean(e1_res_rel ** 2))
     std_rmse_e1 = np.std(e1_res)
     std_rel_rmse_e1 = 100.0 * np.std(e1_res_rel)
 
@@ -535,15 +536,15 @@ def compute_shape_metrics(
     e2_res = GT_pred_e2_HSM - pred_e2_HSM
     e2_res_rel = (GT_pred_e2_HSM - pred_e2_HSM) / GT_pred_e2_HSM
 
-    rmse_e2 = np.sqrt(np.mean(e2_res**2))
-    rel_rmse_e2 = 100.0 * np.sqrt(np.mean(e2_res_rel**2))
+    rmse_e2 = np.sqrt(np.mean(e2_res ** 2))
+    rel_rmse_e2 = 100.0 * np.sqrt(np.mean(e2_res_rel ** 2))
     std_rmse_e2 = np.std(e2_res)
     std_rel_rmse_e2 = 100.0 * np.std(e2_res_rel)
 
     # R2
     R2_res = GT_pred_R2_HSM - pred_R2_HSM
 
-    rmse_R2_meanR2 = np.sqrt(np.mean(R2_res**2)) / np.mean(GT_pred_R2_HSM)
+    rmse_R2_meanR2 = np.sqrt(np.mean(R2_res ** 2)) / np.mean(GT_pred_R2_HSM)
     std_rmse_R2_meanR2 = np.std(R2_res / GT_pred_R2_HSM)
 
     # Print shape/size errors
@@ -720,16 +721,16 @@ def gen_GT_wf_model(test_wf_file_path, pred_output_Q=1, pred_output_dim=64):
 
 
 def compute_metrics(
-    tf_semiparam_field,
-    simPSF_np,
-    test_SEDs,
-    train_SEDs,
-    tf_test_pos,
-    tf_train_pos,
-    tf_test_stars,
-    tf_train_stars,
-    n_bins_lda,
-    batch_size=16,
+        tf_semiparam_field,
+        simPSF_np,
+        test_SEDs,
+        train_SEDs,
+        tf_test_pos,
+        tf_train_pos,
+        tf_test_stars,
+        tf_train_stars,
+        n_bins_lda,
+        batch_size=16,
 ):
     # Generate SED data list
     test_packed_SED_data = [
@@ -779,7 +780,7 @@ def compute_metrics(
 
 
 def compute_opd_metrics_mccd(
-    tf_semiparam_field, GT_tf_semiparam_field, test_pos, train_pos
+        tf_semiparam_field, GT_tf_semiparam_field, test_pos, train_pos
 ):
     """Compute the OPD metrics."""
 
@@ -802,7 +803,7 @@ def compute_opd_metrics_mccd(
     res_opd = (GT_opd_maps.numpy() - opd_pred.numpy()) * np_obscurations
 
     # Calculate absolute RMSE values
-    test_opd_rmse = np.sqrt(np.mean(res_opd**2))
+    test_opd_rmse = np.sqrt(np.mean(res_opd ** 2))
 
     # Calculate relative RMSE values
     relative_test_opd_rmse = test_opd_rmse / np.sqrt(
@@ -832,7 +833,7 @@ def compute_opd_metrics_mccd(
     res_opd = (GT_opd_maps.numpy() - opd_pred.numpy()) * np_obscurations
 
     # Calculate RMSE values
-    train_opd_rmse = np.sqrt(np.mean(res_opd**2))
+    train_opd_rmse = np.sqrt(np.mean(res_opd ** 2))
 
     # Calculate relative RMSE values
     relative_train_opd_rmse = train_opd_rmse / np.sqrt(
@@ -849,7 +850,7 @@ def compute_opd_metrics_mccd(
 
 
 def compute_opd_metrics_polymodel(
-    tf_semiparam_field, GT_tf_semiparam_field, test_pos, train_pos
+        tf_semiparam_field, GT_tf_semiparam_field, test_pos, train_pos
 ):
     """Compute the OPD metrics."""
 
@@ -872,7 +873,7 @@ def compute_opd_metrics_polymodel(
     res_opd = (GT_opd_maps.numpy() - opd_pred.numpy()) * np_obscurations
 
     # Calculate RMSE values
-    test_opd_rmse = np.sqrt(np.mean(res_opd**2))
+    test_opd_rmse = np.sqrt(np.mean(res_opd ** 2))
 
     # Calculate relative RMSE values
     relative_test_opd_rmse = test_opd_rmse / np.sqrt(
@@ -902,7 +903,7 @@ def compute_opd_metrics_polymodel(
     res_opd = (GT_opd_maps.numpy() - opd_pred.numpy()) * np_obscurations
 
     # Calculate RMSE values
-    train_opd_rmse = np.sqrt(np.mean(res_opd**2))
+    train_opd_rmse = np.sqrt(np.mean(res_opd ** 2))
 
     # Calculate relative RMSE values
     relative_train_opd_rmse = train_opd_rmse / np.sqrt(
@@ -919,7 +920,7 @@ def compute_opd_metrics_polymodel(
 
 
 def compute_opd_metrics_param_model(
-    tf_semiparam_field, GT_tf_semiparam_field, test_pos, train_pos
+        tf_semiparam_field, GT_tf_semiparam_field, test_pos, train_pos
 ):
     """Compute the OPD metrics."""
 
@@ -938,7 +939,7 @@ def compute_opd_metrics_param_model(
     res_opd = (GT_opd_maps.numpy() - opd_pred.numpy()) * np_obscurations
 
     # Calculate absolute RMSE values
-    test_opd_rmse = np.sqrt(np.mean(res_opd**2))
+    test_opd_rmse = np.sqrt(np.mean(res_opd ** 2))
 
     # Calculate relative RMSE values
     relative_test_opd_rmse = test_opd_rmse / np.sqrt(
@@ -964,7 +965,7 @@ def compute_opd_metrics_param_model(
     res_opd = (GT_opd_maps.numpy() - opd_pred.numpy()) * np_obscurations
 
     # Calculate RMSE values
-    train_opd_rmse = np.sqrt(np.mean(res_opd**2))
+    train_opd_rmse = np.sqrt(np.mean(res_opd ** 2))
 
     # Calculate relative RMSE values
     relative_train_opd_rmse = train_opd_rmse / np.sqrt(
@@ -1007,7 +1008,7 @@ def compute_one_opd_rmse(GT_tf_semiparam_field, tf_semiparam_field, pos, is_poly
     res_opd = (GT_opd_maps.numpy() - opd_pred.numpy()) * np_obscurations
 
     # Calculate RMSE values
-    opd_rmse = np.sqrt(np.mean(res_opd**2))
+    opd_rmse = np.sqrt(np.mean(res_opd ** 2))
 
     return opd_rmse
 
@@ -1051,15 +1052,15 @@ def plot_function(mesh_pos, residual, tf_train_pos, tf_test_pos, title="Error"):
 
 
 def plot_residual_maps(
-    GT_tf_semiparam_field,
-    tf_semiparam_field,
-    simPSF_np,
-    train_SEDs,
-    tf_train_pos,
-    tf_test_pos,
-    n_bins_lda=20,
-    n_points_per_dim=30,
-    is_poly=False,
+        GT_tf_semiparam_field,
+        tf_semiparam_field,
+        simPSF_np,
+        train_SEDs,
+        tf_train_pos,
+        tf_test_pos,
+        n_bins_lda=20,
+        n_points_per_dim=30,
+        is_poly=False,
 ):
     # Recover teh grid limits
     x_lims = tf_semiparam_field.x_lims
@@ -1197,15 +1198,15 @@ def plot_imgs(mat, cmap="gist_stern", figsize=(20, 20)):
 
 
 def compute_psf_images(
-    tf_semiparam_field,
-    GT_tf_semiparam_field,
-    simPSF_np,
-    tf_pos,
-    tf_SEDs,
-    n_bins_lda=20,
-    n_bins_gt=20,
-    batch_size=16,
-    dataset_dict=None,
+        tf_semiparam_field,
+        GT_tf_semiparam_field,
+        simPSF_np,
+        tf_pos,
+        tf_SEDs,
+        n_bins_lda=20,
+        n_bins_gt=20,
+        batch_size=16,
+        dataset_dict=None,
 ):
     """Compute the pixel, shape and size RMSE of a PSF model.
 
@@ -1260,6 +1261,7 @@ def compute_psf_images(
         step = int(float(len(tf_pos)) / Nbin)
 
         res = [0 for i in range(Nbin)]  # To save the results in order
+
         def predict_chunk(i):
             datai = [tf_pos[i * step:(i + 1) * step], tf_packed_SED_data[i * step:(i + 1) * step]]
             logger.info("predict_chunk")
@@ -1302,7 +1304,7 @@ def compute_psf_images(
         packed_SED_data = [
             utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_gt)
             for _sed in tf_SEDs
-            ]
+        ]
         tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
         tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
         pred_inputs = [tf_pos, tf_packed_SED_data]
@@ -1331,7 +1333,7 @@ def compute_psf_images(
 
     for it in range(len(pred_moments)):
         if (
-            pred_moments[it].moments_status == 0 and GT_pred_moments[it].moments_status == 0
+                pred_moments[it].moments_status == 0 and GT_pred_moments[it].moments_status == 0
         ):
             pred_e1_HSM.append(pred_moments[it].observed_shape.g1)
             pred_e2_HSM.append(pred_moments[it].observed_shape.g2)
@@ -1372,12 +1374,12 @@ def compute_psf_images(
 
 
 def compute_mono_psf(
-    tf_semiparam_field,
-    GT_tf_semiparam_field,
-    simPSF_np,
-    tf_pos,
-    lambda_list,
-    batch_size=32,
+        tf_semiparam_field,
+        GT_tf_semiparam_field,
+        simPSF_np,
+        tf_pos,
+        lambda_list,
+        batch_size=32,
 ):
     """Calculate shape metrics for monochromatic reconstructions.
 
@@ -1474,8 +1476,8 @@ def compute_mono_psf(
                     GT_pred_e1_HSM.append(GT_pred_moments[ii].observed_shape.g1)
                     GT_pred_e2_HSM.append(GT_pred_moments[ii].observed_shape.g2)
                     GT_pred_R2_HSM.append(2 * (GT_pred_moments[ii].moments_sigma ** 2))
-                    print(ii+ep_low_lim)
-                    ell_loc.append(ii+ep_low_lim)
+                    print(ii + ep_low_lim)
+                    ell_loc.append(ii + ep_low_lim)
                     flag[ii + ep_low_lim] = 1
 
             # Increase lower limit
@@ -1525,18 +1527,18 @@ def compute_mono_psf(
 
 
 def compute_psf_images_super_res(
-    tf_semiparam_field,
-    GT_tf_semiparam_field,
-    simPSF_np,
-    SEDs,
-    tf_pos,
-    n_bins_lda,
-    n_bins_gt,
-    output_Q=1,
-    output_dim=64,
-    batch_size=16,
-    opt_stars_rel_pix_rmse=False,
-    dataset_dict=None,
+        tf_semiparam_field,
+        GT_tf_semiparam_field,
+        simPSF_np,
+        SEDs,
+        tf_pos,
+        n_bins_lda,
+        n_bins_gt,
+        output_Q=1,
+        output_dim=64,
+        batch_size=16,
+        opt_stars_rel_pix_rmse=False,
+        dataset_dict=None,
 ):
     tf_semiparam_field.set_output_Q(output_Q=output_Q, output_dim=output_dim)
     GT_tf_semiparam_field.set_output_Q(output_Q=output_Q, output_dim=output_dim)
@@ -1566,6 +1568,7 @@ def compute_psf_images_super_res(
         step = int(float(len(tf_pos)) / Nbin)
 
         res = [0 for i in range(Nbin)]  # To save the results in order
+
         def predict_chunk(i):
             datai = [tf_pos[i * step:(i + 1) * step], tf_packed_SED_data[i * step:(i + 1) * step]]
             logger.info("predict_chunk")
@@ -1592,7 +1595,7 @@ def compute_psf_images_super_res(
         preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
     # GT data preparation
-    if (    dataset_dict is None
+    if (dataset_dict is None
             or "super_res_stars" not in dataset_dict
             or "SR_stars" not in dataset_dict
     ):
@@ -1644,8 +1647,13 @@ def compute_psf_images_super_res(
             # If not multi threads:
             pred_inputs = [tf_pos, tf_packed_SED_data]
             GT_preds = GT_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
-
-    # Calculate residuals
+    else:
+        logger.info("Using GT stars from dataset.")
+        try:
+            GT_preds = dataset_dict["super_res_stars"]
+        except:
+            GT_preds = dataset_dict["SR_stars"]
+        # Calculate residuals
     # residuals = np.sqrt(np.mean((GT_preds - preds) ** 2, axis=(1, 2)))
     # GT_star_mean = np.sqrt(np.mean((GT_preds) ** 2, axis=(1, 2)))
 
@@ -1664,11 +1672,12 @@ def compute_psf_images_super_res(
     GT_pred_e1_HSM, GT_pred_e2_HSM, GT_pred_R2_HSM = [], [], []
     ell_loc = []
     flag = np.zeros(len(preds))
-
+    print("length of preds: " + str(len(preds)))
+    print("length of GT_preds: " + str(len(GT_preds)))
     for it in range(len(GT_pred_moments)):
         if (
-            pred_moments[it].moments_status == 0
-            and GT_pred_moments[it].moments_status == 0
+                pred_moments[it].moments_status == 0
+                and GT_pred_moments[it].moments_status == 0
         ):
             pred_e1_HSM.append(pred_moments[it].observed_shape.g1)
             pred_e2_HSM.append(pred_moments[it].observed_shape.g2)
