@@ -1563,9 +1563,10 @@ def compute_psf_images_super_res(
     tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
     # pred_inputs = [tf_pos, tf_packed_SED_data]
 
+    # Prediction by models (PSF model + GT model (or read from dataset))
+    multi_thereading = True
     # PSF model
     # Model prediction
-    multi_thereading = True
     if multi_thereading:
         import threading
         # Begin Multiprocessing
@@ -1601,10 +1602,14 @@ def compute_psf_images_super_res(
         preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
     # GT data preparation
-    if (dataset_dict is None
-            or "super_res_stars" not in dataset_dict
-            or "SR_stars" not in dataset_dict
-    ):
+    if dataset_dict is not None and ("super_res_stars" in dataset_dict or "SR_stars" in dataset_dict):
+        logger.info("Using GT stars from dataset.")
+        try:
+            GT_preds = dataset_dict["super_res_stars"]
+        except:
+            GT_preds = dataset_dict["SR_stars"]
+        # Calculate residuals
+    else:
         logger.info("Generating GT super resolved stars from the GT model.")
         # Change interpolation parameters for the GT simPSF
         simPSF_np.SED_interp_pts_per_bin = 0
@@ -1646,7 +1651,6 @@ def compute_psf_images_super_res(
                 tmp.join()
             GT_preds = res[0]
             for i in range(1, Nbin):
-                print("save GT_preds, i="+str(i))
                 GT_preds = np.concatenate((GT_preds, res[i]))
             logger.info("End of Multiprocessing")
             # End of Multiprocessing
@@ -1654,13 +1658,7 @@ def compute_psf_images_super_res(
             # If not multi threads:
             pred_inputs = [tf_pos, tf_packed_SED_data]
             GT_preds = GT_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
-    else:
-        logger.info("Using GT stars from dataset.")
-        try:
-            GT_preds = dataset_dict["super_res_stars"]
-        except:
-            GT_preds = dataset_dict["SR_stars"]
-        # Calculate residuals
+
     # residuals = np.sqrt(np.mean((GT_preds - preds) ** 2, axis=(1, 2)))
     # GT_star_mean = np.sqrt(np.mean((GT_preds) ** 2, axis=(1, 2)))
 
@@ -1679,8 +1677,6 @@ def compute_psf_images_super_res(
     GT_pred_e1_HSM, GT_pred_e2_HSM, GT_pred_R2_HSM = [], [], []
     ell_loc = []
     flag = np.zeros(len(preds))
-    print("length of preds: " + str(len(preds)))
-    print("length of GT_preds: " + str(len(GT_preds)))
     for it in range(len(GT_pred_moments)):
         if (
                 pred_moments[it].moments_status == 0
