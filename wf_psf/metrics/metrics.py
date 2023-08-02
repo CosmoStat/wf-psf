@@ -1557,9 +1557,69 @@ def compute_psf_images_super_res(
     tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
     # pred_inputs = [tf_pos, tf_packed_SED_data]
 
+    # Prediction by models
+    multi_thereading = True
+    
+    # GT data preparation
+    if dataset_dict is not None and ("super_res_stars" in dataset_dict or "SR_stars" in dataset_dict):
+        logger.info("Using GT stars from dataset.")
+        try:
+            GT_preds = dataset_dict["super_res_stars"]
+        except:
+            GT_preds = dataset_dict["SR_stars"]
+        # Calculate residuals
+    else:
+        logger.info("Generating GT super resolved stars from the GT model.")
+        # Change interpolation parameters for the GT simPSF
+        simPSF_np.SED_interp_pts_per_bin = 0
+        simPSF_np.SED_sigma = 0
+        # Generate SED data list for GT model
+        packed_SED_data = [
+            utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_gt)
+            for _sed in SEDs
+        ]
+
+        # Prepare inputs
+        tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
+        tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
+
+        # Ground Truth model
+        if multi_thereading:
+            import threading
+            # Begin Multiprocessing
+            logger.info("Begin Model prediction")
+            Nbin = 10
+            step = int(float(len(tf_pos)) / Nbin)
+
+            res = [0 for i in range(Nbin)]  # To save the results in order
+
+            def predict_chunk(i):
+                datai = [tf_pos[i * step:(i + 1) * step], tf_packed_SED_data[i * step:(i + 1) * step]]
+                logger.info("predict_chunk")
+                prei = GT_tf_semiparam_field.predict(x=datai, batch_size=batch_size)
+                res[i] = prei
+                return
+
+            t_obj = []  # To save the threads
+            for i in range(Nbin):
+                ti = threading.Thread(target=predict_chunk, args=(i,))
+                ti.start()
+                t_obj.append(ti)
+
+            for tmp in t_obj:
+                tmp.join()
+            GT_preds = res[0]
+            for i in range(1, Nbin):
+                GT_preds = np.concatenate((GT_preds, res[i]))
+            logger.info("End of Multiprocessing")
+            # End of Multiprocessing
+        else:
+            # If not multi threads:
+            pred_inputs = [tf_pos, tf_packed_SED_data]
+            GT_preds = GT_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
+
     # PSF model
     # Model prediction
-    multi_thereading = True
     if multi_thereading:
         import threading
         # Begin Multiprocessing
@@ -1594,6 +1654,7 @@ def compute_psf_images_super_res(
         pred_inputs = [tf_pos, tf_packed_SED_data]
         preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
+    # GT data preparation
     if dataset_dict is not None and ("super_res_stars" in dataset_dict or "SR_stars" in dataset_dict):
         logger.info("Using GT stars from dataset.")
         try:
@@ -1601,7 +1662,6 @@ def compute_psf_images_super_res(
         except:
             GT_preds = dataset_dict["SR_stars"]
         # Calculate residuals
-    # GT data preparation
     else:
         logger.info("Generating GT super resolved stars from the GT model.")
         # Change interpolation parameters for the GT simPSF
