@@ -264,6 +264,7 @@ class MetricsParamsHandler:
                 tf_SEDs=dataset["SEDs"],
                 n_bins_lda=self.trained_model.model_params.n_bins_lda,
                 n_bins_gt=self.metrics_params.ground_truth_model.model_params.n_bins_lda,
+                c_poly=dataset["C_poly"],
                 batch_size=self.metrics_params.metrics_hparams.batch_size,
                 dataset_dict=dataset,
             )

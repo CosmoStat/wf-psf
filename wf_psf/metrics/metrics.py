@@ -1540,6 +1540,7 @@ def compute_psf_images_super_res(
         tf_pos,
         n_bins_lda,
         n_bins_gt,
+        c_poly,
         output_Q=1,
         output_dim=64,
         batch_size=16,
@@ -1612,6 +1613,10 @@ def compute_psf_images_super_res(
     else:
         logger.info("Generating GT super resolved stars from the GT model.")
         # Change interpolation parameters for the GT simPSF
+        GT_tf_semiparam_field.tf_poly_Z_field.assign_coeff_matrix(c_poly)
+        _ = GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat.assign(
+            np.zeros_like(GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat)
+        )
         simPSF_np.SED_interp_pts_per_bin = 0
         simPSF_np.SED_sigma = 0
         # Generate SED data list for GT model
