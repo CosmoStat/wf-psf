@@ -1489,7 +1489,6 @@ def compute_mono_psf(
             # Increase lower limit
             ep_low_lim += batch_size
 
-        logger.info(len(ell_loc))
         result_dictit = {
             "lambdas": lambda_obs,
             "position": tf_pos,
