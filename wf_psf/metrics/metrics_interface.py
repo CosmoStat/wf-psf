@@ -292,7 +292,8 @@ class MetricsParamsHandler:
 
         """
         logger.info("Computing monochromatic PSF.")
-        lambda_list = np.arange(0.55, 0.9, 0.05)  # for test, 10nm separation
+        # lambda_list = np.arange(0.55, 0.9, 0.05)  # for test, 10nm separation
+        lambda_list = np.array([0.90])
         mono_dict = wf_metrics.compute_mono_psf(
             tf_semiparam_field=psf_model,
             GT_tf_semiparam_field=self.ground_truth_psf_model,
