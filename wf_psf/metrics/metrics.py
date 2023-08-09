@@ -1567,9 +1567,9 @@ def compute_mono_psf_super_res(
     -------
     result_dict: a dictionary of shape metrics for each wavelength in lambda_list.
     """
-    output_Q = 1,
-    output_dim = 64,
-    batch_size = 16,
+    output_Q = 1
+    output_dim = 64
+    batch_size = 16
 
     tf_semiparam_field.set_output_Q(output_Q=output_Q, output_dim=output_dim)
     GT_tf_semiparam_field.set_output_Q(output_Q=output_Q, output_dim=output_dim)
