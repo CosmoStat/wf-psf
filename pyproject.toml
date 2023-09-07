@@ -36,9 +36,6 @@ docs = [
     "sphinx-gallery",
 ]
 
-[project.scripts]
-myscript = ["wf_psf:run"]
-
 lint = [
     "black",
 ]
@@ -62,6 +59,8 @@ test = [
 # Install for development
 dev = ["wf_psf[docs,lint,release,test]"]
 
+[project.scripts]
+myscript = "wf_psf.run:mainMethod"
 
 [tool.black]
 line-length = 88
@@ -80,4 +79,4 @@ addopts = [
     "--cov-report=xml",
     "--junitxml=pytest.xml",
 ]
-testpaths = ["wf_psf"]
+testpaths = ["src/wf_psf"]

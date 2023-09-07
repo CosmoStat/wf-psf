@@ -9,7 +9,7 @@ import numpy as np
 import wf_psf.utils.utils as utils
 import tensorflow as tf
 import tensorflow_addons as tfa
-import wf_psf.SimPSFToolkit as SimPSFToolkit
+import wf_psf.sims.SimPSFToolkit as SimPSFToolkit
 import os
 
 
