@@ -340,7 +340,7 @@ def evaluate_model(
                 psf_model, simPSF_np, training_data.train_dataset
             )
         else:
-            trained_mono_metric = None
+            train_mono_metric = None
 
         # OPD metrics turn into a class
         if metrics_params.eval_opd_metric_rmse:
@@ -348,7 +348,7 @@ def evaluate_model(
                 psf_model, simPSF_np, training_data.train_dataset
             )
         else:
-            trained_opd_metric = None
+            train_opd_metric = None
 
         # Shape metrics  turn into a class
         if metrics_params.eval_train_shape_sr_metric_rmse:
