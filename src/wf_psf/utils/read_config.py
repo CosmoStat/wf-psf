@@ -105,6 +105,8 @@ def read_conf(conf_file):
         except yaml.scanner.ScannerError as e:
             logger.exception("Improper syntax in yaml file.")
             exit()
+        except TypeError as e:
+            logger.exception("There is a problem with your config file. Please check.")
 
     return RecursiveNamespace(**my_conf)
 
