@@ -8,8 +8,8 @@ metrics:
   # Fill model_params if computing metrics_only on a pre-trained model
   # ID name  <-- this should be retrieved from the trained model training_config.yaml file
   id_name: -coherent_euclid_200stars
-  # Path to Trained Model
-  trained_model_path: /Users/jenniferpollack/Projects/jp272790/wf-outputs-202305272046/
+  # Specify path to Trained Model
+  trained_model_path: <PATH>
   # Name of Trained Model Config file
   trained_model_config: config/training_config.yaml 
   # Name of Plotting Config file - Enter file to run plot metrics else if empty run metrics evaluation only

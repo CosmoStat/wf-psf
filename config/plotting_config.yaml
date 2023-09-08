@@ -1,6 +1,6 @@
 plotting_params:
   # Specify path to parent folder containing wf-psf metrics outputs for all runs, ex: $WORK/wf-outputs/
-  metrics_output_path: /Users/jenniferpollack/Projects/jp272790/
+  metrics_output_path: <PATH>
   # Enter directory(s) for metrics of trained PSF models to include in plot, 
   # ex: metrics_dir:
   #       - wf-outputs-xxxxxxxxxxx1 
