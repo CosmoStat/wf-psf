@@ -60,7 +60,7 @@ test = [
 dev = ["wf_psf[docs,lint,release,test]"]
 
 [project.scripts]
-myscript = "wf_psf.run:mainMethod"
+wavediff = "wf_psf.run:mainMethod"
 
 [tool.black]
 line-length = 88
