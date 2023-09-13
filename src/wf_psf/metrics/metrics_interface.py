@@ -369,7 +369,7 @@ def evaluate_model(
         ## Save results
         metrics = {"test_metrics": test_metrics, "train_metrics": train_metrics}
         run_id_name = (
-            trained_model_params.model_params.model_name + metrics_params.id_name
+            trained_model_params.model_params.model_name + trained_model_params.id_name
         )
         output_path = metrics_output + "/" + "metrics-" + run_id_name
         np.save(output_path, metrics, allow_pickle=True)
