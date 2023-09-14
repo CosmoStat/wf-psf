@@ -6,8 +6,6 @@ metrics:
   # Provide path to saved model checkpoints.
   chkp_save_path: checkpoint
   # Fill model_params if computing metrics_only on a pre-trained model
-  # ID name  <-- this should be retrieved from the trained model training_config.yaml file
-  id_name: -coherent_euclid_200stars
   # Specify path to Trained Model
   trained_model_path: <PATH>
   # Name of Trained Model Config file
