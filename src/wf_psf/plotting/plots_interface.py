@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import matplotlib.ticker as mtick
 import seaborn as sns
-
 import os
+import re
 import logging
 
 logger = logging.getLogger(__name__)
@@ -90,39 +90,37 @@ def make_plot(
 
     fig = plt.figure(figsize=(12, 8))
     ax1 = fig.add_subplot(111)
+   
+    ax1.set_title(plot_title)
+    ax1.set_xlabel(x_label)
+    ax1.set_ylabel(y_label_left_axis)
+    ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter("%.1e"))
+    ax2 = ax1.twinx()
+    plt.minorticks_on()
+    
+    ax2.set_ylabel(y_label_right_axis)
+    ax2.grid(False)
 
-    try:
-        for it in range(len(y)):  # type: ignore
-            for k, _ in y[it].items():
-                ax1.errorbar(
-                    x=x,
-                    y=y[it][k],
-                    yerr=yerr[it][k],
-                    label=label[it],
-                    alpha=0.75,
-                )
-                plt.minorticks_on()
-                ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter("%.1e"))
-                ax1.legend()
-                ax1.set_title(plot_title)
-                ax1.set_xlabel(x_label)
-                ax1.set_ylabel(y_label_left_axis)
-                ax2 = ax1.twinx()
-                kwargs = dict(
-                    linewidth=2, linestyle="dashed", markersize=4, marker="^", alpha=0.5
-                )
-                ax2.plot(x, y[it][k], **kwargs)
-                ax2.set_ylabel(y_label_right_axis)
-                ax2.grid(False)
+    for it in range(len(y)):  # type: ignore
+        for k, _ in y[it].items():
+            ax1.errorbar(
+                x=x[it],
+                y=y[it][k],
+                yerr=yerr[it][k],
+                label=label[it],
+                alpha=0.75,
+            )
+            ax1.legend()
+            kwargs = dict(
+        linewidth=2, linestyle="dashed", markersize=4, marker="^", alpha=0.5
+    )
+            ax2.plot(x[it], y[it][k], **kwargs)
+            
+    plt.savefig(filename)
 
-        plt.savefig(filename)
+    if plot_show is True:
+        plt.show()
 
-        if plot_show is True:
-            plt.show()
-    except Exception:
-        print(
-            "There is a problem rendering a plot for the performance metrics. Please check your config files or your metrics files."
-        )
 
 
 class MetricsPlotHandler:
@@ -138,6 +136,8 @@ class MetricsPlotHandler:
     plotting_params: Recursive Namespace object
     metrics: list
         Dictionary containing list of metrics
+    list_of_stars: list
+        List containing the number of training stars per run
     metric_name: str
         Name of metric
     rmse: str
@@ -155,6 +155,7 @@ class MetricsPlotHandler:
         self,
         plotting_params,
         metrics,
+        list_of_stars,
         metric_name,
         rmse,
         std_rmse,
@@ -168,7 +169,7 @@ class MetricsPlotHandler:
         self.std_rmse = std_rmse
         self.plot_title = plot_title
         self.plots_dir = plots_dir
-        self.x = [np.array(self.plotting_params.star_numbers)]
+        self.list_of_stars = list_of_stars      
 
     def get_metrics(self, dataset):
         """Get Metrics.
@@ -213,15 +214,14 @@ class MetricsPlotHandler:
     def plot(self):
         """Plot.
 
-        A function to generate plots for the train and test
-        metrics.
+        A function to generate metric plots as function of number of stars
+        for the train and test metrics.
 
         """
         for plot_dataset in ["test_metrics", "train_metrics"]:
             metrics_id, rmse, std_rmse = self.get_metrics(plot_dataset)
-
             make_plot(
-                x=self.x,
+                x=self.list_of_stars,
                 y=rmse,
                 yerr=std_rmse,
                 label=metrics_id,
@@ -276,34 +276,32 @@ class MonochromaticMetricsPlotHandler:
         # Define common data
         # Common data
         lambda_list = np.arange(0.55, 0.9, 0.01)
-
         for plot_dataset in ["test_metrics", "train_metrics"]:
-            x = []
             y = []
             yerr = []
             metrics_id = []
 
             for k, v in self.metrics.items():
-                run_id = list(v.keys())[0]
-                metrics_id.append(run_id + "-" + k)
-                if self.metrics_confs[k].metrics.eval_mono_metric_rmse:
+                if self.metrics_confs[k].metrics.eval_mono_metric_rmse: 
+                    run_id = list(v.keys())[0]
+                    metrics_id.append(run_id + "-" + k)
                     y.append(
                         {
-                            k: self.metrics[k][run_id][0]["test_metrics"][
+                            k: self.metrics[k][run_id][0][plot_dataset][
                                 "mono_metric"
                             ]["rmse_lda"]
                         }
                     )
                     yerr.append(
                         {
-                            k: self.metrics[k][run_id][0]["test_metrics"][
+                            k: self.metrics[k][run_id][0][plot_dataset][
                                 "mono_metric"
                             ]["std_rmse_lda"]
                         }
                     )
-
+                          
             make_plot(
-                x=lambda_list,
+                x=[lambda_list for _ in range(len(y))],
                 y=y,
                 yerr=yerr,
                 label=metrics_id,
@@ -342,9 +340,10 @@ class ShapeMetricsPlotHandler:
 
     id = "shape_metrics"
 
-    def __init__(self, plotting_params, metrics, plots_dir):
+    def __init__(self, plotting_params, metrics, list_of_stars, plots_dir):
         self.plotting_params = plotting_params
         self.metrics = metrics
+        self.list_of_stars = list_of_stars
         self.plots_dir = plots_dir
 
     def plot(self):
@@ -355,8 +354,7 @@ class ShapeMetricsPlotHandler:
 
         """
         # Define common data
-        # Common data
-        lambda_list = np.arange(0.55, 0.9, 0.01)
+        # Common data 
         e1_req_euclid = 2e-04
         e2_req_euclid = 2e-04
         R2_req_euclid = 1e-03
@@ -368,8 +366,7 @@ class ShapeMetricsPlotHandler:
             rmse_R2_meanR2 = []
             std_rmse_R2_meanR2 = []
             metrics_id = []
-            x = [np.array(self.plotting_params.star_numbers)]
-
+        
             for k, v in self.metrics.items():
                 run_id = list(v.keys())[0]
                 metrics_id.append(run_id + "-" + k)
@@ -424,7 +421,7 @@ class ShapeMetricsPlotHandler:
                 )
 
             make_plot(
-                x=x,
+                x=self.list_of_stars,
                 y=e1_rmse,
                 yerr=e1_std_rmse,
                 label=metrics_id,
@@ -439,7 +436,26 @@ class ShapeMetricsPlotHandler:
                 plot_show=self.plotting_params.plot_show,
             )
 
-
+def get_number_of_stars(metrics):
+    """Get Number of Stars.
+        
+    A function to get the number of stars used
+    in training the model.
+        
+    Returns
+    -------
+    list_of_stars: list
+        A list containing the number of training stars per run.
+    """
+    list_of_stars = []
+    
+    for k, v in metrics.items():
+        run_id = list(v.keys())[0]
+        list_of_stars.append(int(re.search(r'\d+', run_id).group()))
+    
+    return list_of_stars
+            
+            
 def plot_metrics(plotting_params, list_of_metrics, metrics_confs, plot_saving_path):
     r"""Plot model results.
 
@@ -473,10 +489,13 @@ def plot_metrics(plotting_params, list_of_metrics, metrics_confs, plot_saving_pa
         },
     }
 
+    list_of_stars = get_number_of_stars(list_of_metrics)
+    
     for k, v in metrics.items():
         metrics_plot = MetricsPlotHandler(
             plotting_params,
             list_of_metrics,
+            list_of_stars,
             k,
             v["rmse"],
             v["std_rmse"],
@@ -491,6 +510,6 @@ def plot_metrics(plotting_params, list_of_metrics, metrics_confs, plot_saving_pa
     monochrom_metrics_plot.plot()
 
     shape_metrics_plot = ShapeMetricsPlotHandler(
-        plotting_params, list_of_metrics, plot_saving_path
+        plotting_params, list_of_metrics, list_of_stars, plot_saving_path
     )
     shape_metrics_plot.plot()
