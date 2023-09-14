@@ -484,7 +484,7 @@ class PlottingConfigHandler:
         input configuration.
 
         """
-
+        logger.info("Generating metric plots...")
         plot_metrics(
             self.plotting_conf.plotting_params,
             self.list_of_metrics_dict,
