@@ -90,14 +90,14 @@ def make_plot(
 
     fig = plt.figure(figsize=(12, 8))
     ax1 = fig.add_subplot(111)
-   
+
     ax1.set_title(plot_title)
     ax1.set_xlabel(x_label)
     ax1.set_ylabel(y_label_left_axis)
     ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter("%.1e"))
     ax2 = ax1.twinx()
     plt.minorticks_on()
-    
+
     ax2.set_ylabel(y_label_right_axis)
     ax2.grid(False)
 
@@ -112,15 +112,14 @@ def make_plot(
             )
             ax1.legend()
             kwargs = dict(
-        linewidth=2, linestyle="dashed", markersize=4, marker="^", alpha=0.5
-    )
+                linewidth=2, linestyle="dashed", markersize=4, marker="^", alpha=0.5
+            )
             ax2.plot(x[it], y[it][k], **kwargs)
-            
+
     plt.savefig(filename)
 
     if plot_show is True:
         plt.show()
-
 
 
 class MetricsPlotHandler:
@@ -169,7 +168,7 @@ class MetricsPlotHandler:
         self.std_rmse = std_rmse
         self.plot_title = plot_title
         self.plots_dir = plots_dir
-        self.list_of_stars = list_of_stars      
+        self.list_of_stars = list_of_stars
 
     def get_metrics(self, dataset):
         """Get Metrics.
@@ -282,24 +281,24 @@ class MonochromaticMetricsPlotHandler:
             metrics_id = []
 
             for k, v in self.metrics.items():
-                if self.metrics_confs[k].metrics.eval_mono_metric_rmse: 
+                if self.metrics_confs[k].metrics.eval_mono_metric_rmse:
                     run_id = list(v.keys())[0]
                     metrics_id.append(run_id + "-" + k)
                     y.append(
                         {
-                            k: self.metrics[k][run_id][0][plot_dataset][
-                                "mono_metric"
-                            ]["rmse_lda"]
+                            k: self.metrics[k][run_id][0][plot_dataset]["mono_metric"][
+                                "rmse_lda"
+                            ]
                         }
                     )
                     yerr.append(
                         {
-                            k: self.metrics[k][run_id][0][plot_dataset][
-                                "mono_metric"
-                            ]["std_rmse_lda"]
+                            k: self.metrics[k][run_id][0][plot_dataset]["mono_metric"][
+                                "std_rmse_lda"
+                            ]
                         }
                     )
-                          
+
             make_plot(
                 x=[lambda_list for _ in range(len(y))],
                 y=y,
@@ -354,7 +353,7 @@ class ShapeMetricsPlotHandler:
 
         """
         # Define common data
-        # Common data 
+        # Common data
         e1_req_euclid = 2e-04
         e2_req_euclid = 2e-04
         R2_req_euclid = 1e-03
@@ -366,7 +365,7 @@ class ShapeMetricsPlotHandler:
             rmse_R2_meanR2 = []
             std_rmse_R2_meanR2 = []
             metrics_id = []
-        
+
             for k, v in self.metrics.items():
                 run_id = list(v.keys())[0]
                 metrics_id.append(run_id + "-" + k)
@@ -436,26 +435,27 @@ class ShapeMetricsPlotHandler:
                 plot_show=self.plotting_params.plot_show,
             )
 
+
 def get_number_of_stars(metrics):
     """Get Number of Stars.
-        
+
     A function to get the number of stars used
     in training the model.
-        
+
     Returns
     -------
     list_of_stars: list
         A list containing the number of training stars per run.
     """
     list_of_stars = []
-    
+
     for k, v in metrics.items():
         run_id = list(v.keys())[0]
-        list_of_stars.append(int(re.search(r'\d+', run_id).group()))
-    
+        list_of_stars.append(int(re.search(r"\d+", run_id).group()))
+
     return list_of_stars
-            
-            
+
+
 def plot_metrics(plotting_params, list_of_metrics, metrics_confs, plot_saving_path):
     r"""Plot model results.
 
@@ -490,7 +490,7 @@ def plot_metrics(plotting_params, list_of_metrics, metrics_confs, plot_saving_pa
     }
 
     list_of_stars = get_number_of_stars(list_of_metrics)
-    
+
     for k, v in metrics.items():
         metrics_plot = MetricsPlotHandler(
             plotting_params,
