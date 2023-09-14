@@ -16,6 +16,8 @@ from wf_psf.plotting.plots_interface import plot_metrics
 import logging
 from wf_psf.utils.io import FileIOHandler
 import os
+import re
+import pdb
 
 
 logger = logging.getLogger(__name__)
@@ -64,7 +66,8 @@ def set_run_config(config_name):
 
     """
     try:
-        config_class = CONFIG_CLASS[config_name]
+        config_id = [id for id in CONFIG_CLASS.keys() if re.search(id, config_name)][0]
+        config_class = CONFIG_CLASS[config_id]
     except KeyError as e:
         logger.exception("Config name entered is invalid. Check your config settings.")
         exit()
@@ -193,12 +196,15 @@ class TrainingConfigHandler:
             self.file_handler.copy_conffile_to_output_dir(
                 self.training_conf.training.metrics_config
             )
+
             metrics = MetricsConfigHandler(
                 os.path.join(
                     self.file_handler.config_path,
                     self.training_conf.training.metrics_config,
                 ),
                 self.file_handler,
+                self.training_conf,
+                checkpoint_filepath,
             )
 
             metrics.run()
@@ -219,30 +225,39 @@ class MetricsConfigHandler:
         Path to the metrics configuration file
     file_handler: object
         An instance of the FileIOHandler
+    checkpoint_filepath: str
+        Path to checkpoint file
 
     """
 
     ids = ("metrics_conf",)
 
-    def __init__(self, metrics_conf, file_handler):
+    def __init__(
+        self, metrics_conf, file_handler, training_conf=None, checkpoint_filepath=None
+    ):
         self.metrics_conf = read_conf(metrics_conf)
         self.metrics_dir = file_handler.get_metrics_dir(file_handler._run_output_dir)
-        self.training_conf = read_conf(
-            os.path.join(
-                self.metrics_conf.metrics.trained_model_path,
-                self.metrics_conf.metrics.trained_model_config,
-            )
-        )
         self.file_handler = file_handler
 
-        self.checkpoint_filepath = train.filepath_chkp_callback(
-            self.file_handler.get_checkpoint_dir(
-                self.metrics_conf.metrics.trained_model_path
-            ),
-            self.training_conf.training.model_params.model_name,
-            self.training_conf.training.id_name,
-            self.metrics_conf.metrics.saved_training_cycle,
-        )
+        if training_conf is None:
+            self.training_conf = read_conf(
+                os.path.join(
+                    self.metrics_conf.metrics.trained_model_path,
+                    self.metrics_conf.metrics.trained_model_config,
+                )
+            )
+            self.checkpoint_filepath = train.filepath_chkp_callback(
+                self.file_handler.get_checkpoint_dir(
+                    self.metrics_conf.metrics.trained_model_path
+                ),
+                self.training_conf.training.model_params.model_name,
+                self.training_conf.training.id_name,
+                self.metrics_conf.metrics.saved_training_cycle,
+            )
+        else:
+            self.training_conf = training_conf
+            self.checkpoint_filepath = checkpoint_filepath
+
         self.plotting_conf = self.metrics_conf.metrics.plotting_config
 
         try:
@@ -283,9 +298,14 @@ class MetricsConfigHandler:
         plots_config_handler = PlottingConfigHandler(
             self.plotting_conf,
             self.file_handler,
-            {self.file_handler.workdir: self.metrics_conf},
         )
 
+        # Update metrics_confs dict with latest result
+        plots_config_handler.metrics_confs[
+            self.file_handler.workdir
+        ] = self.metrics_conf
+
+        # Update metric results dict with latest result
         plots_config_handler.list_of_metrics_dict[self.file_handler.workdir] = {
             self.training_conf.training.model_params.model_name
             + self.training_conf.training.id_name: [model_metrics]
@@ -340,9 +360,9 @@ class PlottingConfigHandler:
 
     def __init__(self, plotting_conf, file_handler, metrics_conf=dict()):
         self.plotting_conf = read_conf(plotting_conf)
-        self.metrics_confs = metrics_conf
+        self.metrics_confs = {}
         self.check_and_update_metrics_confs()
-        self.list_of_metrics_dict = self.load_metrics()
+        self.list_of_metrics_dict = self.make_dict_of_metrics()
         self.plots_dir = file_handler.get_plots_dir(file_handler._run_output_dir)
 
     def check_and_update_metrics_confs(self):
@@ -354,9 +374,22 @@ class PlottingConfigHandler:
         """
         if self.plotting_conf.plotting_params.metrics_dir:
             self._update_metrics_confs()
-        if not self.metrics_confs:
-            logger.info("No metrics provided...exiting program")
-            exit()
+
+    def make_dict_of_metrics(self):
+        """Make dictionary of metrics.
+
+        A function to create a dictionary for each metrics per run.
+
+        Returns
+        -------
+        dict
+         A dictionary containing metrics or an empty dictionary.
+
+        """
+        if self.plotting_conf.plotting_params.metrics_dir:
+            return self.load_metrics_into_dict()
+        else:
+            return {}
 
     def _update_metrics_confs(self):
         """Update Metrics Configurations.
@@ -366,14 +399,17 @@ class PlottingConfigHandler:
         provided as input.
 
         """
-        for conf in self.plotting_conf.plotting_params.metrics_dir:
+        for wf_dir, metrics_conf in zip(
+            self.plotting_conf.plotting_params.metrics_dir,
+            self.plotting_conf.plotting_params.metrics_config,
+        ):
             try:
-                self.metrics_confs[conf] = read_conf(
+                self.metrics_confs[wf_dir] = read_conf(
                     os.path.join(
                         self.plotting_conf.plotting_params.metrics_output_path,
-                        conf,
+                        wf_dir,
                         "config",
-                        self.plotting_conf.plotting_params.metrics_config,
+                        metrics_conf,
                     )
                 )
             except:
@@ -406,11 +442,12 @@ class PlottingConfigHandler:
         model_name = training_conf.training.model_params.model_name
         return model_name + id_name
 
-    def load_metrics(self):
-        """Load Metrics.
+    def load_metrics_into_dict(self):
+        """Load Metrics into Dictionary.
 
         A method to load a metrics file of
-        a trained model from a previous run.
+        a trained model from a previous run into a
+        dictionary.
 
         Returns
         -------
@@ -418,8 +455,7 @@ class PlottingConfigHandler:
             A dictionary containing all of the metrics from the loaded metrics files.
 
         """
-        metrics_files = []
-        metrics_files_dict = {}
+        metrics_dict = {}
 
         for k, v in self.metrics_confs.items():
             run_id_name = self._metrics_run_id_name(v)
@@ -431,14 +467,15 @@ class PlottingConfigHandler:
             )
 
             try:
-                metrics_files.append(np.load(output_path, allow_pickle=True)[()])
+                metrics_dict[k] = {
+                    run_id_name: [np.load(output_path, allow_pickle=True)[()]]
+                }
             except FileNotFoundError:
                 print(
                     "The required file for the plots was not found. Please check your configs settings."
                 )
-            metrics_files_dict[k] = {run_id_name: metrics_files}
 
-        return metrics_files_dict
+        return metrics_dict
 
     def run(self):
         """Run.
@@ -447,6 +484,7 @@ class PlottingConfigHandler:
         input configuration.
 
         """
+
         plot_metrics(
             self.plotting_conf.plotting_params,
             self.list_of_metrics_dict,
