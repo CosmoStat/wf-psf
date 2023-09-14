@@ -5,7 +5,7 @@ metrics:
   saved_training_cycle: 1
   # Provide path to saved model checkpoints.
   chkp_save_path: checkpoint
-  # Fill model_params if computing metrics_only on a pre-trained model else leave blank to train model first
+  # Fill model_params if computing metrics_only on a pre-trained model
   # ID name  <-- this should be retrieved from the trained model training_config.yaml file
   id_name: -coherent_euclid_200stars
   # Specify path to Trained Model
@@ -13,7 +13,7 @@ metrics:
   # Name of Trained Model Config file
   trained_model_config: config/training_config.yaml 
   # Name of Plotting Config file - Enter file to run plot metrics else if empty run metrics evaluation only
-  plotting_config: 
+  plotting_config: plotting_config.yaml
   #Evaluate the monchromatic RMSE metric.
   eval_mono_metric_rmse: True
   #Evaluate the OPD RMSE metric.
