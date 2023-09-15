@@ -135,7 +135,7 @@ def read_stream(conf_file):
     Yields
     ------
     dict
-        dict
+        A dictionary containing all config files. 
 
     """
     stream = open(conf_file, "r")
