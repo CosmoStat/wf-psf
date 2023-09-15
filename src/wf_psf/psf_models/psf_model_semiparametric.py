@@ -28,7 +28,7 @@ class TF_SemiParam_field(tf.keras.Model):
     Parameters
     ----------
     ids: tuple
-        A tuple containing a str id the PSF model class
+        A tuple storing the string attribute of the PSF model class
     model_params: Recursive Namespace
         Recursive Namespace object containing parameters for this PSF model class
     training_params: Recursive Namespace

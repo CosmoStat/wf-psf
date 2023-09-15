@@ -23,6 +23,8 @@ class TF_PSF_field_model(tf.keras.Model):
 
     Parameters
     ----------
+    ids: tuple
+        A tuple storing the string attribute of the PSF model class
     zernike_maps: Tensor(n_batch, opd_dim, opd_dim)
         Zernike polynomial maps.
     obscurations: Tensor(opd_dim, opd_dim)
