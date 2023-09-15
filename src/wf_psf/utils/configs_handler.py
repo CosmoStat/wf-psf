@@ -240,12 +240,17 @@ class MetricsConfigHandler:
         self.file_handler = file_handler
 
         if training_conf is None:
-            self.training_conf = read_conf(
-                os.path.join(
-                    self.metrics_conf.metrics.trained_model_path,
-                    self.metrics_conf.metrics.trained_model_config,
+            try:
+                self.training_conf = read_conf(
+                    os.path.join(
+                        self.metrics_conf.metrics.trained_model_path,
+                        self.metrics_conf.metrics.trained_model_config,
+                    )
                 )
-            )
+            except TypeError:
+                logger.info("Check metrics config file trained model path or config values are empty.")
+                exit()
+                
             self.checkpoint_filepath = train.filepath_chkp_callback(
                 self.file_handler.get_checkpoint_dir(
                     self.metrics_conf.metrics.trained_model_path
