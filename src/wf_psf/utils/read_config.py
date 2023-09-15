@@ -99,16 +99,27 @@ def read_conf(conf_file):
         Recursive Namespace object
 
     """
+    logger.info(conf_file)
     with open(conf_file, "r") as f:
         try:
             my_conf = yaml.safe_load(f)
         except yaml.scanner.ScannerError as e:
             logger.exception("Improper syntax in yaml file.")
             exit()
-        except TypeError as e:
+        except TypeError:
             logger.exception("There is a problem with your config file. Please check.")
+    
+        if my_conf == None:
+            logger.info("Config file is empty...Stopping Program.")
+            exit()
 
-    return RecursiveNamespace(**my_conf)
+        try:
+            return RecursiveNamespace(**my_conf)
+        except TypeError:
+            logger.exception("Check your config file for Syntax error key:value pair mapping expected.") 
+            exit()
+          
+        
 
 
 def read_stream(conf_file):
@@ -128,11 +139,16 @@ def read_stream(conf_file):
 
     """
     stream = open(conf_file, "r")
-    docs = yaml.load_all(stream, yaml.FullLoader)
-
+    try:
+        docs = yaml.load_all(stream, yaml.FullLoader)
+    except yaml.scanner.ScannerError as e:
+        logger.exception(e)
+        exit()
+            
     for doc in docs:
         try:
             yield doc
         except TypeError:
             logger.exception("configs.yaml file is empty.")
             exit()
+
