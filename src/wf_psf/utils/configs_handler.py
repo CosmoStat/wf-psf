@@ -17,7 +17,7 @@ import logging
 from wf_psf.utils.io import FileIOHandler
 import os
 import re
-import pdb
+import glob
 
 
 logger = logging.getLogger(__name__)
@@ -360,6 +360,7 @@ class PlottingConfigHandler:
 
     def __init__(self, plotting_conf, file_handler, metrics_conf=dict()):
         self.plotting_conf = read_conf(plotting_conf)
+        self.filehandler = file_handler
         self.metrics_confs = {}
         self.check_and_update_metrics_confs()
         self.list_of_metrics_dict = self.make_dict_of_metrics()
@@ -416,7 +417,7 @@ class PlottingConfigHandler:
                 logger.info("Problem with config file.")
                 exit()
 
-    def _metrics_run_id_name(self, metrics_params):
+    def _metrics_run_id_name(self, wf_outdir, metrics_params):
         """Get Metrics Run ID Name.
 
         A function to generate run id name
@@ -432,12 +433,29 @@ class PlottingConfigHandler:
         metrics_run_id_name: str
             String containing the model name and id of the training run
         """
-        training_conf = read_conf(
-            os.path.join(
-                metrics_params.metrics.trained_model_path,
-                metrics_params.metrics.trained_model_config,
+        try:
+            training_conf = read_conf(
+                os.path.join(
+                    metrics_params.metrics.trained_model_path,
+                    metrics_params.metrics.trained_model_config,
+                )
             )
-        )
+        except TypeError:
+            logger.info("Trained model path not provided...")   
+            logger.info("Trying to retrieve training config file from workdir: {}".format(wf_outdir))
+            
+            training_conf = read_conf(
+                glob.glob(
+                    os.path.join(
+                    self.filehandler.output_path,
+                    self.filehandler.parent_output_dir,
+                    wf_outdir,
+                    "config/training*"))[0]
+            )
+        except:
+            logger.info("File not found.")
+            exit()
+            
         id_name = training_conf.training.id_name
         model_name = training_conf.training.model_params.model_name
         return model_name + id_name
@@ -456,9 +474,9 @@ class PlottingConfigHandler:
 
         """
         metrics_dict = {}
-
+        logger.info("Attempting to read in trained model config file...")
         for k, v in self.metrics_confs.items():
-            run_id_name = self._metrics_run_id_name(v)
+            run_id_name = self._metrics_run_id_name(k,v)
             output_path = os.path.join(
                 self.plotting_conf.plotting_params.metrics_output_path,
                 k,
