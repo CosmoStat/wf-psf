@@ -34,11 +34,11 @@ class FileIOHandler:
         self.output_path = output_path
         self.config_path = config_path
         self._timestamp = self.get_timestamp()
-        self._parent_output_dir = "wf-outputs"
-        self.workdir = self._parent_output_dir + "-" + self._timestamp
+        self.parent_output_dir = "wf-outputs"
+        self.workdir = self.parent_output_dir + "-" + self._timestamp
         self._run_output_dir = os.path.join(
             self.output_path,
-            self._parent_output_dir,
+            self.parent_output_dir,
             self.workdir,
         )
         self._config = "config"
@@ -74,7 +74,7 @@ class FileIOHandler:
         output directory "wf-outputs".
 
         """
-        pathlib.Path(os.path.join(self.output_path, self._parent_output_dir)).mkdir(
+        pathlib.Path(os.path.join(self.output_path, self.parent_output_dir)).mkdir(
             exist_ok=True
         )
 
