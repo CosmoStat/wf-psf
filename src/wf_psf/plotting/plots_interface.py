@@ -46,14 +46,14 @@ def define_plot_style():  # type: ignore
 
 
 def make_plot(
-    x,
-    y,
-    yerr,
+    x_axis,
+    y_axis,
+    y_axis_err,
     label,
     plot_title,
-    x_label,
-    y_label_right_axis,
-    y_label_left_axis,
+    x_axis_label,
+    y_right_axis_label,
+    y_left_axis_label,
     filename,
     plot_show=False,
 ):
@@ -63,21 +63,21 @@ def make_plot(
 
     Parameters
     ----------
-    x: list
+    x_axis: list
         x-axis values
-    y: list
+    y_axis: list
         y-axis values
-    yerr: list
+    y_axis_err: list
         Error values for y-axis points
     label: str
         Label for the points
     plot_title: str
         Name of plot
-    x_label: str
+    x_axis_label: str
         Label for x-axis
-    y_label_left_axis: str
+    y_left_axis_label: str
         Label for left vertical axis of plot
-    y_label_right_axis: str
+    y_right_axis_label: str
         Label for right vertical axis of plot
     filename: str
         Name of file to save plot
@@ -92,21 +92,21 @@ def make_plot(
     ax1 = fig.add_subplot(111)
 
     ax1.set_title(plot_title)
-    ax1.set_xlabel(x_label)
-    ax1.set_ylabel(y_label_left_axis)
+    ax1.set_xlabel(x_axis_label)
+    ax1.set_ylabel(y_left_axis_label)
     ax1.yaxis.set_major_formatter(mtick.FormatStrFormatter("%.1e"))
     ax2 = ax1.twinx()
     plt.minorticks_on()
 
-    ax2.set_ylabel(y_label_right_axis)
+    ax2.set_ylabel(y_right_axis_label)
     ax2.grid(False)
 
     for it in range(len(y)):  # type: ignore
-        for k, _ in y[it].items():
+        for k, _ in y_axis[it].items():
             ax1.errorbar(
-                x=x[it],
-                y=y[it][k],
-                yerr=yerr[it][k],
+                x=x_axis[it],
+                y=y_axis[it][k],
+                yerr=y_axis_err[it][k],
                 label=label[it],
                 alpha=0.75,
             )
@@ -114,7 +114,7 @@ def make_plot(
             kwargs = dict(
                 linewidth=2, linestyle="dashed", markersize=4, marker="^", alpha=0.5
             )
-            ax2.plot(x[it], y[it][k], **kwargs)
+            ax2.plot(x_axis[it], y_axis[it][k], **kwargs)
 
     plt.savefig(filename)
 
@@ -183,12 +183,8 @@ class MetricsPlotHandler:
 
         Returns
         -------
-        metrics_id: str
-            A str representing the id of a metrics for a given run.
-        rmse: list
-            A list containing root-mean-square (rms) errors for a metric for each run input.
-        std_rmse: list
-            A list containing standard errors on the root-mean-square (rms) quantites for a metric for each run input.
+        tuple:
+            A tuple consisting of the id, root-mean-square (rms) and standard rms errors for a metric for each input run.
 
         """
         rmse = []
@@ -220,14 +216,14 @@ class MetricsPlotHandler:
         for plot_dataset in ["test_metrics", "train_metrics"]:
             metrics_id, rmse, std_rmse = self.get_metrics(plot_dataset)
             make_plot(
-                x=self.list_of_stars,
-                y=rmse,
-                yerr=std_rmse,
+                x_axis=self.list_of_stars,
+                y_axis=rmse,
+                y_axis_err=std_rmse,
                 label=metrics_id,
                 plot_title="Stars " + plot_dataset + self.plot_title,
-                x_label="Number of stars",
-                y_label_left_axis="Absolute error",
-                y_label_right_axis="Relative error [%]",
+                x_axis_label="Number of stars",
+                y_left_axis_label="Absolute error",
+                y_right_axis_label="Relative error [%]",
                 filename=os.path.join(
                     self.plots_dir,
                     plot_dataset + "_" + self.metric_name + "_RMSE.png",
@@ -276,22 +272,22 @@ class MonochromaticMetricsPlotHandler:
         # Common data
         lambda_list = np.arange(0.55, 0.9, 0.01)
         for plot_dataset in ["test_metrics", "train_metrics"]:
-            y = []
-            yerr = []
+            y_axis = []
+            y_axis_err = []
             metrics_id = []
 
             for k, v in self.metrics.items():
                 if self.metrics_confs[k].metrics.eval_mono_metric_rmse:
                     run_id = list(v.keys())[0]
                     metrics_id.append(run_id + "-" + k)
-                    y.append(
+                    y_axis.append(
                         {
                             k: self.metrics[k][run_id][0][plot_dataset]["mono_metric"][
                                 "rmse_lda"
                             ]
                         }
                     )
-                    yerr.append(
+                    y_axis_err.append(
                         {
                             k: self.metrics[k][run_id][0][plot_dataset]["mono_metric"][
                                 "std_rmse_lda"
@@ -300,16 +296,16 @@ class MonochromaticMetricsPlotHandler:
                     )
 
             make_plot(
-                x=[lambda_list for _ in range(len(y))],
-                y=y,
-                yerr=yerr,
+                x_axis=[lambda_list for _ in range(len(y))],
+                y_axis=y_axis,
+                y_axis_err=y_axis_err,
                 label=metrics_id,
                 plot_title="Stars "
                 + plot_dataset  # type: ignore
                 + "\nMonochromatic pixel RMSE @ Euclid resolution",
-                x_label="Wavelength [um]",
-                y_label_left_axis="Absolute error",
-                y_label_right_axis="Relative error [%]",
+                x_axis_label="Wavelength [um]",
+                y_left_axis_label="Absolute error",
+                y_right_axis_label="Relative error [%]",
                 filename=os.path.join(
                     self.plots_dir,
                     (plot_dataset + "_monochrom_pixel_RMSE.png"),
@@ -420,14 +416,14 @@ class ShapeMetricsPlotHandler:
                 )
 
             make_plot(
-                x=self.list_of_stars,
-                y=e1_rmse,
-                yerr=e1_std_rmse,
+                x_axis=self.list_of_stars,
+                y_axis=e1_rmse,
+                y_axis_err=e1_std_rmse,
                 label=metrics_id,
                 plot_title="Stars " + plot_dataset + ".\nShape RMSE",
-                x_label="Number of stars",
-                y_label_left_axis="Absolute error",
-                y_label_right_axis="Relative error [%]",
+                x_axis_label="Number of stars",
+                y_left_axis_label="Absolute error",
+                y_right_axis_label="Relative error [%]",
                 filename=os.path.join(
                     self.plots_dir,
                     plot_dataset + "_Shape_RMSE.png",
