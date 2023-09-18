@@ -22,8 +22,8 @@ def setProgramOptions():
 
     Returns
     -------
-    args: type
-        Argument Parser Namespace
+    args: argparge.Namespace object
+        Argument Parser Namespace object
 
     """
     parser = argparse.ArgumentParser()
