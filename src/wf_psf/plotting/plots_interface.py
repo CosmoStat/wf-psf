@@ -101,7 +101,7 @@ def make_plot(
     ax2.set_ylabel(y_right_axis_label)
     ax2.grid(False)
 
-    for it in range(len(y)):  # type: ignore
+    for it in range(len(y_axis)):  # type: ignore
         for k, _ in y_axis[it].items():
             ax1.errorbar(
                 x=x_axis[it],
@@ -296,7 +296,7 @@ class MonochromaticMetricsPlotHandler:
                     )
 
             make_plot(
-                x_axis=[lambda_list for _ in range(len(y))],
+                x_axis=[lambda_list for _ in range(len(y_axis))],
                 y_axis=y_axis,
                 y_axis_err=y_axis_err,
                 label=metrics_id,
