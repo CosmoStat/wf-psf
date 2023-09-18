@@ -31,7 +31,7 @@ def ground_truth_psf_model(metrics_params, coeff_matrix):
     )
     psf_model.tf_poly_Z_field.assign_coeff_matrix(coeff_matrix)
 
-    _ = psf_model.tf_np_poly_opd.alpha_mat.assign(
+    psf_model.tf_np_poly_opd.alpha_mat.assign(
         np.zeros_like(psf_model.tf_np_poly_opd.alpha_mat)  # type: ignore
     )
 
