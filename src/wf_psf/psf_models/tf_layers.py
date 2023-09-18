@@ -357,11 +357,11 @@ class TF_NP_poly_OPD(tf.keras.layers.Layer):
 
     def set_alpha_zero(self):
         """Set alpha matrix to zero."""
-        _ = self.alpha_mat.assign(tf.zeros_like(self.alpha_mat, dtype=tf.float32))
+        self.alpha_mat.assign(tf.zeros_like(self.alpha_mat, dtype=tf.float32))
 
     def set_alpha_identity(self):
         """Set alpha matrix to the identity."""
-        _ = self.alpha_mat.assign(tf.eye(self.n_poly, dtype=tf.float32))
+        self.alpha_mat.assign(tf.eye(self.n_poly, dtype=tf.float32))
 
     def assign_S_mat(self, S_mat):
         """Assign DD features matrix."""
@@ -501,19 +501,19 @@ class TF_NP_MCCD_OPD_v2(tf.keras.layers.Layer):
 
     def set_alpha_zero(self):
         """Set alpha matrix to zero."""
-        _ = self.alpha_poly.assign(tf.zeros_like(self.alpha_poly, dtype=tf.float32))
-        _ = self.alpha_graph.assign(tf.zeros_like(self.alpha_graph, dtype=tf.float32))
+        self.alpha_poly.assign(tf.zeros_like(self.alpha_poly, dtype=tf.float32))
+        self.alpha_graph.assign(tf.zeros_like(self.alpha_graph, dtype=tf.float32))
 
     def set_alpha_identity(self):
         """Set alpha matrix to the identity."""
-        _ = self.alpha_poly.assign(
+        self.alpha_poly.assign(
             tf.eye(
                 num_rows=self.poly_features,
                 num_columns=self.poly_features,
                 dtype=tf.float32,
             )
         )
-        _ = self.alpha_graph.assign(
+        self.alpha_graph.assign(
             tf.eye(
                 num_rows=self.n_graph_elems,
                 num_columns=self.graph_features,
@@ -693,11 +693,11 @@ class TF_NP_GRAPH_OPD(tf.keras.layers.Layer):
 
     def set_alpha_zero(self):
         """Set alpha matrix to zero."""
-        _ = self.alpha_graph.assign(tf.zeros_like(self.alpha_graph, dtype=tf.float32))
+        self.alpha_graph.assign(tf.zeros_like(self.alpha_graph, dtype=tf.float32))
 
     def set_alpha_identity(self):
         """Set alpha matrix to the identity."""
-        _ = self.alpha_graph.assign(
+        self.alpha_graph.assign(
             tf.eye(
                 num_rows=self.n_graph_elems,
                 num_columns=self.graph_features,
