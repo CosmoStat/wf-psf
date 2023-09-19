@@ -50,6 +50,9 @@ training:
     
     # Hyperparameters for Parametric model 
     param_hparams:
+      # Random seed for Tensor Flow Initialization
+      random_seed: 3877572
+      
       # Parameter for the l2 loss function for the Optical path differences (OPD)/WFE
       l2_param: 0.
     

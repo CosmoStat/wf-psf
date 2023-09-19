@@ -17,6 +17,10 @@ from wf_psf.psf_models.tf_layers import (
     TF_batch_poly_PSF,
     TF_batch_mono_PSF,
 )
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 @psfm.register_psfclass
@@ -42,7 +46,10 @@ class TF_SemiParam_field(tf.keras.Model):
 
     def __init__(self, model_params, batch_size, coeff_mat=None):
         super().__init__()
-
+ 
+        # Inputs: random seed for Tensor Flow initialization
+        self.random_seed = model_params.param_hparams.random_seed
+        
         # Inputs: pupil diameter
         self.pupil_diam = model_params.pupil_diameter
 
@@ -88,6 +95,7 @@ class TF_SemiParam_field(tf.keras.Model):
         self.tf_poly_Z_field = tfl.TF_poly_Z_field(
             x_lims=self.x_lims,
             y_lims=self.y_lims,
+            random_seed=self.random_seed,
             n_zernikes=self.n_zernikes,
             d_max=self.d_max,
         )
@@ -99,6 +107,7 @@ class TF_SemiParam_field(tf.keras.Model):
         self.tf_np_poly_opd = tfl.TF_NP_poly_OPD(
             x_lims=self.x_lims,
             y_lims=self.y_lims,
+            random_seed=self.random_seed,
             d_max=self.d_max_nonparam,
             opd_dim=self.opd_dim,
         )

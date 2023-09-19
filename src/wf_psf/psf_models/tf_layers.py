@@ -4,6 +4,10 @@ import tensorflow_addons as tfa
 from wf_psf.psf_models.tf_modules import TF_mono_PSF
 from wf_psf.utils.utils import calc_poly_position_mat
 import wf_psf.utils.utils as utils
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 
 class TF_poly_Z_field(tf.keras.layers.Layer):
@@ -21,7 +25,7 @@ class TF_poly_Z_field(tf.keras.layers.Layer):
 
     """
 
-    def __init__(self, x_lims, y_lims, n_zernikes=45, d_max=2, name="TF_poly_Z_field"):
+    def __init__(self, x_lims, y_lims, random_seed=None, n_zernikes=45, d_max=2, name="TF_poly_Z_field"):
         super().__init__(name=name)
 
         self.n_zernikes = n_zernikes
@@ -30,6 +34,7 @@ class TF_poly_Z_field(tf.keras.layers.Layer):
         self.coeff_mat = None
         self.x_lims = x_lims
         self.y_lims = y_lims
+        self.random_seed = random_seed
 
         self.init_coeff_matrix()
 
@@ -47,6 +52,7 @@ class TF_poly_Z_field(tf.keras.layers.Layer):
 
     def init_coeff_matrix(self):
         """Initialize coefficient matrix."""
+        tf.random.set_seed(self.random_seed)
         coef_init = tf.random_uniform_initializer(minval=-0.01, maxval=0.01)
         self.coeff_mat = tf.Variable(
             initial_value=coef_init(self.get_poly_coefficients_shape()),
@@ -315,6 +321,8 @@ class TF_NP_poly_OPD(tf.keras.layers.Layer):
         Limits of the x axis.
     y_lims: [int, int]
         Limits of the y axis.
+    random_seed: int
+        Random seed initialization for Tensor Flow
     d_max: int
         Max degree of polynomial determining the FoV variations.
     opd_dim: int
@@ -322,11 +330,12 @@ class TF_NP_poly_OPD(tf.keras.layers.Layer):
 
     """
 
-    def __init__(self, x_lims, y_lims, d_max=3, opd_dim=256, name="TF_NP_poly_OPD"):
+    def __init__(self, x_lims, y_lims, random_seed=None, d_max=3, opd_dim=256, name="TF_NP_poly_OPD"):
         super().__init__(name=name)
         # Parameters
         self.x_lims = x_lims
         self.y_lims = y_lims
+        self.random_seed = random_seed
         self.d_max = d_max
         self.opd_dim = opd_dim
 
@@ -343,6 +352,7 @@ class TF_NP_poly_OPD(tf.keras.layers.Layer):
         Basic initialization. Random uniform for S and identity for alpha.
         """
         # S initialization
+        tf.random.set_seed(self.random_seed)
         random_init = tf.random_uniform_initializer(minval=-0.001, maxval=0.001)
         self.S_mat = tf.Variable(
             initial_value=random_init(shape=[self.n_poly, self.opd_dim, self.opd_dim]),
@@ -429,6 +439,7 @@ class TF_NP_MCCD_OPD_v2(tf.keras.layers.Layer):
         spatial_dic,
         x_lims,
         y_lims,
+        random_seed=None,
         d_max=2,
         graph_features=6,
         l1_rate=1e-5,
@@ -439,6 +450,8 @@ class TF_NP_MCCD_OPD_v2(tf.keras.layers.Layer):
         # Parameters
         self.x_lims = x_lims
         self.y_lims = y_lims
+        self.random_seed = random_seed
+        logger.info(type(self.random_seed))
         self.d_max = d_max
         self.opd_dim = opd_dim
 
@@ -467,6 +480,7 @@ class TF_NP_MCCD_OPD_v2(tf.keras.layers.Layer):
         Basic initialization. Random uniform for S and identity for alpha.
         """
         # S initialization
+        tf.random.set_seed(self.random_seed)
         random_init = tf.random_uniform_initializer(minval=-0.001, maxval=0.001)
         self.S_poly = tf.Variable(
             initial_value=random_init(
@@ -639,6 +653,7 @@ class TF_NP_GRAPH_OPD(tf.keras.layers.Layer):
         spatial_dic,
         x_lims,
         y_lims,
+        random_seed=None,
         graph_features=6,
         l1_rate=1e-5,
         opd_dim=256,
@@ -648,6 +663,7 @@ class TF_NP_GRAPH_OPD(tf.keras.layers.Layer):
         # Parameters
         self.x_lims = x_lims
         self.y_lims = y_lims
+        self.random_seed = random_seed
         self.opd_dim = opd_dim
 
         # L1 regularisation parameter
@@ -672,6 +688,7 @@ class TF_NP_GRAPH_OPD(tf.keras.layers.Layer):
         Basic initialization. Random uniform for S and identity for alpha.
         """
         # S initialization
+        tf.random.set_seed(self.random_seed)
         random_init = tf.random_uniform_initializer(minval=-0.001, maxval=0.001)
 
         self.S_graph = tf.Variable(
