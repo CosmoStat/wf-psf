@@ -225,10 +225,12 @@ def train_model(**args):
             obscurations=tf_obscurations,
             batch_size=args['batch_size'],
             output_Q=args['output_q'],
+            
             d_max_nonparam=args['d_max_nonparam'],
             l2_param=args['l2_param'],
             output_dim=args['output_dim'],
             n_zernikes=args['n_zernikes'],
+            random_seed=args['random_seed'],
             d_max=args['d_max'],
             x_lims=args['x_lims'],
             y_lims=args['y_lims']
@@ -244,6 +246,7 @@ def train_model(**args):
             l2_param=args['l2_param'],
             output_dim=args['output_dim'],
             n_zernikes=args['n_zernikes'],
+            random_seed=args['random_seed'],
             d_max=args['d_max'],
             x_lims=args['x_lims'],
             y_lims=args['y_lims']

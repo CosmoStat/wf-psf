@@ -235,6 +235,8 @@ class TF_SemiParam_field(tf.keras.Model):
         Output dimension of the PSF stamps.
     n_zernikes: int
         Order of the Zernike polynomial for the parametric model.
+    random_seed: int
+        Random seed for TensorFlow initialisation
     d_max: int
         Maximum degree of the polynomial for the Zernike coefficient variations.
     x_lims: [float, float]
@@ -257,6 +259,7 @@ class TF_SemiParam_field(tf.keras.Model):
         l2_param=0.,
         output_dim=64,
         n_zernikes=45,
+        random_seed=None,
         d_max=2,
         x_lims=[0, 1e3],
         y_lims=[0, 1e3],
@@ -273,6 +276,7 @@ class TF_SemiParam_field(tf.keras.Model):
         self.d_max = d_max
         self.x_lims = x_lims
         self.y_lims = y_lims
+        self.random_seed = random_seed
 
         # Inputs: TF_NP_poly_OPD
         self.d_max_nonparam = d_max_nonparam
@@ -292,7 +296,7 @@ class TF_SemiParam_field(tf.keras.Model):
 
         # Initialize the first layer
         self.tf_poly_Z_field = TF_poly_Z_field(
-            x_lims=self.x_lims, y_lims=self.y_lims, n_zernikes=self.n_zernikes, d_max=self.d_max
+            x_lims=self.x_lims, y_lims=self.y_lims, n_zernikes=self.n_zernikes, random_seed=self.random_seed, d_max=self.d_max
         )
 
         # Initialize the zernike to OPD layer
@@ -300,7 +304,7 @@ class TF_SemiParam_field(tf.keras.Model):
 
         # Initialize the non-parametric layer
         self.tf_np_poly_opd = TF_NP_poly_OPD(
-            x_lims=self.x_lims, y_lims=self.y_lims, d_max=self.d_max_nonparam, opd_dim=self.opd_dim
+            x_lims=self.x_lims, y_lims=self.y_lims, random_seed=self.random_seed, d_max=self.d_max_nonparam, opd_dim=self.opd_dim
         )
 
         # Initialize the batch opd to batch polychromatic PSF layer
