@@ -32,6 +32,10 @@ def train_model(**args):
 
     # Define model run id
     run_id_name = args['model'] + args['id_name']
+    
+    # Check random seed
+    print("Random seed")
+    print(args['random_seed'])
 
     # Define paths
     log_save_file = args['base_path'] + args['log_folder']

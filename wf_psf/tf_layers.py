@@ -21,7 +21,7 @@ class TF_poly_Z_field(tf.keras.layers.Layer):
 
     """
 
-    def __init__(self, x_lims, y_lims, random_seed, n_zernikes=45, d_max=2, name='TF_poly_Z_field'):
+    def __init__(self, x_lims, y_lims, random_seed=None, n_zernikes=45, d_max=2, name='TF_poly_Z_field'):
         super().__init__(name=name)
 
         self.n_zernikes = n_zernikes
@@ -48,6 +48,9 @@ class TF_poly_Z_field(tf.keras.layers.Layer):
 
     def init_coeff_matrix(self):
         """ Initialize coefficient matrix."""
+        print("Printing random seed")
+        print(self.random_seed)
+        tf.random.set_seed(self.random_seed)
         coef_init = tf.random_uniform_initializer(minval=-0.01, maxval=0.01)
         self.coeff_mat = tf.Variable(
             initial_value=coef_init(self.get_poly_coefficients_shape()),
@@ -344,6 +347,8 @@ class TF_NP_poly_OPD(tf.keras.layers.Layer):
         Basic initialization. Random uniform for S and identity for alpha.
         """
         # S initialization
+        print("Printing random seed")
+        print(self.random_seed)
         tf.random.set_seed(self.random_seed)
         random_init = tf.random_uniform_initializer(minval=-0.001, maxval=0.001)
         self.S_mat = tf.Variable(
