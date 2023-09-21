@@ -998,8 +998,8 @@ class OLD_TF_batch_poly_PSF(tf.keras.layers.Layer):
     def calculate_poly_PSF(self, packed_elems):
         """Calculate a polychromatic PSF."""
 
-        print("TF_batch_poly_PSF: calculate_poly_PSF: packed_elems.type")
-        print(packed_elems.dtype)
+        logger.info("TF_batch_poly_PSF: calculate_poly_PSF: packed_elems.type")
+        logger.info(packed_elems.dtype)
 
         def _calculate_poly_PSF(elems_to_unpack):
             return tf.map_fn(

@@ -6,7 +6,9 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+import logging
 
+logger = logging.getLogger(__name__)
 
 class GenFieldPSF(object):
     def __init__(
@@ -97,7 +99,7 @@ class GenFieldPSF(object):
 
         if max_wfe_rms > self.lim_max_wfe_rms:
             if self.verbose:
-                print(
+                logger.info(
                     "WFE_RMS %.4f [um] is exceeding from max value: %.4f [um]. Normalizing."
                     % (max_wfe_rms, self.lim_max_wfe_rms)
                 )
@@ -117,12 +119,12 @@ class GenFieldPSF(object):
         (x_norm,y_norm) need to be in [-1, +1] x [-1, +1]
         """
         if x >= self.xlim and x <= 0:
-            print(
+            logger.info(
                 "WARNING! x value: %f is not between the limits [0, %f]"
                 % (x, self.xlim)
             )
         if y >= self.ylim and y <= 0:
-            print(
+            logger.info(
                 "WARNING! y value: %f is not between the limits [0, %f]"
                 % (y, self.ylim)
             )
@@ -137,21 +139,21 @@ class GenFieldPSF(object):
         dif_wfe_rms = self.sim_psf_toolkit.check_wfe_rms(z_coeffs=self.new_z_coef)
 
         if dif_wfe_rms < 0:
-            print(
+            logger.info(
                 "WARNING: Position (%d,%d) posses an WFE_RMS of %f.\n"
                 % (x, y, self.sim_psf_toolkit.max_wfe_rms - dif_wfe_rms)
             )
-            print(
+            logger.info(
                 "It exceeds the maximum allowed error (max WFE_RMS=%.4f [um])"
                 % (self.sim_psf_toolkit.max_wfe_rms)
             )
 
         if self.verbose > 0:
-            print("Info for position: (%d, %d)" % (x, y))
-            print(
+            logger.info("Info for position: (%d, %d)" % (x, y))
+            logger.info(
                 "WFE_RMS: %.4f [um]" % (self.sim_psf_toolkit.max_wfe_rms - dif_wfe_rms)
             )
-            print("MAX_WFE_RMS: %.4f [um]" % (self.sim_psf_toolkit.max_wfe_rms))
+            logger.info("MAX_WFE_RMS: %.4f [um]" % (self.sim_psf_toolkit.max_wfe_rms))
 
     def compute_wfe_rms(self, x, y):
         """Compute the WFE RMS for a specific field position."""
@@ -170,7 +172,7 @@ class GenFieldPSF(object):
         if self.new_z_coef is not None:
             return self.new_z_coef
         else:
-            print("Coeff map has not been calculated yet.")
+            logger.info("Coeff map has not been calculated yet.")
 
     def get_mono_PSF(self, x, y, lambda_obs=0.725):
         # Calculate the specific field's zernike coeffs

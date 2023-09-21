@@ -2,7 +2,9 @@ import numpy as np
 import tensorflow as tf
 from wf_psf.psf_models.tf_psf_field import build_PSF_model
 from wf_psf.utils.utils import NoiseEstimator
+import logging
 
+logger = logging.getLogger(__name__)
 
 class L1ParamScheduler(tf.keras.callbacks.Callback):
     """L1 rate scheduler which sets the L1 rate according to schedule.
@@ -33,7 +35,7 @@ class L1ParamScheduler(tf.keras.callbacks.Callback):
 def l1_schedule_rule(epoch_n, l1_rate):
     if epoch_n != 0 and epoch_n % 10 == 0:
         scheduled_l1_rate = l1_rate / 2
-        print("\nEpoch %05d: L1 rate is %0.4e." % (epoch_n, scheduled_l1_rate))
+        logger.info("\nEpoch %05d: L1 rate is %0.4e." % (epoch_n, scheduled_l1_rate))
         return scheduled_l1_rate
     else:
         return l1_rate
@@ -246,7 +248,7 @@ def general_train_cycle(
             metrics=metrics,
         )
         # Train the parametric part
-        print("Starting parametric update..")
+        logger.info("Starting parametric update..")
         hist_param = tf_semiparam_field.fit(
             x=inputs,
             y=outputs,
@@ -321,7 +323,7 @@ def general_train_cycle(
             metrics=metrics,
         )
         # Train the nonparametric part
-        print("Starting non-parametric update..")
+        logger.info("Starting non-parametric update..")
         hist_non_param = tf_semiparam_field.fit(
             x=inputs,
             y=outputs,
@@ -426,7 +428,7 @@ def param_train_cycle(
     )
 
     # Train the parametric part
-    print("Starting parametric update..")
+    logger.info("Starting parametric update..")
     hist_param = tf_semiparam_field.fit(
         x=inputs,
         y=outputs,

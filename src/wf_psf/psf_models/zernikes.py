@@ -8,6 +8,9 @@ A module to make Zernike maps.
 import numpy as np
 import zernike as zk
 import tensorflow as tf
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Prepare the inputs
 # Generate Zernike maps
@@ -20,8 +23,8 @@ for it in range(len(zernikes)):
     np_zernike_cube[it, :, :] = zernikes[it]
 np_zernike_cube[np.isnan(np_zernike_cube)] = 0
 tf_zernike_cube = tf.convert_to_tensor(np_zernike_cube, dtype=tf.float32)
-print("Zernike cube:")
-print(tf_zernike_cube.shape)
+logger.info("Zernike cube:")
+logger.info(tf_zernike_cube.shape)
 
 
 def zernike_generator(n_zernikes, wfe_dim):
