@@ -47,6 +47,8 @@ class FileIOHandler:
         self._metrics = "metrics"
         self._optimizer = "optim-hist"
         self._plots = "plots"
+        self._psf_model = "psf_model"
+        
 
     def setup_outputs(self):
         """Setup Outputs.
@@ -101,6 +103,7 @@ class FileIOHandler:
             self._metrics,
             self._optimizer,
             self._plots,
+            self._psf_model,
         )
         for dir in list_of_dirs:
             self._make_dir(dir)
@@ -237,6 +240,28 @@ class FileIOHandler:
         return os.path.join(
             optimizer_dir,
             self._optimizer,
+        )
+    
+    def get_psf_model_dir(self, psf_model_dir):
+        """Get PSF Model Directory.
+
+        A function that returns path
+        of PSF model directory.
+
+        Parameters
+        ----------
+        psf_model_dir: str
+            Name of psf model directory
+
+        Returns
+        -------
+        str
+            Absolute path to psf model directory
+
+        """
+        return os.path.join(
+            psf_model_dir,
+            self._psf_model,
         )
 
     def get_metrics_dir(self, metrics_dir):

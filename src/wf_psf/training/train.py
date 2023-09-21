@@ -241,7 +241,7 @@ def get_gpu_info():
     return device_name
 
 
-def train(training_params, training_data, test_data, checkpoint_dir, optimizer_dir):
+def train(training_params, training_data, test_data, checkpoint_dir, optimizer_dir, psf_model_dir):
     """Train.
 
     A function to train the psf model.
@@ -258,6 +258,8 @@ def train(training_params, training_data, test_data, checkpoint_dir, optimizer_d
         Absolute path to checkpoint directory
     optimizer_dir: str
         Absolute path to optimizer history directory
+    psf_model_dir: str
+        Absolute path to psf model directory
 
     Returns
     -------
@@ -364,8 +366,8 @@ def train(training_params, training_data, test_data, checkpoint_dir, optimizer_d
         # Save the weights at the end of the nth cycle
         if training_handler.multi_cycle_params.save_all_cycles:
             psf_model.save_weights(
-                checkpoint_dir
-                + "/chkp_"
+                psf_model_dir
+                + "/psf_model_"
                 + training_handler.model_name
                 + training_handler.id_name
                 + "_cycle"
@@ -390,8 +392,8 @@ def train(training_params, training_data, test_data, checkpoint_dir, optimizer_d
     # Save last cycle if no cycles were saved
     if not training_handler.multi_cycle_params.save_all_cycles:
         psf_model.save_weights(
-            checkpoint_dir
-            + "/chkp_"
+            psf_model_dir
+            + "/psf_model_"
             + training_handler.model_name
             + training_handler.id_name
             + "_cycle"
@@ -413,12 +415,4 @@ def train(training_params, training_data, test_data, checkpoint_dir, optimizer_d
     logger.info("\nTotal elapsed time: %f" % (final_time - starting_time))
     logger.info("\n Training complete..")
 
-    return (
-        psf_model,
-        filepath_chkp_callback(
-            checkpoint_dir,
-            training_handler.model_name,
-            training_handler.id_name,
-            current_cycle,
-        ),
-    )
+    
