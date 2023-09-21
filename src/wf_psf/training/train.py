@@ -37,7 +37,7 @@ def setup_training():
 def filepath_chkp_callback(checkpoint_dir, model_name, id_name, current_cycle):
     return (
         checkpoint_dir
-        + "/chkp_callback_"
+        + "/checkpoint_callback_"
         + model_name
         + id_name
         + "_cycle"
@@ -54,8 +54,6 @@ class TrainingParamsHandler:
     ----------
     training_params: Recursive Namespace object
         Recursive Namespace object containing training input parameters
-    id_name: str
-        ID name
 
     """
 
@@ -208,7 +206,24 @@ class TrainingParamsHandler:
         return self.multi_cycle_params.learning_rate_non_params
 
     def _prepare_callbacks(self, checkpoint_dir, current_cycle):
-        # Prepare to save the model as a callback
+        """Prepare Callbacks.
+
+        A function to prepare to save the model as a callback.
+
+        Parameters
+        ----------
+        checkpoint_dir: str
+            Checkpoint directory
+        current_cycle: int
+            Integer representing the current cycle
+
+        Returns
+        -------
+            keras.callbacks.ModelCheckpoint class
+                Class to save the Keras model or model weights at some frequency
+
+        """
+
         # -----------------------------------------------------
         logger.info(f"Preparing Keras model callback...")
         return tf.keras.callbacks.ModelCheckpoint(
@@ -241,7 +256,14 @@ def get_gpu_info():
     return device_name
 
 
-def train(training_params, training_data, test_data, checkpoint_dir, optimizer_dir, psf_model_dir):
+def train(
+    training_params,
+    training_data,
+    test_data,
+    checkpoint_dir,
+    optimizer_dir,
+    psf_model_dir,
+):
     """Train.
 
     A function to train the psf model.
@@ -260,12 +282,6 @@ def train(training_params, training_data, test_data, checkpoint_dir, optimizer_d
         Absolute path to optimizer history directory
     psf_model_dir: str
         Absolute path to psf model directory
-
-    Returns
-    -------
-    psf_model: object
-        A class instance of the PSF Model selected for training.
-
 
     """
     # Start measuring elapsed time
@@ -318,7 +334,7 @@ def train(training_params, training_data, test_data, checkpoint_dir, optimizer_d
         )
         logger.info("Starting cycle {}..".format(current_cycle))
         start_cycle = time.time()
-            
+
         # Compute training per cycle
         (
             psf_model,
@@ -357,7 +373,7 @@ def train(training_params, training_data, test_data, checkpoint_dir, optimizer_d
             param_callback=None,
             non_param_callback=None,
             general_callback=[model_chkp_callback],
-            first_run=True if current_cycle==1 else False,
+            first_run=True if current_cycle == 1 else False,
             cycle_def=training_handler.multi_cycle_params.cycle_def,
             use_sample_weights=training_handler.model_params.use_sample_weights,
             verbose=2,
@@ -414,5 +430,3 @@ def train(training_params, training_data, test_data, checkpoint_dir, optimizer_d
     final_time = time.time()
     logger.info("\nTotal elapsed time: %f" % (final_time - starting_time))
     logger.info("\n Training complete..")
-
-    
