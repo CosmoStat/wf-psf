@@ -316,7 +316,7 @@ def train(training_params, training_data, test_data, checkpoint_dir, optimizer_d
         )
         logger.info("Starting cycle {}..".format(current_cycle))
         start_cycle = time.time()
-
+            
         # Compute training per cycle
         (
             psf_model,
@@ -355,7 +355,7 @@ def train(training_params, training_data, test_data, checkpoint_dir, optimizer_d
             param_callback=None,
             non_param_callback=None,
             general_callback=[model_chkp_callback],
-            first_run=False,
+            first_run=True if current_cycle==1 else False,
             cycle_def=training_handler.multi_cycle_params.cycle_def,
             use_sample_weights=training_handler.model_params.use_sample_weights,
             verbose=2,
