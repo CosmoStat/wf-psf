@@ -1,11 +1,9 @@
 metrics:
-  # Set flag to evaluate model weights; if False, then final updated model will be evaluated
-  use_callback: False
-  # Choose the training cycle for the evaluation. Can be: 1, 2, ...
-  saved_training_cycle: 1
-  # Provide path to saved model checkpoints.
-  chkp_save_path: checkpoint
-  # Fill model_params if computing metrics_only on a pre-trained model else leave blank if running training and metrics
+   # Specify the type of model weights to load by entering "psf_model" to load weights of final psf model or "checkpoint" to load weights from a checkpoint callback.
+  model_save_path: psf_model
+  # Choose the training cycle for which to evaluate the psf_model. Can be: 1, 2, ...
+  saved_training_cycle: 2
+  # Metrics-only run: Specify model_params for a pre-trained model else leave blank if running training + metrics
   # Specify path to Trained Model 
   trained_model_path: </path/to/trained/model>
   # Path to Trained Model Config file inside /trained_model_path/ parent directory
