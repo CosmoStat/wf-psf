@@ -282,6 +282,7 @@ def evaluate_model(
 
         ## Load the model's weights
         try:
+            logger.info("Loading PSF model weights from {}".format(weights_path))
             psf_model.load_weights(weights_path)
         except:
             logger.exception("An error occurred with the weights_path file.")
