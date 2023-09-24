@@ -15,10 +15,12 @@ from wf_psf.data.training_preprocessing import TrainingDataHandler, TestDataHand
 import pdb
 
 training_config = RecursiveNamespace(
-    id_name="_sample_w_bis1_2k",
+    id_name="-coherent_euclid_200stars",
+    data_config="data_config.yaml",
+    metrics_config="metrics_config.yaml",
     model_params=RecursiveNamespace(
         model_name="poly",
-        n_bins_lda=20,
+        n_bins_lda=8,
         output_Q=3,
         oversampling_rate=3,
         output_dim=32,
@@ -32,7 +34,7 @@ training_config = RecursiveNamespace(
         x_lims=[0.0, 1000.0],
         y_lims=[0.0, 1000.0],
         param_hparams=RecursiveNamespace(
-            l2_param=0.0, n_zernikes=15, d_max=2, save_optim_history_param=True
+            random_seed=3877572,l2_param=0.0, n_zernikes=15, d_max=2, save_optim_history_param=True,
         ),
         nonparam_hparams=RecursiveNamespace(
             d_max_nonparam=5,
