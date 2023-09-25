@@ -1,0 +1,4 @@
+---
+    training_conf_200: training_config_200.yaml
+    training_conf_500: training_config_500.yaml
+    training_conf_1000: training_config_1000.yaml
