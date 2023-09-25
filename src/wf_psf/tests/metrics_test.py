@@ -10,6 +10,8 @@ import pytest
 from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.training import train
 from wf_psf.metrics.metrics_interface import MetricsParamsHandler, evaluate_model
+from wf_psf.psf_models import psf_models
+from conftest import training_config
 import tensorflow as tf
 import numpy as np
 import os
@@ -41,7 +43,11 @@ metrics_params = RecursiveNamespace(
             x_lims=[0.0, 1000.0],
             y_lims=[0.0, 1000.0],
             param_hparams=RecursiveNamespace(
-                l2_param=0.0, n_zernikes=45, d_max=2, save_optim_history_param=True
+                random_seed=3877572,
+                l2_param=0.0,
+                n_zernikes=45,
+                d_max=2,
+                save_optim_history_param=True,
             ),
             nonparam_hparams=RecursiveNamespace(
                 d_max_nonparam=5,
@@ -64,17 +70,15 @@ metrics_params = RecursiveNamespace(
 
 cwd = os.getcwd()
 
-#weights_path_basename = os.path.join(
-#    cwd,
-#    "src/wf_psf/tests/data/validation/wf-outputs-202309221305/psf_model#/psf_model_poly-coherent_euclid_200stars_cycle2",
-#)
-
-weights_path_basename="/gpfswork/rech/ynx/uuu68hq/wf-outputs/wf-outputs-202309221305/psf_model/psf_model_poly-coherent_euclid_200stars_cycle2"
+weights_path_basename = (
+    cwd
+    + "/src/wf_psf/tests/data/validation/wf-outputs-202309221305/psf_model/psf_model_poly-coherent_euclid_200stars_cycle2"
+)
 
 metrics_output = "wf_psf/tests/data/wf-outputs/metrics"
-main_dir = weights_path_basename = os.path.join(
-    cwd,
-    "src/wf_psf/tests/data/validation/wf-outputs-202309221305/metrics")
+main_dir = os.path.join(
+    cwd, "src/wf_psf/tests/data/validation/wf-outputs-202309221305/metrics"
+)
 filename = "metrics-poly-coherent_euclid_200stars.npy"
 
 main_metrics = np.load(os.path.join(main_dir, filename), allow_pickle=True)[()]
@@ -100,7 +104,6 @@ def test_eval_metrics_polychromatic_lowres(
     # Prepare np input
     simPSF_np = training_data.simPSF
 
-    print(weights_path_basename)
     # Load the model's weights
     psf_model.load_weights(weights_path_basename)
 
