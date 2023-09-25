@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 def ground_truth_psf_model(metrics_params, coeff_matrix):
     psf_model = psf_models.get_psf_model(
         metrics_params.ground_truth_model.model_params,
-        metrics_params.metrics_hparams.batch_size,
+        metrics_params.metrics_hparams,
     )
     psf_model.tf_poly_Z_field.assign_coeff_matrix(coeff_matrix)
 
