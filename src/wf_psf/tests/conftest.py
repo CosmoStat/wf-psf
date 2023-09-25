@@ -34,7 +34,11 @@ training_config = RecursiveNamespace(
         x_lims=[0.0, 1000.0],
         y_lims=[0.0, 1000.0],
         param_hparams=RecursiveNamespace(
-            random_seed=3877572,l2_param=0.0, n_zernikes=15, d_max=2, save_optim_history_param=True,
+            random_seed=3877572,
+            l2_param=0.0,
+            n_zernikes=15,
+            d_max=2,
+            save_optim_history_param=True,
         ),
         nonparam_hparams=RecursiveNamespace(
             d_max_nonparam=5,
@@ -121,6 +125,7 @@ def training_data():
         psf_models.simPSF(training_config.model_params),
         training_config.model_params.n_bins_lda,
     )
+
 
 @pytest.fixture(scope="module")
 def test_data():
