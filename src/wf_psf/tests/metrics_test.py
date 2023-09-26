@@ -10,7 +10,6 @@ from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.training import train
 from wf_psf.metrics.metrics_interface import MetricsParamsHandler, evaluate_model
 from wf_psf.psf_models import psf_models
-from conftest import training_config
 import tensorflow as tf
 import numpy as np
 import os
@@ -75,23 +74,46 @@ psf_model_path = os.path.join(
     metrics_params.trained_model_path,
     metrics_params.model_save_path,
 )
-weights_path_basename = psf_model_path + "/psf_model_poly_sample_w_bis1_2k_cycle2"
 
 main_dir = os.path.join(
     cwd, "src/wf_psf/tests", metrics_params.trained_model_path, "metrics"
 )
-filename = "metrics-poly_sample_w_bis1_2k.npy"
-
-main_metrics = np.load(os.path.join(main_dir, filename), allow_pickle=True)[()]
 
 
-@pytest.fixture(scope="module", params=[metrics_params])
-def metrics():
-    return metrics_params
+@pytest.fixture(scope="module")
+def weights_path_basename(training_params):
+    weights_path = (
+        psf_model_path
+        + "/"
+        + metrics_params.model_save_path
+        + "_"
+        + training_params.model_params.model_name
+        + training_params.id_name
+        + "_cycle"
+        + metrics_params.saved_training_cycle
+    )
+
+    return weights_path
+
+
+@pytest.fixture(scope="module")
+def main_metrics(training_params):
+    metrics_filename = (
+        "metrics-"
+        + training_params.model_params.model_name
+        + training_params.id_name
+        + ".npy"
+    )
+    return np.load(os.path.join(main_dir, metrics_filename), allow_pickle=True)[()]
 
 
 def test_eval_metrics_polychromatic_lowres(
-    training_params, training_data, test_dataset, psf_model
+    training_params,
+    weights_path_basename,
+    training_data,
+    psf_model,
+    test_dataset,
+    main_metrics,
 ):
     metrics_handler = MetricsParamsHandler(metrics_params, training_params)
 
@@ -132,7 +154,14 @@ def test_eval_metrics_polychromatic_lowres(
     assert ratio_rel_std_rmse < tol
 
 
-def test_evaluate_metrics_opd(training_params, training_data, test_dataset, psf_model):
+def test_evaluate_metrics_opd(
+    training_params,
+    weights_path_basename,
+    training_data,
+    psf_model,
+    test_dataset,
+    main_metrics,
+):
     metrics_handler = MetricsParamsHandler(metrics_params, training_params)
 
     ## Prepare models
@@ -175,7 +204,12 @@ def test_evaluate_metrics_opd(training_params, training_data, test_dataset, psf_
 
 
 def test_eval_metrics_mono_rmse(
-    training_params, training_data, test_dataset, psf_model
+    training_params,
+    weights_path_basename,
+    training_data,
+    psf_model,
+    test_dataset,
+    main_metrics,
 ):
     metrics_handler = MetricsParamsHandler(metrics_params, training_params)
 
@@ -234,7 +268,12 @@ def test_eval_metrics_mono_rmse(
 
 
 def test_evaluate_metrics_shape(
-    training_params, training_data, test_dataset, psf_model
+    training_params,
+    weights_path_basename,
+    training_data,
+    psf_model,
+    test_dataset,
+    main_metrics,
 ):
     metrics_handler = MetricsParamsHandler(metrics_params, training_params)
 
