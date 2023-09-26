@@ -4,7 +4,6 @@ This module contains unit tests for the wf_psf.metrics module.
 
 :Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 
-
 """
 import pytest
 from wf_psf.utils.read_config import RecursiveNamespace
@@ -70,16 +69,18 @@ metrics_params = RecursiveNamespace(
 
 cwd = os.getcwd()
 
-weights_path_basename = (
-    cwd
-    + "/src/wf_psf/tests/data/validation/wf-outputs-202309221305/psf_model/psf_model_poly-coherent_euclid_200stars_cycle2"
+psf_model_path = os.path.join(
+    cwd,
+    "src/wf_psf/tests",
+    metrics_params.trained_model_path,
+    metrics_params.model_save_path,
 )
+weights_path_basename = psf_model_path + "/psf_model_poly_sample_w_bis1_2k_cycle2"
 
-metrics_output = "wf_psf/tests/data/wf-outputs/metrics"
 main_dir = os.path.join(
-    cwd, "src/wf_psf/tests/data/validation/wf-outputs-202309221305/metrics"
+    cwd, "src/wf_psf/tests", metrics_params.trained_model_path, "metrics"
 )
-filename = "metrics-poly-coherent_euclid_200stars.npy"
+filename = "metrics-poly_sample_w_bis1_2k.npy"
 
 main_metrics = np.load(os.path.join(main_dir, filename), allow_pickle=True)[()]
 
@@ -89,22 +90,16 @@ def metrics():
     return metrics_params
 
 
-def test_metrics_params(metrics: RecursiveNamespace):
-    metric_params = metrics
-
-
 def test_eval_metrics_polychromatic_lowres(
     training_params, training_data, test_dataset, psf_model
 ):
     metrics_handler = MetricsParamsHandler(metrics_params, training_params)
 
-    cycle = 2
-
     ## Prepare models
     # Prepare np input
     simPSF_np = training_data.simPSF
 
-    # Load the model's weights
+    # Load the trained model weights
     psf_model.load_weights(weights_path_basename)
 
     poly_metric = metrics_handler.evaluate_metrics_polychromatic_lowres(
@@ -137,16 +132,14 @@ def test_eval_metrics_polychromatic_lowres(
     assert ratio_rel_std_rmse < tol
 
 
-@pytest.mark.skip(reason="no way of currently testing this")
 def test_evaluate_metrics_opd(training_params, training_data, test_dataset, psf_model):
     metrics_handler = MetricsParamsHandler(metrics_params, training_params)
-    cycle = 2
 
     ## Prepare models
     # Prepare np input
     simPSF_np = training_data.simPSF
 
-    ## Load the model's weights
+    ## Load the trained model weights
     psf_model.load_weights(weights_path_basename)
 
     opd_metric = metrics_handler.evaluate_metrics_opd(
@@ -181,44 +174,57 @@ def test_evaluate_metrics_opd(training_params, training_data, test_dataset, psf_
     assert ratio_rel_rmse_std_opd < tol
 
 
-@pytest.mark.skip(reason="no way of currently testing this")
 def test_eval_metrics_mono_rmse(
     training_params, training_data, test_dataset, psf_model
 ):
     metrics_handler = MetricsParamsHandler(metrics_params, training_params)
-    cycle = 2
 
     ## Prepare models
     # Prepare np input
     simPSF_np = training_data.simPSF
 
-    ## Load the model's weights
+    ## Load the trained model weights
     psf_model.load_weights(weights_path_basename)
 
     mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
         psf_model, simPSF_np, test_dataset
     )
 
+    nlambda = len(mono_metric["rmse_lda"])
+
     tol = 1.0e-5
     ratio_rmse_mono = abs(
         1
-        - main_metrics["test_metrics"]["mono_metric"]["rmse_lda"]
-        / mono_metric["rmse_lda"]
+        - np.sum(
+            np.array(main_metrics["test_metrics"]["mono_metric"]["rmse_lda"])
+            / np.array(mono_metric["rmse_lda"])
+        )
+        / nlambda
     )
     ratio_rel_rmse_mono = abs(
         1.0
-        - main_metrics["test_metrics"]["mono_metric"]["rel_rmse_lda"]
-        / mono_metric["rel_rmse_lda"]
+        - np.sum(
+            np.array(main_metrics["test_metrics"]["mono_metric"]["rel_rmse_lda"])
+            / np.array(mono_metric["rel_rmse_lda"])
+        )
+        / nlambda
     )
     ratio_rmse_std_mono = abs(
         1.0
-        - main_metrics["test_metrics"]["mono_metric"]["rmse_std_lda"]
-        / mono_metric["rmse_std_lda"]
+        - np.sum(
+            np.array(main_metrics["test_metrics"]["mono_metric"]["std_rmse_lda"])
+            / np.array(mono_metric["std_rmse_lda"])
+        )
+        / nlambda
     )
+
     ratio_rel_rmse_std_mono = abs(
         1.0
-        - main_metrics["test_metrics"]["mono_metric"]["rel_rmse_std_lda"]
-        / mono_metric["rel_rmse_std_lda"]
+        - np.sum(
+            np.array(main_metrics["test_metrics"]["mono_metric"]["std_rel_rmse_lda"])
+            / np.array(mono_metric["std_rel_rmse_lda"])
+        )
+        / nlambda
     )
 
     assert ratio_rmse_mono < tol
@@ -227,18 +233,16 @@ def test_eval_metrics_mono_rmse(
     assert ratio_rel_rmse_std_mono < tol
 
 
-@pytest.mark.skip(reason="no way of currently testing this")
 def test_evaluate_metrics_shape(
     training_params, training_data, test_dataset, psf_model
 ):
     metrics_handler = MetricsParamsHandler(metrics_params, training_params)
-    cycle = 2
 
     ## Prepare models
     # Prepare np input
     simPSF_np = training_data.simPSF
 
-    ## Load the model's weights
+    ## Load the trained model weights
     psf_model.load_weights(weights_path_basename)
 
     shape_metric = metrics_handler.evaluate_metrics_shape(
@@ -249,45 +253,44 @@ def test_evaluate_metrics_shape(
     ratio_rmse_e1 = abs(
         1.0
         - main_metrics["test_metrics"]["shape_results_dict"]["rmse_e1"]
-        / main_metric["rmse_e1"]
+        / shape_metric["rmse_e1"]
     )
-    print("ratio rmse e1", ratio_rmse_e1)
+
     ratio_std_rmse_e1 = abs(
         1.0
         - main_metrics["test_metrics"]["shape_results_dict"]["std_rmse_e1"]
         / shape_metric["std_rmse_e1"]
     )
-    print("ratio std rmse e1", ratio_std_rmse_e1)
+
     ratio_rel_rmse_e1 = abs(
         1.0
         - main_metrics["test_metrics"]["shape_results_dict"]["rel_rmse_e1"]
         / shape_metric["rel_rmse_e1"]
     )
-    print("ratio rel_rmse_e1", ratio_rel_rmse_e1)
+
     ratio_std_rel_rmse_e1 = abs(
         1.0
         - main_metrics["test_metrics"]["shape_results_dict"]["std_rel_rmse_e1"]
         / shape_metric["std_rel_rmse_e1"]
     )
-    print("ratio std_rel_rmse_e1", ratio_std_rel_rmse_e1)
+
     ratio_rmse_e2 = abs(
         1.0
         - main_metrics["test_metrics"]["shape_results_dict"]["rmse_e2"]
         / shape_metric["rmse_e2"]
     )
-    print("ratio rmse_e2", ratio_rmse_e2)
+
     ratio_std_rmse_e2 = abs(
         1.0
         - main_metrics["test_metrics"]["shape_results_dict"]["std_rmse_e2"]
         / shape_metric["std_rmse_e2"]
     )
-    print("ratio std_rmse_e2", ratio_std_rmse_e2)
+
     ratio_rmse_R2_meanR2 = abs(
         1.0
         - main_metrics["test_metrics"]["shape_results_dict"]["rmse_R2_meanR2"]
         / shape_metric["rmse_R2_meanR2"]
     )
-    print("ratio rmse R2 mean R2", ratio_rmse_R2_meanR2)
 
     assert ratio_rmse_e1 < tol
     assert ratio_std_rmse_e1 < tol
