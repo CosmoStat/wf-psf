@@ -74,7 +74,6 @@ addopts = [
     "--verbose",
     "--black",
     "--emoji",
-    "--pydocstyle",
     "--cov=wf_psf",
     "--cov-report=term-missing",
     "--cov-report=xml",
