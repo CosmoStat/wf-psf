@@ -128,7 +128,7 @@ def test_eval_metrics_polychromatic_lowres(
         psf_model, simPSF_np, test_dataset
     )
 
-    tol = 1.0e-5
+    tol = 1.0e-7
     ratio_rmse = abs(
         1.0 - main_metrics["test_metrics"]["poly_metric"]["rmse"] / poly_metric["rmse"]
     )
@@ -175,7 +175,7 @@ def test_evaluate_metrics_opd(
         psf_model, simPSF_np, test_dataset
     )
 
-    tol = 1.0e-5
+    tol = 1.0e-9
     ratio_rmse_opd = abs(
         1
         - main_metrics["test_metrics"]["opd_metric"]["rmse_opd"]
@@ -226,7 +226,7 @@ def test_eval_metrics_mono_rmse(
 
     nlambda = len(mono_metric["rmse_lda"])
 
-    tol = 1.0e-5
+    tol = 1.0e-9
     ratio_rmse_mono = abs(
         1
         - np.sum(
@@ -288,7 +288,7 @@ def test_evaluate_metrics_shape(
         psf_model, simPSF_np, test_dataset
     )
 
-    tol = 1.0e-5
+    tol = 1.0e-9
     ratio_rmse_e1 = abs(
         1.0
         - main_metrics["test_metrics"]["shape_results_dict"]["rmse_e1"]
