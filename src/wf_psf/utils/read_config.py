@@ -8,6 +8,8 @@ read configuration files.
 """
 
 import yaml
+from yaml.scanner import ScannerError
+from yaml.parser import ParserError
 import pprint
 from types import SimpleNamespace
 import logging
@@ -99,27 +101,31 @@ def read_conf(conf_file):
         Recursive Namespace object
 
     """
-    logger.info(conf_file)
+    logger.info("Loading...{}".format(conf_file))
     with open(conf_file, "r") as f:
         try:
             my_conf = yaml.safe_load(f)
-        except yaml.scanner.ScannerError as e:
-            logger.exception("Improper syntax in yaml file.")
+        except (ParserError, ScannerError, TypeError):
+            logger.exception(
+                "There is a syntax problem with your config file. Please check {}.".format(
+                    conf_file
+                )
+            )
             exit()
-        except TypeError:
-            logger.exception("There is a problem with your config file. Please check.")
-    
+
         if my_conf == None:
-            logger.info("Config file is empty...Stopping Program.")
+            raise TypeError(
+                "Config file {} is empty...Stopping Program.".format(conf_file)
+            )
             exit()
 
         try:
             return RecursiveNamespace(**my_conf)
-        except TypeError:
-            logger.exception("Check your config file for Syntax error key:value pair mapping expected.") 
+        except TypeError as e:
+            logger.exception(
+                "Check your config file for errors. Error Msg: {}.".format(e)
+            )
             exit()
-          
-        
 
 
 def read_stream(conf_file):
@@ -135,20 +141,11 @@ def read_stream(conf_file):
     Yields
     ------
     dict
-        A dictionary containing all config files. 
+        A dictionary containing all config files.
 
     """
     stream = open(conf_file, "r")
-    try:
-        docs = yaml.load_all(stream, yaml.FullLoader)
-    except yaml.scanner.ScannerError as e:
-        logger.exception(e)
-        exit()
-            
-    for doc in docs:
-        try:
-            yield doc
-        except TypeError:
-            logger.exception("configs.yaml file is empty.")
-            exit()
+    docs = yaml.load_all(stream, yaml.FullLoader)
 
+    for doc in docs:
+        yield doc
