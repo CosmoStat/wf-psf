@@ -103,7 +103,7 @@ training:
       cycle_def: complete
 
       # Make checkpoint at every cycle or just save the checkpoint at the end of the training."
-      save_all_cycles: False
+      save_all_cycles: True
 
       #"Saved cycle to use for the evaluation. Can be 'cycle1', 'cycle2', ..."
       saved_cycle: cycle2
