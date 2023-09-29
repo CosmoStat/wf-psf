@@ -1,6 +1,6 @@
 metrics:
    # Specify the type of model weights to load by entering "psf_model" to load weights of final psf model or "checkpoint" to load weights from a checkpoint callback.
-  model_save_path: psf_model
+  model_save_path: <enter psf_model or checkpoint>
   # Choose the training cycle for which to evaluate the psf_model. Can be: 1, 2, ...
   saved_training_cycle: 2
   # Metrics-only run: Specify model_params for a pre-trained model else leave blank if running training + metrics
@@ -8,8 +8,8 @@ metrics:
   trained_model_path: </path/to/trained/model>
   # Path to Trained Model Config file inside /trained_model_path/ parent directory
   trained_model_config: </path/to/trained/model>
-  # Name of Plotting Config file - Enter file to run plot metrics else if empty run metrics evaluation only
-  plotting_config: plotting_config.yaml
+  # Name of Plotting Config file - Enter name of yaml file to run plot metrics else if empty run metrics evaluation only
+  plotting_config: <enter name of plotting_config .yaml file or leave empty>
   #Evaluate the monchromatic RMSE metric.
   eval_mono_metric_rmse: True
   #Evaluate the OPD RMSE metric.
