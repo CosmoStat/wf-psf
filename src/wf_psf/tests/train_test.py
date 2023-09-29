@@ -92,7 +92,7 @@ def test_train(
         checkpoint_dir: "checkpoint_callback_",
         psf_model_dir: "psf_model_",
     }
-    
+
     # Evaluate the weights for each checkpoint callback and the final psf models wrt baseline
     weights_basename = (
         training_params.model_params.model_name + training_params.id_name + "_cycle"
