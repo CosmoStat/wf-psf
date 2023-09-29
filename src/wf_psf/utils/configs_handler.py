@@ -309,7 +309,6 @@ class MetricsConfigHandler:
             + "*"
         )
         try:
-
             weights_filepath = glob.glob(
                 os.path.join(
                     self.trained_model_workdir,
@@ -318,7 +317,9 @@ class MetricsConfigHandler:
                 )
             )[0].split(".")[0]
         except IndexError:
-            logger.info("PSF weights file not found. Check that you've specified the correct weights file in the metrics config file.")
+            logger.error(
+                "PSF weights file not found. Check that you've specified the correct weights file in the metrics config file."
+            )
             exit()
 
         return weights_filepath
