@@ -107,7 +107,7 @@ def read_conf(conf_file):
             my_conf = yaml.safe_load(f)
         except (ParserError, ScannerError, TypeError):
             logger.exception(
-                "There is a syntax problem with your config file {}. Please check {}.".format(
+                "There is a syntax problem with your config file. Please check {}.".format(
                     conf_file
                 )
             )
@@ -122,8 +122,8 @@ def read_conf(conf_file):
         try:
             return RecursiveNamespace(**my_conf)
         except TypeError as e:
-            logger.error(
-                "Check your config file for type errors. Error Msg: {}.".format(e)
+            logger.exception(
+                "Check your config file for errors. Error Msg: {}.".format(e)
             )
             exit()
 
