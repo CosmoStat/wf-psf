@@ -80,24 +80,23 @@ def mainMethod():
     logger.info("# Entering wavediff mainMethod()")
     logger.info("#")
 
-    for conf in configs:
-        for k, v in conf.items():
-            try:
+    try:
+        for conf in configs:
+            for k, v in conf.items():
                 config_class = get_run_config(
                     k, os.path.join(configs_path, v), file_handler
                 )
                 logger.info(config_class)
                 file_handler.copy_conffile_to_output_dir(v)
                 config_class.run()
-            except FileNotFoundError as e:
-                logger.exception("Check your config file settings.")
-                exit()
-            except TypeError as e:
-                logger.exception(e)
-                exit()
-            except KeyError as e:
-                logger.exception(e)
-                exit()
+
+    except Exception as e:
+        logger.error(
+            "Check your config file {} for errors. Error Msg: {}.".format(
+                args.conffile, e
+            ),
+            exc_info=True,
+        )
 
     logger.info("#")
     logger.info("# Exiting wavediff mainMethod()")
