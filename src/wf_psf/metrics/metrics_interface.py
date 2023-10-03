@@ -12,7 +12,6 @@ import numpy as np
 import time
 import tensorflow as tf
 import tensorflow_addons as tfa
-from wf_psf.utils.read_config import read_conf
 import wf_psf.data.training_preprocessing as training_preprocessing
 from wf_psf.data.training_preprocessing import TrainingDataHandler, TestDataHandler
 from wf_psf.psf_models import psf_models
@@ -313,7 +312,9 @@ def evaluate_model(
             opd_metric = None
 
         # Shape metrics
-        logger.info("Computing polychromatic high-resolution metrics and shape metrics.")
+        logger.info(
+            "Computing polychromatic high-resolution metrics and shape metrics."
+        )
         shape_results_dict = metrics_handler.evaluate_metrics_shape(
             psf_model, simPSF_np, test_data.test_dataset
         )
