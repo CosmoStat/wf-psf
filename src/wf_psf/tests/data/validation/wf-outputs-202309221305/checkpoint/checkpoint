@@ -1,2 +1,0 @@
-model_checkpoint_path: "checkpoint_callback_poly-coherent_euclid_1000stars_cycle2"
-all_model_checkpoint_paths: "checkpoint_callback_poly-coherent_euclid_1000stars_cycle2"
