@@ -13,7 +13,6 @@ from wf_psf.psf_models import psf_models
 import tensorflow as tf
 import numpy as np
 import os
-import scipy
 from re import search
 
 
