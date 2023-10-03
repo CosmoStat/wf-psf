@@ -313,7 +313,7 @@ def evaluate_model(
             opd_metric = None
 
         # Shape metrics
-        print("Computing polychromatic high-resolution metrics and shape metrics.")
+        logger.info("Computing polychromatic high-resolution metrics and shape metrics.")
         shape_results_dict = metrics_handler.evaluate_metrics_shape(
             psf_model, simPSF_np, test_data.test_dataset
         )
@@ -326,10 +326,10 @@ def evaluate_model(
         }
 
         ## Metric evaluation on the train dataset
-        print("\n***\nMetric evaluation on the train dataset\n***\n")
+        logger.info("\n***\nMetric evaluation on the train dataset\n***\n")
 
         # Polychromatic star reconstructions
-        print("Computing polychromatic metrics at low resolution.")
+        logger.info("Computing polychromatic metrics at low resolution.")
 
         train_poly_metric = metrics_handler.evaluate_metrics_polychromatic_lowres(
             psf_model, simPSF_np, training_data.train_dataset
@@ -377,12 +377,12 @@ def evaluate_model(
 
         ## Print final time
         final_time = time.time()
-        print("\nTotal elapsed time: %f" % (final_time - starting_time))
+        logger.info("\nTotal elapsed time: %f" % (final_time - starting_time))
 
         ## Close log file
-        print("\n Good bye..")
+        logger.info("\n Good bye..")
 
         return metrics
     except Exception as e:
-        print("Error: %s" % e)
+        logger.info("Error: %s" % e)
         raise
