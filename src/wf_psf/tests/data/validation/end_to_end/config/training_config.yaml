@@ -1,6 +1,6 @@
 training:
   # ID name
-  id_name: _validation
+  id_name: _sample_w_bis1_2k
   # Name of Data Config file
   data_config: data_config.yaml 
   # Metrics Config file - Enter file to run metrics evaluation else if empty run train only
@@ -8,7 +8,7 @@ training:
   model_params:
     # Model type. Options are: 'mccd', 'graph', 'poly, 'param', 'poly_physical'."
     model_name: poly
-    
+
     #Num of wavelength bins to reconstruct polychromatic objects.
     n_bins_lda: 8 
 
