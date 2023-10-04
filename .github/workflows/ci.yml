@@ -11,7 +11,7 @@ on:
 jobs:
   test-full:
     name: Run CI Tests
-    runs-on: ubuntu-latest
+    runs-on: [ubuntu-latest, gpu]
 
     strategy: 
       fail-fast: false
