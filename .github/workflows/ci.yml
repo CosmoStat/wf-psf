@@ -7,7 +7,7 @@ on:
   pull_request:
     branches:
       - dummy_main
-      .github/workflows/ci.ym
+
 
 jobs:
   test-full:
