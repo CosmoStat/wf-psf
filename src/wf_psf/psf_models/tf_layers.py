@@ -9,7 +9,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-
 class TF_poly_Z_field(tf.keras.layers.Layer):
     """Calculate the zernike coefficients for a given position.
 
@@ -25,7 +24,15 @@ class TF_poly_Z_field(tf.keras.layers.Layer):
 
     """
 
-    def __init__(self, x_lims, y_lims, random_seed=None, n_zernikes=45, d_max=2, name="TF_poly_Z_field"):
+    def __init__(
+        self,
+        x_lims,
+        y_lims,
+        random_seed=None,
+        n_zernikes=45,
+        d_max=2,
+        name="TF_poly_Z_field",
+    ):
         super().__init__(name=name)
 
         self.n_zernikes = n_zernikes
@@ -330,7 +337,15 @@ class TF_NP_poly_OPD(tf.keras.layers.Layer):
 
     """
 
-    def __init__(self, x_lims, y_lims, random_seed=None, d_max=3, opd_dim=256, name="TF_NP_poly_OPD"):
+    def __init__(
+        self,
+        x_lims,
+        y_lims,
+        random_seed=None,
+        d_max=3,
+        opd_dim=256,
+        name="TF_NP_poly_OPD",
+    ):
         super().__init__(name=name)
         # Parameters
         self.x_lims = x_lims

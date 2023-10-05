@@ -64,7 +64,7 @@ def set_psf_model(model_name):
         Name of PSF model class
 
     """
-  
+
     try:
         psf_class = PSF_CLASS[model_name]
     except KeyError:
