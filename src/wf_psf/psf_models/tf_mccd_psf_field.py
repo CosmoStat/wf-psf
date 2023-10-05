@@ -1,7 +1,11 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
-from wf_psf.psf_models.tf_layers import TF_poly_Z_field, TF_zernike_OPD, TF_batch_poly_PSF
+from wf_psf.psf_models.tf_layers import (
+    TF_poly_Z_field,
+    TF_zernike_OPD,
+    TF_batch_poly_PSF,
+)
 from wf_psf.psf_models.tf_layers import TF_NP_MCCD_OPD_v2, TF_NP_GRAPH_OPD
 from wf_psf.psf_models.tf_layers import TF_batch_mono_PSF
 from wf_psf.utils.graph_utils import GraphBuilder
@@ -406,8 +410,6 @@ def build_mccd_spatial_dic_v2(
     return tf.transpose(tf_Pi, perm=[1, 0]), tf.convert_to_tensor(
         VT.T, dtype=tf.float32
     )
-
-
 
 
 class TF_SP_graph_field(tf.keras.Model):
