@@ -48,7 +48,6 @@ class FileIOHandler:
         self._optimizer = "optim-hist"
         self._plots = "plots"
         self._psf_model = "psf_model"
-        
 
     def setup_outputs(self):
         """Setup Outputs.
@@ -241,7 +240,7 @@ class FileIOHandler:
             optimizer_dir,
             self._optimizer,
         )
-    
+
     def get_psf_model_dir(self, psf_model_dir):
         """Get PSF Model Directory.
 

@@ -6,4 +6,9 @@ of wavediff
 :Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 
 """
+import pytest
 
+
+@pytest.mark.skip(reason="In development")
+def test_end_to_end():
+    pass
