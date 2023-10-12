@@ -15,6 +15,7 @@ import os
 
 cwd = os.getcwd()
 
+
 @pytest.fixture(scope="class")
 def path_to_repo_dir():
     return cwd
@@ -22,15 +23,14 @@ def path_to_repo_dir():
 
 @pytest.fixture
 def path_to_test_dir(path_to_repo_dir):
-    return os.path.join(path_to_repo_dir,"src","wf_psf","tests")
+    return os.path.join(path_to_repo_dir, "src", "wf_psf", "tests")
 
 
 @pytest.fixture
 def path_to_tmp_output_dir(tmp_path):
     return tmp_path
 
-    
+
 @pytest.fixture
 def path_to_config_dir(path_to_test_dir):
-    return os.path.join(path_to_test_dir,"data","config")
-
+    return os.path.join(path_to_test_dir, "data", "config")
