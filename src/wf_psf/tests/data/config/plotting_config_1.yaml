@@ -1,0 +1,17 @@
+plotting_params:
+  # Specify path to parent folder containing wf-psf metrics outputs for all runs, ex: $WORK/wf-outputs/
+  metrics_output_path: /Users/jenniferpollack/Projects/jp272790/
+  # Enter directory(s) for metrics of trained PSF models to include in plot, 
+  # ex: metrics_dir:
+  #       - wf-outputs-xxxxxxxxxxx1 
+  #       - wf-outputs-xxxxxxxxxxx2  
+  metrics_dir: 
+    - wf-outputs-202306021300
+    - wf-outputs-202305301123
+    - wf-outputs-202309121235
+  #Name of Trained Model Metrics Config file
+  metrics_config: metrics_config.yaml
+  # Plot parameter. Training star number of the different models evaluated.
+  star_numbers: 200
+  # Flag to show plot
+  plot_show: False
