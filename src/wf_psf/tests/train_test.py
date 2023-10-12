@@ -66,7 +66,7 @@ def psf_model_dir():
     )
 
 
-@pytest.mark.skip(reason="Requires gpu")
+##@pytest.mark.skip(reason="Requires gpu")
 def test_train(
     training_params,
     training_data,
