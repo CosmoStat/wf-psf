@@ -4,6 +4,7 @@
 name: CD
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - dummy_main
