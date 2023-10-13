@@ -12,7 +12,7 @@ on:
 
 jobs:
   test-full:
-    runs-on: [ubuntu-latest,gpu]
+    runs-on: [ubuntu-latest]
 
     steps:
       - name:
