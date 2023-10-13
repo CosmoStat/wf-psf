@@ -34,7 +34,7 @@ jobs:
      
       - name: Build API documentation
         run: |
-          sphinx-apidoc -Mfeo docs/source wf_psf
+          sphinx-apidoc -Mfeo docs/source src/wf_psf
           sphinx-build docs/source docs/build
        
       - name: Deploy API documentation
