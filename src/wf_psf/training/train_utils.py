@@ -6,6 +6,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class L1ParamScheduler(tf.keras.callbacks.Callback):
     """L1 rate scheduler which sets the L1 rate according to schedule.
 
@@ -364,7 +365,11 @@ def param_train_cycle(
     # Define optimiser
     if param_optim is None:
         optimizer = tf.keras.optimizers.Adam(
-            learning_rate=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=False
+            learning_rate=learning_rate,
+            beta_1=0.9,
+            beta_2=0.999,
+            epsilon=1e-07,
+            amsgrad=False,
         )
     else:
         optimizer = param_optim

@@ -1,0 +1,2 @@
+model_checkpoint_path: "chkp_poly_sample_w_bis1_2k_cycle2"
+all_model_checkpoint_paths: "chkp_poly_sample_w_bis1_2k_cycle2"

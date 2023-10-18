@@ -44,12 +44,12 @@ class TF_SemiParam_field(tf.keras.Model):
 
     ids = ("poly",)
 
-    def __init__(self, model_params, batch_size, coeff_mat=None):
+    def __init__(self, model_params, training_params, coeff_mat=None):
         super().__init__()
- 
+
         # Inputs: random seed for Tensor Flow initialization
         self.random_seed = model_params.param_hparams.random_seed
-        
+
         # Inputs: pupil diameter
         self.pupil_diam = model_params.pupil_diameter
 
@@ -66,9 +66,10 @@ class TF_SemiParam_field(tf.keras.Model):
         self.d_max_nonparam = model_params.nonparam_hparams.d_max_nonparam
         self.zernike_maps = psfm.tf_zernike_cube(self.n_zernikes, self.pupil_diam)
         self.opd_dim = tf.shape(self.zernike_maps)[1].numpy()
+        self.opd_dim = tf.shape(self.zernike_maps)[1].numpy()
 
         # Inputs: TF_batch_poly_PSF
-        self.batch_size = batch_size
+        self.batch_size = training_params.batch_size
         self.obscurations = psfm.tf_obscurations(self.pupil_diam)
         self.output_dim = model_params.output_dim
 

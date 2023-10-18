@@ -24,6 +24,7 @@ dependencies = [
     "matplotlib>=3.3.2",
     "seaborn>=0.12.2",
 ]
+
 version = "1.0.0"
 
 [project.optional-dependencies]
@@ -74,7 +75,6 @@ addopts = [
     "--verbose",
     "--black",
     "--emoji",
-    "--pydocstyle",
     "--cov=wf_psf",
     "--cov-report=term-missing",
     "--cov-report=xml",

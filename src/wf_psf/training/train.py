@@ -291,7 +291,7 @@ def train(
 
     psf_model = psf_models.get_psf_model(
         training_handler.model_params,
-        training_handler.training_hparams.batch_size,
+        training_handler.training_hparams,
     )
 
     logger.info(f"PSF Model class: `{training_handler.model_name}` initialized...")

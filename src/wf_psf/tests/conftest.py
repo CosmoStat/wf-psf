@@ -12,13 +12,14 @@ from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.training.train import TrainingParamsHandler
 from wf_psf.psf_models import psf_models
 from wf_psf.data.training_preprocessing import TrainingDataHandler, TestDataHandler
-import pdb
 
 training_config = RecursiveNamespace(
     id_name="_sample_w_bis1_2k",
+    data_config="data_config.yaml",
+    metrics_config="metrics_config.yaml",
     model_params=RecursiveNamespace(
         model_name="poly",
-        n_bins_lda=20,
+        n_bins_lda=8,
         output_Q=3,
         oversampling_rate=3,
         output_dim=32,
@@ -32,7 +33,11 @@ training_config = RecursiveNamespace(
         x_lims=[0.0, 1000.0],
         y_lims=[0.0, 1000.0],
         param_hparams=RecursiveNamespace(
-            l2_param=0.0, n_zernikes=15, d_max=2, save_optim_history_param=True
+            random_seed=3877572,
+            l2_param=0.0,
+            n_zernikes=15,
+            d_max=2,
+            save_optim_history_param=True,
         ),
         nonparam_hparams=RecursiveNamespace(
             d_max_nonparam=5,
@@ -44,18 +49,18 @@ training_config = RecursiveNamespace(
         ),
     ),
     training_hparams=RecursiveNamespace(
-        n_epochs_params=[15, 15],
-        n_epochs_non_params=[100, 50],
+        n_epochs_params=[2, 2],
+        n_epochs_non_params=[2, 2],
         batch_size=32,
         multi_cycle_params=RecursiveNamespace(
             total_cycles=2,
             cycle_def="complete",
-            save_all_cycles=False,
+            save_all_cycles=True,
             saved_cycle="cycle2",
-            learning_rate_params=[0.01, 0.004],
-            learning_rate_non_params=[0.1, 0.06],
-            n_epochs_params=[15, 15],
-            n_epochs_non_params=[100, 50],
+            learning_rate_params=[1.0e-2, 1.0e-2],
+            learning_rate_non_params=[1.0e-1, 1.0e-1],
+            n_epochs_params=[2, 2],
+            n_epochs_non_params=[2, 2],
         ),
     ),
 )
@@ -119,6 +124,7 @@ def training_data():
         psf_models.simPSF(training_config.model_params),
         training_config.model_params.n_bins_lda,
     )
+
 
 @pytest.fixture(scope="module")
 def test_data():

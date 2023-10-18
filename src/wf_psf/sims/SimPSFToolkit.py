@@ -90,7 +90,7 @@ class SimPSFToolkit(object):
 
     def __init__(
         self,
-     #   zernike_maps,
+        #   zernike_maps,
         max_order=45,
         max_wfe_rms=0.1,
         output_dim=64,
@@ -110,7 +110,7 @@ class SimPSFToolkit(object):
         SED_extrapolate=True,
         SED_interp_kind="linear",
     ):
-      # Telescope characteristics
+        # Telescope characteristics
         self.oversampling_rate = oversampling_rate  # dimensionless
         self.output_Q = output_Q  # dimensionless
         self.pix_sampling = pix_sampling  # In [um]
@@ -123,7 +123,7 @@ class SimPSFToolkit(object):
         self.rand_seed = rand_seed
         self.plot_opt = plot_opt
         self.zernike_maps = zernike_generator(self.max_order, self.pupil_diameter)
-        #self.zernike_maps = zernike_maps
+        # self.zernike_maps = zernike_maps
         self.max_wfe_rms = max_wfe_rms  # In [um]
         self.output_dim = output_dim  # In pixels per dimension
         self.verbose = verbose
@@ -707,11 +707,11 @@ class SimPSFToolkit(object):
         """Calculate closest feasible wavelength to target wavelength.
 
         Input wavelength must be in [um].
-        
+
         Parameters
         ----------
         lambda_obs: float
-            
+
         """
         # Calculate a feasible N for the input lambda_obs
         possible_N = self.feasible_N(lambda_obs)
@@ -963,7 +963,7 @@ class SimPSFToolkit(object):
 
     def calc_SED_wave_values(self, SED, n_bins=35):
         """Calculate feasible wavelength and SED values.
-    
+
         Feasible so that the padding number N is integer.
         Meaning choice of wavelengths matters in speeding
         up the diffraction computation.
@@ -974,7 +974,7 @@ class SimPSFToolkit(object):
             Spectral energy distribution for a star
         n_bins: int
             Number of bins
-    
+
         """
         # Generate SED interpolator and wavelength array (use new sampler method)
         wvlength, SED_interp, weights = self.gen_SED_sampler(SED, n_bins)
