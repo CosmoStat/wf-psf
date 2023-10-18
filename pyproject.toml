@@ -35,6 +35,8 @@ docs = [
     "sphinxcontrib-bibtex",
     "sphinxawesome-theme",
     "sphinx-gallery",
+    "sphinxemoji",
+
 ]
 
 lint = [
