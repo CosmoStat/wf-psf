@@ -86,6 +86,7 @@ instance/
 
 # Sphinx documentation
 docs/_build/
+source/wf_psf*.rst
 
 # PyBuilder
 target/
@@ -144,5 +145,4 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# UML plots
-*.png
+
