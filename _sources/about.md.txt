@@ -4,4 +4,4 @@ WaveDiff {cite:p}`Liaudat:23` is a differentiable data-driven wavefront-based PS
 
 A diagram of the WaveDiff framework is presented below. The PSF model for the instrument is estimated by training the parameters of the model using star observations in the field-of-view.
 
-![WaveDiff Framework Diagram](imgs/PSF_model_diagram_v6.png "WaveDiff Framework Diagram")
+![WaveDiff Framework Diagram](imgs/psf_model_diagram_v6.png "WaveDiff Framework Diagram")
