@@ -9,11 +9,18 @@
 
 .. toctree::
   :hidden:
-  :titlesonly:
   :caption: Installing WaveDiff
 
   dependencies
   installation
+
+.. toctree::
+  :maxdepth: 4
+  :hidden:
+  :caption: Running WaveDiff
+
+  basic_execution
+  configuration
 
 .. toctree::
    :hidden:
