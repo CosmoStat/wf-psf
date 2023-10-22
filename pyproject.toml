@@ -37,6 +37,7 @@ docs = [
     "sphinxawesome-theme",
     "sphinx-gallery",
     "sphinxemoji",
+    "sphinx_rtd_theme",
 
 ]
 
