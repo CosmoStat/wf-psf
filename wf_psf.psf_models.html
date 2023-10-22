@@ -1,113 +1,353 @@
 <!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-<html lang="en" data-content_root="./">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <title>wf_psf.psf_models package &#8212; wf-psf 1.0.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=4f649999" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=039e1c02" />
-    <script src="_static/documentation_options.js?v=8d563738"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.psf_models package &mdash; wf-psf 1.0.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/twemoji.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=af2ce170"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+        <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"></script>
+        <script src="_static/twemoji.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-   
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+    <link rel="next" title="wf_psf.psf_models.psf_model_parametric module" href="wf_psf.psf_models.psf_model_parametric.html" />
+    <link rel="prev" title="wf_psf.plotting.plots_interface module" href="wf_psf.plotting.plots_interface.html" /> 
+</head>
 
-  </head><body>
-  
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
           
+          
+          <a href="index.html" class="icon icon-home">
+            wf-psf
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="wf_psf.html">wf_psf package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.data.html">wf_psf.data package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.metrics.html">wf_psf.metrics package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.plotting.html">wf_psf.plotting package</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">wf_psf.psf_models package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_parametric.html">wf_psf.psf_models.psf_model_parametric module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_semiparametric.html">wf_psf.psf_models.psf_model_semiparametric module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_models.html">wf_psf.psf_models.psf_models module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html">wf_psf.psf_models.tf_layers module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_modules.html">wf_psf.psf_models.tf_modules module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html">wf_psf.psf_models.tf_psf_field module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.zernikes.html">wf_psf.psf_models.zernikes module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.sims.html">wf_psf.sims package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.training.html">wf_psf.training package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.utils.html">wf_psf.utils package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.info.html">wf_psf.info module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.run.html">wf_psf.run module</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="z_ref.html">References</a></li>
+</ul>
 
-          <div class="body" role="main">
-            
-  <section id="wf-psf-psf-models-package">
-<h1>wf_psf.psf_models package<a class="headerlink" href="#wf-psf-psf-models-package" title="Link to this heading">¶</a></h1>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="wf_psf.html">wf_psf package</a></li>
+      <li class="breadcrumb-item active">wf_psf.psf_models package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/wf_psf.psf_models.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-wf_psf.psf_models">
+<span id="wf-psf-psf-models-package"></span><h1>wf_psf.psf_models package<a class="headerlink" href="#module-wf_psf.psf_models" title="Link to this heading"></a></h1>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="wf_psf.psf_models.psf_model_parametric.html">wf_psf.psf_models.psf_model_parametric module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="wf_psf.psf_models.psf_model_semiparametric.html">wf_psf.psf_models.psf_model_semiparametric module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="wf_psf.psf_models.psf_models.html">wf_psf.psf_models.psf_models module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html">wf_psf.psf_models.tf_layers module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="wf_psf.psf_models.tf_modules.html">wf_psf.psf_models.tf_modules module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html">wf_psf.psf_models.tf_psf_field module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="wf_psf.psf_models.zernikes.html">wf_psf.psf_models.zernikes module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wf_psf.psf_models.psf_model_parametric.html">wf_psf.psf_models.psf_model_parametric module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.psf_model_parametric.html#wf_psf.psf_models.psf_model_parametric.TF_PSF_field_model"><code class="docutils literal notranslate"><span class="pre">TF_PSF_field_model</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_parametric.html#wf_psf.psf_models.psf_model_parametric.TF_PSF_field_model.assign_coeff_matrix"><code class="docutils literal notranslate"><span class="pre">TF_PSF_field_model.assign_coeff_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_parametric.html#wf_psf.psf_models.psf_model_parametric.TF_PSF_field_model.call"><code class="docutils literal notranslate"><span class="pre">TF_PSF_field_model.call()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_parametric.html#wf_psf.psf_models.psf_model_parametric.TF_PSF_field_model.get_coeff_matrix"><code class="docutils literal notranslate"><span class="pre">TF_PSF_field_model.get_coeff_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_parametric.html#wf_psf.psf_models.psf_model_parametric.TF_PSF_field_model.ids"><code class="docutils literal notranslate"><span class="pre">TF_PSF_field_model.ids</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_parametric.html#wf_psf.psf_models.psf_model_parametric.TF_PSF_field_model.predict_mono_psfs"><code class="docutils literal notranslate"><span class="pre">TF_PSF_field_model.predict_mono_psfs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_parametric.html#wf_psf.psf_models.psf_model_parametric.TF_PSF_field_model.predict_opd"><code class="docutils literal notranslate"><span class="pre">TF_PSF_field_model.predict_opd()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_parametric.html#wf_psf.psf_models.psf_model_parametric.TF_PSF_field_model.set_output_Q"><code class="docutils literal notranslate"><span class="pre">TF_PSF_field_model.set_output_Q()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wf_psf.psf_models.psf_model_semiparametric.html">wf_psf.psf_models.psf_model_semiparametric module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.psf_model_semiparametric.html#wf_psf.psf_models.psf_model_semiparametric.TF_SemiParam_field"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_semiparametric.html#wf_psf.psf_models.psf_model_semiparametric.TF_SemiParam_field.assign_S_mat"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field.assign_S_mat()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_semiparametric.html#wf_psf.psf_models.psf_model_semiparametric.TF_SemiParam_field.assign_coeff_matrix"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field.assign_coeff_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_semiparametric.html#wf_psf.psf_models.psf_model_semiparametric.TF_SemiParam_field.call"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field.call()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_semiparametric.html#wf_psf.psf_models.psf_model_semiparametric.TF_SemiParam_field.get_coeff_matrix"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field.get_coeff_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_semiparametric.html#wf_psf.psf_models.psf_model_semiparametric.TF_SemiParam_field.ids"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field.ids</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_semiparametric.html#wf_psf.psf_models.psf_model_semiparametric.TF_SemiParam_field.predict_mono_psfs"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field.predict_mono_psfs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_semiparametric.html#wf_psf.psf_models.psf_model_semiparametric.TF_SemiParam_field.predict_opd"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field.predict_opd()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_semiparametric.html#wf_psf.psf_models.psf_model_semiparametric.TF_SemiParam_field.project_DD_features"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field.project_DD_features()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_semiparametric.html#wf_psf.psf_models.psf_model_semiparametric.TF_SemiParam_field.set_nonzero_nonparam"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field.set_nonzero_nonparam()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_semiparametric.html#wf_psf.psf_models.psf_model_semiparametric.TF_SemiParam_field.set_output_Q"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field.set_output_Q()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_semiparametric.html#wf_psf.psf_models.psf_model_semiparametric.TF_SemiParam_field.set_trainable_layers"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field.set_trainable_layers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_semiparametric.html#wf_psf.psf_models.psf_model_semiparametric.TF_SemiParam_field.set_zero_nonparam"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field.set_zero_nonparam()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wf_psf.psf_models.psf_models.html">wf_psf.psf_models.psf_models module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PsfModelError"><code class="docutils literal notranslate"><span class="pre">PsfModelError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.get_psf_model"><code class="docutils literal notranslate"><span class="pre">get_psf_model()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.register_psfclass"><code class="docutils literal notranslate"><span class="pre">register_psfclass()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.set_psf_model"><code class="docutils literal notranslate"><span class="pre">set_psf_model()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.simPSF"><code class="docutils literal notranslate"><span class="pre">simPSF()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.tf_obscurations"><code class="docutils literal notranslate"><span class="pre">tf_obscurations()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.tf_zernike_cube"><code class="docutils literal notranslate"><span class="pre">tf_zernike_cube()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html">wf_psf.psf_models.tf_layers module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.OLD_TF_batch_poly_PSF"><code class="docutils literal notranslate"><span class="pre">OLD_TF_batch_poly_PSF</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.OLD_TF_batch_poly_PSF.calculate_mono_PSF"><code class="docutils literal notranslate"><span class="pre">OLD_TF_batch_poly_PSF.calculate_mono_PSF()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.OLD_TF_batch_poly_PSF.calculate_poly_PSF"><code class="docutils literal notranslate"><span class="pre">OLD_TF_batch_poly_PSF.calculate_poly_PSF()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.OLD_TF_batch_poly_PSF.call"><code class="docutils literal notranslate"><span class="pre">OLD_TF_batch_poly_PSF.call()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.OLD_TF_batch_poly_PSF.set_psf_batch"><code class="docutils literal notranslate"><span class="pre">OLD_TF_batch_poly_PSF.set_psf_batch()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_NP_GRAPH_OPD"><code class="docutils literal notranslate"><span class="pre">TF_NP_GRAPH_OPD</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_NP_GRAPH_OPD.call"><code class="docutils literal notranslate"><span class="pre">TF_NP_GRAPH_OPD.call()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_NP_GRAPH_OPD.init_vars"><code class="docutils literal notranslate"><span class="pre">TF_NP_GRAPH_OPD.init_vars()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_NP_GRAPH_OPD.predict"><code class="docutils literal notranslate"><span class="pre">TF_NP_GRAPH_OPD.predict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_NP_GRAPH_OPD.set_alpha_identity"><code class="docutils literal notranslate"><span class="pre">TF_NP_GRAPH_OPD.set_alpha_identity()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_NP_GRAPH_OPD.set_alpha_zero"><code class="docutils literal notranslate"><span class="pre">TF_NP_GRAPH_OPD.set_alpha_zero()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_NP_MCCD_OPD_v2"><code class="docutils literal notranslate"><span class="pre">TF_NP_MCCD_OPD_v2</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_NP_MCCD_OPD_v2.call"><code class="docutils literal notranslate"><span class="pre">TF_NP_MCCD_OPD_v2.call()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_NP_MCCD_OPD_v2.init_vars"><code class="docutils literal notranslate"><span class="pre">TF_NP_MCCD_OPD_v2.init_vars()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_NP_MCCD_OPD_v2.predict"><code class="docutils literal notranslate"><span class="pre">TF_NP_MCCD_OPD_v2.predict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_NP_MCCD_OPD_v2.set_alpha_identity"><code class="docutils literal notranslate"><span class="pre">TF_NP_MCCD_OPD_v2.set_alpha_identity()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_NP_MCCD_OPD_v2.set_alpha_zero"><code class="docutils literal notranslate"><span class="pre">TF_NP_MCCD_OPD_v2.set_alpha_zero()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_NP_poly_OPD"><code class="docutils literal notranslate"><span class="pre">TF_NP_poly_OPD</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_NP_poly_OPD.assign_S_mat"><code class="docutils literal notranslate"><span class="pre">TF_NP_poly_OPD.assign_S_mat()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_NP_poly_OPD.call"><code class="docutils literal notranslate"><span class="pre">TF_NP_poly_OPD.call()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_NP_poly_OPD.init_vars"><code class="docutils literal notranslate"><span class="pre">TF_NP_poly_OPD.init_vars()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_NP_poly_OPD.set_alpha_identity"><code class="docutils literal notranslate"><span class="pre">TF_NP_poly_OPD.set_alpha_identity()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_NP_poly_OPD.set_alpha_zero"><code class="docutils literal notranslate"><span class="pre">TF_NP_poly_OPD.set_alpha_zero()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_batch_mono_PSF"><code class="docutils literal notranslate"><span class="pre">TF_batch_mono_PSF</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_batch_mono_PSF.calculate_mono_PSF"><code class="docutils literal notranslate"><span class="pre">TF_batch_mono_PSF.calculate_mono_PSF()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_batch_mono_PSF.call"><code class="docutils literal notranslate"><span class="pre">TF_batch_mono_PSF.call()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_batch_mono_PSF.init_mono_PSF"><code class="docutils literal notranslate"><span class="pre">TF_batch_mono_PSF.init_mono_PSF()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_batch_mono_PSF.set_lambda_phaseN"><code class="docutils literal notranslate"><span class="pre">TF_batch_mono_PSF.set_lambda_phaseN()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_batch_mono_PSF.set_output_params"><code class="docutils literal notranslate"><span class="pre">TF_batch_mono_PSF.set_output_params()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_batch_poly_PSF"><code class="docutils literal notranslate"><span class="pre">TF_batch_poly_PSF</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_batch_poly_PSF.calculate_mono_PSF"><code class="docutils literal notranslate"><span class="pre">TF_batch_poly_PSF.calculate_mono_PSF()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_batch_poly_PSF.calculate_poly_PSF"><code class="docutils literal notranslate"><span class="pre">TF_batch_poly_PSF.calculate_poly_PSF()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_batch_poly_PSF.call"><code class="docutils literal notranslate"><span class="pre">TF_batch_poly_PSF.call()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_physical_layer"><code class="docutils literal notranslate"><span class="pre">TF_physical_layer</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_physical_layer.call"><code class="docutils literal notranslate"><span class="pre">TF_physical_layer.call()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_physical_layer.interpolate_all"><code class="docutils literal notranslate"><span class="pre">TF_physical_layer.interpolate_all()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_physical_layer.interpolate_independent_Zk"><code class="docutils literal notranslate"><span class="pre">TF_physical_layer.interpolate_independent_Zk()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_physical_layer.interpolate_top_K"><code class="docutils literal notranslate"><span class="pre">TF_physical_layer.interpolate_top_K()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_poly_Z_field"><code class="docutils literal notranslate"><span class="pre">TF_poly_Z_field</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_poly_Z_field.assign_coeff_matrix"><code class="docutils literal notranslate"><span class="pre">TF_poly_Z_field.assign_coeff_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_poly_Z_field.call"><code class="docutils literal notranslate"><span class="pre">TF_poly_Z_field.call()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_poly_Z_field.get_coeff_matrix"><code class="docutils literal notranslate"><span class="pre">TF_poly_Z_field.get_coeff_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_poly_Z_field.get_poly_coefficients_shape"><code class="docutils literal notranslate"><span class="pre">TF_poly_Z_field.get_poly_coefficients_shape()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_poly_Z_field.init_coeff_matrix"><code class="docutils literal notranslate"><span class="pre">TF_poly_Z_field.init_coeff_matrix()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_zernike_OPD"><code class="docutils literal notranslate"><span class="pre">TF_zernike_OPD</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html#wf_psf.psf_models.tf_layers.TF_zernike_OPD.call"><code class="docutils literal notranslate"><span class="pre">TF_zernike_OPD.call()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wf_psf.psf_models.tf_modules.html">wf_psf.psf_models.tf_modules module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.tf_modules.html#wf_psf.psf_models.tf_modules.TF_Zernike_mono_PSF"><code class="docutils literal notranslate"><span class="pre">TF_Zernike_mono_PSF</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.tf_modules.html#wf_psf.psf_models.tf_modules.TF_build_phase"><code class="docutils literal notranslate"><span class="pre">TF_build_phase</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_modules.html#wf_psf.psf_models.tf_modules.TF_build_phase.apply_obscurations"><code class="docutils literal notranslate"><span class="pre">TF_build_phase.apply_obscurations()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_modules.html#wf_psf.psf_models.tf_modules.TF_build_phase.opd_to_phase"><code class="docutils literal notranslate"><span class="pre">TF_build_phase.opd_to_phase()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_modules.html#wf_psf.psf_models.tf_modules.TF_build_phase.zero_padding_diffraction"><code class="docutils literal notranslate"><span class="pre">TF_build_phase.zero_padding_diffraction()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.tf_modules.html#wf_psf.psf_models.tf_modules.TF_fft_diffract"><code class="docutils literal notranslate"><span class="pre">TF_fft_diffract</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_modules.html#wf_psf.psf_models.tf_modules.TF_fft_diffract.crop_img"><code class="docutils literal notranslate"><span class="pre">TF_fft_diffract.crop_img()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_modules.html#wf_psf.psf_models.tf_modules.TF_fft_diffract.normalize_psf"><code class="docutils literal notranslate"><span class="pre">TF_fft_diffract.normalize_psf()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_modules.html#wf_psf.psf_models.tf_modules.TF_fft_diffract.tf_crop_img"><code class="docutils literal notranslate"><span class="pre">TF_fft_diffract.tf_crop_img()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.tf_modules.html#wf_psf.psf_models.tf_modules.TF_mono_PSF"><code class="docutils literal notranslate"><span class="pre">TF_mono_PSF</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.tf_modules.html#wf_psf.psf_models.tf_modules.TF_zernike_OPD"><code class="docutils literal notranslate"><span class="pre">TF_zernike_OPD</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html">wf_psf.psf_models.tf_psf_field module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_GT_physical_field"><code class="docutils literal notranslate"><span class="pre">TF_GT_physical_field</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_GT_physical_field.call"><code class="docutils literal notranslate"><span class="pre">TF_GT_physical_field.call()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_GT_physical_field.compute_zernikes"><code class="docutils literal notranslate"><span class="pre">TF_GT_physical_field.compute_zernikes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_GT_physical_field.predict_mono_psfs"><code class="docutils literal notranslate"><span class="pre">TF_GT_physical_field.predict_mono_psfs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_GT_physical_field.predict_opd"><code class="docutils literal notranslate"><span class="pre">TF_GT_physical_field.predict_opd()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_GT_physical_field.predict_step"><code class="docutils literal notranslate"><span class="pre">TF_GT_physical_field.predict_step()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_GT_physical_field.predict_zernikes"><code class="docutils literal notranslate"><span class="pre">TF_GT_physical_field.predict_zernikes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_GT_physical_field.set_output_Q"><code class="docutils literal notranslate"><span class="pre">TF_GT_physical_field.set_output_Q()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_PSF_field_model"><code class="docutils literal notranslate"><span class="pre">TF_PSF_field_model</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_PSF_field_model.assign_coeff_matrix"><code class="docutils literal notranslate"><span class="pre">TF_PSF_field_model.assign_coeff_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_PSF_field_model.call"><code class="docutils literal notranslate"><span class="pre">TF_PSF_field_model.call()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_PSF_field_model.get_coeff_matrix"><code class="docutils literal notranslate"><span class="pre">TF_PSF_field_model.get_coeff_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_PSF_field_model.predict_mono_psfs"><code class="docutils literal notranslate"><span class="pre">TF_PSF_field_model.predict_mono_psfs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_PSF_field_model.predict_opd"><code class="docutils literal notranslate"><span class="pre">TF_PSF_field_model.predict_opd()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_PSF_field_model.set_output_Q"><code class="docutils literal notranslate"><span class="pre">TF_PSF_field_model.set_output_Q()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_SemiParam_field"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_SemiParam_field.assign_S_mat"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field.assign_S_mat()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_SemiParam_field.assign_coeff_matrix"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field.assign_coeff_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_SemiParam_field.call"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field.call()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_SemiParam_field.get_coeff_matrix"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field.get_coeff_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_SemiParam_field.predict_mono_psfs"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field.predict_mono_psfs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_SemiParam_field.predict_opd"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field.predict_opd()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_SemiParam_field.project_DD_features"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field.project_DD_features()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_SemiParam_field.set_nonzero_nonparam"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field.set_nonzero_nonparam()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_SemiParam_field.set_output_Q"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field.set_output_Q()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_SemiParam_field.set_trainable_layers"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field.set_trainable_layers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_SemiParam_field.set_zero_nonparam"><code class="docutils literal notranslate"><span class="pre">TF_SemiParam_field.set_zero_nonparam()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_physical_poly_field"><code class="docutils literal notranslate"><span class="pre">TF_physical_poly_field</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_physical_poly_field.assign_coeff_matrix"><code class="docutils literal notranslate"><span class="pre">TF_physical_poly_field.assign_coeff_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_physical_poly_field.call"><code class="docutils literal notranslate"><span class="pre">TF_physical_poly_field.call()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_physical_poly_field.compute_zernikes"><code class="docutils literal notranslate"><span class="pre">TF_physical_poly_field.compute_zernikes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_physical_poly_field.get_coeff_matrix"><code class="docutils literal notranslate"><span class="pre">TF_physical_poly_field.get_coeff_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_physical_poly_field.predict_mono_psfs"><code class="docutils literal notranslate"><span class="pre">TF_physical_poly_field.predict_mono_psfs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_physical_poly_field.predict_opd"><code class="docutils literal notranslate"><span class="pre">TF_physical_poly_field.predict_opd()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_physical_poly_field.predict_step"><code class="docutils literal notranslate"><span class="pre">TF_physical_poly_field.predict_step()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_physical_poly_field.predict_zernikes"><code class="docutils literal notranslate"><span class="pre">TF_physical_poly_field.predict_zernikes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_physical_poly_field.set_nonzero_nonparam"><code class="docutils literal notranslate"><span class="pre">TF_physical_poly_field.set_nonzero_nonparam()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_physical_poly_field.set_output_Q"><code class="docutils literal notranslate"><span class="pre">TF_physical_poly_field.set_output_Q()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_physical_poly_field.set_trainable_layers"><code class="docutils literal notranslate"><span class="pre">TF_physical_poly_field.set_trainable_layers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_physical_poly_field.set_zero_nonparam"><code class="docutils literal notranslate"><span class="pre">TF_physical_poly_field.set_zero_nonparam()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.TF_physical_poly_field.zks_pad"><code class="docutils literal notranslate"><span class="pre">TF_physical_poly_field.zks_pad()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html#wf_psf.psf_models.tf_psf_field.build_PSF_model"><code class="docutils literal notranslate"><span class="pre">build_PSF_model()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wf_psf.psf_models.zernikes.html">wf_psf.psf_models.zernikes module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.zernikes.html#wf_psf.psf_models.zernikes.zernike_generator"><code class="docutils literal notranslate"><span class="pre">zernike_generator()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </div>
 </section>
 </section>
 
 
+           </div>
           </div>
-          
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="wf_psf.plotting.plots_interface.html" class="btn btn-neutral float-left" title="wf_psf.plotting.plots_interface module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wf_psf.psf_models.psf_model_parametric.html" class="btn btn-neutral float-right" title="wf_psf.psf_models.psf_model_parametric module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="index.html">wf-psf</a></h1>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
 
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
 
-
-
-
-
-
-
-<h3>Navigation</h3>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
-
-
-
-
-
-
-
-
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2023, Tobias Liaudat, Jennifer Pollack, Sam Farrens.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.2.6</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
-      
-      |
-      <a href="_sources/wf_psf.psf_models.rst.txt"
-          rel="nofollow">Page source</a>
-    </div>
-
-    
-
-    
-  </body>
+</body>
 </html>

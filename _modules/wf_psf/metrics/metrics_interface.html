@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.metrics.metrics_interface &mdash; wf-psf 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/twemoji.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+        <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"></script>
+        <script src="../../../_static/twemoji.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            wf-psf
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../wf_psf.html">wf_psf package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">wf_psf.metrics.metrics_interface</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for wf_psf.metrics.metrics_interface</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Metrics Interface.</span>
+
+<span class="sd">A module which defines the classes and methods</span>
+<span class="sd">to manage metrics evaluation of the trained psf model.</span>
+
+<span class="sd">:Author: Jennifer Pollack &lt;jennifer.pollack@cea.fr&gt;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">import</span> <span class="nn">tensorflow_addons</span> <span class="k">as</span> <span class="nn">tfa</span>
+<span class="kn">import</span> <span class="nn">wf_psf.data.training_preprocessing</span> <span class="k">as</span> <span class="nn">training_preprocessing</span>
+<span class="kn">from</span> <span class="nn">wf_psf.data.training_preprocessing</span> <span class="kn">import</span> <span class="n">TrainingDataHandler</span><span class="p">,</span> <span class="n">TestDataHandler</span>
+<span class="kn">from</span> <span class="nn">wf_psf.psf_models</span> <span class="kn">import</span> <span class="n">psf_models</span>
+<span class="kn">from</span> <span class="nn">wf_psf.metrics</span> <span class="kn">import</span> <span class="n">metrics</span> <span class="k">as</span> <span class="n">wf_metrics</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">wf_psf.utils.io</span> <span class="k">as</span> <span class="nn">io</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ground_truth_psf_model">
+<a class="viewcode-back" href="../../../wf_psf.metrics.metrics_interface.html#wf_psf.metrics.metrics_interface.ground_truth_psf_model">[docs]</a>
+<span class="k">def</span> <span class="nf">ground_truth_psf_model</span><span class="p">(</span><span class="n">metrics_params</span><span class="p">,</span> <span class="n">coeff_matrix</span><span class="p">):</span>
+    <span class="n">psf_model</span> <span class="o">=</span> <span class="n">psf_models</span><span class="o">.</span><span class="n">get_psf_model</span><span class="p">(</span>
+        <span class="n">metrics_params</span><span class="o">.</span><span class="n">ground_truth_model</span><span class="o">.</span><span class="n">model_params</span><span class="p">,</span>
+        <span class="n">metrics_params</span><span class="o">.</span><span class="n">metrics_hparams</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">psf_model</span><span class="o">.</span><span class="n">tf_poly_Z_field</span><span class="o">.</span><span class="n">assign_coeff_matrix</span><span class="p">(</span><span class="n">coeff_matrix</span><span class="p">)</span>
+
+    <span class="n">psf_model</span><span class="o">.</span><span class="n">tf_np_poly_opd</span><span class="o">.</span><span class="n">alpha_mat</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">psf_model</span><span class="o">.</span><span class="n">tf_np_poly_opd</span><span class="o">.</span><span class="n">alpha_mat</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">psf_model</span></div>
+
+
+
+<div class="viewcode-block" id="MetricsParamsHandler">
+<a class="viewcode-back" href="../../../wf_psf.metrics.metrics_interface.html#wf_psf.metrics.metrics_interface.MetricsParamsHandler">[docs]</a>
+<span class="k">class</span> <span class="nc">MetricsParamsHandler</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Metrics Parameters Handler.</span>
+
+<span class="sd">    A class to handle training parameters accessed:</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    metrics_params: Recursive Namespace object</span>
+<span class="sd">        Recursive Namespace object containing metrics input parameters</span>
+<span class="sd">    trained_model: Recursive Namespace object</span>
+<span class="sd">        Recursive Namespace object containing trained model input parameters</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrics_params</span><span class="p">,</span> <span class="n">trained_model</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span> <span class="o">=</span> <span class="n">metrics_params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trained_model</span> <span class="o">=</span> <span class="n">trained_model</span>
+
+<div class="viewcode-block" id="MetricsParamsHandler.evaluate_metrics_polychromatic_lowres">
+<a class="viewcode-back" href="../../../wf_psf.metrics.metrics_interface.html#wf_psf.metrics.metrics_interface.MetricsParamsHandler.evaluate_metrics_polychromatic_lowres">[docs]</a>
+    <span class="k">def</span> <span class="nf">evaluate_metrics_polychromatic_lowres</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">psf_model</span><span class="p">,</span> <span class="n">simPSF</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate Polychromatic PSF Low-Res Metrics.</span>
+
+<span class="sd">        A function to evaluate metrics for Low-Res Polychromatic PSF.</span>
+
+<span class="sd">        Inputs</span>
+<span class="sd">        ------</span>
+<span class="sd">        psf_model: object</span>
+<span class="sd">            PSF model class instance of the psf model selected for metrics evaluation.</span>
+<span class="sd">        simPSF: object</span>
+<span class="sd">            SimPSFToolkit instance</span>
+<span class="sd">        test_dataset: dict</span>
+<span class="sd">            Test dataset dictionary</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        poly_metric: dict</span>
+<span class="sd">            Dictionary containing RMSE, Relative RMSE values, and</span>
+<span class="sd">            corresponding Standard Deviation values for Low-Res Polychromatic PSF metrics.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Computing polychromatic metrics at low resolution.&quot;</span><span class="p">)</span>
+
+        <span class="n">rmse</span><span class="p">,</span> <span class="n">rel_rmse</span><span class="p">,</span> <span class="n">std_rmse</span><span class="p">,</span> <span class="n">std_rel_rmse</span> <span class="o">=</span> <span class="n">wf_metrics</span><span class="o">.</span><span class="n">compute_poly_metric</span><span class="p">(</span>
+            <span class="n">tf_semiparam_field</span><span class="o">=</span><span class="n">psf_model</span><span class="p">,</span>
+            <span class="n">GT_tf_semiparam_field</span><span class="o">=</span><span class="n">ground_truth_psf_model</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="p">,</span> <span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;C_poly&quot;</span><span class="p">]</span>
+            <span class="p">),</span>
+            <span class="n">simPSF_np</span><span class="o">=</span><span class="n">simPSF</span><span class="p">,</span>
+            <span class="n">tf_pos</span><span class="o">=</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">],</span>
+            <span class="n">tf_SEDs</span><span class="o">=</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;SEDs&quot;</span><span class="p">],</span>
+            <span class="n">n_bins_lda</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trained_model</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">n_bins_lda</span><span class="p">,</span>
+            <span class="n">n_bins_gt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="o">.</span><span class="n">ground_truth_model</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">n_bins_lda</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="o">.</span><span class="n">metrics_hparams</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">dataset_dict</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">poly_metric</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;rmse&quot;</span><span class="p">:</span> <span class="n">rmse</span><span class="p">,</span>
+            <span class="s2">&quot;rel_rmse&quot;</span><span class="p">:</span> <span class="n">rel_rmse</span><span class="p">,</span>
+            <span class="s2">&quot;std_rmse&quot;</span><span class="p">:</span> <span class="n">std_rmse</span><span class="p">,</span>
+            <span class="s2">&quot;std_rel_rmse&quot;</span><span class="p">:</span> <span class="n">std_rel_rmse</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">poly_metric</span></div>
+
+
+<div class="viewcode-block" id="MetricsParamsHandler.evaluate_metrics_mono_rmse">
+<a class="viewcode-back" href="../../../wf_psf.metrics.metrics_interface.html#wf_psf.metrics.metrics_interface.MetricsParamsHandler.evaluate_metrics_mono_rmse">[docs]</a>
+    <span class="k">def</span> <span class="nf">evaluate_metrics_mono_rmse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">psf_model</span><span class="p">,</span> <span class="n">simPSF</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate Monochromatic PSF RMSE Metrics.</span>
+
+<span class="sd">        A function to evaluate metrics for Monochromatic PSF.</span>
+
+<span class="sd">        Inputs</span>
+<span class="sd">        ------</span>
+<span class="sd">        psf_model: object</span>
+<span class="sd">            PSF model class instance of the psf model selected for metrics evaluation.</span>
+<span class="sd">        simPSF: object</span>
+<span class="sd">            SimPSFToolkit instance</span>
+<span class="sd">        test_dataset: dict</span>
+<span class="sd">            Test dataset dictionary</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        mono_metric: dict</span>
+<span class="sd">            Dictionary containing RMSE, Relative RMSE values, and</span>
+<span class="sd">            corresponding Standard Deviation values for Monochromatic PSF metrics.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Computing monochromatic metrics.&quot;</span><span class="p">)</span>
+        <span class="n">lambda_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.55</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)</span>  <span class="c1"># 10nm separation</span>
+        <span class="p">(</span>
+            <span class="n">rmse_lda</span><span class="p">,</span>
+            <span class="n">rel_rmse_lda</span><span class="p">,</span>
+            <span class="n">std_rmse_lda</span><span class="p">,</span>
+            <span class="n">std_rel_rmse_lda</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">wf_metrics</span><span class="o">.</span><span class="n">compute_mono_metric</span><span class="p">(</span>
+            <span class="n">tf_semiparam_field</span><span class="o">=</span><span class="n">psf_model</span><span class="p">,</span>
+            <span class="n">GT_tf_semiparam_field</span><span class="o">=</span><span class="n">ground_truth_psf_model</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="p">,</span> <span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;C_poly&quot;</span><span class="p">]</span>
+            <span class="p">),</span>
+            <span class="n">simPSF_np</span><span class="o">=</span><span class="n">simPSF</span><span class="p">,</span>
+            <span class="n">tf_pos</span><span class="o">=</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">],</span>
+            <span class="n">lambda_list</span><span class="o">=</span><span class="n">lambda_list</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">mono_metric</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;rmse_lda&quot;</span><span class="p">:</span> <span class="n">rmse_lda</span><span class="p">,</span>
+            <span class="s2">&quot;rel_rmse_lda&quot;</span><span class="p">:</span> <span class="n">rel_rmse_lda</span><span class="p">,</span>
+            <span class="s2">&quot;std_rmse_lda&quot;</span><span class="p">:</span> <span class="n">std_rmse_lda</span><span class="p">,</span>
+            <span class="s2">&quot;std_rel_rmse_lda&quot;</span><span class="p">:</span> <span class="n">std_rel_rmse_lda</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">mono_metric</span></div>
+
+
+<div class="viewcode-block" id="MetricsParamsHandler.evaluate_metrics_opd">
+<a class="viewcode-back" href="../../../wf_psf.metrics.metrics_interface.html#wf_psf.metrics.metrics_interface.MetricsParamsHandler.evaluate_metrics_opd">[docs]</a>
+    <span class="k">def</span> <span class="nf">evaluate_metrics_opd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">psf_model</span><span class="p">,</span> <span class="n">simPSF</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate OPD Metrics.</span>
+
+<span class="sd">        A function to evaluate metrics for Optical Path Differences.</span>
+
+<span class="sd">        Inputs</span>
+<span class="sd">        ------</span>
+<span class="sd">        psf_model: object</span>
+<span class="sd">            PSF model class instance of the psf model selected for metrics evaluation.</span>
+<span class="sd">        simPSF: object</span>
+<span class="sd">            SimPSFToolkit instance</span>
+<span class="sd">        test_dataset: dict</span>
+<span class="sd">            Test dataset dictionary</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        opd_metric: dict</span>
+<span class="sd">            Dictionary containing RMSE, Relative RMSE values, and</span>
+<span class="sd">            corresponding Standard Deviation values for OPD metrics.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Computing OPD metrics.&quot;</span><span class="p">)</span>
+        <span class="p">(</span>
+            <span class="n">rmse_opd</span><span class="p">,</span>
+            <span class="n">rel_rmse_opd</span><span class="p">,</span>
+            <span class="n">rmse_std_opd</span><span class="p">,</span>
+            <span class="n">rel_rmse_std_opd</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">wf_metrics</span><span class="o">.</span><span class="n">compute_opd_metrics</span><span class="p">(</span>
+            <span class="n">tf_semiparam_field</span><span class="o">=</span><span class="n">psf_model</span><span class="p">,</span>
+            <span class="n">GT_tf_semiparam_field</span><span class="o">=</span><span class="n">ground_truth_psf_model</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="p">,</span> <span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;C_poly&quot;</span><span class="p">]</span>
+            <span class="p">),</span>
+            <span class="n">pos</span><span class="o">=</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">],</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="o">.</span><span class="n">metrics_hparams</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">opd_metric</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;rmse_opd&quot;</span><span class="p">:</span> <span class="n">rmse_opd</span><span class="p">,</span>
+            <span class="s2">&quot;rel_rmse_opd&quot;</span><span class="p">:</span> <span class="n">rel_rmse_opd</span><span class="p">,</span>
+            <span class="s2">&quot;rmse_std_opd&quot;</span><span class="p">:</span> <span class="n">rmse_std_opd</span><span class="p">,</span>
+            <span class="s2">&quot;rel_rmse_std_opd&quot;</span><span class="p">:</span> <span class="n">rel_rmse_std_opd</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">opd_metric</span></div>
+
+
+<div class="viewcode-block" id="MetricsParamsHandler.evaluate_metrics_shape">
+<a class="viewcode-back" href="../../../wf_psf.metrics.metrics_interface.html#wf_psf.metrics.metrics_interface.MetricsParamsHandler.evaluate_metrics_shape">[docs]</a>
+    <span class="k">def</span> <span class="nf">evaluate_metrics_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">psf_model</span><span class="p">,</span> <span class="n">simPSF</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate PSF Shape Metrics.</span>
+
+<span class="sd">        A function to evaluate metrics for PSF shape.</span>
+
+<span class="sd">        Inputs</span>
+<span class="sd">        ------</span>
+<span class="sd">        psf_model: object</span>
+<span class="sd">            PSF model class instance of the psf model selected for metrics evaluation.</span>
+<span class="sd">        simPSF: object</span>
+<span class="sd">            SimPSFToolkit instance</span>
+<span class="sd">        dataset: dict</span>
+<span class="sd">            Test dataset dictionary</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        shape_results: dict</span>
+<span class="sd">            Dictionary containing RMSE, Relative RMSE values, and</span>
+<span class="sd">            corresponding Standard Deviation values for PSF Shape metrics.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Computing Shape metrics.&quot;</span><span class="p">)</span>
+
+        <span class="n">shape_results</span> <span class="o">=</span> <span class="n">wf_metrics</span><span class="o">.</span><span class="n">compute_shape_metrics</span><span class="p">(</span>
+            <span class="n">tf_semiparam_field</span><span class="o">=</span><span class="n">psf_model</span><span class="p">,</span>
+            <span class="n">GT_tf_semiparam_field</span><span class="o">=</span><span class="n">ground_truth_psf_model</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="p">,</span> <span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;C_poly&quot;</span><span class="p">]</span>
+            <span class="p">),</span>
+            <span class="n">simPSF_np</span><span class="o">=</span><span class="n">simPSF</span><span class="p">,</span>
+            <span class="n">SEDs</span><span class="o">=</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;SEDs&quot;</span><span class="p">],</span>
+            <span class="n">tf_pos</span><span class="o">=</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">],</span>
+            <span class="n">n_bins_lda</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trained_model</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">n_bins_lda</span><span class="p">,</span>
+            <span class="n">n_bins_gt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="o">.</span><span class="n">ground_truth_model</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">n_bins_lda</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="o">.</span><span class="n">metrics_hparams</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">output_Q</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="o">.</span><span class="n">metrics_hparams</span><span class="o">.</span><span class="n">output_Q</span><span class="p">,</span>
+            <span class="n">output_dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="o">.</span><span class="n">metrics_hparams</span><span class="o">.</span><span class="n">output_dim</span><span class="p">,</span>
+            <span class="n">opt_stars_rel_pix_rmse</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="o">.</span><span class="n">metrics_hparams</span><span class="o">.</span><span class="n">opt_stars_rel_pix_rmse</span><span class="p">,</span>
+            <span class="n">dataset_dict</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">shape_results</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="evaluate_model">
+<a class="viewcode-back" href="../../../wf_psf.metrics.metrics_interface.html#wf_psf.metrics.metrics_interface.evaluate_model">[docs]</a>
+<span class="k">def</span> <span class="nf">evaluate_model</span><span class="p">(</span>
+    <span class="n">metrics_params</span><span class="p">,</span>
+    <span class="n">trained_model_params</span><span class="p">,</span>
+    <span class="n">training_data</span><span class="p">,</span>
+    <span class="n">test_data</span><span class="p">,</span>
+    <span class="n">psf_model</span><span class="p">,</span>
+    <span class="n">weights_path</span><span class="p">,</span>
+    <span class="n">metrics_output</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Evaluate the trained model.</span>
+
+<span class="sd">    For parameters check the training script click help.</span>
+
+<span class="sd">    Inputs</span>
+<span class="sd">    ------</span>
+<span class="sd">    metrics_params: Recursive Namespace object</span>
+<span class="sd">        Recursive Namespace object containing metrics input parameters</span>
+<span class="sd">    trained_model_params: Recursive Namespace object</span>
+<span class="sd">        Recursive Namespace object containing trained model input parameters</span>
+<span class="sd">    training_data: object</span>
+<span class="sd">        TrainingDataHandler object</span>
+<span class="sd">    test_data: object</span>
+<span class="sd">        TestDataHandler object</span>
+<span class="sd">    psf_model: object</span>
+<span class="sd">        PSF model object</span>
+<span class="sd">    weights_path: str</span>
+<span class="sd">        Directory location of model weights</span>
+<span class="sd">    metrics_output: str</span>
+<span class="sd">        Directory location of metrics output</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Start measuring elapsed time</span>
+    <span class="n">starting_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1">## Load datasets</span>
+        <span class="c1"># -----------------------------------------------------</span>
+        <span class="c1"># Get training data</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fetching and preprocessing training and test data...&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Initialize metrics_handler</span>
+        <span class="n">metrics_handler</span> <span class="o">=</span> <span class="n">MetricsParamsHandler</span><span class="p">(</span><span class="n">metrics_params</span><span class="p">,</span> <span class="n">trained_model_params</span><span class="p">)</span>
+
+        <span class="c1">## Prepare models</span>
+        <span class="c1"># Prepare np input</span>
+        <span class="n">simPSF_np</span> <span class="o">=</span> <span class="n">training_data</span><span class="o">.</span><span class="n">simPSF</span>
+
+        <span class="c1">## Load the model&#39;s weights</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loading PSF model weights from </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">weights_path</span><span class="p">))</span>
+            <span class="n">psf_model</span><span class="o">.</span><span class="n">load_weights</span><span class="p">(</span><span class="n">weights_path</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;An error occurred with the weights_path file.&quot;</span><span class="p">)</span>
+            <span class="n">exit</span><span class="p">()</span>
+
+        <span class="c1">## Metric evaluation on the test dataset</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">***</span><span class="se">\n</span><span class="s2">Metric evaluation on the test dataset</span><span class="se">\n</span><span class="s2">***</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Polychromatic star reconstructions</span>
+        <span class="n">poly_metric</span> <span class="o">=</span> <span class="n">metrics_handler</span><span class="o">.</span><span class="n">evaluate_metrics_polychromatic_lowres</span><span class="p">(</span>
+            <span class="n">psf_model</span><span class="p">,</span> <span class="n">simPSF_np</span><span class="p">,</span> <span class="n">test_data</span><span class="o">.</span><span class="n">test_dataset</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Monochromatic star reconstructions</span>
+        <span class="k">if</span> <span class="n">metrics_params</span><span class="o">.</span><span class="n">eval_mono_metric_rmse</span><span class="p">:</span>
+            <span class="n">mono_metric</span> <span class="o">=</span> <span class="n">metrics_handler</span><span class="o">.</span><span class="n">evaluate_metrics_mono_rmse</span><span class="p">(</span>
+                <span class="n">psf_model</span><span class="p">,</span> <span class="n">simPSF_np</span><span class="p">,</span> <span class="n">test_data</span><span class="o">.</span><span class="n">test_dataset</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mono_metric</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># OPD metrics</span>
+        <span class="k">if</span> <span class="n">metrics_params</span><span class="o">.</span><span class="n">eval_opd_metric_rmse</span><span class="p">:</span>
+            <span class="n">opd_metric</span> <span class="o">=</span> <span class="n">metrics_handler</span><span class="o">.</span><span class="n">evaluate_metrics_opd</span><span class="p">(</span>
+                <span class="n">psf_model</span><span class="p">,</span> <span class="n">simPSF_np</span><span class="p">,</span> <span class="n">test_data</span><span class="o">.</span><span class="n">test_dataset</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">opd_metric</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Shape metrics</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;Computing polychromatic high-resolution metrics and shape metrics.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">shape_results_dict</span> <span class="o">=</span> <span class="n">metrics_handler</span><span class="o">.</span><span class="n">evaluate_metrics_shape</span><span class="p">(</span>
+            <span class="n">psf_model</span><span class="p">,</span> <span class="n">simPSF_np</span><span class="p">,</span> <span class="n">test_data</span><span class="o">.</span><span class="n">test_dataset</span>
+        <span class="p">)</span>
+        <span class="c1"># Save metrics</span>
+        <span class="n">test_metrics</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;poly_metric&quot;</span><span class="p">:</span> <span class="n">poly_metric</span><span class="p">,</span>
+            <span class="s2">&quot;mono_metric&quot;</span><span class="p">:</span> <span class="n">mono_metric</span><span class="p">,</span>
+            <span class="s2">&quot;opd_metric&quot;</span><span class="p">:</span> <span class="n">opd_metric</span><span class="p">,</span>
+            <span class="s2">&quot;shape_results_dict&quot;</span><span class="p">:</span> <span class="n">shape_results_dict</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="c1">## Metric evaluation on the train dataset</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">***</span><span class="se">\n</span><span class="s2">Metric evaluation on the train dataset</span><span class="se">\n</span><span class="s2">***</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Polychromatic star reconstructions</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Computing polychromatic metrics at low resolution.&quot;</span><span class="p">)</span>
+
+        <span class="n">train_poly_metric</span> <span class="o">=</span> <span class="n">metrics_handler</span><span class="o">.</span><span class="n">evaluate_metrics_polychromatic_lowres</span><span class="p">(</span>
+            <span class="n">psf_model</span><span class="p">,</span> <span class="n">simPSF_np</span><span class="p">,</span> <span class="n">training_data</span><span class="o">.</span><span class="n">train_dataset</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Monochromatic star reconstructions turn into a class</span>
+        <span class="k">if</span> <span class="n">metrics_params</span><span class="o">.</span><span class="n">eval_mono_metric_rmse</span><span class="p">:</span>
+            <span class="n">train_mono_metric</span> <span class="o">=</span> <span class="n">metrics_handler</span><span class="o">.</span><span class="n">evaluate_metrics_mono_rmse</span><span class="p">(</span>
+                <span class="n">psf_model</span><span class="p">,</span> <span class="n">simPSF_np</span><span class="p">,</span> <span class="n">training_data</span><span class="o">.</span><span class="n">train_dataset</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">train_mono_metric</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># OPD metrics turn into a class</span>
+        <span class="k">if</span> <span class="n">metrics_params</span><span class="o">.</span><span class="n">eval_opd_metric_rmse</span><span class="p">:</span>
+            <span class="n">train_opd_metric</span> <span class="o">=</span> <span class="n">metrics_handler</span><span class="o">.</span><span class="n">evaluate_metrics_opd</span><span class="p">(</span>
+                <span class="n">psf_model</span><span class="p">,</span> <span class="n">simPSF_np</span><span class="p">,</span> <span class="n">training_data</span><span class="o">.</span><span class="n">train_dataset</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">train_opd_metric</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Shape metrics  turn into a class</span>
+        <span class="k">if</span> <span class="n">metrics_params</span><span class="o">.</span><span class="n">eval_train_shape_sr_metric_rmse</span><span class="p">:</span>
+            <span class="n">train_shape_results_dict</span> <span class="o">=</span> <span class="n">metrics_handler</span><span class="o">.</span><span class="n">evaluate_metrics_shape</span><span class="p">(</span>
+                <span class="n">psf_model</span><span class="p">,</span> <span class="n">simPSF_np</span><span class="p">,</span> <span class="n">training_data</span><span class="o">.</span><span class="n">train_dataset</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">train_shape_results_dict</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Save metrics into dictionary</span>
+        <span class="n">train_metrics</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;poly_metric&quot;</span><span class="p">:</span> <span class="n">train_poly_metric</span><span class="p">,</span>
+            <span class="s2">&quot;mono_metric&quot;</span><span class="p">:</span> <span class="n">train_mono_metric</span><span class="p">,</span>
+            <span class="s2">&quot;opd_metric&quot;</span><span class="p">:</span> <span class="n">train_opd_metric</span><span class="p">,</span>
+            <span class="s2">&quot;shape_results_dict&quot;</span><span class="p">:</span> <span class="n">train_shape_results_dict</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="c1">## Save results</span>
+        <span class="n">metrics</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;test_metrics&quot;</span><span class="p">:</span> <span class="n">test_metrics</span><span class="p">,</span> <span class="s2">&quot;train_metrics&quot;</span><span class="p">:</span> <span class="n">train_metrics</span><span class="p">}</span>
+        <span class="n">run_id_name</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">trained_model_params</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">model_name</span> <span class="o">+</span> <span class="n">trained_model_params</span><span class="o">.</span><span class="n">id_name</span>
+        <span class="p">)</span>
+        <span class="n">output_path</span> <span class="o">=</span> <span class="n">metrics_output</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="s2">&quot;metrics-&quot;</span> <span class="o">+</span> <span class="n">run_id_name</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">allow_pickle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1">## Print final time</span>
+        <span class="n">final_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Total elapsed time: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">final_time</span> <span class="o">-</span> <span class="n">starting_time</span><span class="p">))</span>
+
+        <span class="c1">## Close log file</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Good bye..&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">metrics</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Error: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">e</span><span class="p">)</span>
+        <span class="k">raise</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

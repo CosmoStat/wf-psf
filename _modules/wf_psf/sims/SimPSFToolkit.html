@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.sims.SimPSFToolkit &mdash; wf-psf 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/twemoji.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+        <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"></script>
+        <script src="../../../_static/twemoji.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            wf-psf
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../wf_psf.html">wf_psf package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">wf_psf.sims.SimPSFToolkit</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for wf_psf.sims.SimPSFToolkit</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.signal</span> <span class="k">as</span> <span class="nn">spsig</span>
+<span class="kn">import</span> <span class="nn">scipy.interpolate</span> <span class="k">as</span> <span class="nn">sinterp</span>
+<span class="kn">import</span> <span class="nn">PIL</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span> <span class="k">as</span> <span class="nn">mpl</span>
+<span class="kn">from</span> <span class="nn">matplotlib.colors</span> <span class="kn">import</span> <span class="n">ListedColormap</span><span class="p">,</span> <span class="n">LinearSegmentedColormap</span>
+<span class="kn">from</span> <span class="nn">mpl_toolkits.axes_grid1</span> <span class="kn">import</span> <span class="n">make_axes_locatable</span>
+<span class="kn">from</span> <span class="nn">wf_psf.utils.utils</span> <span class="kn">import</span> <span class="n">PI_zernikes</span><span class="p">,</span> <span class="n">zernike_generator</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">cv2</span> <span class="kn">import</span> <span class="n">resize</span><span class="p">,</span> <span class="n">INTER_AREA</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Problem importing opencv..&quot;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">skimage.transform</span> <span class="kn">import</span> <span class="n">downscale_local_mean</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Falling back to skimage.&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Only integer downsampling allowed with this method.&quot;</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Problem importing skimage..&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SimPSFToolkit">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit">[docs]</a>
+<span class="k">class</span> <span class="nc">SimPSFToolkit</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Simulate PSFs.</span>
+
+<span class="sd">    In the future the zernike maps could be created with galsim or some other</span>
+<span class="sd">    alternative.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    Remove zernike_maps</span>
+<span class="sd">    XXXzernike_maps: list of np.ndarray</span>
+<span class="sd">       Each element of the list should contain a Zernike map of the order</span>
+<span class="sd">        (OSA/ANSI index convention) corresponding to the position in the list.</span>
+<span class="sd">    max_order: int</span>
+<span class="sd">        Maximum Zernike polynomial order. Default is `45`.</span>
+<span class="sd">    max_wfe_rms: float</span>
+<span class="sd">        Maximum allowed WFE in RMS. Used forvnormalization. Units in [\mu m].</span>
+<span class="sd">        Default is ``0.1``.</span>
+<span class="sd">    output_dim: int</span>
+<span class="sd">        Output dimension of the square PSF stamp. Default is `64`.</span>
+<span class="sd">    rand_seed: int</span>
+<span class="sd">        Random seed to be used to generate random zernike values.</span>
+<span class="sd">        Default is `None`.</span>
+<span class="sd">    plot_opt: bool</span>
+<span class="sd">        Option to plot some characteristics of the PSF generated.</span>
+<span class="sd">        Default is `False`.</span>
+<span class="sd">    oversampling_rate: float</span>
+<span class="sd">        Oversampling rate for the wavefront PSF simulation. Default is `2.14`</span>
+<span class="sd">        that is the minumum number required by Euclid so that there is no</span>
+<span class="sd">        aliasing at any wavelength in the pass band [0.55um, 0.9um].</span>
+<span class="sd">    output_Q: float</span>
+<span class="sd">        Downsampling rate to match the specified telescope&#39;s sampling. The value</span>
+<span class="sd">        of `output_Q` should be equal to `oversampling_rate` in order to have</span>
+<span class="sd">        the right pixel sampling corresponding to the telescope characteristics</span>
+<span class="sd">        `pix_sampling`, `tel_diameter`, `tel_focal_length`. The final</span>
+<span class="sd">        oversampling obtained is `oversampling_rate/output_Q`.</span>
+<span class="sd">        Default is `1`, so the output psf will be super-resolved by a factor of</span>
+<span class="sd">        `oversampling_rate`.</span>
+<span class="sd">    pix_sampling: float</span>
+<span class="sd">        Pixel sampling in [um]. Default is `12`[um] (Euclid-like).</span>
+<span class="sd">    tel_diameter: float</span>
+<span class="sd">        Telescope&#39;s main mirror diameter in [m]. Default is `1.2`[m]</span>
+<span class="sd">        (Euclid-like).</span>
+<span class="sd">    tel_focal_length: float</span>
+<span class="sd">        Telescope&#39;s focal length in [m]. Default is `24.5`[m] (Euclid-like).</span>
+<span class="sd">    pupil_diameter: int</span>
+<span class="sd">        Pupil diameter in pixels. Number of samples of the wavefront in the</span>
+<span class="sd">        pupil plane. More specifically, the Optical Path Differences map.</span>
+<span class="sd">        Default is `1024` [pix].</span>
+<span class="sd">    euclid_obsc: bool</span>
+<span class="sd">        Wheter to use Euclid-like obscurations. Defualt is `True`.</span>
+<span class="sd">    LP_filter_length: int</span>
+<span class="sd">        Length of one dimension of the Low-Pass (LP) filter to apply to the</span>
+<span class="sd">        obscurations to avoid the aliasing effect. The filter is a simple</span>
+<span class="sd">        top-hat filter. Default is `3`.</span>
+<span class="sd">    verbose: int</span>
+<span class="sd">        Self-explanatory variable. Default is `0`, use a value `&gt;0` to activate.</span>
+<span class="sd">    SED_sigma: float</span>
+<span class="sd">        Standard deviation of the multiplicative SED Gaussian noise.</span>
+<span class="sd">    SED_interp_pts_per_bin: int</span>
+<span class="sd">        Number of points to interpolate in between SED values. It can be 0, 1 or 2.</span>
+<span class="sd">    SED_extrapolate: bool</span>
+<span class="sd">        SED interpolation mode. Default mode uses extrapolation.</span>
+<span class="sd">    SED_interp_kind: str</span>
+<span class="sd">        SED interpolation kind. Options are `&#39;cubic&#39;` or `&#39;linear&#39;`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="c1">#   zernike_maps,</span>
+        <span class="n">max_order</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span>
+        <span class="n">max_wfe_rms</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">output_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+        <span class="n">rand_seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">plot_opt</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">oversampling_rate</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>
+        <span class="n">output_Q</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">pix_sampling</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+        <span class="n">tel_diameter</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span>
+        <span class="n">tel_focal_length</span><span class="o">=</span><span class="mf">24.5</span><span class="p">,</span>
+        <span class="n">pupil_diameter</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+        <span class="n">euclid_obsc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">LP_filter_length</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">SED_sigma</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">SED_interp_pts_per_bin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">SED_extrapolate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">SED_interp_kind</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="c1"># Telescope characteristics</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oversampling_rate</span> <span class="o">=</span> <span class="n">oversampling_rate</span>  <span class="c1"># dimensionless</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_Q</span> <span class="o">=</span> <span class="n">output_Q</span>  <span class="c1"># dimensionless</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pix_sampling</span> <span class="o">=</span> <span class="n">pix_sampling</span>  <span class="c1"># In [um]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tel_diameter</span> <span class="o">=</span> <span class="n">tel_diameter</span>  <span class="c1"># In [m]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tel_focal_length</span> <span class="o">=</span> <span class="n">tel_focal_length</span>  <span class="c1"># In [m]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pupil_diameter</span> <span class="o">=</span> <span class="n">pupil_diameter</span>  <span class="c1"># In [pix]</span>
+
+        <span class="c1"># Input attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_order</span> <span class="o">=</span> <span class="n">max_order</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rand_seed</span> <span class="o">=</span> <span class="n">rand_seed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_opt</span> <span class="o">=</span> <span class="n">plot_opt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zernike_maps</span> <span class="o">=</span> <span class="n">zernike_generator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pupil_diameter</span><span class="p">)</span>
+        <span class="c1"># self.zernike_maps = zernike_maps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_wfe_rms</span> <span class="o">=</span> <span class="n">max_wfe_rms</span>  <span class="c1"># In [um]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span> <span class="o">=</span> <span class="n">output_dim</span>  <span class="c1"># In pixels per dimension</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">SED_sigma</span> <span class="o">=</span> <span class="n">SED_sigma</span>  <span class="c1"># std dev for the SED noise distribution</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SED_interp_pts_per_bin</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">SED_interp_pts_per_bin</span>  <span class="c1"># Number of points to add to each SED bin</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SED_extrapolate</span> <span class="o">=</span> <span class="n">SED_extrapolate</span>  <span class="c1"># SED interpolation mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SED_interp_kind</span> <span class="o">=</span> <span class="n">SED_interp_kind</span>  <span class="c1"># Type of interpolation for the SED</span>
+
+        <span class="c1"># Class attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">z_coeffs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">psf</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opd</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_obs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">poly_psf</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Generate pupil mask</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pupil_mask</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zernike_maps</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="c1"># Generate obscurations</span>
+        <span class="k">if</span> <span class="n">euclid_obsc</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">obscurations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_pupil_obscurations</span><span class="p">(</span>
+                <span class="n">N_pix</span><span class="o">=</span><span class="n">pupil_diameter</span><span class="p">,</span> <span class="n">N_filter</span><span class="o">=</span><span class="n">LP_filter_length</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">obscurations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">pupil_diameter</span><span class="p">,</span> <span class="n">pupil_diameter</span><span class="p">))</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_OLD_fft_diffraction_op</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">pupil_mask</span><span class="p">,</span> <span class="n">pad_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">match_shapes</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Perform a fft-based diffraction.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        wf: np.ndarray</span>
+<span class="sd">            A complex 2D array that corresponds to the wavefront function.</span>
+<span class="sd">        pupil_mask: np.ndarray of bools</span>
+<span class="sd">            A 2D boolean mask that corresponds to the pupil function.</span>
+
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        psf: np.ndarray</span>
+<span class="sd">            A real 2D array corresponding to the PSF.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="p">(</span><span class="n">wf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">pad_factor</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">wf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="n">stop</span> <span class="o">=</span> <span class="p">(</span><span class="n">wf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">pad_factor</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">wf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span>
+
+        <span class="n">padded_wf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">wf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">pad_factor</span><span class="p">,</span> <span class="n">wf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">pad_factor</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span>
+        <span class="p">)</span>
+
+        <span class="n">padded_wf</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">][</span><span class="n">pupil_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">wf</span><span class="p">[</span><span class="n">pupil_mask</span><span class="p">]</span>
+
+        <span class="n">fft_wf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft2</span><span class="p">(</span><span class="n">padded_wf</span><span class="p">))</span>
+        <span class="c1"># fft_wf = np.fft.fftshift(np.fft.fft2(np.fft.ifftshift(padded_wf)))</span>
+
+        <span class="n">psf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">fft_wf</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+
+        <span class="k">if</span> <span class="n">match_shapes</span><span class="p">:</span>
+            <span class="c1"># Return the psf with its original shape without the padding factor</span>
+            <span class="n">x_dif</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">psf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">pad_factor</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">y_dif</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">psf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">pad_factor</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">psf</span><span class="p">[</span><span class="n">x_dif</span> <span class="p">:</span> <span class="n">psf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">x_dif</span><span class="p">,</span> <span class="n">y_dif</span> <span class="p">:</span> <span class="n">psf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">y_dif</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">psf</span>
+
+<div class="viewcode-block" id="SimPSFToolkit.fft_diffract">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.fft_diffract">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">fft_diffract</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">output_Q</span><span class="p">,</span> <span class="n">output_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">):</span>
+        <span class="c1"># Perform the FFT-based diffraction operation</span>
+        <span class="n">fft_wf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft2</span><span class="p">(</span><span class="n">wf</span><span class="p">))</span>
+        <span class="n">psf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">fft_wf</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+
+        <span class="c1"># Calculate crop dimensions</span>
+        <span class="k">if</span> <span class="n">output_dim</span> <span class="o">*</span> <span class="n">output_Q</span> <span class="o">&lt;</span> <span class="n">psf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">psf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="n">output_dim</span> <span class="o">*</span> <span class="n">output_Q</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">psf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">output_dim</span> <span class="o">*</span> <span class="n">output_Q</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="n">psf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Crop psf</span>
+        <span class="n">psf</span> <span class="o">=</span> <span class="n">psf</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">]</span>
+
+        <span class="c1"># Downsample the image depending on `self.output_Q`</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">psf</span> <span class="o">=</span> <span class="n">resize</span><span class="p">(</span>
+                <span class="n">src</span><span class="o">=</span><span class="n">psf</span><span class="p">,</span>
+                <span class="n">dsize</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">output_dim</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">output_dim</span><span class="p">)),</span>
+                <span class="n">interpolation</span><span class="o">=</span><span class="n">INTER_AREA</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">f_x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">psf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">output_dim</span><span class="p">)</span>
+            <span class="n">f_y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">psf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">output_dim</span><span class="p">)</span>
+            <span class="n">psf</span> <span class="o">=</span> <span class="n">downscale_local_mean</span><span class="p">(</span>
+                <span class="n">image</span><span class="o">=</span><span class="n">psf</span><span class="p">,</span>
+                <span class="n">factors</span><span class="o">=</span><span class="p">(</span><span class="n">f_x</span><span class="p">,</span> <span class="n">f_y</span><span class="p">),</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">psf</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.generate_pupil_obscurations">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.generate_pupil_obscurations">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">generate_pupil_obscurations</span><span class="p">(</span><span class="n">N_pix</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">N_filter</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate Euclid like pupil obscurations.</span>
+
+<span class="sd">        Simple procedure considering only the 2D plane.</span>
+<span class="sd">        No 3D projections wrt the angle of the FoV is done.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        N_pix: int</span>
+<span class="sd">            Total number of pixels</span>
+<span class="sd">        N_filter: int</span>
+<span class="sd">            Length of the low-pass filter [pixels]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Telescope parameters</span>
+        <span class="n">AS_diam</span> <span class="o">=</span> <span class="mi">1200</span>  <span class="c1"># Aperture stop diameter [mm]</span>
+        <span class="n">M1_diam</span> <span class="o">=</span> <span class="mi">395</span>  <span class="c1"># Mirror 1 cap stopper diameter [mm]</span>
+
+        <span class="n">sp_lenght</span> <span class="o">=</span> <span class="mi">700</span>  <span class="c1"># Spider length [mm]</span>
+        <span class="n">sp_width</span> <span class="o">=</span> <span class="mi">12</span>  <span class="c1"># Spider width [mm]</span>
+
+        <span class="n">AS_centre</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">M1_centre</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">51</span><span class="p">]</span>
+
+        <span class="n">sp1_angle</span> <span class="o">=</span> <span class="mf">106.78</span> <span class="o">-</span> <span class="mi">90</span>  <span class="c1"># [degrees]</span>
+        <span class="n">sp2_angle</span> <span class="o">=</span> <span class="mf">50.11</span> <span class="o">-</span> <span class="mi">90</span>  <span class="c1"># [degrees]</span>
+        <span class="n">sp3_angle</span> <span class="o">=</span> <span class="o">-</span><span class="mf">10.76</span> <span class="o">-</span> <span class="mi">90</span>  <span class="c1"># [degrees]</span>
+
+        <span class="n">sp1_x_pos</span> <span class="o">=</span> <span class="mi">260</span>  <span class="c1"># [mm]</span>
+        <span class="n">sp1_y_pos</span> <span class="o">=</span> <span class="mi">240</span>  <span class="c1"># [mm]</span>
+        <span class="n">sp2_x_pos</span> <span class="o">=</span> <span class="o">-</span><span class="mi">330</span>  <span class="c1"># [mm]</span>
+        <span class="n">sp2_y_pos</span> <span class="o">=</span> <span class="mi">130</span>  <span class="c1"># [mm]</span>
+        <span class="n">sp3_x_pos</span> <span class="o">=</span> <span class="mi">70</span>  <span class="c1"># [mm]</span>
+        <span class="n">sp3_y_pos</span> <span class="o">=</span> <span class="o">-</span><span class="mi">330</span>  <span class="c1"># [mm]</span>
+
+        <span class="c1"># Build pupil plane</span>
+        <span class="n">pupil_plane</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">N_pix</span><span class="p">,</span> <span class="n">N_pix</span><span class="p">))</span>
+
+        <span class="c1"># coordinates of map in [mm]</span>
+        <span class="n">W</span><span class="p">,</span> <span class="n">H</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">AS_diam</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">AS_diam</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">N_pix</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">AS_diam</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">AS_diam</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span> <span class="n">N_pix</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="c1">### Calculate the Aperture stop and draw it ###</span>
+        <span class="n">aperture_stop_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">W</span> <span class="o">-</span> <span class="n">AS_centre</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">H</span> <span class="o">-</span> <span class="n">AS_centre</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">AS_diam</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">pupil_plane</span><span class="p">[</span><span class="o">~</span><span class="n">aperture_stop_mask</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1">### Calculate the M1/M2 obscurations and draw them ###</span>
+        <span class="n">M1_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">W</span> <span class="o">-</span> <span class="n">M1_centre</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">H</span> <span class="o">-</span> <span class="n">M1_centre</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(</span>
+            <span class="n">M1_diam</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="p">)</span>
+        <span class="n">pupil_plane</span><span class="p">[</span><span class="n">M1_mask</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1">### Calculate the spiders and draw them ###</span>
+
+        <span class="c1"># Spider 1</span>
+        <span class="n">sp1_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">sp1_angle</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span><span class="p">))</span>
+        <span class="n">sp1_b</span> <span class="o">=</span> <span class="n">sp1_y_pos</span> <span class="o">-</span> <span class="n">sp1_a</span> <span class="o">*</span> <span class="n">sp1_x_pos</span>
+
+        <span class="n">sp1_mask_1</span> <span class="o">=</span> <span class="n">sp1_a</span> <span class="o">*</span> <span class="n">W</span> <span class="o">+</span> <span class="n">sp1_b</span> <span class="o">-</span> <span class="n">sp_width</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">sp1_a</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">H</span>
+        <span class="n">sp1_mask_2</span> <span class="o">=</span> <span class="n">sp1_a</span> <span class="o">*</span> <span class="n">W</span> <span class="o">+</span> <span class="n">sp1_b</span> <span class="o">+</span> <span class="n">sp_width</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">sp1_a</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">H</span>
+        <span class="n">sp1_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">sp1_mask_1</span><span class="p">,</span> <span class="n">sp1_mask_2</span><span class="p">)</span>
+
+        <span class="n">sp1_length_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">W</span> <span class="o">-</span> <span class="n">sp1_x_pos</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">H</span> <span class="o">-</span> <span class="n">sp1_y_pos</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(</span>
+            <span class="n">sp_lenght</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="p">)</span>
+        <span class="n">sp1_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">sp1_mask</span><span class="p">,</span> <span class="n">sp1_length_mask</span><span class="p">)</span>
+
+        <span class="c1"># Spider 2</span>
+        <span class="n">sp2_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">sp2_angle</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span><span class="p">))</span>
+        <span class="n">sp2_b</span> <span class="o">=</span> <span class="n">sp2_y_pos</span> <span class="o">-</span> <span class="n">sp2_a</span> <span class="o">*</span> <span class="n">sp2_x_pos</span>
+
+        <span class="n">sp2_mask_1</span> <span class="o">=</span> <span class="n">sp2_a</span> <span class="o">*</span> <span class="n">W</span> <span class="o">+</span> <span class="n">sp2_b</span> <span class="o">-</span> <span class="n">sp_width</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">sp2_a</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">H</span>
+        <span class="n">sp2_mask_2</span> <span class="o">=</span> <span class="n">sp2_a</span> <span class="o">*</span> <span class="n">W</span> <span class="o">+</span> <span class="n">sp2_b</span> <span class="o">+</span> <span class="n">sp_width</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">sp2_a</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">H</span>
+        <span class="n">sp2_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">sp2_mask_1</span><span class="p">,</span> <span class="n">sp2_mask_2</span><span class="p">)</span>
+
+        <span class="n">sp2_length_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">W</span> <span class="o">-</span> <span class="n">sp2_x_pos</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">H</span> <span class="o">-</span> <span class="n">sp2_y_pos</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(</span>
+            <span class="n">sp_lenght</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="p">)</span>
+        <span class="n">sp2_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">sp2_mask</span><span class="p">,</span> <span class="n">sp2_length_mask</span><span class="p">)</span>
+
+        <span class="c1"># Spider 3</span>
+        <span class="n">sp3_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">sp3_angle</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span><span class="p">))</span>
+        <span class="n">sp3_b</span> <span class="o">=</span> <span class="n">sp3_y_pos</span> <span class="o">-</span> <span class="n">sp3_a</span> <span class="o">*</span> <span class="n">sp3_x_pos</span>
+
+        <span class="n">sp3_mask_1</span> <span class="o">=</span> <span class="n">sp3_a</span> <span class="o">*</span> <span class="n">W</span> <span class="o">+</span> <span class="n">sp3_b</span> <span class="o">-</span> <span class="n">sp_width</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">sp3_a</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">H</span>
+        <span class="n">sp3_mask_2</span> <span class="o">=</span> <span class="n">sp3_a</span> <span class="o">*</span> <span class="n">W</span> <span class="o">+</span> <span class="n">sp3_b</span> <span class="o">+</span> <span class="n">sp_width</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">sp3_a</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">H</span>
+        <span class="n">sp3_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">sp3_mask_1</span><span class="p">,</span> <span class="n">sp3_mask_2</span><span class="p">)</span>
+
+        <span class="n">sp3_length_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">W</span> <span class="o">-</span> <span class="n">sp3_x_pos</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">H</span> <span class="o">-</span> <span class="n">sp3_y_pos</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(</span>
+            <span class="n">sp_lenght</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="p">)</span>
+        <span class="n">sp3_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">sp3_mask</span><span class="p">,</span> <span class="n">sp3_length_mask</span><span class="p">)</span>
+
+        <span class="c1"># Draw the three spider arms</span>
+        <span class="n">pupil_plane</span><span class="p">[</span><span class="n">sp1_mask</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">pupil_plane</span><span class="p">[</span><span class="n">sp2_mask</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">pupil_plane</span><span class="p">[</span><span class="n">sp3_mask</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1">### Low-pass filter the image ###</span>
+        <span class="n">top_hat_filter</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">N_filter</span><span class="p">,</span> <span class="n">N_filter</span><span class="p">))</span>
+
+        <span class="n">pupil_plane</span> <span class="o">=</span> <span class="n">spsig</span><span class="o">.</span><span class="n">convolve2d</span><span class="p">(</span>
+            <span class="n">pupil_plane</span><span class="p">,</span> <span class="n">top_hat_filter</span><span class="p">,</span> <span class="n">boundary</span><span class="o">=</span><span class="s2">&quot;fill&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;same&quot;</span><span class="p">,</span> <span class="n">fillvalue</span><span class="o">=</span><span class="mi">0</span>
+        <span class="p">)</span>
+
+        <span class="n">pupil_plane</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">top_hat_filter</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">pupil_plane</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.crop_img">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.crop_img">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">crop_img</span><span class="p">(</span><span class="n">to_crop_img</span><span class="p">,</span> <span class="n">ref_im</span><span class="p">):</span>
+        <span class="n">cent_x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">to_crop_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">cent_y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">to_crop_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">delta_x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ref_im</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">delta_y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ref_im</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">to_crop_img</span><span class="p">[</span>
+            <span class="n">cent_x</span> <span class="o">-</span> <span class="n">delta_x</span> <span class="p">:</span> <span class="n">cent_x</span> <span class="o">+</span> <span class="n">delta_x</span><span class="p">,</span> <span class="n">cent_y</span> <span class="o">-</span> <span class="n">delta_y</span> <span class="p">:</span> <span class="n">cent_y</span> <span class="o">+</span> <span class="n">delta_y</span>
+        <span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.decimate_im">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.decimate_im">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">decimate_im</span><span class="p">(</span><span class="n">input_im</span><span class="p">,</span> <span class="n">decim_f</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Decimate image.</span>
+
+<span class="sd">        Decimated by a factor of decim_f.</span>
+<span class="sd">        Based on the PIL library using the default interpolator.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">pil_im</span> <span class="o">=</span> <span class="n">PIL</span><span class="o">.</span><span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">input_im</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">pil_im</span><span class="o">.</span><span class="n">width</span> <span class="o">//</span> <span class="n">decim_f</span><span class="p">,</span> <span class="n">pil_im</span><span class="o">.</span><span class="n">height</span> <span class="o">//</span> <span class="n">decim_f</span><span class="p">)</span>
+        <span class="n">im_resized</span> <span class="o">=</span> <span class="n">pil_im</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">im_resized</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.get_radial_idx">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.get_radial_idx">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_radial_idx</span><span class="p">(</span><span class="n">max_order</span><span class="o">=</span><span class="mi">45</span><span class="p">):</span>
+        <span class="n">it</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">radial_idxs</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">radial_idxs</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">max_order</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">_it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">it</span><span class="p">):</span>
+                <span class="n">radial_idxs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">it</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+            <span class="n">it</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">radial_idxs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.psf_plotter">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.psf_plotter">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">psf_plotter</span><span class="p">(</span><span class="n">psf</span><span class="p">,</span> <span class="n">lambda_obs</span><span class="o">=</span><span class="mf">0.000</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gist_stern&quot;</span><span class="p">,</span> <span class="n">save_img</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+
+        <span class="n">ax1</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">131</span><span class="p">)</span>
+        <span class="n">im1</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">psf</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;None&quot;</span><span class="p">)</span>
+        <span class="n">divider</span> <span class="o">=</span> <span class="n">make_axes_locatable</span><span class="p">(</span><span class="n">ax1</span><span class="p">)</span>
+        <span class="n">cax</span> <span class="o">=</span> <span class="n">divider</span><span class="o">.</span><span class="n">append_axes</span><span class="p">(</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s2">&quot;5%&quot;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im1</span><span class="p">,</span> <span class="n">cax</span><span class="o">=</span><span class="n">cax</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s2">&quot;vertical&quot;</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;PSF (lambda=</span><span class="si">%.3f</span><span class="s2"> [um])&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">lambda_obs</span><span class="p">))</span>
+
+        <span class="n">ax2</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">132</span><span class="p">)</span>
+        <span class="n">im2</span> <span class="o">=</span> <span class="n">ax2</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">psf</span><span class="p">)),</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;None&quot;</span><span class="p">)</span>
+        <span class="n">divider2</span> <span class="o">=</span> <span class="n">make_axes_locatable</span><span class="p">(</span><span class="n">ax2</span><span class="p">)</span>
+        <span class="n">cax2</span> <span class="o">=</span> <span class="n">divider2</span><span class="o">.</span><span class="n">append_axes</span><span class="p">(</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s2">&quot;5%&quot;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im2</span><span class="p">,</span> <span class="n">cax</span><span class="o">=</span><span class="n">cax2</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s2">&quot;vertical&quot;</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;sqrt PSF (lambda=</span><span class="si">%.3f</span><span class="s2"> [um])&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">lambda_obs</span><span class="p">))</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+
+        <span class="n">ax3</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">133</span><span class="p">)</span>
+        <span class="n">im3</span> <span class="o">=</span> <span class="n">ax3</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">psf</span><span class="p">)),</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;None&quot;</span><span class="p">)</span>
+        <span class="n">divider3</span> <span class="o">=</span> <span class="n">make_axes_locatable</span><span class="p">(</span><span class="n">ax3</span><span class="p">)</span>
+        <span class="n">cax3</span> <span class="o">=</span> <span class="n">divider3</span><span class="o">.</span><span class="n">append_axes</span><span class="p">(</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s2">&quot;5%&quot;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im3</span><span class="p">,</span> <span class="n">cax</span><span class="o">=</span><span class="n">cax3</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s2">&quot;vertical&quot;</span><span class="p">)</span>
+        <span class="n">ax3</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;log PSF (lambda=</span><span class="si">%.3f</span><span class="s2"> [um])&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">lambda_obs</span><span class="p">))</span>
+        <span class="n">ax3</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+        <span class="n">ax3</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+
+        <span class="k">if</span> <span class="n">save_img</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;./PSF_lambda_</span><span class="si">%.3f</span><span class="s2">.pdf&quot;</span> <span class="o">%</span> <span class="n">lambda_obs</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.opd_phase_plotter">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.opd_phase_plotter">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">opd_phase_plotter</span><span class="p">(</span>
+        <span class="n">pupil_mask</span><span class="p">,</span> <span class="n">opd</span><span class="p">,</span> <span class="n">phase</span><span class="p">,</span> <span class="n">lambda_obs</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;viridis&quot;</span><span class="p">,</span> <span class="n">save_img</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">):</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+
+        <span class="n">ax1</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">131</span><span class="p">)</span>
+        <span class="n">im1</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">pupil_mask</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;None&quot;</span><span class="p">)</span>
+        <span class="n">divider</span> <span class="o">=</span> <span class="n">make_axes_locatable</span><span class="p">(</span><span class="n">ax1</span><span class="p">)</span>
+        <span class="n">cax</span> <span class="o">=</span> <span class="n">divider</span><span class="o">.</span><span class="n">append_axes</span><span class="p">(</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s2">&quot;5%&quot;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im1</span><span class="p">,</span> <span class="n">cax</span><span class="o">=</span><span class="n">cax</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s2">&quot;vertical&quot;</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Pupil mask&quot;</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+
+        <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">opd</span><span class="p">))</span>
+        <span class="n">ax2</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">132</span><span class="p">)</span>
+        <span class="n">im2</span> <span class="o">=</span> <span class="n">ax2</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">opd</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;None&quot;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="n">vmax</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
+        <span class="n">divider2</span> <span class="o">=</span> <span class="n">make_axes_locatable</span><span class="p">(</span><span class="n">ax2</span><span class="p">)</span>
+        <span class="n">cax2</span> <span class="o">=</span> <span class="n">divider2</span><span class="o">.</span><span class="n">append_axes</span><span class="p">(</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s2">&quot;5%&quot;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im2</span><span class="p">,</span> <span class="n">cax</span><span class="o">=</span><span class="n">cax2</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s2">&quot;vertical&quot;</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;OPD [um]&quot;</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+
+        <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">phase</span><span class="p">)))</span>
+        <span class="n">ax3</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">133</span><span class="p">)</span>
+        <span class="n">im3</span> <span class="o">=</span> <span class="n">ax3</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">phase</span><span class="p">),</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;None&quot;</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="n">vmax</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span>
+        <span class="p">)</span>
+        <span class="n">divider3</span> <span class="o">=</span> <span class="n">make_axes_locatable</span><span class="p">(</span><span class="n">ax3</span><span class="p">)</span>
+        <span class="n">cax3</span> <span class="o">=</span> <span class="n">divider3</span><span class="o">.</span><span class="n">append_axes</span><span class="p">(</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s2">&quot;5%&quot;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im3</span><span class="p">,</span> <span class="n">cax</span><span class="o">=</span><span class="n">cax3</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s2">&quot;vertical&quot;</span><span class="p">)</span>
+        <span class="n">ax3</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;W phase [rad](wv=</span><span class="si">%.2f</span><span class="s2">[um])&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">lambda_obs</span><span class="p">))</span>
+        <span class="n">ax3</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+        <span class="n">ax3</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+
+        <span class="k">if</span> <span class="n">save_img</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;./OPD_lambda_</span><span class="si">%.3f</span><span class="s2">.pdf&quot;</span> <span class="o">%</span> <span class="n">lambda_obs</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.get_psf">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.get_psf">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_psf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">psf</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">psf</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No PSF has been computed yet.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.plot_psf">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.plot_psf">[docs]</a>
+    <span class="k">def</span> <span class="nf">plot_psf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gist_stern&quot;</span><span class="p">,</span> <span class="n">save_img</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">psf</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">psf_plotter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">psf</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_obs</span><span class="p">,</span> <span class="n">cmap</span><span class="p">,</span> <span class="n">save_img</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No PSF has been computed yet.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.plot_opd_phase">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.plot_opd_phase">[docs]</a>
+    <span class="k">def</span> <span class="nf">plot_opd_phase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;viridis&quot;</span><span class="p">,</span> <span class="n">save_img</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">opd</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">opd_phase_plotter</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pupil_mask</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">obscurations</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">opd</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">obscurations</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">phase</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lambda_obs</span><span class="p">,</span>
+                <span class="n">cmap</span><span class="p">,</span>
+                <span class="n">save_img</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No WF has been computed yet.&quot;</span><span class="p">)</span></div>
+
+
+    <span class="c1"># This method is a setter</span>
+<div class="viewcode-block" id="SimPSFToolkit.gen_random_Z_coeffs">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.gen_random_Z_coeffs">[docs]</a>
+    <span class="k">def</span> <span class="nf">gen_random_Z_coeffs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_order</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span> <span class="n">rand_seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a random set of Zernike coefficients.</span>
+
+<span class="sd">        The coefficients are generated following a uniform law U~[-1,1]</span>
+<span class="sd">        divided by their radial zernike index.</span>
+<span class="sd">        Ex: u_i / r(i) (u_i is a realization of U)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        max_order: int</span>
+<span class="sd">            Maximum order of Zernike polynomials.</span>
+<span class="sd">        rand_seed: int</span>
+<span class="sd">            Seed for the random initialization.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        rand_coeffs: list of floats</span>
+<span class="sd">            List containing the random coefficients.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">rand_seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">rand_seed</span><span class="p">)</span>
+
+        <span class="n">rad_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_radial_idx</span><span class="p">(</span><span class="n">max_order</span><span class="p">)</span>
+        <span class="n">rad_idx</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="n">z_coeffs</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_order</span><span class="p">):</span>
+            <span class="n">z_coeffs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="n">rad_idx</span><span class="p">[</span><span class="n">it</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">z_coeffs</span> <span class="o">=</span> <span class="n">z_coeffs</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.plot_z_coeffs">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.plot_z_coeffs">[docs]</a>
+    <span class="k">def</span> <span class="nf">plot_z_coeffs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_img</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot random Zernike coefficients.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_coeffs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+            <span class="n">ax1</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+            <span class="n">im1</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z_coeffs</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z_coeffs</span><span class="p">))</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Zernike coefficients&quot;</span><span class="p">)</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Magnitude&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">save_img</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;./Z_coeffs.pdf&quot;</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span>
+
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Random coeffs not generated.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.get_z_coeffs">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.get_z_coeffs">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_z_coeffs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get random coefficients&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_coeffs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_coeffs</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Random coeffs not generated.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.set_z_coeffs">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.set_z_coeffs">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_z_coeffs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_coeffs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set zernike coefficients.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">z_coeffs</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_order</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">z_coeffs</span> <span class="o">=</span> <span class="n">z_coeffs</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Zernike coefficients should be of length </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_order</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.normalize_zernikes">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.normalize_zernikes">[docs]</a>
+    <span class="k">def</span> <span class="nf">normalize_zernikes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_coeffs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_wfe_rms</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalize zernike coefficients.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">max_wfe_rms</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">max_wfe_rms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_wfe_rms</span>
+
+        <span class="c1"># Calculate normalization factor</span>
+        <span class="n">wfe_rms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_wfe_rms</span><span class="p">(</span><span class="n">z_coeffs</span><span class="o">=</span><span class="n">z_coeffs</span><span class="p">)</span>
+        <span class="n">mult_factor</span> <span class="o">=</span> <span class="n">max_wfe_rms</span> <span class="o">/</span> <span class="n">wfe_rms</span>
+
+        <span class="c1"># Normalize Zernike coefficients and return them</span>
+        <span class="n">z_coeffs</span> <span class="o">=</span> <span class="p">[</span><span class="n">_z</span> <span class="o">*</span> <span class="n">mult_factor</span> <span class="k">for</span> <span class="n">_z</span> <span class="ow">in</span> <span class="n">z_coeffs</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">z_coeffs</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.calculate_wfe_rms">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.calculate_wfe_rms">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_wfe_rms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_coeffs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate WFE rms from a set of zernike coefficients.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">z_coeffs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_coeffs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gen_random_Z_coeffs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rand_seed</span><span class="p">)</span>
+                <span class="n">z_coeffs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_z_coeffs</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">z_coeffs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_z_coeffs</span><span class="p">()</span>
+
+        <span class="c1"># Create the phase with the Zernike basis</span>
+        <span class="n">opd</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_order</span><span class="p">):</span>
+            <span class="n">opd</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zernike_maps</span><span class="p">[</span><span class="n">it</span><span class="p">]</span> <span class="o">*</span> <span class="n">z_coeffs</span><span class="p">[</span><span class="n">it</span><span class="p">]</span>
+
+        <span class="c1"># Proyect obscurations on to the OPD</span>
+        <span class="n">opd</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obscurations</span>
+
+        <span class="c1"># Calculate normalization factor</span>
+        <span class="n">wfe_rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">opd</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pupil_mask</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">opd</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pupil_mask</span><span class="p">]))</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">wfe_rms</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.check_wfe_rms">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.check_wfe_rms">[docs]</a>
+    <span class="k">def</span> <span class="nf">check_wfe_rms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_coeffs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_wfe_rms</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if Zernike coefficients are within the maximum admitted error.&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">max_wfe_rms</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">max_wfe_rms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_wfe_rms</span>
+
+        <span class="c1"># Calculate normalization factor</span>
+        <span class="n">wfe_rms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_wfe_rms</span><span class="p">(</span><span class="n">z_coeffs</span><span class="o">=</span><span class="n">z_coeffs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">max_wfe_rms</span> <span class="o">-</span> <span class="n">wfe_rms</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.generate_mono_PSF">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.generate_mono_PSF">[docs]</a>
+    <span class="k">def</span> <span class="nf">generate_mono_PSF</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lambda_obs</span><span class="o">=</span><span class="mf">0.725</span><span class="p">,</span> <span class="n">regen_sample</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">get_psf</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate monochromatic PSF.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">lambda_obs</span> <span class="o">&lt;</span> <span class="mf">0.55</span> <span class="o">*</span> <span class="mf">0.9</span> <span class="ow">or</span> <span class="n">lambda_obs</span> <span class="o">&gt;</span> <span class="mf">0.9</span> <span class="o">*</span> <span class="mf">1.1</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s2">&quot;WARNING: requested wavelength </span><span class="si">%.4f</span><span class="s2"> um is not in VIS passband [0.55,0.9]um&quot;</span>
+                <span class="o">%</span> <span class="p">(</span><span class="n">lambda_obs</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_obs</span> <span class="o">=</span> <span class="n">lambda_obs</span>
+
+        <span class="c1"># Calculate the OPD from the Zernike coefficients</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">calculate_opd</span><span class="p">(</span><span class="n">regen_sample</span><span class="p">)</span>
+
+        <span class="c1"># Apply the diffraction operator using the opd (optical path differences)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">diffract_phase</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">get_psf</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">psf</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.calculate_opd">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.calculate_opd">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate_opd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">regen_sample</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the OPD from the Zernike coefficients.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_coeffs</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">regen_sample</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="c1"># Generate a random sample of coefficients</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gen_random_Z_coeffs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rand_seed</span><span class="p">)</span>
+            <span class="c1"># Normalize coefficients</span>
+            <span class="n">z_coeffs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize_zernikes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_z_coeffs</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_wfe_rms</span><span class="p">)</span>
+            <span class="c1"># Save coefficients</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_z_coeffs</span><span class="p">(</span><span class="n">z_coeffs</span><span class="p">)</span>
+            <span class="c1"># Plot Zernike coefficients</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_opt</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">plot_z_coeffs</span><span class="p">()</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Get the stored Zernike coefficients</span>
+            <span class="n">z_coeffs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_z_coeffs</span><span class="p">()</span>
+
+        <span class="c1"># Create the phase with the Zernike basis</span>
+        <span class="n">opd</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_order</span><span class="p">):</span>
+            <span class="n">opd</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zernike_maps</span><span class="p">[</span><span class="n">it</span><span class="p">]</span> <span class="o">*</span> <span class="n">z_coeffs</span><span class="p">[</span><span class="n">it</span><span class="p">]</span>
+
+        <span class="c1"># Save the wavefront</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">opd</span> <span class="o">=</span> <span class="n">opd</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.diffract_phase">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.diffract_phase">[docs]</a>
+    <span class="k">def</span> <span class="nf">diffract_phase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lambda_obs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Diffract the phase map.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">lambda_obs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_obs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: No wavelength is defined. Using default value 0.8um.&quot;</span><span class="p">)</span>
+                <span class="n">lambda_obs</span> <span class="o">=</span> <span class="mf">0.8</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lambda_obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_obs</span>
+        <span class="k">elif</span> <span class="n">lambda_obs</span> <span class="o">&lt;</span> <span class="mf">0.55</span> <span class="o">*</span> <span class="mf">0.99</span> <span class="ow">or</span> <span class="n">lambda_obs</span> <span class="o">&gt;</span> <span class="mf">0.9</span> <span class="o">*</span> <span class="mf">1.01</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s2">&quot;WARNING: wavelength </span><span class="si">%.4f</span><span class="s2"> is not in VIS passband [0.55,0.9]um&quot;</span>
+                <span class="o">%</span> <span class="p">(</span><span class="n">lambda_obs</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Calculate the feasible lambda closest to lambda_obs</span>
+        <span class="n">possible_lambda</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feasible_wavelength</span><span class="p">(</span><span class="n">lambda_obs</span><span class="p">)</span>
+
+        <span class="c1"># Save wavelength</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_obs</span> <span class="o">=</span> <span class="n">possible_lambda</span>
+
+        <span class="c1"># Calculate the required N for the input lambda_obs</span>
+        <span class="n">possible_N</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feasible_N</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lambda_obs</span><span class="p">)</span>
+
+        <span class="c1"># Generate the full phase and</span>
+        <span class="c1"># Add zeros to the phase to have the correct fourier sampling</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">possible_N</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">opd</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="n">stop</span> <span class="o">=</span> <span class="n">possible_N</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">opd</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">possible_N</span><span class="p">,</span> <span class="n">possible_N</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">complex128</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">pupil_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
+            <span class="mi">2</span><span class="n">j</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">opd</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pupil_mask</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_obs</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Project obscurations to the phase</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">]</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obscurations</span>
+
+        <span class="c1"># FFT-diffract the phase (wavefront) and then crop to desired dimension</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">psf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fft_diffract</span><span class="p">(</span>
+            <span class="n">wf</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">phase</span><span class="p">,</span> <span class="n">output_Q</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_Q</span><span class="p">,</span> <span class="n">output_dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Normalize psf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">psf</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">psf</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.feasible_N">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.feasible_N">[docs]</a>
+    <span class="k">def</span> <span class="nf">feasible_N</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lambda_obs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the feasible N for a lambda_obs diffraction.</span>
+
+<span class="sd">        Input wavelength must be in [um].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Calculate the required N for the input lambda_obs</span>
+        <span class="n">req_N</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oversampling_rate</span>
+            <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pupil_diameter</span>
+            <span class="o">*</span> <span class="n">lambda_obs</span>
+            <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">tel_focal_length</span>
+        <span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tel_diameter</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pix_sampling</span><span class="p">)</span>
+        <span class="c1"># Recalculate the req_N into a possible value (a pair integer)</span>
+        <span class="n">possible_N</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">req_N</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">possible_N</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.feasible_wavelength">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.feasible_wavelength">[docs]</a>
+    <span class="k">def</span> <span class="nf">feasible_wavelength</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lambda_obs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate closest feasible wavelength to target wavelength.</span>
+
+<span class="sd">        Input wavelength must be in [um].</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        lambda_obs: float</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Calculate a feasible N for the input lambda_obs</span>
+        <span class="n">possible_N</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feasible_N</span><span class="p">(</span><span class="n">lambda_obs</span><span class="p">)</span>
+
+        <span class="c1"># Recalculate the corresponding the wavelength</span>
+        <span class="n">possible_lambda</span> <span class="o">=</span> <span class="p">(</span><span class="n">possible_N</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">tel_diameter</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">pix_sampling</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pupil_diameter</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">oversampling_rate</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">tel_focal_length</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># print(&quot;Requested wavelength: %.5f \nRequired N: %.2f&quot;%(lambda_obs, req_N))</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s2">&quot;Possible wavelength: </span><span class="si">%.5f</span><span class="s2"> </span><span class="se">\n</span><span class="s2">Possible N: </span><span class="si">%.2f</span><span class="s2">&quot;</span>
+                <span class="o">%</span> <span class="p">(</span><span class="n">possible_lambda</span><span class="p">,</span> <span class="n">possible_N</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">possible_lambda</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.gen_SED_interp">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.gen_SED_interp">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">gen_SED_interp</span><span class="p">(</span><span class="n">SED</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="mi">35</span><span class="p">,</span> <span class="n">interp_kind</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate SED interpolator.</span>
+
+<span class="sd">        Returns the interpolator and the wavelengths in [nm].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">wv_max</span> <span class="o">=</span> <span class="mi">900</span>
+        <span class="n">wv_min</span> <span class="o">=</span> <span class="mi">550</span>
+        <span class="c1"># wvlength = np.arange(wv_min, wv_max, int((wv_max-wv_min)/n_bins))</span>
+        <span class="n">wvlength</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">wv_min</span><span class="p">,</span> <span class="n">wv_max</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">n_bins</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">SED_interp</span> <span class="o">=</span> <span class="n">sinterp</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span>
+            <span class="n">SED</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="n">SED</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="n">kind</span><span class="o">=</span><span class="n">interp_kind</span><span class="p">,</span>
+            <span class="n">bounds_error</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">fill_value</span><span class="o">=</span><span class="s2">&quot;extrapolate&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">wvlength</span><span class="p">,</span> <span class="n">SED_interp</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.filter_SED">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.filter_SED">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">filter_SED</span><span class="p">(</span><span class="n">SED</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">,</span> <span class="n">filter_lims</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate filtered SED.</span>
+
+<span class="sd">        Returns a &#39;n_bins&#39; point SED and wvlength vector.</span>
+<span class="sd">        Each bin &#39;i&#39; is obtained integrating the SED from filter_lims[i][0] and filter_lims[i][1]</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_bins: int</span>
+<span class="sd">            Number of desired bins for the integrated SED. It should be less or equal to the bins</span>
+<span class="sd">            of the unfilterd SED.</span>
+<span class="sd">        SED: np.ndarray</span>
+<span class="sd">            The unfiltered SED. In the first column it contains the wavelength positions. In the</span>
+<span class="sd">            second column the SED value at each wavelength.</span>
+<span class="sd">        filter_lims: list of np.ndarray</span>
+<span class="sd">            Each element on the list contains the lower und upper integration limits for the bins.</span>
+<span class="sd">            Midpoints of bins should be in increasing order. Bins can overlap or be disjoint.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">wv_step</span> <span class="o">=</span> <span class="n">SED</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">SED</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">wv_max</span> <span class="o">=</span> <span class="n">SED</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">wv_step</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">wv_min</span> <span class="o">=</span> <span class="n">SED</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">wv_step</span> <span class="o">/</span> <span class="mi">2</span>
+
+        <span class="c1"># If not given, define equiespaced equaly sized filters</span>
+        <span class="k">if</span> <span class="n">filter_lims</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">wvlength</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">wv_min</span><span class="p">,</span> <span class="n">wv_max</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">n_bins</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">filter_lims</span> <span class="o">=</span> <span class="p">[</span><span class="n">wvlength</span><span class="p">[</span><span class="n">it</span> <span class="p">:</span> <span class="n">it</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_bins</span><span class="p">)]</span>
+
+        <span class="c1"># Smaller filtered SED</span>
+        <span class="n">SED_filt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_bins</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+
+        <span class="c1"># Sum over each filter band (can include a weigthing function, i.e. filter)</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">lims</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">filter_lims</span><span class="p">):</span>
+            <span class="n">lim_low</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">SED</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">lims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
+            <span class="n">lim_hi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">SED</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">lims</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
+            <span class="c1"># Sum internal points (whole point surrounding inside the bin)</span>
+            <span class="n">SED_filt</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">SED</span><span class="p">[(</span><span class="n">lim_low</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="p">:</span> <span class="n">lim_hi</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="c1"># Sum lower lim portion</span>
+            <span class="n">SED_filt</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">SED_filt</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="o">+</span> <span class="n">SED</span><span class="p">[</span><span class="n">lim_low</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">SED</span><span class="p">[</span><span class="n">lim_low</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">wv_step</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">wv_step</span>
+            <span class="p">)</span>
+            <span class="c1"># Sum upper lim portion</span>
+            <span class="k">if</span> <span class="n">lim_hi</span> <span class="o">!=</span> <span class="n">lim_low</span><span class="p">:</span>
+                <span class="n">SED_filt</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">SED_filt</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+                    <span class="o">+</span> <span class="n">SED</span><span class="p">[</span><span class="n">lim_hi</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+                    <span class="o">*</span> <span class="p">(</span><span class="n">lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">SED</span><span class="p">[</span><span class="n">lim_hi</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">wv_step</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+                    <span class="o">/</span> <span class="n">wv_step</span>
+                <span class="p">)</span>
+            <span class="c1"># Weight by the size of the bin</span>
+            <span class="n">SED_filt</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_filt</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">lims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="c1"># Normalize the SED</span>
+        <span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="c1"># Get each bin center as wavelength samples (filter mass centroid)</span>
+        <span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">filter_lims</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+
+        <span class="k">return</span> <span class="n">SED_filt</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.SED_gen_noise">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.SED_gen_noise">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">SED_gen_noise</span><span class="p">(</span><span class="n">n_bins</span><span class="p">,</span> <span class="n">SED_sigma</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate random normal errors for the binned SED.</span>
+
+<span class="sd">        Returns a vector of size n_bins containing each bin error.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        n_bins: int</span>
+<span class="sd">            Number of bins of the SED. It will be the length of the output noise vector.</span>
+<span class="sd">        SED_sigma: positive float</span>
+<span class="sd">            Standard deviation value of the Gaussian noise vector.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">SED_sigma</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.interp_SED">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.interp_SED">[docs]</a>
+    <span class="k">def</span> <span class="nf">interp_SED</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">SED_filt</span><span class="p">,</span> <span class="n">n_points</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="mi">35</span><span class="p">,</span> <span class="n">interp_kind</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Interpolate the binned SED.</span>
+
+<span class="sd">        Returns a (&#39;n_bins&#39;)x(&#39;n_points&#39;+1) point SED and wvlength vector.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        SED_filt: np.ndarray</span>
+<span class="sd">            The filtered SED. In the first column it contains the wavelength positions. In the</span>
+<span class="sd">            second column the SED value for each bin.</span>
+<span class="sd">        n_points: int</span>
+<span class="sd">            Number of points to add in each of the filtered SED bins. It can only be 1 or 2.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Generate interpolation function from the binned SED</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">SED_interpolator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gen_SED_interp</span><span class="p">(</span>
+            <span class="n">SED_filt</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">,</span> <span class="n">interp_kind</span><span class="o">=</span><span class="n">interp_kind</span>
+        <span class="p">)</span>
+        <span class="n">wv_step</span> <span class="o">=</span> <span class="n">SED_filt</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">SED_filt</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Regenerate the wavelength points</span>
+        <span class="c1"># JP: This can be turned into a function</span>
+        <span class="k">if</span> <span class="n">n_points</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">SED_extrapolate</span><span class="p">:</span>
+                <span class="c1"># Add points at the border of each bin : *--o--*--o--*--o--*--o--*</span>
+                <span class="n">SED</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_bins</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+                <span class="c1"># Set wavelength points then interpolate</span>
+                <span class="n">SED</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+                <span class="n">SED</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">wv_step</span> <span class="o">/</span> <span class="mi">2</span>
+                <span class="n">SED</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_filt</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">wv_step</span> <span class="o">/</span> <span class="mi">2</span>
+                <span class="n">SED</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_interpolator</span><span class="p">(</span><span class="n">SED</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+                <span class="c1"># Set weigths for new bins (borders have half the bin size)</span>
+                <span class="n">SED</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_bins</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">SED</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">SED</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span>
+                <span class="c1"># Apply weights to bins</span>
+                <span class="n">SED</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*=</span> <span class="n">SED</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Add points at the border of each bin with no extrapolation: ---o--*--o--*--o--*--o---</span>
+                <span class="n">SED</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_bins</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+                <span class="c1"># Set wavelength points then interpolate</span>
+                <span class="n">SED</span><span class="p">[::</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+                <span class="n">SED</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_filt</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">wv_step</span> <span class="o">/</span> <span class="mi">2</span>
+                <span class="n">SED</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_interpolator</span><span class="p">(</span><span class="n">SED</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+                <span class="c1"># Set weigths for new bins (borders have half the bin size)</span>
+                <span class="n">SED</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_bins</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">SED</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">SED</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span>
+                <span class="c1"># Apply weights to bins</span>
+                <span class="n">SED</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*=</span> <span class="n">SED</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">n_points</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">SED_extrapolate</span><span class="p">:</span>
+                <span class="c1"># Add 2 points per bin: -*-o-*-*-o-*-*-o-*-*-o-*-</span>
+                <span class="n">SED</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_bins</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+                <span class="n">SED</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+                <span class="n">SED</span><span class="p">[::</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">wv_step</span> <span class="o">/</span> <span class="mi">3</span>
+                <span class="n">SED</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">wv_step</span> <span class="o">/</span> <span class="mi">3</span>
+                <span class="n">SED</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_interpolator</span><span class="p">(</span><span class="n">SED</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+                <span class="c1"># Set weights for new bins (borders have half the bin size)</span>
+                <span class="n">SED</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_bins</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span>
+                <span class="c1"># Apply weights to bins</span>
+                <span class="n">SED</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*=</span> <span class="n">SED</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Add 2 points per bin with no extrapolation: ---o-*-*-o-*-*-o-*-*-o---</span>
+                <span class="n">SED</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_bins</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+                <span class="n">SED</span><span class="p">[::</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+                <span class="n">SED</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_filt</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">wv_step</span> <span class="o">/</span> <span class="mi">3</span>
+                <span class="n">SED</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_filt</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">wv_step</span> <span class="o">/</span> <span class="mi">3</span>
+                <span class="n">SED</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_interpolator</span><span class="p">(</span><span class="n">SED</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+                <span class="c1"># Set weigths for new bins (borders have half the bin size)</span>
+                <span class="n">SED</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_bins</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="n">SED</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">SED</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span>
+                <span class="c1"># Apply weights to bins</span>
+                <span class="n">SED</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*=</span> <span class="n">SED</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">n_points</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">SED_extrapolate</span><span class="p">:</span>
+                <span class="c1"># Add 3 points inside each bin :  *-*-o-*-*-*-o-*-*-*-o-*-*-*-o-*-*</span>
+                <span class="n">SED</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_bins</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+                <span class="c1"># Set wavelength points then interpolate</span>
+                <span class="n">SED</span><span class="p">[</span><span class="mi">4</span><span class="p">::</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">wv_step</span> <span class="o">/</span> <span class="mi">2</span>
+                <span class="n">SED</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_filt</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">wv_step</span> <span class="o">/</span> <span class="mi">2</span>
+                <span class="n">SED</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">wv_step</span> <span class="o">/</span> <span class="mi">4</span>
+                <span class="n">SED</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+                <span class="n">SED</span><span class="p">[</span><span class="mi">3</span><span class="p">::</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">wv_step</span> <span class="o">/</span> <span class="mi">4</span>
+                <span class="c1"># Evaluate interpolator at new points</span>
+                <span class="n">SED</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_interpolator</span><span class="p">(</span><span class="n">SED</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+                <span class="c1"># Set weigths for new bins (borders have half the bin size)</span>
+                <span class="n">SED</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_bins</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">SED</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">SED</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span>
+                <span class="c1"># Apply weights to bins</span>
+                <span class="n">SED</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*=</span> <span class="n">SED</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">SED</span> <span class="o">=</span> <span class="n">SED_filt</span>
+
+        <span class="c1"># Normalize SED</span>
+        <span class="n">SED</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">SED</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">SED</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.gen_SED_sampler">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.gen_SED_sampler">[docs]</a>
+    <span class="k">def</span> <span class="nf">gen_SED_sampler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">SED</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">,</span> <span class="n">interp_kind</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate SED sampler.</span>
+
+<span class="sd">        Returns the sampler and the wavelengths in [nm]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Integrate SED into n_bins</span>
+        <span class="n">SED_filt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_SED</span><span class="p">(</span><span class="n">SED</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">)</span>
+
+        <span class="c1"># Add noise. Scale sigma for each bin. Normalise the SED.</span>
+        <span class="c1"># SED_filt[:,1] = SED_filt[:,1] + self.SED_gen_noise(len(SED_filt), self.SED_sigma)/len(SED_filt) # Here we assume 1/N as the mean bin value</span>
+        <span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
+            <span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">SED_gen_noise</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">SED_filt</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">SED_sigma</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+
+        <span class="c1"># Add inside-bin points - Interpolate</span>
+        <span class="n">SED_filt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interp_SED</span><span class="p">(</span>
+            <span class="n">SED_filt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SED_interp_pts_per_bin</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SED_interp_kind</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Add weights if not present</span>
+        <span class="k">if</span> <span class="n">SED_filt</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">SED_filt</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">SED_filt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">SED_filt</span><span class="p">,</span> <span class="n">weights</span><span class="p">))</span>
+
+        <span class="c1"># Interpolate the unweighted SED</span>
+        <span class="n">SED_sampler</span> <span class="o">=</span> <span class="n">sinterp</span><span class="o">.</span><span class="n">interp1d</span><span class="p">(</span>
+            <span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
+            <span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span>
+            <span class="n">kind</span><span class="o">=</span><span class="n">interp_kind</span><span class="p">,</span>
+            <span class="n">bounds_error</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">fill_value</span><span class="o">=</span><span class="s2">&quot;extrapolate&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">SED_sampler</span><span class="p">,</span> <span class="n">SED_filt</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.calc_SED_wave_values">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.calc_SED_wave_values">[docs]</a>
+    <span class="k">def</span> <span class="nf">calc_SED_wave_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">SED</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="mi">35</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate feasible wavelength and SED values.</span>
+
+<span class="sd">        Feasible so that the padding number N is integer.</span>
+<span class="sd">        Meaning choice of wavelengths matters in speeding</span>
+<span class="sd">        up the diffraction computation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        SED:</span>
+<span class="sd">            Spectral energy distribution for a star</span>
+<span class="sd">        n_bins: int</span>
+<span class="sd">            Number of bins</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Generate SED interpolator and wavelength array (use new sampler method)</span>
+        <span class="n">wvlength</span><span class="p">,</span> <span class="n">SED_interp</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gen_SED_sampler</span><span class="p">(</span><span class="n">SED</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">)</span>
+
+        <span class="c1"># Convert wavelength from [nm] to [um]</span>
+        <span class="n">wvlength_um</span> <span class="o">=</span> <span class="n">wvlength</span> <span class="o">/</span> <span class="mf">1e3</span>
+
+        <span class="c1"># Calculate feasible wavelengths (in [um])</span>
+        <span class="n">verbose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">feasible_wv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">feasible_wavelength</span><span class="p">(</span><span class="n">_wv</span><span class="p">)</span> <span class="k">for</span> <span class="n">_wv</span> <span class="ow">in</span> <span class="n">wvlength_um</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+
+        <span class="c1"># Interpolate and normalize SED</span>
+        <span class="n">SED_norm</span> <span class="o">=</span> <span class="n">SED_interp</span><span class="p">(</span><span class="n">feasible_wv</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">)</span>  <span class="c1"># Interpolation is done in [nm]</span>
+        <span class="n">SED_norm</span> <span class="o">*=</span> <span class="n">weights</span>  <span class="c1"># Weight by the relative size of the bins, then normalise.</span>
+        <span class="n">SED_norm</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">SED_norm</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">feasible_wv</span><span class="p">,</span> <span class="n">SED_norm</span></div>
+
+
+<div class="viewcode-block" id="SimPSFToolkit.generate_poly_PSF">
+<a class="viewcode-back" href="../../../wf_psf.sims.SimPSFToolkit.html#wf_psf.sims.SimPSFToolkit.SimPSFToolkit.generate_poly_PSF">[docs]</a>
+    <span class="k">def</span> <span class="nf">generate_poly_PSF</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">SED</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="mi">35</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate polychromatic PSF with a specific SED.</span>
+
+<span class="sd">        The wavelength space will be the Euclid VIS instrument band:</span>
+<span class="sd">        [550,900]nm and will be sampled in ``n_bins``.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Calculate the feasible values of wavelength and the corresponding</span>
+        <span class="c1"># SED interpolated values</span>
+        <span class="n">feasible_wv</span><span class="p">,</span> <span class="n">SED_norm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_SED_wave_values</span><span class="p">(</span><span class="n">SED</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_opt</span><span class="p">:</span>
+            <span class="c1"># Plot input SEDs and interpolated SEDs</span>
+            <span class="n">wvlength</span><span class="p">,</span> <span class="n">SED_interp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gen_SED_interp</span><span class="p">(</span><span class="n">SED</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">)</span>
+
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+            <span class="n">ax1</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">SED</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">SED</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Input SED&quot;</span><span class="p">)</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+                <span class="n">feasible_wv</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">,</span>
+                <span class="n">SED_interp</span><span class="p">(</span><span class="n">feasible_wv</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">),</span>
+                <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Interpolated&quot;</span><span class="p">,</span>
+                <span class="n">c</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;wavelength [nm]&quot;</span><span class="p">)</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;SED(wavelength)&quot;</span><span class="p">)</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;SED&quot;</span><span class="p">)</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+            <span class="c1"># plt.savefig(output_path+&#39;SED_interp_nbin_%d.pdf&#39;%n_bins, bbox_inches=&#39;tight&#39;)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+        <span class="n">stacked_psf</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># Generate the required monochromatic PSFs</span>
+        <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">feasible_wv</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">generate_mono_PSF</span><span class="p">(</span><span class="n">lambda_obs</span><span class="o">=</span><span class="n">feasible_wv</span><span class="p">[</span><span class="n">it</span><span class="p">])</span>
+            <span class="n">stacked_psf</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_psf</span><span class="p">()</span> <span class="o">*</span> <span class="n">SED_norm</span><span class="p">[</span><span class="n">it</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">poly_psf</span> <span class="o">=</span> <span class="n">stacked_psf</span>
+
+        <span class="k">return</span> <span class="n">stacked_psf</span></div>
+</div>
+
+
+
+<span class="c1"># This pythonic version of the polychromatic calculation is not working</span>
+<span class="c1"># The parallelisation with the class with shared variables might not be working</span>
+<span class="c1"># It may work if we define a @staticmethod for the diffraction</span>
+<span class="c1">#         psf_cube = np.array([_sed*self.generate_mono_PSF(_wv, get_psf=True)</span>
+<span class="c1">#                              for _wv, _sed in zip(feasible_wv, SED_norm)])</span>
+<span class="c1">#         # Sum to obtain the polychromatic PSFs</span>
+<span class="c1">#         self.poly_psf = np.sum(np_psf_cube, axis=0)</span>
+<span class="c1">#         return np.copy(self.poly_psf)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

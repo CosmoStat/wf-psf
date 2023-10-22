@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.psf_models.tf_modules &mdash; wf-psf 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/twemoji.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+        <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"></script>
+        <script src="../../../_static/twemoji.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            wf-psf
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../wf_psf.html">wf_psf package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">wf_psf.psf_models.tf_modules</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for wf_psf.psf_models.tf_modules</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+
+
+<div class="viewcode-block" id="TF_fft_diffract">
+<a class="viewcode-back" href="../../../wf_psf.psf_models.tf_modules.html#wf_psf.psf_models.tf_modules.TF_fft_diffract">[docs]</a>
+<span class="k">class</span> <span class="nc">TF_fft_diffract</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Diffract the wavefront into a monochromatic PSF.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    output_dim: int</span>
+<span class="sd">        Dimension of the output square postage stamp</span>
+<span class="sd">    output_Q: int</span>
+<span class="sd">        Downsampling factor. Must be integer.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">output_Q</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span> <span class="o">=</span> <span class="n">output_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_Q</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">output_Q</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">downsample_layer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">AveragePooling2D</span><span class="p">(</span>
+            <span class="n">pool_size</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_Q</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_Q</span><span class="p">),</span>
+            <span class="n">strides</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="s2">&quot;valid&quot;</span><span class="p">,</span>
+            <span class="n">data_format</span><span class="o">=</span><span class="s2">&quot;channels_last&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="TF_fft_diffract.crop_img">
+<a class="viewcode-back" href="../../../wf_psf.psf_models.tf_modules.html#wf_psf.psf_models.tf_modules.TF_fft_diffract.crop_img">[docs]</a>
+    <span class="k">def</span> <span class="nf">crop_img</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">):</span>
+        <span class="c1"># Crop the image</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">stop</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">image</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span><span class="n">stop</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="TF_fft_diffract.tf_crop_img">
+<a class="viewcode-back" href="../../../wf_psf.psf_models.tf_modules.html#wf_psf.psf_models.tf_modules.TF_fft_diffract.tf_crop_img">[docs]</a>
+    <span class="k">def</span> <span class="nf">tf_crop_img</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">output_crop_dim</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Crop images with tf methods.</span>
+
+<span class="sd">        It handles a batch of 2D images: [batch, width, height]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Define shape at runtime as we don&#39;t know it yet</span>
+        <span class="n">im_shape</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="c1"># start</span>
+        <span class="n">offset_height</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">im_shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">output_crop_dim</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">offset_width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">im_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">output_crop_dim</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="c1"># stop</span>
+        <span class="n">target_height</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">output_crop_dim</span><span class="p">)</span>
+        <span class="n">target_width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">output_crop_dim</span><span class="p">)</span>
+
+        <span class="c1"># Crop image</span>
+        <span class="n">cropped_image</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">crop_to_bounding_box</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">perm</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span>
+            <span class="n">offset_height</span><span class="p">,</span>
+            <span class="n">offset_width</span><span class="p">,</span>
+            <span class="n">target_height</span><span class="p">,</span>
+            <span class="n">target_width</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">cropped_image</span><span class="p">,</span> <span class="n">perm</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="TF_fft_diffract.normalize_psf">
+<a class="viewcode-back" href="../../../wf_psf.psf_models.tf_modules.html#wf_psf.psf_models.tf_modules.TF_fft_diffract.normalize_psf">[docs]</a>
+    <span class="k">def</span> <span class="nf">normalize_psf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">psf</span><span class="p">):</span>
+        <span class="c1"># Sum over all the dimensions</span>
+        <span class="n">norm_factor</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">psf</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">psf</span> <span class="o">/</span> <span class="n">norm_factor</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_phase</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the normalized PSF from the padded phase array.&quot;&quot;&quot;</span>
+        <span class="c1"># Perform the FFT-based diffraction operation</span>
+        <span class="c1"># fft_phase = tf.signal.fftshift(tf.signal.fft2d(input_phase))</span>
+        <span class="n">fft_phase</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">fftshift</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">signal</span><span class="o">.</span><span class="n">fft2d</span><span class="p">(</span><span class="n">input_phase</span><span class="p">[:,</span> <span class="o">...</span><span class="p">]),</span> <span class="n">axes</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">psf</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">fft_phase</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># Crop the image</span>
+        <span class="c1"># We crop to output_dim*Q</span>
+        <span class="n">cropped_psf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_crop_img</span><span class="p">(</span>
+            <span class="n">psf</span><span class="p">,</span> <span class="n">output_crop_dim</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_Q</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Downsample image</span>
+        <span class="c1"># We downsample by a factor Q to get output_dim</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_Q</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">cropped_psf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">downsample_layer</span><span class="p">(</span><span class="n">cropped_psf</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span>
+
+            <span class="c1"># # Alternative solution but tf.image.resize does not have the</span>
+            <span class="c1"># # gradients implemented in tensorflow</span>
+            <span class="c1"># cropped_psf = tf.image.resize(</span>
+            <span class="c1">#     cropped_psf[ ..., tf.newaxis],</span>
+            <span class="c1">#     size=[self.output_dim, self.output_dim],</span>
+            <span class="c1">#     method=tf.image.ResizeMethod.AREA,</span>
+            <span class="c1">#     preserve_aspect_ratio=False,</span>
+            <span class="c1">#     antialias=True)</span>
+
+            <span class="c1"># Remove channel dimension [batch, heigh, width, channel]</span>
+            <span class="n">cropped_psf</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">cropped_psf</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Normalize the PSF</span>
+        <span class="n">norm_psf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize_psf</span><span class="p">(</span><span class="n">cropped_psf</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">norm_psf</span></div>
+
+
+
+<div class="viewcode-block" id="TF_build_phase">
+<a class="viewcode-back" href="../../../wf_psf.psf_models.tf_modules.html#wf_psf.psf_models.tf_modules.TF_build_phase">[docs]</a>
+<span class="k">class</span> <span class="nc">TF_build_phase</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build complex phase map from OPD map.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phase_N</span><span class="p">,</span> <span class="n">lambda_obs</span><span class="p">,</span> <span class="n">obscurations</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase_N</span> <span class="o">=</span> <span class="n">phase_N</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_obs</span> <span class="o">=</span> <span class="n">lambda_obs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obscurations</span> <span class="o">=</span> <span class="n">obscurations</span>
+
+<div class="viewcode-block" id="TF_build_phase.zero_padding_diffraction">
+<a class="viewcode-back" href="../../../wf_psf.psf_models.tf_modules.html#wf_psf.psf_models.tf_modules.TF_build_phase.zero_padding_diffraction">[docs]</a>
+    <span class="k">def</span> <span class="nf">zero_padding_diffraction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">no_pad_phase</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Pad with zeros corresponding to the required lambda.</span>
+
+<span class="sd">        Important: To check the original size of the ``no_pad_phase`` variable</span>
+<span class="sd">        we have to look in the [1] dimension not the [0] as it is the batch.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># pad_num = int(self.phase_N//2 - no_pad_phase.shape[0]//2)</span>
+        <span class="n">phase_shape</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">no_pad_phase</span><span class="p">)</span>
+        <span class="c1"># pure tensorflow</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">floordiv</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">phase_N</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">stop</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">floordiv</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">phase_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">pad_num</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)</span>  <span class="c1"># start - stop</span>
+
+        <span class="n">padding</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="n">pad_num</span><span class="p">,</span> <span class="n">pad_num</span><span class="p">),</span> <span class="p">(</span><span class="n">pad_num</span><span class="p">,</span> <span class="n">pad_num</span><span class="p">)]</span>
+
+        <span class="n">padded_phase</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">no_pad_phase</span><span class="p">,</span> <span class="n">padding</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">padded_phase</span></div>
+
+        <span class="c1"># return tf.pad(no_pad_phase, padding)</span>
+
+<div class="viewcode-block" id="TF_build_phase.apply_obscurations">
+<a class="viewcode-back" href="../../../wf_psf.psf_models.tf_modules.html#wf_psf.psf_models.tf_modules.TF_build_phase.apply_obscurations">[docs]</a>
+    <span class="k">def</span> <span class="nf">apply_obscurations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phase</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Multiply element-wise with the obscurations.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">phase</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obscurations</span><span class="p">,</span> <span class="n">phase</span><span class="o">.</span><span class="n">dtype</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="TF_build_phase.opd_to_phase">
+<a class="viewcode-back" href="../../../wf_psf.psf_models.tf_modules.html#wf_psf.psf_models.tf_modules.TF_build_phase.opd_to_phase">[docs]</a>
+    <span class="k">def</span> <span class="nf">opd_to_phase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opd</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert from opd to phase.&quot;&quot;&quot;</span>
+        <span class="n">pre_phase</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_obs</span><span class="p">,</span> <span class="n">opd</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span> <span class="n">opd</span>
+        <span class="p">)</span>
+        <span class="n">phase</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">dtypes</span><span class="o">.</span><span class="n">complex</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pre_phase</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span> <span class="n">pre_phase</span><span class="p">))</span>
+        <span class="c1"># return tf.cast(phase, dtype=tf.complex64)</span>
+        <span class="k">return</span> <span class="n">phase</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opd</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build the phase from the opd.&quot;&quot;&quot;</span>
+        <span class="n">phase</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">opd_to_phase</span><span class="p">(</span><span class="n">opd</span><span class="p">)</span>
+        <span class="n">obsc_phase</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_obscurations</span><span class="p">(</span><span class="n">phase</span><span class="p">)</span>
+        <span class="n">padded_phase</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zero_padding_diffraction</span><span class="p">(</span><span class="n">obsc_phase</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">padded_phase</span></div>
+
+
+
+<div class="viewcode-block" id="TF_zernike_OPD">
+<a class="viewcode-back" href="../../../wf_psf.psf_models.tf_modules.html#wf_psf.psf_models.tf_modules.TF_zernike_OPD">[docs]</a>
+<span class="k">class</span> <span class="nc">TF_zernike_OPD</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Turn zernike coefficients into an OPD.</span>
+
+<span class="sd">    Will use all of the Zernike maps provided.</span>
+<span class="sd">    Both the Zernike maps and the Zernike coefficients must be provided.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    zernike_maps: Tensor (Num_coeffs, x_dim, y_dim)</span>
+<span class="sd">    z_coeffs: Tensor (num_star, num_coeffs, 1, 1)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    opd: Tensor (num_star, x_dim, y_dim)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zernike_maps</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">zernike_maps</span> <span class="o">=</span> <span class="n">zernike_maps</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_coeffs</span><span class="p">):</span>
+        <span class="c1"># Perform the weighted sum of Zernikes coeffs and maps</span>
+        <span class="n">opd</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zernike_maps</span><span class="p">,</span> <span class="n">z_coeffs</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">opd</span></div>
+
+
+
+<div class="viewcode-block" id="TF_Zernike_mono_PSF">
+<a class="viewcode-back" href="../../../wf_psf.psf_models.tf_modules.html#wf_psf.psf_models.tf_modules.TF_Zernike_mono_PSF">[docs]</a>
+<span class="k">class</span> <span class="nc">TF_Zernike_mono_PSF</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a monochromatic PSF from zernike coefficients.</span>
+
+<span class="sd">    Following a Zernike model.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">phase_N</span><span class="p">,</span> <span class="n">lambda_obs</span><span class="p">,</span> <span class="n">obscurations</span><span class="p">,</span> <span class="n">zernike_maps</span><span class="p">,</span> <span class="n">output_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_build_opd_zernike</span> <span class="o">=</span> <span class="n">TF_zernike_OPD</span><span class="p">(</span><span class="n">zernike_maps</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_build_phase</span> <span class="o">=</span> <span class="n">TF_build_phase</span><span class="p">(</span><span class="n">phase_N</span><span class="p">,</span> <span class="n">lambda_obs</span><span class="p">,</span> <span class="n">obscurations</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_fft_diffract</span> <span class="o">=</span> <span class="n">TF_fft_diffract</span><span class="p">(</span><span class="n">output_dim</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z_coeffs</span><span class="p">):</span>
+        <span class="n">opd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_build_opd_zernike</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">z_coeffs</span><span class="p">)</span>
+        <span class="n">phase</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_build_phase</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">opd</span><span class="p">)</span>
+        <span class="n">psf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_fft_diffract</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">phase</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">psf</span></div>
+
+
+
+<div class="viewcode-block" id="TF_mono_PSF">
+<a class="viewcode-back" href="../../../wf_psf.psf_models.tf_modules.html#wf_psf.psf_models.tf_modules.TF_mono_PSF">[docs]</a>
+<span class="k">class</span> <span class="nc">TF_mono_PSF</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate a monochromatic PSF from an OPD map.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">phase_N</span><span class="p">,</span> <span class="n">lambda_obs</span><span class="p">,</span> <span class="n">obscurations</span><span class="p">,</span> <span class="n">output_Q</span><span class="p">,</span> <span class="n">output_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_Q</span> <span class="o">=</span> <span class="n">output_Q</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_build_phase</span> <span class="o">=</span> <span class="n">TF_build_phase</span><span class="p">(</span><span class="n">phase_N</span><span class="p">,</span> <span class="n">lambda_obs</span><span class="p">,</span> <span class="n">obscurations</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_fft_diffract</span> <span class="o">=</span> <span class="n">TF_fft_diffract</span><span class="p">(</span><span class="n">output_dim</span><span class="p">,</span> <span class="n">output_Q</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_Q</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opd</span><span class="p">):</span>
+        <span class="n">phase</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_build_phase</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">opd</span><span class="p">)</span>
+        <span class="n">psf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_fft_diffract</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">phase</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">psf</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">opd</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span></div>
+
+
+
+<span class="c1"># class TF_poly_PSF(tf.Module):</span>
+<span class="c1">#     &quot;&quot;&quot;Calculate a polychromatic PSF from an OPD and stored SED values.</span>
+
+<span class="c1">#     The calculation of the packed values with the respective SED is done</span>
+<span class="c1">#     with the SimPSFToolkit class but outside the TF class.</span>
+
+<span class="c1">#     packed_elems: Tuple of tensors</span>
+<span class="c1">#         Contains three 1D tensors with the parameters needed for</span>
+<span class="c1">#         the calculation of each monochromatic PSF.</span>
+
+<span class="c1">#         packed_elems[0]: phase_N</span>
+<span class="c1">#         packed_elems[1]: lambda_obs</span>
+<span class="c1">#         packed_elems[2]: SED_norm_val</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     def __init__(self, obscurations, packed_elems, output_dim=64, zernike_maps=None, name=None):</span>
+<span class="c1">#         super().__init__(name=name)</span>
+
+<span class="c1">#         self.obscurations = obscurations</span>
+<span class="c1">#         self.output_dim = output_dim</span>
+<span class="c1">#         self.packed_elems = packed_elems</span>
+<span class="c1">#         self.zernike_maps = zernike_maps</span>
+
+<span class="c1">#         self.opd = None</span>
+
+<span class="c1">#     def set_packed_elems(self, new_packed_elems):</span>
+<span class="c1">#         &quot;&quot;&quot;Set packed elements.&quot;&quot;&quot;</span>
+<span class="c1">#         self.packed_elems = new_packed_elems</span>
+
+<span class="c1">#     def set_zernike_maps(self, zernike_maps):</span>
+<span class="c1">#         &quot;&quot;&quot;Set Zernike maps.&quot;&quot;&quot;</span>
+<span class="c1">#         self.zernike_maps = zernike_maps</span>
+
+<span class="c1">#     def calculate_from_zernikes(self, z_coeffs):</span>
+<span class="c1">#         &quot;&quot;&quot;Calculate polychromatic PSFs from zernike coefficients.</span>
+
+<span class="c1">#         Zernike maps required.</span>
+<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         tf_zernike_opd_gen = TF_zernike_OPD(self.zernike_maps)</span>
+<span class="c1">#         # For readability</span>
+<span class="c1">#         # opd = tf_zernike_opd_gen.__call__(z_coeffs)</span>
+<span class="c1">#         # poly_psf = self.__call__(opd)</span>
+<span class="c1">#         # return poly_psf</span>
+
+<span class="c1">#         return self.__call__(tf_zernike_opd_gen.__call__(z_coeffs))</span>
+
+<span class="c1">#     def calculate_mono_PSF(self, packed_elems):</span>
+<span class="c1">#         &quot;&quot;&quot;Calculate monochromatic PSF from packed elements.</span>
+
+<span class="c1">#         packed_elems[0]: phase_N</span>
+<span class="c1">#         packed_elems[1]: lambda_obs</span>
+<span class="c1">#         packed_elems[2]: SED_norm_val</span>
+<span class="c1">#         &quot;&quot;&quot;</span>
+<span class="c1">#         # Unpack elements</span>
+<span class="c1">#         phase_N = packed_elems[0]</span>
+<span class="c1">#         lambda_obs = packed_elems[1]</span>
+<span class="c1">#         SED_norm_val = packed_elems[2]</span>
+
+<span class="c1">#         # Build the monochromatic PSF generator</span>
+<span class="c1">#         tf_mono_psf_gen = TF_mono_PSF(phase_N, lambda_obs, self.obscurations, output_dim=self.output_dim)</span>
+
+<span class="c1">#         # Calculate the PSF</span>
+<span class="c1">#         mono_psf = tf_mono_psf_gen.__call__(self.opd)</span>
+
+<span class="c1">#         # Multiply with the respective normalized SED and return</span>
+<span class="c1">#         return tf.math.scalar_mul(SED_norm_val, mono_psf)</span>
+
+<span class="c1">#     def __call__(self, opd):</span>
+
+<span class="c1">#         # Save the OPD that will be shared by all the monochromatic PSFs</span>
+<span class="c1">#         self.opd = opd</span>
+
+<span class="c1">#         # Use tf.function for parallelization over GPU</span>
+<span class="c1">#         # Not allowed since the dynamic padding for the diffraction does not</span>
+<span class="c1">#         # work in the @tf.function context</span>
+<span class="c1">#         # @tf.function</span>
+<span class="c1">#         def calculate_poly_PSF(elems_to_unpack):</span>
+<span class="c1">#             return tf.map_fn(self.calculate_mono_PSF,</span>
+<span class="c1">#                              elems_to_unpack,</span>
+<span class="c1">#                              parallel_iterations=10,</span>
+<span class="c1">#                              fn_output_signature=tf.float32)</span>
+
+<span class="c1">#         stacked_psfs = calculate_poly_PSF(packed_elems)</span>
+<span class="c1">#         poly_psf = tf.math.reduce_sum(stacked_psfs, axis=0)</span>
+
+<span class="c1">#         return poly_psf</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

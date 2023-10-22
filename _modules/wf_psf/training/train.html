@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.training.train &mdash; wf-psf 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/twemoji.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+        <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"></script>
+        <script src="../../../_static/twemoji.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            wf-psf
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../wf_psf.html">wf_psf package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">wf_psf.training.train</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for wf_psf.training.train</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Train.</span>
+
+<span class="sd">A module which defines the classes and methods</span>
+<span class="sd">to manage training of the psf model.</span>
+
+<span class="sd">:Author: Jennifer Pollack &lt;jennifer.pollack@cea.fr&gt;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">import</span> <span class="nn">tensorflow_addons</span> <span class="k">as</span> <span class="nn">tfa</span>
+<span class="kn">from</span> <span class="nn">wf_psf.utils.read_config</span> <span class="kn">import</span> <span class="n">read_conf</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">wf_psf.utils.io</span> <span class="k">as</span> <span class="nn">io</span>
+<span class="kn">from</span> <span class="nn">wf_psf.psf_models</span> <span class="kn">import</span> <span class="n">psf_models</span><span class="p">,</span> <span class="n">psf_model_semiparametric</span>
+<span class="kn">import</span> <span class="nn">wf_psf.training.train_utils</span> <span class="k">as</span> <span class="nn">train_utils</span>
+<span class="kn">import</span> <span class="nn">wf_psf.data.training_preprocessing</span> <span class="k">as</span> <span class="nn">training_preprocessing</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="setup_training">
+<a class="viewcode-back" href="../../../wf_psf.training.train.html#wf_psf.training.train.setup_training">[docs]</a>
+<span class="k">def</span> <span class="nf">setup_training</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Setup Training.</span>
+
+<span class="sd">    A function to setup training.</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">device_name</span> <span class="o">=</span> <span class="n">get_gpu_info</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Found GPU at: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">device_name</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="filepath_chkp_callback">
+<a class="viewcode-back" href="../../../wf_psf.training.train.html#wf_psf.training.train.filepath_chkp_callback">[docs]</a>
+<span class="k">def</span> <span class="nf">filepath_chkp_callback</span><span class="p">(</span><span class="n">checkpoint_dir</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">id_name</span><span class="p">,</span> <span class="n">current_cycle</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">checkpoint_dir</span>
+        <span class="o">+</span> <span class="s2">&quot;/checkpoint_callback_&quot;</span>
+        <span class="o">+</span> <span class="n">model_name</span>
+        <span class="o">+</span> <span class="n">id_name</span>
+        <span class="o">+</span> <span class="s2">&quot;_cycle&quot;</span>
+        <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">current_cycle</span><span class="p">)</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="TrainingParamsHandler">
+<a class="viewcode-back" href="../../../wf_psf.training.train.html#wf_psf.training.train.TrainingParamsHandler">[docs]</a>
+<span class="k">class</span> <span class="nc">TrainingParamsHandler</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Training Parameters Handler.</span>
+
+<span class="sd">    A class to handle training parameters accessed:</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    training_params: Recursive Namespace object</span>
+<span class="sd">        Recursive Namespace object containing training input parameters</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">training_params</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">training_params</span> <span class="o">=</span> <span class="n">training_params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_id_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">id_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_params</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">id_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;ID Name.</span>
+
+<span class="sd">        Set unique ID name.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        id_name: str</span>
+<span class="sd">            A unique ID.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_params</span><span class="o">.</span><span class="n">id_name</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">model_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;PSF Model Name.</span>
+
+<span class="sd">        Set model_name.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        model_name: str</span>
+<span class="sd">            Name of PSF model</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_params</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">model_name</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">model_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;PSF Model Params.</span>
+
+<span class="sd">        Set PSF model training parameters</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        model_params: Recursive Namespace object</span>
+<span class="sd">            Recursive Namespace object storing PSF model parameters</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_params</span><span class="o">.</span><span class="n">model_params</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">training_hparams</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Training Hyperparameters.</span>
+
+<span class="sd">        Set training hyperparameters</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        training_hparams: Recursive Namespace object</span>
+<span class="sd">            Recursive Namespace object storing training hyper parameters</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_params</span><span class="o">.</span><span class="n">training_hparams</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">multi_cycle_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Training Multi Cycle Parameters.</span>
+
+<span class="sd">        Set training multi cycle parameters</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        multi_cycle_params: Recursive Namespace object</span>
+<span class="sd">            Recursive Namespace object storing training multi-cycle parameters</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_hparams</span><span class="o">.</span><span class="n">multi_cycle_params</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">total_cycles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Total Number of Cycles.</span>
+
+<span class="sd">        Set total number of cycles for</span>
+<span class="sd">        training.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        total_cycles: int</span>
+<span class="sd">            Total number of cycles for training</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">multi_cycle_params</span><span class="o">.</span><span class="n">total_cycles</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">n_epochs_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Number of Epochs for Pparametric PSF model.</span>
+
+<span class="sd">        Set the number of epochs for</span>
+<span class="sd">        training parametric PSF model.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        n_epochs_params: list</span>
+<span class="sd">            List of number of epochs for training parametric PSF model.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_hparams</span><span class="o">.</span><span class="n">n_epochs_params</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">n_epochs_non_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Number of Epochs for Non-parametric PSF model.</span>
+
+<span class="sd">        Set the number of epochs for</span>
+<span class="sd">        training non-parametric PSF model.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        n_epochs_non_params: list</span>
+<span class="sd">            List of number of epochs for training non-parametric PSF model.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_hparams</span><span class="o">.</span><span class="n">n_epochs_non_params</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">learning_rate_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parametric Model Learning Rate.</span>
+
+<span class="sd">        Set learning rate for parametric</span>
+<span class="sd">        PSF model.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        learning_rate_params: list</span>
+<span class="sd">            List containing learning rate for parametric PSF model</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">multi_cycle_params</span><span class="o">.</span><span class="n">learning_rate_params</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">learning_rate_non_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Non-parametric Model Learning Rate.</span>
+
+<span class="sd">        Set learning rate for non-parametric</span>
+<span class="sd">        PSF model.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        learning_rate_non_params: list</span>
+<span class="sd">            List containing learning rate for non-parametric PSF model</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">multi_cycle_params</span><span class="o">.</span><span class="n">learning_rate_non_params</span>
+
+    <span class="k">def</span> <span class="nf">_prepare_callbacks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint_dir</span><span class="p">,</span> <span class="n">current_cycle</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare Callbacks.</span>
+
+<span class="sd">        A function to prepare to save the model as a callback.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        checkpoint_dir: str</span>
+<span class="sd">            Checkpoint directory</span>
+<span class="sd">        current_cycle: int</span>
+<span class="sd">            Integer representing the current cycle</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">            keras.callbacks.ModelCheckpoint class</span>
+<span class="sd">                Class to save the Keras model or model weights at some frequency</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># -----------------------------------------------------</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Preparing Keras model callback...&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">ModelCheckpoint</span><span class="p">(</span>
+            <span class="n">filepath_chkp_callback</span><span class="p">(</span>
+                <span class="n">checkpoint_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id_name</span><span class="p">,</span> <span class="n">current_cycle</span>
+            <span class="p">),</span>
+            <span class="n">monitor</span><span class="o">=</span><span class="s2">&quot;mean_squared_error&quot;</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">save_best_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">save_weights_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">,</span>
+            <span class="n">save_freq</span><span class="o">=</span><span class="s2">&quot;epoch&quot;</span><span class="p">,</span>
+            <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_gpu_info">
+<a class="viewcode-back" href="../../../wf_psf.training.train.html#wf_psf.training.train.get_gpu_info">[docs]</a>
+<span class="k">def</span> <span class="nf">get_gpu_info</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get GPU Information.</span>
+
+<span class="sd">    A function to return GPU</span>
+<span class="sd">    device name.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    device_name: str</span>
+<span class="sd">        Name of GPU device</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">device_name</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">gpu_device_name</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">device_name</span></div>
+
+
+
+<div class="viewcode-block" id="train">
+<a class="viewcode-back" href="../../../wf_psf.training.train.html#wf_psf.training.train.train">[docs]</a>
+<span class="k">def</span> <span class="nf">train</span><span class="p">(</span>
+    <span class="n">training_params</span><span class="p">,</span>
+    <span class="n">training_data</span><span class="p">,</span>
+    <span class="n">test_data</span><span class="p">,</span>
+    <span class="n">checkpoint_dir</span><span class="p">,</span>
+    <span class="n">optimizer_dir</span><span class="p">,</span>
+    <span class="n">psf_model_dir</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Train.</span>
+
+<span class="sd">    A function to train the psf model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    training_params: Recursive Namespace object</span>
+<span class="sd">        Recursive Namespace object containing the training parameters</span>
+<span class="sd">    training_data: obj</span>
+<span class="sd">        TrainingDataHandler object containing the training data parameters</span>
+<span class="sd">    test_data: object</span>
+<span class="sd">        TestDataHandler object containing the test data parameters</span>
+<span class="sd">    checkpoint_dir: str</span>
+<span class="sd">        Absolute path to checkpoint directory</span>
+<span class="sd">    optimizer_dir: str</span>
+<span class="sd">        Absolute path to optimizer history directory</span>
+<span class="sd">    psf_model_dir: str</span>
+<span class="sd">        Absolute path to psf model directory</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Start measuring elapsed time</span>
+    <span class="n">starting_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+    <span class="n">training_handler</span> <span class="o">=</span> <span class="n">TrainingParamsHandler</span><span class="p">(</span><span class="n">training_params</span><span class="p">)</span>
+
+    <span class="n">psf_model</span> <span class="o">=</span> <span class="n">psf_models</span><span class="o">.</span><span class="n">get_psf_model</span><span class="p">(</span>
+        <span class="n">training_handler</span><span class="o">.</span><span class="n">model_params</span><span class="p">,</span>
+        <span class="n">training_handler</span><span class="o">.</span><span class="n">training_hparams</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PSF Model class: `</span><span class="si">{</span><span class="n">training_handler</span><span class="o">.</span><span class="n">model_name</span><span class="si">}</span><span class="s2">` initialized...&quot;</span><span class="p">)</span>
+    <span class="c1"># Model Training</span>
+    <span class="c1"># -----------------------------------------------------</span>
+    <span class="c1"># Save optimisation history in the saving dict</span>
+    <span class="n">saving_optim_hist</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># Perform all the necessary cycles</span>
+    <span class="n">current_cycle</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">while</span> <span class="n">training_handler</span><span class="o">.</span><span class="n">total_cycles</span> <span class="o">&gt;</span> <span class="n">current_cycle</span><span class="p">:</span>
+        <span class="n">current_cycle</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># If projected learning is enabled project DD_features.</span>
+        <span class="k">if</span> <span class="n">psf_model</span><span class="o">.</span><span class="n">project_dd_features</span><span class="p">:</span>  <span class="c1"># need to change this</span>
+            <span class="n">psf_model</span><span class="o">.</span><span class="n">project_DD_features</span><span class="p">(</span>
+                <span class="n">psf_model</span><span class="o">.</span><span class="n">zernike_maps</span>
+            <span class="p">)</span>  <span class="c1"># make this a callable function</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Project non-param DD features onto param model: done!&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">psf_model</span><span class="o">.</span><span class="n">reset_dd_features</span><span class="p">:</span>
+                <span class="n">psf_model</span><span class="o">.</span><span class="n">tf_np_poly_opd</span><span class="o">.</span><span class="n">init_vars</span><span class="p">()</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;DD features reset to random initialisation.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Prepare the saving callback</span>
+        <span class="c1"># Prepare to save the model as a callback</span>
+        <span class="c1"># -----------------------------------------------------</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Preparing Keras model callback...&quot;</span><span class="p">)</span>
+
+        <span class="n">model_chkp_callback</span> <span class="o">=</span> <span class="n">training_handler</span><span class="o">.</span><span class="n">_prepare_callbacks</span><span class="p">(</span>
+            <span class="n">checkpoint_dir</span><span class="p">,</span> <span class="n">current_cycle</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Prepare the optimizers</span>
+        <span class="n">param_optim</span> <span class="o">=</span> <span class="n">tfa</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">RectifiedAdam</span><span class="p">(</span>
+            <span class="n">learning_rate</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">learning_rate_params</span><span class="p">[</span><span class="n">current_cycle</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">non_param_optim</span> <span class="o">=</span> <span class="n">tfa</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">RectifiedAdam</span><span class="p">(</span>
+            <span class="n">learning_rate</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">learning_rate_non_params</span><span class="p">[</span><span class="n">current_cycle</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting cycle </span><span class="si">{}</span><span class="s2">..&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">current_cycle</span><span class="p">))</span>
+        <span class="n">start_cycle</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+        <span class="c1"># Compute training per cycle</span>
+        <span class="p">(</span>
+            <span class="n">psf_model</span><span class="p">,</span>
+            <span class="n">hist_param</span><span class="p">,</span>
+            <span class="n">hist_non_param</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">train_utils</span><span class="o">.</span><span class="n">general_train_cycle</span><span class="p">(</span>
+            <span class="n">psf_model</span><span class="p">,</span>
+            <span class="c1"># training data</span>
+            <span class="n">inputs</span><span class="o">=</span><span class="p">[</span>
+                <span class="n">training_data</span><span class="o">.</span><span class="n">train_dataset</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">],</span>
+                <span class="n">training_data</span><span class="o">.</span><span class="n">sed_data</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="n">outputs</span><span class="o">=</span><span class="n">training_data</span><span class="o">.</span><span class="n">train_dataset</span><span class="p">[</span><span class="s2">&quot;noisy_stars&quot;</span><span class="p">],</span>
+            <span class="n">validation_data</span><span class="o">=</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">test_data</span><span class="o">.</span><span class="n">test_dataset</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">],</span>
+                    <span class="n">test_data</span><span class="o">.</span><span class="n">sed_data</span><span class="p">,</span>
+                <span class="p">],</span>
+                <span class="n">test_data</span><span class="o">.</span><span class="n">test_dataset</span><span class="p">[</span><span class="s2">&quot;stars&quot;</span><span class="p">],</span>
+            <span class="p">),</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">training_hparams</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">learning_rate_param</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">learning_rate_params</span><span class="p">[</span>
+                <span class="n">current_cycle</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="p">],</span>
+            <span class="n">learning_rate_non_param</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">learning_rate_non_params</span><span class="p">[</span>
+                <span class="n">current_cycle</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="p">],</span>
+            <span class="n">n_epochs_param</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">n_epochs_non_params</span><span class="p">[</span><span class="n">current_cycle</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="n">n_epochs_non_param</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">n_epochs_non_params</span><span class="p">[</span><span class="n">current_cycle</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="n">param_optim</span><span class="o">=</span><span class="n">param_optim</span><span class="p">,</span>
+            <span class="n">non_param_optim</span><span class="o">=</span><span class="n">non_param_optim</span><span class="p">,</span>
+            <span class="n">param_loss</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">non_param_loss</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">param_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">non_param_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">param_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">non_param_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">general_callback</span><span class="o">=</span><span class="p">[</span><span class="n">model_chkp_callback</span><span class="p">],</span>
+            <span class="n">first_run</span><span class="o">=</span><span class="kc">True</span> <span class="k">if</span> <span class="n">current_cycle</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="n">cycle_def</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">multi_cycle_params</span><span class="o">.</span><span class="n">cycle_def</span><span class="p">,</span>
+            <span class="n">use_sample_weights</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">use_sample_weights</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Save the weights at the end of the nth cycle</span>
+        <span class="k">if</span> <span class="n">training_handler</span><span class="o">.</span><span class="n">multi_cycle_params</span><span class="o">.</span><span class="n">save_all_cycles</span><span class="p">:</span>
+            <span class="n">psf_model</span><span class="o">.</span><span class="n">save_weights</span><span class="p">(</span>
+                <span class="n">psf_model_dir</span>
+                <span class="o">+</span> <span class="s2">&quot;/psf_model_&quot;</span>
+                <span class="o">+</span> <span class="n">training_handler</span><span class="o">.</span><span class="n">model_name</span>
+                <span class="o">+</span> <span class="n">training_handler</span><span class="o">.</span><span class="n">id_name</span>
+                <span class="o">+</span> <span class="s2">&quot;_cycle&quot;</span>
+                <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">current_cycle</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">end_cycle</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;Cycle</span><span class="si">{}</span><span class="s2"> elapsed time: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">current_cycle</span><span class="p">,</span> <span class="n">end_cycle</span> <span class="o">-</span> <span class="n">start_cycle</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Save optimisation history in the saving dict</span>
+        <span class="k">if</span> <span class="n">psf_model</span><span class="o">.</span><span class="n">save_optim_history_param</span><span class="p">:</span>
+            <span class="n">saving_optim_hist</span><span class="p">[</span>
+                <span class="s2">&quot;param_cycle</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">current_cycle</span><span class="p">)</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="n">hist_param</span><span class="o">.</span><span class="n">history</span>
+        <span class="k">if</span> <span class="n">psf_model</span><span class="o">.</span><span class="n">save_optim_history_nonparam</span><span class="p">:</span>
+            <span class="n">saving_optim_hist</span><span class="p">[</span>
+                <span class="s2">&quot;nonparam_cycle</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">current_cycle</span><span class="p">)</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="n">hist_non_param</span><span class="o">.</span><span class="n">history</span>
+
+    <span class="c1"># Save last cycle if no cycles were saved</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">training_handler</span><span class="o">.</span><span class="n">multi_cycle_params</span><span class="o">.</span><span class="n">save_all_cycles</span><span class="p">:</span>
+        <span class="n">psf_model</span><span class="o">.</span><span class="n">save_weights</span><span class="p">(</span>
+            <span class="n">psf_model_dir</span>
+            <span class="o">+</span> <span class="s2">&quot;/psf_model_&quot;</span>
+            <span class="o">+</span> <span class="n">training_handler</span><span class="o">.</span><span class="n">model_name</span>
+            <span class="o">+</span> <span class="n">training_handler</span><span class="o">.</span><span class="n">id_name</span>
+            <span class="o">+</span> <span class="s2">&quot;_cycle&quot;</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">current_cycle</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Save optimisation history dictionary</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+        <span class="n">optimizer_dir</span>
+        <span class="o">+</span> <span class="s2">&quot;/optim_hist_&quot;</span>
+        <span class="o">+</span> <span class="n">training_handler</span><span class="o">.</span><span class="n">model_name</span>
+        <span class="o">+</span> <span class="n">training_handler</span><span class="o">.</span><span class="n">id_name</span>
+        <span class="o">+</span> <span class="s2">&quot;.npy&quot;</span><span class="p">,</span>
+        <span class="n">saving_optim_hist</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Print final time</span>
+    <span class="n">final_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Total elapsed time: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">final_time</span> <span class="o">-</span> <span class="n">starting_time</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Training complete..&quot;</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

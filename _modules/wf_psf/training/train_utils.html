@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.training.train_utils &mdash; wf-psf 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/twemoji.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+        <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"></script>
+        <script src="../../../_static/twemoji.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            wf-psf
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../wf_psf.html">wf_psf package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">wf_psf.training.train_utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for wf_psf.training.train_utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">from</span> <span class="nn">wf_psf.psf_models.tf_psf_field</span> <span class="kn">import</span> <span class="n">build_PSF_model</span>
+<span class="kn">from</span> <span class="nn">wf_psf.utils.utils</span> <span class="kn">import</span> <span class="n">NoiseEstimator</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="L1ParamScheduler">
+<a class="viewcode-back" href="../../../wf_psf.training.train_utils.html#wf_psf.training.train_utils.L1ParamScheduler">[docs]</a>
+<span class="k">class</span> <span class="nc">L1ParamScheduler</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">Callback</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;L1 rate scheduler which sets the L1 rate according to schedule.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">      l1_schedule_rule: function</span>
+<span class="sd">        a function that takes an epoch index</span>
+<span class="sd">        (integer, indexed from 0) and current l1_rate</span>
+<span class="sd">          as inputs and returns a new l1_rate as output (float).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l1_schedule_rule</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">L1ParamScheduler</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">breakpoint</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l1_schedule_rule</span> <span class="o">=</span> <span class="n">l1_schedule_rule</span>
+
+<div class="viewcode-block" id="L1ParamScheduler.on_epoch_begin">
+<a class="viewcode-back" href="../../../wf_psf.training.train_utils.html#wf_psf.training.train_utils.L1ParamScheduler.on_epoch_begin">[docs]</a>
+    <span class="k">def</span> <span class="nf">on_epoch_begin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="n">logs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># Get the current learning rate from model&#39;s optimizer.</span>
+        <span class="n">l1_rate</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">l1_rate</span><span class="p">))</span>
+        <span class="c1"># Call schedule function to get the scheduled learning rate.</span>
+        <span class="n">scheduled_l1_rate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">l1_schedule_rule</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">l1_rate</span><span class="p">)</span>
+        <span class="c1"># Set the value back to the optimizer before this epoch starts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">set_l1_rate</span><span class="p">(</span><span class="n">scheduled_l1_rate</span><span class="p">)</span></div>
+</div>
+
+        <span class="c1"># tf.keras.backend.set_value(self.model.optimizer.lr, scheduled_lr)</span>
+
+
+<div class="viewcode-block" id="l1_schedule_rule">
+<a class="viewcode-back" href="../../../wf_psf.training.train_utils.html#wf_psf.training.train_utils.l1_schedule_rule">[docs]</a>
+<span class="k">def</span> <span class="nf">l1_schedule_rule</span><span class="p">(</span><span class="n">epoch_n</span><span class="p">,</span> <span class="n">l1_rate</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">epoch_n</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">epoch_n</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">scheduled_l1_rate</span> <span class="o">=</span> <span class="n">l1_rate</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Epoch </span><span class="si">%05d</span><span class="s2">: L1 rate is </span><span class="si">%0.4e</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">epoch_n</span><span class="p">,</span> <span class="n">scheduled_l1_rate</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">scheduled_l1_rate</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">l1_rate</span></div>
+
+
+
+<div class="viewcode-block" id="general_train_cycle">
+<a class="viewcode-back" href="../../../wf_psf.training.train_utils.html#wf_psf.training.train_utils.general_train_cycle">[docs]</a>
+<span class="k">def</span> <span class="nf">general_train_cycle</span><span class="p">(</span>
+    <span class="n">tf_semiparam_field</span><span class="p">,</span>
+    <span class="n">inputs</span><span class="p">,</span>
+    <span class="n">outputs</span><span class="p">,</span>
+    <span class="n">validation_data</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="p">,</span>
+    <span class="n">learning_rate_param</span><span class="p">,</span>
+    <span class="n">learning_rate_non_param</span><span class="p">,</span>
+    <span class="n">n_epochs_param</span><span class="p">,</span>
+    <span class="n">n_epochs_non_param</span><span class="p">,</span>
+    <span class="n">param_optim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">non_param_optim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">param_loss</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">non_param_loss</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">param_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">non_param_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">param_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">non_param_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">general_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">first_run</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">cycle_def</span><span class="o">=</span><span class="s2">&quot;complete&quot;</span><span class="p">,</span>
+    <span class="n">use_sample_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Function to do a BCD iteration on the model.</span>
+
+<span class="sd">    Define the model optimisation.</span>
+
+<span class="sd">    For the parametric part we are using:</span>
+<span class="sd">    ``learning_rate_param = 1e-2``, ``n_epochs_param = 20``.</span>
+<span class="sd">    For the non-parametric part we are using:</span>
+<span class="sd">    ``learning_rate_non_param = 1.0``, ``n_epochs_non_param = 100``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tf_semiparam_field: tf.keras.Model</span>
+<span class="sd">        The model to be trained.</span>
+<span class="sd">    inputs: Tensor or list of tensors</span>
+<span class="sd">        Inputs used for Model.fit()</span>
+<span class="sd">    outputs: Tensor</span>
+<span class="sd">        Outputs used for Model.fit()</span>
+<span class="sd">    validation_data: Tuple</span>
+<span class="sd">        Validation test data used for Model.fit().</span>
+<span class="sd">        Tuple of input, output validation data</span>
+<span class="sd">    batch_size: int</span>
+<span class="sd">        Batch size for the training.</span>
+<span class="sd">    learning_rate_param: float</span>
+<span class="sd">        Learning rate for the parametric part</span>
+<span class="sd">    learning_rate_non_param: float</span>
+<span class="sd">        Learning rate for the non-parametric part</span>
+<span class="sd">    n_epochs_param: int</span>
+<span class="sd">        Number of epochs for the parametric part</span>
+<span class="sd">    n_epochs_non_param: int</span>
+<span class="sd">        Number of epochs for the non-parametric part</span>
+<span class="sd">    param_optim: Tensorflow optimizer</span>
+<span class="sd">        Optimizer for the parametric part.</span>
+<span class="sd">        Optional, default is the Adam optimizer</span>
+<span class="sd">    non_param_optim: Tensorflow optimizer</span>
+<span class="sd">        Optimizer for the non-parametric part.</span>
+<span class="sd">        Optional, default is the Adam optimizer</span>
+<span class="sd">    param_loss: Tensorflow loss</span>
+<span class="sd">        Loss function for the parametric part.</span>
+<span class="sd">        Optional, default is the MeanSquaredError() loss</span>
+<span class="sd">    non_param_loss: Tensorflow loss</span>
+<span class="sd">        Loss function for the non-parametric part.</span>
+<span class="sd">        Optional, default is the MeanSquaredError() loss</span>
+<span class="sd">    param_metrics: Tensorflow metrics</span>
+<span class="sd">        Metrics for the parametric part.</span>
+<span class="sd">        Optional, default is the MeanSquaredError() metric</span>
+<span class="sd">    non_param_metrics: Tensorflow metrics</span>
+<span class="sd">        Metrics for the non-parametric part.</span>
+<span class="sd">        Optional, default is the MeanSquaredError() metric</span>
+<span class="sd">    param_callback: Tensorflow callback</span>
+<span class="sd">        Callback for the parametric part only.</span>
+<span class="sd">        Optional, default is no callback</span>
+<span class="sd">    non_param_callback: Tensorflow callback</span>
+<span class="sd">        Callback for the non-parametric part only.</span>
+<span class="sd">        Optional, default is no callback</span>
+<span class="sd">    general_callback: Tensorflow callback</span>
+<span class="sd">        Callback shared for both the parametric and non-parametric parts.</span>
+<span class="sd">        Optional, default is no callback</span>
+<span class="sd">    first_run: bool</span>
+<span class="sd">        If True, it is the first iteration of the model training.</span>
+<span class="sd">        The Non-parametric part is not considered in the first parametric training.</span>
+<span class="sd">    cycle_def: string</span>
+<span class="sd">        Train cycle definition. It can be: `parametric`, `non-parametric`, `complete`.</span>
+<span class="sd">        Default is `complete`.</span>
+<span class="sd">    use_sample_weights: bool</span>
+<span class="sd">        If True, the sample weights are used for the training.</span>
+<span class="sd">        The sample weights are computed as the inverse noise estimated variance</span>
+<span class="sd">    verbose: int</span>
+<span class="sd">        Verbosity mode used for the training procedure.</span>
+<span class="sd">        If a log of the training is being saved, `verbose=2` is recommended.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tf_semiparam_field: tf.keras.Model</span>
+<span class="sd">        Trained Tensorflow model.</span>
+<span class="sd">    hist_param: Tensorflow&#39;s History object</span>
+<span class="sd">        History of the parametric training.</span>
+<span class="sd">    hist_non_param: Tensorflow&#39;s History object</span>
+<span class="sd">        History of the non-parametric training.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Initialize return variables</span>
+    <span class="n">hist_param</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">hist_non_param</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Parametric train</span>
+
+    <span class="c1"># Define Loss</span>
+    <span class="k">if</span> <span class="n">param_loss</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">MeanSquaredError</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">param_loss</span>
+
+    <span class="c1"># Define optimisers</span>
+    <span class="k">if</span> <span class="n">param_optim</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span>
+            <span class="n">learning_rate</span><span class="o">=</span><span class="n">learning_rate_param</span><span class="p">,</span>
+            <span class="n">beta_1</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+            <span class="n">beta_2</span><span class="o">=</span><span class="mf">0.999</span><span class="p">,</span>
+            <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-07</span><span class="p">,</span>
+            <span class="n">amsgrad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">param_optim</span>
+
+    <span class="c1"># Define metrics</span>
+    <span class="k">if</span> <span class="n">param_metrics</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">MeanSquaredError</span><span class="p">()]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">metrics</span> <span class="o">=</span> <span class="n">param_metrics</span>
+
+    <span class="c1"># Define callbacks</span>
+    <span class="k">if</span> <span class="n">param_callback</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">general_callback</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">callbacks</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">general_callback</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">callbacks</span> <span class="o">=</span> <span class="n">param_callback</span>
+        <span class="k">elif</span> <span class="n">param_callback</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">callbacks</span> <span class="o">=</span> <span class="n">general_callback</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">callbacks</span> <span class="o">=</span> <span class="n">general_callback</span> <span class="o">+</span> <span class="n">param_callback</span>
+
+    <span class="c1"># Calculate sample weights</span>
+    <span class="k">if</span> <span class="n">use_sample_weights</span><span class="p">:</span>
+        <span class="c1"># Generate standard deviation estimator</span>
+        <span class="n">img_dim</span> <span class="o">=</span> <span class="p">(</span><span class="n">outputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">outputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">win_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">outputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mf">3.33</span><span class="p">)</span>
+        <span class="n">std_est</span> <span class="o">=</span> <span class="n">NoiseEstimator</span><span class="p">(</span><span class="n">img_dim</span><span class="o">=</span><span class="n">img_dim</span><span class="p">,</span> <span class="n">win_rad</span><span class="o">=</span><span class="n">win_rad</span><span class="p">)</span>
+        <span class="c1"># Estimate noise std_dev</span>
+        <span class="n">imgs_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">std_est</span><span class="o">.</span><span class="n">estimate_noise</span><span class="p">(</span><span class="n">_im</span><span class="p">)</span> <span class="k">for</span> <span class="n">_im</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">])</span>
+        <span class="c1"># Calculate weights</span>
+        <span class="n">variances</span> <span class="o">=</span> <span class="n">imgs_std</span><span class="o">**</span><span class="mi">2</span>
+
+        <span class="c1"># Define sample weight strategy</span>
+        <span class="n">strategy_opt</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">strategy_opt</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Parameters</span>
+            <span class="n">max_w</span> <span class="o">=</span> <span class="mf">2.0</span>
+            <span class="n">min_w</span> <span class="o">=</span> <span class="mf">0.1</span>
+            <span class="c1"># Epsilon is to avoid outliers</span>
+            <span class="n">epsilon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">variances</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.1</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">variances</span> <span class="o">+</span> <span class="n">epsilon</span><span class="p">)</span>
+            <span class="n">scaled_w</span> <span class="o">=</span> <span class="p">(</span><span class="n">w</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">w</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">w</span><span class="p">))</span>  <span class="c1"># Transform to [0,1]</span>
+            <span class="n">scaled_w</span> <span class="o">=</span> <span class="n">scaled_w</span> <span class="o">*</span> <span class="p">(</span><span class="n">max_w</span> <span class="o">-</span> <span class="n">min_w</span><span class="p">)</span> <span class="o">+</span> <span class="n">min_w</span>  <span class="c1"># Transform to [min_w, max_w]</span>
+            <span class="n">scaled_w</span> <span class="o">=</span> <span class="n">scaled_w</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">scaled_w</span><span class="p">))</span>  <span class="c1"># Adjust the mean to 1</span>
+            <span class="n">scaled_w</span><span class="p">[</span><span class="n">scaled_w</span> <span class="o">&lt;</span> <span class="n">min_w</span><span class="p">]</span> <span class="o">=</span> <span class="n">min_w</span>
+            <span class="c1"># Save the weights</span>
+            <span class="n">sample_weight</span> <span class="o">=</span> <span class="n">scaled_w</span>
+
+        <span class="k">elif</span> <span class="n">strategy_opt</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># Use inverse variance for weights</span>
+            <span class="c1"># Then scale the values by the median</span>
+            <span class="n">sample_weight</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">variances</span>
+            <span class="n">sample_weight</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">sample_weight</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sample_weight</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Define the training cycle</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="n">cycle_def</span> <span class="o">==</span> <span class="s2">&quot;parametric&quot;</span>
+        <span class="ow">or</span> <span class="n">cycle_def</span> <span class="o">==</span> <span class="s2">&quot;complete&quot;</span>
+        <span class="ow">or</span> <span class="n">cycle_def</span> <span class="o">==</span> <span class="s2">&quot;only-parametric&quot;</span>
+    <span class="p">):</span>
+        <span class="c1"># If it is the first run</span>
+        <span class="k">if</span> <span class="n">first_run</span><span class="p">:</span>
+            <span class="c1"># Set the non-parametric model to zero</span>
+            <span class="c1"># With alpha to zero its already enough</span>
+            <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">set_zero_nonparam</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">cycle_def</span> <span class="o">==</span> <span class="s2">&quot;only-parametric&quot;</span><span class="p">:</span>
+            <span class="c1"># Set the non-parametric part to zero</span>
+            <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">set_zero_nonparam</span><span class="p">()</span>
+
+        <span class="c1"># Set the trainable layer</span>
+        <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">set_trainable_layers</span><span class="p">(</span><span class="n">param_bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nonparam_bool</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># Compile the model for the first optimisation</span>
+        <span class="n">tf_semiparam_field</span> <span class="o">=</span> <span class="n">build_PSF_model</span><span class="p">(</span>
+            <span class="n">tf_semiparam_field</span><span class="p">,</span>
+            <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
+            <span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">,</span>
+            <span class="n">metrics</span><span class="o">=</span><span class="n">metrics</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># Train the parametric part</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting parametric update..&quot;</span><span class="p">)</span>
+        <span class="n">hist_param</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">epochs</span><span class="o">=</span><span class="n">n_epochs_param</span><span class="p">,</span>
+            <span class="n">validation_data</span><span class="o">=</span><span class="n">validation_data</span><span class="p">,</span>
+            <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span>
+            <span class="n">sample_weight</span><span class="o">=</span><span class="n">sample_weight</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="c1">## Non parametric train</span>
+    <span class="c1"># Define the training cycle</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="n">cycle_def</span> <span class="o">==</span> <span class="s2">&quot;non-parametric&quot;</span>
+        <span class="ow">or</span> <span class="n">cycle_def</span> <span class="o">==</span> <span class="s2">&quot;complete&quot;</span>
+        <span class="ow">or</span> <span class="n">cycle_def</span> <span class="o">==</span> <span class="s2">&quot;only-non-parametric&quot;</span>
+    <span class="p">):</span>
+        <span class="c1"># If it is the first run</span>
+        <span class="k">if</span> <span class="n">first_run</span><span class="p">:</span>
+            <span class="c1"># Set the non-parametric model to non-zero</span>
+            <span class="c1"># With alpha to zero its already enough</span>
+            <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">set_nonzero_nonparam</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">cycle_def</span> <span class="o">==</span> <span class="s2">&quot;only-non-parametric&quot;</span><span class="p">:</span>
+            <span class="c1"># Set the parametric layer to zero</span>
+            <span class="n">coeff_mat</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">get_coeff_matrix</span><span class="p">()</span>
+            <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">assign_coeff_matrix</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">coeff_mat</span><span class="p">))</span>
+
+        <span class="c1"># Set the non parametric layer to non trainable</span>
+        <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">set_trainable_layers</span><span class="p">(</span><span class="n">param_bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">nonparam_bool</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Define Loss</span>
+        <span class="k">if</span> <span class="n">non_param_loss</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">MeanSquaredError</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">non_param_loss</span>
+
+        <span class="c1"># Define optimiser</span>
+        <span class="k">if</span> <span class="n">non_param_optim</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">optimizer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span>
+                <span class="n">learning_rate</span><span class="o">=</span><span class="n">learning_rate_non_param</span><span class="p">,</span>
+                <span class="n">beta_1</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+                <span class="n">beta_2</span><span class="o">=</span><span class="mf">0.999</span><span class="p">,</span>
+                <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-07</span><span class="p">,</span>
+                <span class="n">amsgrad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">optimizer</span> <span class="o">=</span> <span class="n">non_param_optim</span>
+
+        <span class="c1"># Define metric</span>
+        <span class="k">if</span> <span class="n">non_param_metrics</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">MeanSquaredError</span><span class="p">()]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">metrics</span> <span class="o">=</span> <span class="n">non_param_metrics</span>
+
+        <span class="c1"># Define callbacks</span>
+        <span class="k">if</span> <span class="n">non_param_callback</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">general_callback</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">callbacks</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">general_callback</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">callbacks</span> <span class="o">=</span> <span class="n">non_param_callback</span>
+            <span class="k">elif</span> <span class="n">non_param_callback</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">callbacks</span> <span class="o">=</span> <span class="n">general_callback</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">callbacks</span> <span class="o">=</span> <span class="n">general_callback</span> <span class="o">+</span> <span class="n">non_param_callback</span>
+
+        <span class="c1"># Compile the model again for the second optimisation</span>
+        <span class="n">tf_semiparam_field</span> <span class="o">=</span> <span class="n">build_PSF_model</span><span class="p">(</span>
+            <span class="n">tf_semiparam_field</span><span class="p">,</span>
+            <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
+            <span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">,</span>
+            <span class="n">metrics</span><span class="o">=</span><span class="n">metrics</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># Train the nonparametric part</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting non-parametric update..&quot;</span><span class="p">)</span>
+        <span class="n">hist_non_param</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">epochs</span><span class="o">=</span><span class="n">n_epochs_non_param</span><span class="p">,</span>
+            <span class="n">validation_data</span><span class="o">=</span><span class="n">validation_data</span><span class="p">,</span>
+            <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span>
+            <span class="n">sample_weight</span><span class="o">=</span><span class="n">sample_weight</span><span class="p">,</span>
+            <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">tf_semiparam_field</span><span class="p">,</span> <span class="n">hist_param</span><span class="p">,</span> <span class="n">hist_non_param</span></div>
+
+
+
+<div class="viewcode-block" id="param_train_cycle">
+<a class="viewcode-back" href="../../../wf_psf.training.train_utils.html#wf_psf.training.train_utils.param_train_cycle">[docs]</a>
+<span class="k">def</span> <span class="nf">param_train_cycle</span><span class="p">(</span>
+    <span class="n">tf_semiparam_field</span><span class="p">,</span>
+    <span class="n">inputs</span><span class="p">,</span>
+    <span class="n">outputs</span><span class="p">,</span>
+    <span class="n">validation_data</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="p">,</span>
+    <span class="n">learning_rate</span><span class="p">,</span>
+    <span class="n">n_epochs</span><span class="p">,</span>
+    <span class="n">param_optim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">param_loss</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">param_metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">param_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">general_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">use_sample_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Training cycle for parametric model.&quot;&quot;&quot;</span>
+    <span class="c1"># Define Loss</span>
+    <span class="k">if</span> <span class="n">param_loss</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">MeanSquaredError</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">param_loss</span>
+
+    <span class="c1"># Define optimiser</span>
+    <span class="k">if</span> <span class="n">param_optim</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span>
+            <span class="n">learning_rate</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">,</span>
+            <span class="n">beta_1</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+            <span class="n">beta_2</span><span class="o">=</span><span class="mf">0.999</span><span class="p">,</span>
+            <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-07</span><span class="p">,</span>
+            <span class="n">amsgrad</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">param_optim</span>
+
+    <span class="c1"># Define metrics</span>
+    <span class="k">if</span> <span class="n">param_metrics</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">MeanSquaredError</span><span class="p">()]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">metrics</span> <span class="o">=</span> <span class="n">param_metrics</span>
+
+    <span class="c1"># Define callbacks</span>
+    <span class="k">if</span> <span class="n">param_callback</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">general_callback</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">callbacks</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">general_callback</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">callbacks</span> <span class="o">=</span> <span class="n">param_callback</span>
+        <span class="k">elif</span> <span class="n">param_callback</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">callbacks</span> <span class="o">=</span> <span class="n">general_callback</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">callbacks</span> <span class="o">=</span> <span class="n">general_callback</span> <span class="o">+</span> <span class="n">param_callback</span>
+
+        <span class="c1"># Calculate sample weights</span>
+    <span class="k">if</span> <span class="n">use_sample_weights</span><span class="p">:</span>
+        <span class="c1"># Generate standard deviation estimator</span>
+        <span class="n">img_dim</span> <span class="o">=</span> <span class="p">(</span><span class="n">outputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">outputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">win_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">outputs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mf">3.33</span><span class="p">)</span>
+        <span class="n">std_est</span> <span class="o">=</span> <span class="n">NoiseEstimator</span><span class="p">(</span><span class="n">img_dim</span><span class="o">=</span><span class="n">img_dim</span><span class="p">,</span> <span class="n">win_rad</span><span class="o">=</span><span class="n">win_rad</span><span class="p">)</span>
+        <span class="c1"># Estimate noise std_dev</span>
+        <span class="n">imgs_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">std_est</span><span class="o">.</span><span class="n">estimate_noise</span><span class="p">(</span><span class="n">_im</span><span class="p">)</span> <span class="k">for</span> <span class="n">_im</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">])</span>
+        <span class="c1"># Calculate weights</span>
+        <span class="n">variances</span> <span class="o">=</span> <span class="n">imgs_std</span><span class="o">**</span><span class="mi">2</span>
+
+        <span class="n">strategy_opt</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">strategy_opt</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Parameters</span>
+            <span class="n">max_w</span> <span class="o">=</span> <span class="mf">2.0</span>
+            <span class="n">min_w</span> <span class="o">=</span> <span class="mf">0.1</span>
+            <span class="c1"># Epsilon is to avoid outliers</span>
+            <span class="n">epsilon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">variances</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.1</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">variances</span> <span class="o">+</span> <span class="n">epsilon</span><span class="p">)</span>
+            <span class="n">scaled_w</span> <span class="o">=</span> <span class="p">(</span><span class="n">w</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">w</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">w</span><span class="p">))</span>  <span class="c1"># Transform to [0,1]</span>
+            <span class="n">scaled_w</span> <span class="o">=</span> <span class="n">scaled_w</span> <span class="o">*</span> <span class="p">(</span><span class="n">max_w</span> <span class="o">-</span> <span class="n">min_w</span><span class="p">)</span> <span class="o">+</span> <span class="n">min_w</span>  <span class="c1"># Transform to [min_w, max_w]</span>
+            <span class="n">scaled_w</span> <span class="o">=</span> <span class="n">scaled_w</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">scaled_w</span><span class="p">))</span>  <span class="c1"># Adjust the mean to 1</span>
+            <span class="n">scaled_w</span><span class="p">[</span><span class="n">scaled_w</span> <span class="o">&lt;</span> <span class="n">min_w</span><span class="p">]</span> <span class="o">=</span> <span class="n">min_w</span>
+            <span class="c1"># Save the weights</span>
+            <span class="n">sample_weight</span> <span class="o">=</span> <span class="n">scaled_w</span>
+
+        <span class="k">elif</span> <span class="n">strategy_opt</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># Use inverse variance for weights</span>
+            <span class="c1"># Then scale the values by the median</span>
+            <span class="n">sample_weight</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">variances</span>
+            <span class="n">sample_weight</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">sample_weight</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sample_weight</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Compile the model for the first optimisation</span>
+    <span class="n">tf_semiparam_field</span> <span class="o">=</span> <span class="n">build_PSF_model</span><span class="p">(</span>
+        <span class="n">tf_semiparam_field</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="n">metrics</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Train the parametric part</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Starting parametric update..&quot;</span><span class="p">)</span>
+    <span class="n">hist_param</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+        <span class="n">x</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
+        <span class="n">y</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
+        <span class="n">epochs</span><span class="o">=</span><span class="n">n_epochs</span><span class="p">,</span>
+        <span class="n">validation_data</span><span class="o">=</span><span class="n">validation_data</span><span class="p">,</span>
+        <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">,</span>
+        <span class="n">sample_weight</span><span class="o">=</span><span class="n">sample_weight</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">tf_semiparam_field</span><span class="p">,</span> <span class="n">hist_param</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

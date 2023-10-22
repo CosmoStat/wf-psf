@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.psf_models.psf_models &mdash; wf-psf 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/twemoji.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+        <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"></script>
+        <script src="../../../_static/twemoji.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            wf-psf
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../wf_psf.html">wf_psf package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">wf_psf.psf_models.psf_models</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for wf_psf.psf_models.psf_models</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;PSF_Models.</span>
+
+<span class="sd">A module which provides general utility methods</span>
+<span class="sd">to manage the parameters of the psf model.</span>
+
+<span class="sd">:Authors: Tobias Liaudat &lt;tobiasliaudat@gmail.com&gt; and Jennifer Pollack &lt;jennifer.pollack@cea.fr&gt;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">from</span> <span class="nn">tensorflow.python.keras.engine</span> <span class="kn">import</span> <span class="n">data_adapter</span>
+<span class="kn">from</span> <span class="nn">wf_psf.utils.utils</span> <span class="kn">import</span> <span class="n">PI_zernikes</span><span class="p">,</span> <span class="n">zernike_generator</span>
+<span class="kn">from</span> <span class="nn">wf_psf.sims.SimPSFToolkit</span> <span class="kn">import</span> <span class="n">SimPSFToolkit</span>
+<span class="kn">from</span> <span class="nn">sys</span> <span class="kn">import</span> <span class="n">exit</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">PSF_CLASS</span> <span class="o">=</span> <span class="p">{}</span>
+
+
+<div class="viewcode-block" id="PsfModelError">
+<a class="viewcode-back" href="../../../wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PsfModelError">[docs]</a>
+<span class="k">class</span> <span class="nc">PsfModelError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="register_psfclass">
+<a class="viewcode-back" href="../../../wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.register_psfclass">[docs]</a>
+<span class="k">def</span> <span class="nf">register_psfclass</span><span class="p">(</span><span class="n">psf_class</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Register PSF Class.</span>
+
+<span class="sd">    A wrapper function to register all PSF model classes</span>
+<span class="sd">    in a dictionary.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    psf_class: type</span>
+<span class="sd">        PSF Class</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    psf_class: type</span>
+<span class="sd">        PSF class</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="nb">id</span> <span class="ow">in</span> <span class="n">psf_class</span><span class="o">.</span><span class="n">ids</span><span class="p">:</span>
+        <span class="n">PSF_CLASS</span><span class="p">[</span><span class="nb">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">psf_class</span>
+
+    <span class="k">return</span> <span class="n">psf_class</span></div>
+
+
+
+<div class="viewcode-block" id="set_psf_model">
+<a class="viewcode-back" href="../../../wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.set_psf_model">[docs]</a>
+<span class="k">def</span> <span class="nf">set_psf_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set PSF Model Class.</span>
+
+<span class="sd">    A function to select a class of</span>
+<span class="sd">    the PSF model from a dictionary.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model_name: str</span>
+<span class="sd">        Name of PSF model</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    psf_class: class</span>
+<span class="sd">        Name of PSF model class</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">psf_class</span> <span class="o">=</span> <span class="n">PSF_CLASS</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;PSF model entered is invalid. Check your config settings.&quot;</span><span class="p">)</span>
+        <span class="n">exit</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">psf_class</span></div>
+
+
+
+<div class="viewcode-block" id="get_psf_model">
+<a class="viewcode-back" href="../../../wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.get_psf_model">[docs]</a>
+<span class="k">def</span> <span class="nf">get_psf_model</span><span class="p">(</span><span class="n">model_params</span><span class="p">,</span> <span class="n">training_hparams</span><span class="p">,</span> <span class="o">*</span><span class="n">coeff_matrix</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get PSF Model Class Instance.</span>
+
+<span class="sd">    A function to instantiate a</span>
+<span class="sd">    PSF model class.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model_name: str</span>
+<span class="sd">        Short name of PSF model</span>
+<span class="sd">    model_params: type</span>
+<span class="sd">        Recursive Namespace object</span>
+<span class="sd">    training_hparams: type</span>
+<span class="sd">        Recursive Namespace object</span>
+<span class="sd">    coeff_matrix: Tensor or None, optional</span>
+<span class="sd">        Initialization of the coefficient matrix defining the parametric psf field model</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    psf_class: class instance</span>
+<span class="sd">        PSF model class instance</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">psf_class</span> <span class="o">=</span> <span class="n">set_psf_model</span><span class="p">(</span><span class="n">model_params</span><span class="o">.</span><span class="n">model_name</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">psf_class</span><span class="p">(</span><span class="n">model_params</span><span class="p">,</span> <span class="n">training_hparams</span><span class="p">,</span> <span class="o">*</span><span class="n">coeff_matrix</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="tf_zernike_cube">
+<a class="viewcode-back" href="../../../wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.tf_zernike_cube">[docs]</a>
+<span class="k">def</span> <span class="nf">tf_zernike_cube</span><span class="p">(</span><span class="n">n_zernikes</span><span class="p">,</span> <span class="n">pupil_diam</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tensor Flow Zernike Cube.</span>
+
+<span class="sd">    A function to generate Zernike maps on</span>
+<span class="sd">    a three-dimensional tensor.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_zernikes: int</span>
+<span class="sd">        Number of Zernike polynomials</span>
+<span class="sd">    pupil_diam: float</span>
+<span class="sd">        Size of the pupil diameter</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Zernike map tensor</span>
+<span class="sd">        TensorFlow EagerTensor type</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Prepare the inputs</span>
+    <span class="c1"># Generate Zernike maps</span>
+    <span class="n">zernikes</span> <span class="o">=</span> <span class="n">zernike_generator</span><span class="p">(</span><span class="n">n_zernikes</span><span class="o">=</span><span class="n">n_zernikes</span><span class="p">,</span> <span class="n">wfe_dim</span><span class="o">=</span><span class="n">pupil_diam</span><span class="p">)</span>
+    <span class="c1"># Now as cubes</span>
+    <span class="n">np_zernike_cube</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+        <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">zernikes</span><span class="p">),</span> <span class="n">zernikes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">zernikes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">zernikes</span><span class="p">)):</span>
+        <span class="n">np_zernike_cube</span><span class="p">[</span><span class="n">it</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">zernikes</span><span class="p">[</span><span class="n">it</span><span class="p">]</span>
+
+    <span class="n">np_zernike_cube</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">np_zernike_cube</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">np_zernike_cube</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="tf_obscurations">
+<a class="viewcode-back" href="../../../wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.tf_obscurations">[docs]</a>
+<span class="k">def</span> <span class="nf">tf_obscurations</span><span class="p">(</span><span class="n">pupil_diam</span><span class="p">,</span> <span class="n">N_filter</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tensor Flow Obscurations.</span>
+
+<span class="sd">    A function to generate obscurations as a tensor.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pupil_diam: float</span>
+<span class="sd">        Size of the pupil diameter</span>
+<span class="sd">    N_filters: int</span>
+<span class="sd">        Number of filters</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Obscurations tensor</span>
+<span class="sd">        TensorFlow EagerTensor type</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">obscurations</span> <span class="o">=</span> <span class="n">SimPSFToolkit</span><span class="o">.</span><span class="n">generate_pupil_obscurations</span><span class="p">(</span>
+        <span class="n">N_pix</span><span class="o">=</span><span class="n">pupil_diam</span><span class="p">,</span> <span class="n">N_filter</span><span class="o">=</span><span class="n">N_filter</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">obscurations</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">complex64</span><span class="p">)</span></div>
+
+
+    <span class="c1">## Generate initializations -- This looks like it could be moved to PSF model package</span>
+    <span class="c1"># Prepare np input</span>
+
+
+<div class="viewcode-block" id="simPSF">
+<a class="viewcode-back" href="../../../wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.simPSF">[docs]</a>
+<span class="k">def</span> <span class="nf">simPSF</span><span class="p">(</span><span class="n">model_params</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Simulated PSF model.</span>
+
+<span class="sd">    A function to instantiate a</span>
+<span class="sd">    simulated PSF model object.</span>
+
+<span class="sd">    Features</span>
+<span class="sd">    --------</span>
+<span class="sd">    model_params: Recursive Namespace object</span>
+<span class="sd">        Recursive Namespace object storing model parameters</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">simPSF_np</span> <span class="o">=</span> <span class="n">SimPSFToolkit</span><span class="p">(</span>
+        <span class="n">max_order</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">param_hparams</span><span class="o">.</span><span class="n">n_zernikes</span><span class="p">,</span>
+        <span class="n">pupil_diameter</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">pupil_diameter</span><span class="p">,</span>
+        <span class="n">output_dim</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">output_dim</span><span class="p">,</span>
+        <span class="n">oversampling_rate</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">oversampling_rate</span><span class="p">,</span>
+        <span class="n">output_Q</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">output_Q</span><span class="p">,</span>
+        <span class="n">SED_interp_pts_per_bin</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">sed_interp_pts_per_bin</span><span class="p">,</span>
+        <span class="n">SED_extrapolate</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">sed_extrapolate</span><span class="p">,</span>
+        <span class="n">SED_interp_kind</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">sed_interp_kind</span><span class="p">,</span>
+        <span class="n">SED_sigma</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">sed_sigma</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">simPSF_np</span><span class="o">.</span><span class="n">gen_random_Z_coeffs</span><span class="p">(</span><span class="n">max_order</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">param_hparams</span><span class="o">.</span><span class="n">n_zernikes</span><span class="p">)</span>
+    <span class="n">z_coeffs</span> <span class="o">=</span> <span class="n">simPSF_np</span><span class="o">.</span><span class="n">normalize_zernikes</span><span class="p">(</span>
+        <span class="n">simPSF_np</span><span class="o">.</span><span class="n">get_z_coeffs</span><span class="p">(),</span> <span class="n">simPSF_np</span><span class="o">.</span><span class="n">max_wfe_rms</span>
+    <span class="p">)</span>
+    <span class="n">simPSF_np</span><span class="o">.</span><span class="n">set_z_coeffs</span><span class="p">(</span><span class="n">z_coeffs</span><span class="p">)</span>
+    <span class="n">simPSF_np</span><span class="o">.</span><span class="n">generate_mono_PSF</span><span class="p">(</span><span class="n">lambda_obs</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">regen_sample</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">simPSF_np</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>
