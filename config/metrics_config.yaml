@@ -4,21 +4,21 @@ metrics:
   # Choose the training cycle for which to evaluate the psf_model. Can be: 1, 2, ...
   saved_training_cycle: 2
   # Metrics-only run: Specify model_params for a pre-trained model else leave blank if running training + metrics
-  # Specify path to Trained Model 
-  trained_model_path: </path/to/trained/model>
+  # Specify path to Parent Directory of Trained Model 
+  trained_model_path: </path/to/parent/directory/of/trained/model>
   # Path to Trained Model Config file inside /trained_model_path/ parent directory
-  trained_model_config: </path/to/trained/model>
-  # Name of Plotting Config file - Enter name of yaml file to run plot metrics else if empty run metrics evaluation only
-  plotting_config: <enter name of plotting_config .yaml file or leave empty>
+  trained_model_config: </path/to/trained/model/config/file>
   #Evaluate the monchromatic RMSE metric.
   eval_mono_metric_rmse: True
   #Evaluate the OPD RMSE metric.
   eval_opd_metric_rmse: True
   #Evaluate the super-resolution and the shape RMSE metrics for the train dataset.
   eval_train_shape_sr_metric_rmse: True
+  # Name of Plotting Config file - Enter name of yaml file to run plot metrics else if empty run metrics evaluation only
+  plotting_config: <enter name of plotting_config .yaml file or leave empty>
   ground_truth_model:
     model_params:
-      #Model used as ground truth for the evaluation. Options are: 'poly', 'physical'.
+      #Model used as ground truth for the evaluation. Options are: 'poly' for polychromatic and 'physical' [not available].
       model_name: poly 
 
       # Evaluation parameters
@@ -72,7 +72,7 @@ metrics:
         #Zernike polynomial modes to use on the parametric part.
         n_zernikes: 45
       
-        #Max polynomial degree of the parametric part.  chg to max_deg_param
+        #Max polynomial degree of the parametric part.
         d_max: 2  
 
         #Flag to save optimisation history for parametric model
@@ -80,7 +80,7 @@ metrics:
 
       # Hyperparameters for non-parametric model
       nonparam_hparams:
-        #Max polynomial degree of the non-parametric part. chg to max_deg_nonparam
+        #Max polynomial degree of the non-parametric part. 
         d_max_nonparam: 5 
 
         # Number of graph features
@@ -96,7 +96,7 @@ metrics:
         reset_dd_features: False
 
         #Flag to save optimisation history for non-parametric model
-        save_optim_history_nonparam: true 
+        save_optim_history_nonparam: True 
 
   metrics_hparams:
     # Batch size to use for the evaluation.
