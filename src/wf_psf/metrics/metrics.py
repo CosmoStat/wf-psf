@@ -981,7 +981,7 @@ def compute_opd_metrics_param_model(
 
 
 def compute_one_opd_rmse(GT_tf_semiparam_field, tf_semiparam_field, pos, is_poly=False):
-    """Compute the OPD map for one position!."""
+    """Compute the OPD map for one position."""
 
     np_obscurations = np.real(tf_semiparam_field.obscurations.numpy())
 
