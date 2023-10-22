@@ -12,13 +12,13 @@ WaveDiff is a differentiable data-driven wavefront-based PSF modelling framework
 |link-to-cosmostat| lab at CEA Paris-Saclay.
 
 This documentation aims to provide all the information needed for installing
-and running WaveDiff. If you unable to find what you are looking for here,
-we invite you to |link-to-issues| on the GitHub repository an we will do our
-best to help you.
+and running WaveDiff. If you are unable to find what you are looking for here,
+please |link-to-issues| on the GitHub repository.
 
-We kindly request that if you use ShapePipe for your academic work that you
+If you use WaveDiff for your academic work, we ask you to please
 cite :cite:t:`Liaudat:23`.
 
+.. |link-to-cosmostat| raw:: html
 .. |link-to-cosmostat| raw:: html
 
   <a href="http://www.cosmostat.org/" target="_blank">CosmoStat</a>
