@@ -26,6 +26,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "sphinxcontrib.bibtex",
+    "sphinx.ext.autosectionlabel",
     "myst_parser",
     "numpydoc",
     "sphinx_rtd_theme",
@@ -63,7 +64,7 @@ html_theme_options = {
     "vcs_pageview_mode": "",
     "style_nav_header_background": "#ffb400",
     # Toc options
-    "collapse_navigation": False,
+    "collapse_navigation": True,
     "sticky_navigation": True,
     "navigation_depth": 4,
     "includehidden": True,
