@@ -20,7 +20,7 @@ optional arguments:
 
 There are three arguments, which the user should specify when launching the pipeline.
 
-The first argument: `--confile CONFFILE` specifies the path to the configuration file storing the pipeline tasks to be executed at runtime.
+The first argument: `--confile CONFFILE` specifies the path to the {ref}`master configuration file<master_config_file>` storing the pipeline tasks to be executed at runtime.
 
 The second argument: `--repodir REPODIR` is the path to the `wf-psf` repository.
 
