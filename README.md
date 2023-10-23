@@ -3,9 +3,9 @@
 <h1 align='center'>WaveDiff</h1>
 <h2 align='center'>A differentiable data-driven wavefront-based PSF modelling framework.</h2>
 
-WaveDiff is a differentiable PSF modelling pipeline constructed with [Tensorflow](https://github.com/tensorflow/tensorflow). It was developed at the `CosmoStat lab <https://www.cosmostat.org>`_ at CEA Paris-Saclay.
+WaveDiff is a differentiable PSF modelling pipeline constructed with [Tensorflow](https://github.com/tensorflow/tensorflow). It was developed at the [CosmoStat lab](https://www.cosmostat.org) at CEA Paris-Saclay.
 
-See the `documentation <https://cosmostat.github.io/wf-psf/>`_ for details on how to install and run WaveDiff.
+See the [documentation](https://cosmostat.github.io/wf-psf/) for details on how to install and run WaveDiff.
 
 This repository includes:
 - A differentiable PSF model entirely built in [Tensorflow](https://github.com/tensorflow/tensorflow).
