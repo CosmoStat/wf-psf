@@ -11,7 +11,7 @@ Third-party software packages required by WaveDiff are installed automatically (
 | [tensorflow](https://www.tensorflow.org)     | {cite:t}`tensorflow:15` |
 | [tensorflow-addons](https://www.tensorflow.org/addons) |{cite:t}`tensorflow:15` |
 | [tensorflow-estimator](https://www.tensorflow.org/api_docs/python/tf/estimator) |{cite:t}`tensorflow:15` |
-| [zernike](https://github.com/jacopoantonello/zernike) |  TBD |
+| [zernike](https://github.com/jacopoantonello/zernike) |  {cite:t}`Antonello:15` |
 | [opencv-python](https://docs.opencv.org/4.x/index.html) | {cite:t}`opencv_library:08`  |
 | [pillow](https://pillow.readthedocs.io/en/stable/) | {cite:t}`clark:15`         |
 | [galsim](http://galsim-developers.github.io/GalSim/_build/html/index.html#) |    {cite:t}`rowe:15`        |
