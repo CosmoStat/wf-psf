@@ -204,7 +204,7 @@ The key <code class="docutils literal notranslate"><span class="pre">model_param
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Polychromatic Pixel Reconstruction</p></td>
-<td><p>Pixel-based metric that computes the absolute and relative Root Mean <br> Square Error (RMSE) of the pixel reconstruction residuals between the <br> trained polychromatic PSF model and a test data set.</p></td>
+<td><p>Pixel-based metric that computes the absolute and relative Root Mean <br> Square Error (RMSE) of the pixel reconstruction residuals between the <br> trained polychromatic PSF model and a test data set at low-pixel and <br> super-pixel resolutions.</p></td>
 </tr>
 <tr class="row-odd"><td><p>Monochromatic Pixel Reconstruction</p></td>
 <td><p>Pixel-based metric that computes the absolute and relative Root Mean <br> Square Error (RMSE) of the pixel reconstruction residuals as a function of <br> wavelength between a monochromatic PSF model and the test data set.</p></td>
@@ -213,7 +213,7 @@ The key <code class="docutils literal notranslate"><span class="pre">model_param
 <td><p>Metric that evaluates the absolute and relative RMSE of the residuals <br> between the predicted OPD (Wavefront Error) maps and the ground <br> truth OPD test data set.</p></td>
 </tr>
 <tr class="row-odd"><td><p>Weak Lensing Shape Metrics</p></td>
-<td><p>Second-order moments-based metrics that compute the absolute and <br> relative RMSE of the pixel,  shape (ellipticity) and size residuals for a <br> PSF that is well-sampled.</p></td>
+<td><p>Second-order moments-based metrics that compute the shape (ellipticity) <br> and size residuals for a PSF at super-pixel resolution (i.e. well-sampled) <br> using <a class="reference external" href="https://galsim-developers.github.io/GalSim/_build/html/hsm.html">GalSim’s HSM module</a>.</p></td>
 </tr>
 </tbody>
 </table>
@@ -334,7 +334,7 @@ metrics:
 </tbody>
 </table>
 <p>The option to generate plots of the metric evaluation results is provided by setting the value of the parameter <code class="docutils literal notranslate"><span class="pre">plotting_config</span></code> to the name of the <a class="reference internal" href="#plotting-config"><span class="std std-ref">plotting configuration</span></a> file, ex: <code class="docutils literal notranslate"><span class="pre">plotting_config.yaml</span></code>.  This will trigger WaveDiff’s plotting pipeline to produce plots after completion of the metrics evaluation pipeline.  If the field is left empty, no plots are generated.</p>
-<p>To compute the errors of the trained PSF model, the <code class="docutils literal notranslate"><span class="pre">metrics</span></code> package can retrieve a ground truth data set if it exists in dataset files listed in the <a class="reference internal" href="#data-config"><span class="std std-ref">data_configuration</span></a> file. If doesn’t exist, WaveDiff can generate at runtime a <code class="docutils literal notranslate"><span class="pre">ground</span> <span class="pre">truth</span> <span class="pre">model</span></code> using the parameters in the metrics configuration file associated to the key: <code class="docutils literal notranslate"><span class="pre">ground_truth_model</span></code>.  The parameter settings the ground truth model are similar as those used during <a class="reference internal" href="#training-config"><span class="std std-ref">training configuration</span></a>.  Currently, for choice of model indicated by the key <code class="docutils literal notranslate"><span class="pre">model_name</span></code> only the polychromatic model as denoted by <code class="docutils literal notranslate"><span class="pre">poly</span></code> is implemented.</p>
+<p>To compute the errors of the trained PSF model, the <code class="docutils literal notranslate"><span class="pre">metrics</span></code> package can retrieve a ground truth data set if it exists in dataset files listed in the <a class="reference internal" href="#data-config"><span class="std std-ref">data_configuration</span></a> file. If doesn’t exist, WaveDiff can generate at runtime a <code class="docutils literal notranslate"><span class="pre">ground</span> <span class="pre">truth</span> <span class="pre">model</span></code> using the parameters in the metrics configuration file associated to the key: <code class="docutils literal notranslate"><span class="pre">ground_truth_model</span></code>.  The parameter settings for the ground truth model are similar as those used during <a class="reference internal" href="#training-config"><span class="std std-ref">training configuration</span></a>.  Currently, for the choice of model indicated by the key <code class="docutils literal notranslate"><span class="pre">model_name</span></code>, only the polychromatic model as denoted by <code class="docutils literal notranslate"><span class="pre">poly</span></code> is implemented.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">metrics</span></code> package is run using <a class="reference external" href="https://www.tensorflow.org">TensorFlow</a> to reconstruct the PSF model and evaluate the various metrics. The <code class="docutils literal notranslate"><span class="pre">metrics_hparams</span></code> key contains a couple usual machine learning parameters such as the <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> as well as additional parameters like <code class="docutils literal notranslate"><span class="pre">output_dim</span></code> to define the dimension of the output pixel postage stamp, etc.</p>
 </section>
 <section id="plot-configuration">
@@ -411,7 +411,7 @@ metrics:
   <span class="n">training_conf_n</span><span class="p">:</span> <span class="n">training_config_n</span><span class="o">.</span><span class="n">yaml</span>
 </pre></div>
 </div>
-<p>Each training task is run sequentially and independently of the other.  All of the results are stored in the same <code class="docutils literal notranslate"><span class="pre">wf-outputs-&lt;timestamp&gt;</span></code> directory as shown in the example below</p>
+<p>Each training task is run sequentially and independently of the other.  All of the results are stored in the same <code class="docutils literal notranslate"><span class="pre">wf-outputs-&lt;timestamp&gt;</span></code> directory as shown in the example below.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>├── wf-outputs-202310131055
 │   ├── checkpoint
 │   │   ├── checkpoint
@@ -442,7 +442,18 @@ metrics:
 │       ├── psf_model_poly-coherent_euclid_200stars_n_cycle1.index
 </pre></div>
 </div>
-<p>Likewise, to do metrics evaluation and generate plots for each training run as shown above the corresponding names of the <code class="docutils literal notranslate"><span class="pre">metrics_config.yaml</span></code> and <code class="docutils literal notranslate"><span class="pre">plotting_config.yaml</span></code> file need to be provided as values to the corresponding <code class="docutils literal notranslate"><span class="pre">{metrics/plotting}_config</span></code> parameters in <code class="docutils literal notranslate"><span class="pre">training_config_{id}.yaml</span></code> and <code class="docutils literal notranslate"><span class="pre">metrics_config.yaml</span></code>, respectively.  Note, in this version of WaveDiff the plots are produced only per each metric per trained model.  To produce a single plot displaying the metrics for each trained model, the user must do so in a different run following the steps defined in section <a class="reference internal" href="#plotting-config"><span class="std std-ref">Plot Configuration</span></a>. The next upgrade to WaveDiff will feature the option to produce independent metrics plots per trained model and/or a single master plot for each metric comparing the respective metric results for all trained models.</p>
+<p>Likewise, to do metrics evaluation and generate plots for each training run as shown above the corresponding names of the <code class="docutils literal notranslate"><span class="pre">metrics_config.yaml</span></code> and <code class="docutils literal notranslate"><span class="pre">plotting_config.yaml</span></code> file need to be provided as values to the corresponding <code class="docutils literal notranslate"><span class="pre">{metrics/plotting}_config</span></code> parameters in <code class="docutils literal notranslate"><span class="pre">training_config_{id}.yaml</span></code> and <code class="docutils literal notranslate"><span class="pre">metrics_config.yaml</span></code>, respectively. The same <code class="docutils literal notranslate"><span class="pre">metrics_config.yaml</span></code> and <code class="docutils literal notranslate"><span class="pre">plotting_config.yaml</span></code> can be used for each <code class="docutils literal notranslate"><span class="pre">training_config_[id].yaml</span></code> file.  Below is an example of the <code class="docutils literal notranslate"><span class="pre">config</span></code> tree structure for a <code class="docutils literal notranslate"><span class="pre">training</span></code> + <code class="docutils literal notranslate"><span class="pre">metrics</span></code> + <code class="docutils literal notranslate"><span class="pre">plotting</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>config/
+├── configs.yaml
+├── data_config.yaml
+├── metrics_config.yaml
+├── plotting_config.yaml
+├── training_config_1.yaml
+├── ...
+└── training_config_n.yaml
+</pre></div>
+</div>
+<p>Note, in this version of WaveDiff the plots are produced only per each metric per trained model.  To produce a single plot displaying the metrics for each trained model, the user must do so in a different run following the steps defined in section <a class="reference internal" href="#plotting-config"><span class="std std-ref">Plot Configuration</span></a>. The next upgrade to WaveDiff will feature the option to produce independent metrics plots per trained model and/or a single master plot for each metric comparing the respective metric results for all trained models.</p>
 <p>The master configuration file can include a combination of the three pipeline tasks, i.e. training, metrics and plotting, to do independent tasks like train a new PSF model, compute the metrics of pre-trained PSF model, or produce plots for a selection of pre-computed metrics. While currently WaveDiff executes these jobs sequentially on a single GPU, the future plan is to distribute these tasks in parallel across GPUs to accelerate the computation.</p>
 <p>If you have any questions or feedback, please don’t hesitate to open a <a class="reference external" href="https://github.com/CosmoStat/wf-psf/issues">Github issue</a>.</p>
 </section>
