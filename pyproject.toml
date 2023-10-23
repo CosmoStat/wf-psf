@@ -82,5 +82,7 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=xml",
     "--junitxml=pytest.xml",
+    "--pydocstyle",
+
 ]
 testpaths = ["src/wf_psf"]
