@@ -9,7 +9,7 @@ The WaveDiff pipeline features four main packages for four pipeline tasks:
 |`plotting`| This pipeline task is a utility feature for generating plots for the various metrics.|
 |`simPSF`| This pipeline task is used to simulate stellar PSFs to used as training and test data for the training procedure.<br> (Currently, it runs as a separate code and is not triggered by the command `wavediff`).|
 
-Configuring WaveDiff to execute one or more of the pipeline tasks (e.g. training, metrics, or plotting) is done by providing as input a specific configuraton file.
+Configuring WaveDiff to execute one or more of the pipeline tasks (e.g. `training`, `metrics`, or `plotting`) is done by providing as input a specific configuraton file.
 
 The directory tree below shows the various configuration files with their own unique settings for executing a specific task in WaveDiff:
 
@@ -23,32 +23,32 @@ config
 └── training_config.yaml
 ```
 
-Most of the input configuration files (ending in .yaml) are constructed using `YAML` (Yet Another Markup Language).   The contents of the yaml file are read-in as a nested dictionary with key:value pairs.  The `logging.conf` contains configuration settings for storing a log of the run, and in this case we use the `ini` file syntax, which has a section-based structure.  Each section contains one or more key=value pairs, called properties. As a user, you should not modify the names of the keys or sections.  You can modify the value entries.
+Most of the input configuration files (ending in .yaml) are constructed using `YAML` (Yet Another Markup Language).   The contents of the yaml file are read in as a nested dictionary with key:value pairs.  The `logging.conf` contains configuration settings for storing a log of the run, and in this case we use the `ini` file syntax, which has a section-based structure.  Each section contains one or more key=value pairs, called properties. As a user, you should not modify the names of the keys or sections.  You can modify the value entries.
 
 Next, we shall describe each configuration file.
 
 (data_config)=
 ## Data Configuration
 
-The file [data_config.yaml](https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/data_config.yaml) stores the metadata for generating training and test datasets or retrieving existing ones.  A set of training and test data is provided in the `data/coherent_euclid_dataset` directory. New training and test datasets can be produced with the parameters in the file, which *should be* provided to the `simPSF` code although not at present (implementation upgrade pending).  
+The file [data_config.yaml](https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/data_config.yaml) stores the metadata for generating training and test data sets or retrieving existing ones.  A set of training and test data is provided in the `data/coherent_euclid_dataset` directory. New training and test data sets can be produced with the parameters in the file, which *should be* provided to the `simPSF` code although not at present (implementation upgrade pending).  
 
 ```
-# Training and test datasets for training and/or metrics evaluation
+# Training and test data sets for training and/or metrics evaluation
 data:
   training:
     # Specify directory path to data; Default setting is /path/to/repo/data
     data_dir: data/coherent_euclid_dataset/
     file: train_Euclid_res_200_TrainStars_id_001.npy
-    # if training dataset file does not exist, generate a simulated one by setting values below
+    # if training data set file does not exist, generate a simulated one by setting values below
     .
-    . <params to generate training dataset>
+    . <params to generate training data set>
     .
   test:
     data_dir: data/coherent_euclid_dataset/
     file: test_Euclid_res_id_001.npy
-    # If test dataset file not provided produce a new one
+    # If test data set file not provided produce a new one
     .
-    . <params to generate test dataset>
+    . <params to generate test data set>
     .
 ```
 (training_config)=
@@ -81,7 +81,7 @@ training:
      .
 
 ```
-The key `id_name` is used to apply an identifier to the run. The next parameter `data_config` stores the name of the [data_configuration](data_config) file, which will be parsed by WaveDiff to retrieve the training and test datasets to be used during `training`. The `metrics_config` key is used to trigger the `metrics` pipeline task after the completion of training.  Provide the filename for the [metrics configuration file](metrics_config) which contains the metrics configuration parameters. This will prompt WaveDiff to launch the `metrics` evaluation of the trained model. If the field is left empty, WaveDiff will run only the `training` pipeline task. 
+The key `id_name` is used to apply an identifier to the run. The next parameter `data_config` stores the name of the [data_configuration](data_config) file, which will be parsed by WaveDiff to retrieve the training and test data sets to be used during `training`. The `metrics_config` key is used to trigger the `metrics` pipeline task after the completion of training.  Provide the filename for the [metrics configuration file](metrics_config) which contains the metrics configuration parameters. This will prompt WaveDiff to launch the `metrics` evaluation of the trained model. If the field is left empty, WaveDiff will run only the `training` pipeline task. 
 The key `model_params` defines the model parameters for the type of PSF model to be trained.  The identifier of the type of PSF model to be trained is stored in `model_name`.  While the several models options are listed in the key description, for now only the `poly` model is implemented. 
 
 Training hyperparameters are defined within the parent key: `training_hparams` such as learning rates, the number of epochs and number of multi-cycles, etc.  These parameters can modified by the user. To save the weights and models of all training cycles, set [save_all_cycles](https://github.com/CosmoStat/wf-psf/blob/425cee776808eb230674103bdb317991dc0922b6/config/training_config.yaml#L105) to `True`.
@@ -144,7 +144,7 @@ metrics:
 The metrics key `model_save_path` enables a choice of running the metrics evaluation for a fully trained PSF model or the weights of a given checkpoint cycle. 
 The parameter `saved_training_cycle` specifies the cycle at which to run metrics evaluation on a fully-trained PSF model or the checkpoint weights.
 
-As stated in the previous section, the metrics evaluation pipeline can be executed subsequently after the completion of the training routine to evaluate the trained PSF model.  It can also be launched independently to compute the metrics of a previously trained model.  This is done by setting the value of the parameter `trained_model_path` to the absolute path of the parent directory containing the output files of the model.  This is the directory with the naming convention: `wf-outputs-<timestamp>`.  The user must then provide as a value to `trained_model_config` the subdirectory path to the training configuration file, ex: `config/train_config.yaml`. Below we show an example of this for the case where a user wants to run metrics evaluation of the full PSF model of a pre-trained PSF model saved in the directory `wf-outputs-202310161536`. 
+As stated in the previous section, the `metrics` evaluation pipeline can be executed subsequently after the completion of the `training` routine to evaluate the trained PSF model.  It can also be launched independently to compute the metrics of a previously trained model.  This is done by setting the value of the parameter `trained_model_path` to the absolute path of the parent directory containing the output files of the model.  This is the directory with the naming convention: `wf-outputs-timestamp` (see this {ref}`example of the run output directory<wf-outputs>`).  The user must then provide as a value to `trained_model_config` the subdirectory path to the training configuration file, ex: `config/train_config.yaml`. Below we show an example of this for the case where a user wants to run metrics evaluation of the full PSF model of a pre-trained PSF model saved in the directory `wf-outputs-202310161536`. 
 
 ```
 WaveDiff Pre-trained Model
@@ -192,9 +192,9 @@ metrics:
 ```
 The results of the metrics evaluation will be saved in the new output directory created at runtime (not in the pretrained model directory created previously).
 
-When the trained_model fields are left empty as stated in the commented line, WaveDiff will run the training and metrics pipelines in serial.  At the start of the metrics evaluation task, it will automatically retrieve the model weights at the specific cycle defined by `model_save_path` and `saved_training_cycle` from the `wf-outputs-<timestamp>` sub-directories generated at runtime just before the training task.
+When the trained_model fields are left empty as stated in the commented line, WaveDiff will run the `training` and `metrics` pipelines in serial.  At the start of the `metrics` evaluation task, it will automatically retrieve the model weights at the specific cycle defined by `model_save_path` and `saved_training_cycle` from the `wf-outputs-timestamp` sub-directories generated at runtime just before the training task.
 
-The WaveDiff metrics pipeline is programmed to automatically evaluate the Polychromatic Pixel reconstruction metrics for both the test (at low- and super-pixel resolution) and training data set (at low-pixel resolution).  The Monochromatic Pixel Reconstruction and OPD Reconstruction metrics are both optional and can be selected by setting the Boolean flags for `eval_{metric_type}_metric_rmse` to `True` to compute the metric or `False` to disable.  Finally, the Weak Lensing Shape Metrics are computed by default for the test data set at super-pixel resolution and as an option for the training data set by setting the parameter `eval_train_shape_sr_metric_rmse` to `True` or `False` (Note: setting this option to `True` will also trigger WaveDiff to compute the Polychromatric Pixel Reconstruction metrics at super-pixel resolution for the training data set).  The table below provides a summary of these different settings. 
+The WaveDiff `metrics` pipeline is programmed to automatically evaluate the Polychromatic Pixel reconstruction metrics for both the test (at low- and super-pixel resolution) and training data sets (at low-pixel resolution).  The Monochromatic Pixel Reconstruction and OPD Reconstruction metrics are both optional and can be selected by setting the Boolean flags for `eval_{metric_type}_metric_rmse` to `True` to compute the metric or `False` to disable.  Finally, the Weak Lensing Shape Metrics are computed by default for the test data set at super-pixel resolution and as an option for the training data set by setting the parameter `eval_train_shape_sr_metric_rmse` to `True` or `False` (Note: setting this option to `True` will also trigger WaveDiff to compute the Polychromatric Pixel Reconstruction metrics at super-pixel resolution for the training data set).  The table below provides a summary of these different settings. 
 
 (metrics_settings)=
 | Metric type | Test Data Set | Training Data Set |
