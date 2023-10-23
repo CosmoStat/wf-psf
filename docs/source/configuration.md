@@ -324,7 +324,7 @@ Each training task is run sequentially and independently of the other.  All of t
 │       ├── psf_model_poly-coherent_euclid_200stars_n_cycle1.index
 ```
 
-Likewise, to do metrics evaluation and generate plots for each training run as shown above the corresponding names of the `metrics_config.yaml` and `plotting_config.yaml` file need to be provided as values to the corresponding `{metrics/plotting}_config` parameters in `training_config_{id}.yaml` and `metrics_config.yaml`, respectively. The same `metrics_config.yaml` and `plotting_config.yaml` can be used for each `training_config_[id].yaml` file.  Below is an example of the `config` tree structure for a `training` + `metrics` + `plotting`:
+Likewise, to do metrics evaluation and generate plots for each training run as shown above the corresponding names of the `metrics_config.yaml` and `plotting_config.yaml` file need to be provided as values to the corresponding `{metrics|plotting}_config` parameters in `training_config_{id}.yaml` and `metrics_config.yaml`, respectively. The same `metrics_config.yaml` and `plotting_config.yaml` can be used for each `training_config_{id}.yaml` file.  Below is an example of the `config` tree structure for a `training` + `metrics` + `plotting`:
 
 ```
 config/
