@@ -279,7 +279,7 @@ plotting_params:
 ```
 The only plotting parameter `plot_show` is a Boolean used to trigger a display of the plot at runtime (as in an interactive session).  If False, no plot is displayed.
 
-
+(master_config_file)=
 ## Master Configuration
 
 The `configs.yaml` file is the master configuration file that is used to define all of the pipeline tasks to be submitted and executed by `WaveDiff` during runtime. In the `configs.yaml`, the user lists the processing tasks (one or more) to be performed by setting the values of the associated configuration variables `{pipeline_task}_conf` and the name of the configuration file `{pipeline_task}_config.yaml` in the master `configs.yaml` file.  See an example below to configure `WaveDiff` to launch a sequence of runs to train models 1...n with their respectived configurations set in the files `training_config_{id}.yaml`.
