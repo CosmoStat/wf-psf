@@ -94,10 +94,10 @@ The [metrics_config.yaml](https://github.com/CosmoStat/wf-psf/blob/dummy_main/co
 
 | Metric type | Description |
 | --- | ----------- |
-| Polychromatic Pixel Reconstruction | Pixel-based metric that computes the absolute and relative Root Mean <br> Square Error (RMSE) of the pixel reconstruction residuals between the <br> trained polychromatic PSF model and a test data set. |
+| Polychromatic Pixel Reconstruction | Pixel-based metric that computes the absolute and relative Root Mean <br> Square Error (RMSE) of the pixel reconstruction residuals between the <br> trained polychromatic PSF model and a test data set at low-pixel and <br> super-pixel resolutions.|
 | Monochromatic Pixel Reconstruction | Pixel-based metric that computes the absolute and relative Root Mean <br> Square Error (RMSE) of the pixel reconstruction residuals as a function of <br> wavelength between a monochromatic PSF model and the test data set.|
 | Optical Path Differences Reconstruction (OPD) | Metric that evaluates the absolute and relative RMSE of the residuals <br> between the predicted OPD (Wavefront Error) maps and the ground <br> truth OPD test data set.|
-| Weak Lensing Shape Metrics | Second-order moments-based metrics that compute the absolute and <br> relative RMSE of the pixel,  shape (ellipticity) and size residuals for a <br> PSF that is well-sampled.  |
+| Weak Lensing Shape Metrics | Second-order moments-based metrics that compute the shape (ellipticity) <br> and size residuals for a PSF at super-pixel resolution (i.e. well-sampled) <br> using [GalSim's HSM module](https://galsim-developers.github.io/GalSim/_build/html/hsm.html).  |
 
 The test data set referenced in the table for each metric can be composed of noiseless or noisy stars. In the case of noisy stars (such as real data), we caution that the RMSE is not an adequate metric to use to assess the performance of the PSF model.  Alternative formulations are a work-in-progress.  Similarly, both the Monochromatic Pixel Reconstruction and OPD Reconstruction metrics can only be applied to simulated data for which a ground truth model is known. Finally, to apply the Weak Lensing Shape metrics for undersampled PSF observations typical of space experiments like *Euclid* requires super-resolving the PSF model.
 
@@ -206,7 +206,7 @@ The WaveDiff `metrics` pipeline is programmed to automatically evaluate the Poly
 
 The option to generate plots of the metric evaluation results is provided by setting the value of the parameter `plotting_config` to the name of the [plotting configuration](plotting_config) file, ex: `plotting_config.yaml`.  This will trigger WaveDiff's plotting pipeline to produce plots after completion of the metrics evaluation pipeline.  If the field is left empty, no plots are generated. 
 
-To compute the errors of the trained PSF model, the `metrics` package can retrieve a ground truth data set if it exists in dataset files listed in the [data_configuration](data_config) file. If doesn't exist, WaveDiff can generate at runtime a `ground truth model` using the parameters in the metrics configuration file associated to the key: `ground_truth_model`.  The parameter settings the ground truth model are similar as those used during [training configuration](training_config).  Currently, for choice of model indicated by the key `model_name` only the polychromatic model as denoted by `poly` is implemented.
+To compute the errors of the trained PSF model, the `metrics` package can retrieve a ground truth data set if it exists in dataset files listed in the [data_configuration](data_config) file. If doesn't exist, WaveDiff can generate at runtime a `ground truth model` using the parameters in the metrics configuration file associated to the key: `ground_truth_model`.  The parameter settings for the ground truth model are similar as those used during [training configuration](training_config).  Currently, for the choice of model indicated by the key `model_name`, only the polychromatic model as denoted by `poly` is implemented.
 
 The `metrics` package is run using [TensorFlow](https://www.tensorflow.org) to reconstruct the PSF model and evaluate the various metrics. The `metrics_hparams` key contains a couple usual machine learning parameters such as the `batch_size` as well as additional parameters like `output_dim` to define the dimension of the output pixel postage stamp, etc.  
 
@@ -291,7 +291,7 @@ The `configs.yaml` file is the master configuration file that is used to define 
   ...
   training_conf_n: training_config_n.yaml
 ```
-Each training task is run sequentially and independently of the other.  All of the results are stored in the same `wf-outputs-<timestamp>` directory as shown in the example below
+Each training task is run sequentially and independently of the other.  All of the results are stored in the same `wf-outputs-<timestamp>` directory as shown in the example below.
 
 ```
 ├── wf-outputs-202310131055
@@ -324,7 +324,20 @@ Each training task is run sequentially and independently of the other.  All of t
 │       ├── psf_model_poly-coherent_euclid_200stars_n_cycle1.index
 ```
 
-Likewise, to do metrics evaluation and generate plots for each training run as shown above the corresponding names of the `metrics_config.yaml` and `plotting_config.yaml` file need to be provided as values to the corresponding `{metrics/plotting}_config` parameters in `training_config_{id}.yaml` and `metrics_config.yaml`, respectively.  Note, in this version of WaveDiff the plots are produced only per each metric per trained model.  To produce a single plot displaying the metrics for each trained model, the user must do so in a different run following the steps defined in section [Plot Configuration](plotting_config). The next upgrade to WaveDiff will feature the option to produce independent metrics plots per trained model and/or a single master plot for each metric comparing the respective metric results for all trained models.
+Likewise, to do metrics evaluation and generate plots for each training run as shown above the corresponding names of the `metrics_config.yaml` and `plotting_config.yaml` file need to be provided as values to the corresponding `{metrics/plotting}_config` parameters in `training_config_{id}.yaml` and `metrics_config.yaml`, respectively. The same `metrics_config.yaml` and `plotting_config.yaml` can be used for each `training_config_[id].yaml` file.  Below is an example of the `config` tree structure for a `training` + `metrics` + `plotting`:
+
+```
+config/
+├── configs.yaml
+├── data_config.yaml
+├── metrics_config.yaml
+├── plotting_config.yaml
+├── training_config_1.yaml
+├── ...
+└── training_config_n.yaml
+```
+
+Note, in this version of WaveDiff the plots are produced only per each metric per trained model.  To produce a single plot displaying the metrics for each trained model, the user must do so in a different run following the steps defined in section [Plot Configuration](plotting_config). The next upgrade to WaveDiff will feature the option to produce independent metrics plots per trained model and/or a single master plot for each metric comparing the respective metric results for all trained models.
 
 The master configuration file can include a combination of the three pipeline tasks, i.e. training, metrics and plotting, to do independent tasks like train a new PSF model, compute the metrics of pre-trained PSF model, or produce plots for a selection of pre-computed metrics. While currently WaveDiff executes these jobs sequentially on a single GPU, the future plan is to distribute these tasks in parallel across GPUs to accelerate the computation.
 
