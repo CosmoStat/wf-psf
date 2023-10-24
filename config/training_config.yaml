@@ -87,13 +87,7 @@ training:
       save_optim_history_nonparam: true 
 
   # Training hyperparameters
-  training_hparams:
-    # Number of epochs for the training the parametric model parameters
-    n_epochs_params: [2, 2]
-   
-    # Number of epochs for the training the non-parametric model parameters
-    n_epochs_non_params: [2, 2] 
-  
+  training_hparams:  
     # Batch Size
     batch_size: 32
          
@@ -119,8 +113,8 @@ training:
       learning_rate_non_params: [1.0e-1, 1.0e-1]
  
       # Number of training epochs for training the parametric model parameters per cycle.
-      n_epochs_params: [20, 20] 
+      n_epochs_params: [2, 2] 
   
       # Number of training epochs for training the non-parametric model parameters per cycle.
-      n_epochs_non_params: [100, 120]
+      n_epochs_non_params: [2, 2]
   
