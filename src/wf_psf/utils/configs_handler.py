@@ -7,7 +7,8 @@ to manage the parameters of the config files
 
 """
 import numpy as np
-from wf_psf.utils.read_config import read_conf
+from wf_psf.utils.read_config import read_conf, RecursiveNamespace
+from wf_psf.utils.validate_config import ValidateConfig, get_attr_from_RN
 from wf_psf.data.training_preprocessing import TrainingDataHandler, TestDataHandler
 from wf_psf.training import train
 from wf_psf.psf_models import psf_models
@@ -159,8 +160,9 @@ class TrainingConfigHandler:
     ids = ("training_conf",)
 
     def __init__(self, training_conf, file_handler):
-        self.training_conf = read_conf(training_conf)
         self.file_handler = file_handler
+        self.training_conf = read_conf(training_conf)
+        self.validate_conf()
         self.data_conf = DataConfigHandler(
             os.path.join(
                 file_handler.config_path, self.training_conf.training.data_config
@@ -211,6 +213,35 @@ class TrainingConfigHandler:
             )
 
             metrics.run()
+
+    def validate_conf(self):
+        validate_obj = ValidateConfig(
+            self.training_conf, self.file_handler, self.ids[0]
+        )
+
+        for k, v in validate_obj.validate_dict.items():
+            try:
+                self.training_conf.__dict__[k]
+            except KeyError:
+                logger.exception(
+                    "Key naming error. Top-level key must be called {}".format(k)
+                )
+
+            training_rn = self.training_conf.__getattribute__(k)
+            training_validate_dict = validate_obj.validate_dict[k]
+            for key in v:
+                if not isinstance(
+                    get_attr_from_RN(training_rn, key),
+                    RecursiveNamespace,
+                ):
+                    result = get_attr_from_RN(training_rn, key)
+                    validate_obj.validate(result, training_validate_dict[key])
+                else:
+                    validate_obj.validate_recursiveNamespace(
+                        training_rn.__getattribute__(key), v[key]
+                    )
+
+        breakpoint()
 
 
 @register_configclass
