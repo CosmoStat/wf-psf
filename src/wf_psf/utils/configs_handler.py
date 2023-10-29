@@ -8,7 +8,7 @@ to manage the parameters of the config files
 """
 import numpy as np
 from wf_psf.utils.read_config import read_conf, RecursiveNamespace
-from wf_psf.utils.validate_config import ValidateConfig, get_attr_from_RN
+from wf_psf.utils.validate_config import ValidateConfig
 from wf_psf.data.training_preprocessing import TrainingDataHandler, TestDataHandler
 from wf_psf.training import train
 from wf_psf.psf_models import psf_models
@@ -216,7 +216,7 @@ class TrainingConfigHandler:
 
     def validate_conf(self):
         validate_obj = ValidateConfig(
-            self.training_conf, self.file_handler, self.ids[0]
+            self.file_handler, self.training_conf, self.ids[0]
         )
 
         for k, v in validate_obj.validate_dict.items():
@@ -229,19 +229,23 @@ class TrainingConfigHandler:
 
             training_rn = self.training_conf.__getattribute__(k)
             training_validate_dict = validate_obj.validate_dict[k]
+            results = []
             for key in v:
                 if not isinstance(
-                    get_attr_from_RN(training_rn, key),
+                    ValidateConfig.get_attr_from_RN(training_rn, key),
                     RecursiveNamespace,
                 ):
-                    result = get_attr_from_RN(training_rn, key)
-                    validate_obj.validate(result, training_validate_dict[key])
+                    value = ValidateConfig.get_attr_from_RN(training_rn, key)
+                    msg = validate_obj.validate(value, training_validate_dict[key])
+                    results.append((key, msg))
                 else:
-                    validate_obj.validate_recursiveNamespace(
-                        training_rn.__getattribute__(key), v[key]
+                    results = validate_obj.validate_recursiveNamespace(
+                        training_rn.__getattribute__(key), v[key], results
                     )
 
-        breakpoint()
+            logger.info("Checking configuration parameter settings...")
+            for result in results:
+                logger.info("{}: {}".format(result[0], result[1]))
 
 
 @register_configclass

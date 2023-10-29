@@ -14,67 +14,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def check_if_positive_int(*conf_param):
-    """Check if Postive Integer.
-
-    A function to check if the configuration
-    parameter is a positive integer.
-
-    Parameters
-    ----------
-    *conf_param: list
-        A list containing configuration parameters
-
-    Returns
-    -------
-    bool
-        Returns a boolean
-    """
-
-    return bool(isinstance(conf_param[0], int) > 0)
-
-
-def check_if_positive_float(*conf_param):
-    """Check if Postive Float.
-
-    A function to check if the configuration
-    parameter is a positive float.
-
-    Parameters
-    ----------
-    *conf_param: list
-        A list containing configuration parameters
-
-    Returns
-    -------
-    bool
-        Returns a boolean
-    """
-    return bool(isinstance(conf_param[0], float) > 0)
-
-
-def get_attr_from_RN(rn, key):
-    """Get Attribute from RecursiveNamespace.
-
-    A function to return the attribute of a
-    RecursiveNamespace object.
-
-    Parameters
-    ----------
-    rn: RecursiveNamespace instance
-        A RecursiveNamespace instance
-    key: str
-        A string representation of an object in the namespace of the RecursiveNamespace.
-
-    Returns
-    -------
-    value
-        The value of the attribute of an object.
-
-    """
-    return rn.__getattribute__(key)
-
-
 class ValidateConfig:
     """Validate Config Class.
 
@@ -97,19 +36,105 @@ class ValidateConfig:
         self.config_file = config_file
         self.validate_dict = validate_dict[config_type]
 
-    def validate_recursiveNamespace(self, rn, keys):
-        if not isinstance(keys, dict):
-            return self.validate(get_attr_from_RN(rn, keys), keys)
-        else:
-            for key, v in keys.items():
-                if isinstance(get_attr_from_RN(rn, key), RecursiveNamespace):
-                    self.validate_recursiveNamespace(
-                        get_attr_from_RN(rn, key), keys[key]
-                    )
-                else:
-                    self.validate(get_attr_from_RN(rn, key), v)
+    @staticmethod
+    def check_if_positive_int(*conf_param):
+        """Check if Postive Integer.
 
-        return
+        A function to check if the configuration
+        parameter is a positive integer.
+
+        Parameters
+        ----------
+        *conf_param: list
+            A list containing configuration parameters
+
+        Returns
+        -------
+        bool
+            Returns a boolean
+        """
+        return bool((isinstance(conf_param[0], int)) and (conf_param[0] > 0))
+
+    @staticmethod
+    def check_if_positive_float(*conf_param):
+        """Check if Postive Float.
+
+        A function to check if the configuration
+        parameter is a positive float.
+
+        Parameters
+        ----------
+        *conf_param: list
+            A list containing configuration parameters
+
+        Returns
+        -------
+        bool
+            Returns a boolean
+        """
+        return bool((isinstance(conf_param[0], float)) and (conf_param[0] >= 0.0))
+
+    @staticmethod
+    def get_attr_from_RN(rn, key):
+        """Get Attribute from RecursiveNamespace.
+
+        A function to return the attribute of a
+        RecursiveNamespace object.
+
+        Parameters
+        ----------
+        rn: RecursiveNamespace instance
+            A RecursiveNamespace instance
+        key: str
+            A string representation of an object in the namespace of the RecursiveNamespace.
+
+        Returns
+        -------
+        value
+            The value of the attribute of an object.
+
+        """
+        return rn.__getattribute__(key)
+
+    @staticmethod
+    def check_none(*conf_param):
+        """Check if None.
+
+        A method to check config file is none.
+
+        Parameters
+        ----------
+        config_param: list
+            A list of configuration parameters
+
+        Returns
+        -------
+        bool
+            Returns a boolean
+        """
+        return conf_param[0] is None
+
+    def validate_recursiveNamespace(self, rn, keys, results):
+        """Validate RecursiveNamespace.
+
+        A function to validate the configuration parameters
+        in a RecursiveNamespace.
+
+        Parameters
+        ----------
+        rn: RecursiveNamespace
+        keys: dict,
+        """
+        for key, v in keys.items():
+            if isinstance(ValidateConfig.get_attr_from_RN(rn, key), RecursiveNamespace):
+                self.validate_recursiveNamespace(
+                    ValidateConfig.get_attr_from_RN(rn, key), keys[key], results
+                )
+            else:
+                msg = self.validate(ValidateConfig.get_attr_from_RN(rn, key), v)
+                results.append((key, msg))
+
+        return results
 
     def check_config_exists(self, *conf_param):
         """Check Config Exists.
@@ -128,28 +153,12 @@ class ValidateConfig:
 
 
         """
-        return bool(
-            os.path.exists(os.path.join(self.file_handler.config_path, conf_param[0]))
+        return os.path.exists(
+            os.path.join(self.file_handler.config_path, conf_param[0])
         )
 
-    def check_none(self, *conf_param):
-        """Check if None.
-
-        A method to check config file is none.
-
-        Parameters
-        ----------
-        config_param: list
-            A list of configuration parameters
-
-        Returns
-        -------
-        bool
-            Returns a boolean
-        """
-        return bool(conf_param[0] is None)
-
-    def check_if_equals_name(self, *conf_params):
+    @staticmethod
+    def check_if_equals_name(*conf_params):
         """Check if Config Param Equals Name.
 
         A method to check config param equals the
@@ -166,9 +175,10 @@ class ValidateConfig:
             Returns a boolean
 
         """
-        return bool(conf_params[0] in conf_params[1])
+        return conf_params[0] in conf_params[1]
 
-    def check_if_bool(self, *conf_param):
+    @staticmethod
+    def check_if_bool(*conf_param):
         """Check If Boolean.
 
         A method to check config_param type is a
@@ -185,7 +195,7 @@ class ValidateConfig:
             Returns a boolean
 
         """
-        return bool(type(conf_param[0]) is bool)
+        return type(conf_param[0]) is bool
 
     def validate(self, config_param, conditions):
         """Validate.
@@ -196,33 +206,30 @@ class ValidateConfig:
 
         condition_type = {
             "check_file_exists": self.check_config_exists,
-            "check_none": self.check_none,
-            "check_if_equals_name": self.check_if_equals_name,
-            "check_if_positive_int": check_if_positive_int,
-            "check_if_positive_float": check_if_positive_float,
-            "check_if_bool": self.check_if_bool,
+            "check_none": ValidateConfig.check_none,
+            "check_if_equals_name": ValidateConfig.check_if_equals_name,
+            "check_if_positive_int": ValidateConfig.check_if_positive_int,
+            "check_if_positive_float": ValidateConfig.check_if_positive_float,
+            "check_if_bool": ValidateConfig.check_if_bool,
         }
 
-        logger.info("Evaluating conditions...")
         try:
             for condition in conditions["function"]:
                 condition_type[condition]
 
                 if condition_type[condition](config_param, conditions["name"]) is True:
-                    logger.info(
-                        "{} fulfills condition {}".format(config_param, condition)
-                    )
-                    logger.info(" ")
+                    msg = "{} is OK".format(config_param)
+                    return msg
                     break
                 else:
-                    logger.info(
-                        "{} does not fulfill condition {}.".format(
-                            config_param, condition
-                        )
+                    msg = "{} is NOK. {} not fulfilled.".format(
+                        config_param, condition
                     )
-                    logger.info(" ")
                     continue
         except KeyError:
-            logger.exception(
-                "Config Param {} does not fulfill conditions.".format(config_param)
-            )
+            msg = "{} is NOK".format(config_param)
+            # "Config Param {} does not fulfill conditions.".format(config_param)
+            # logger.exception(msg)
+            return msg
+
+        return msg
