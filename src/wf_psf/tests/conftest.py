@@ -9,11 +9,13 @@ various wf_psf packages.
 """
 import pytest
 from wf_psf.utils.read_config import RecursiveNamespace
+from wf_psf.utils.io import FileIOHandler
 from wf_psf.training.train import TrainingParamsHandler
 from wf_psf.psf_models import psf_models
 from wf_psf.data.training_preprocessing import TrainingDataHandler, TestDataHandler
+import os
 
-training_config = RecursiveNamespace(
+training = RecursiveNamespace(
     id_name="_sample_w_bis1_2k",
     data_config="data_config.yaml",
     metrics_config="metrics_config.yaml",
@@ -111,18 +113,71 @@ data = RecursiveNamespace(
     ),
 )
 
+cwd = os.getcwd()
 
-@pytest.fixture(scope="module", params=[training_config])
+
+@pytest.fixture(scope="module")
+def path_to_repo_dir():
+    return cwd
+
+
+@pytest.fixture
+def path_to_tmp_output_dir(tmp_path):
+    return tmp_path
+
+
+@pytest.fixture
+def path_to_test_dir(path_to_repo_dir):
+    return os.path.join(path_to_repo_dir, "src", "wf_psf", "tests")
+
+
+@pytest.fixture
+def path_to_config_dir(path_to_test_dir):
+    return os.path.join(path_to_test_dir, "data", "config")
+
+
+@pytest.fixture()
+def file_handler(path_to_repo_dir, path_to_tmp_output_dir, path_to_config_dir):
+    return FileIOHandler(path_to_repo_dir, path_to_tmp_output_dir, path_to_config_dir)
+
+
+@pytest.fixture(scope="module")
+def multi_cycle_parameters():
+    return (
+        RecursiveNamespace(
+            total_cycles=2,
+            cycle_def="complete",
+            save_all_cycles=True,
+            saved_cycle="cycle2",
+            learning_rate_params=[1.0e-2, 1.0e-2],
+            learning_rate_non_params=[1.0e-1, 1.0e-1],
+            n_epochs_params=[2, 2],
+            n_epochs_non_params=[2, 2],
+        ),
+    )
+
+
+@pytest.fixture(scope="module")
+def training_hparams(multi_cycle_parameters):
+    return RecursiveNamespace(
+        n_epochs_params=[2, 2],
+        n_epochs_non_params=[2, 2],
+        batch_size=32,
+        multi_cycle_params=multi_cycle_parameters,
+    )
+
+
+@pytest.fixture(scope="module", params=[training])
 def training_params():
-    return TrainingParamsHandler(training_config)
+    return TrainingParamsHandler(training)
 
 
 @pytest.fixture(scope="module")
 def training_data():
     return TrainingDataHandler(
         data.training,
-        psf_models.simPSF(training_config.model_params),
-        training_config.model_params.n_bins_lda,
+        psf_models.simPSF(training.model_params),
+        training.model_params.n_bins_lda,
     )
 
 
@@ -130,8 +185,8 @@ def training_data():
 def test_data():
     return TestDataHandler(
         data.test,
-        psf_models.simPSF(training_config.model_params),
-        training_config.model_params.n_bins_lda,
+        psf_models.simPSF(training.model_params),
+        training.model_params.n_bins_lda,
     )
 
 
@@ -143,6 +198,6 @@ def test_dataset(test_data):
 @pytest.fixture(scope="module")
 def psf_model():
     return psf_models.get_psf_model(
-        training_config.model_params,
-        training_config.training_hparams,
+        training.model_params,
+        training.training_hparams,
     )
