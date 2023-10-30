@@ -8,7 +8,7 @@ verify configuration files.
 """
 import os
 from wf_psf.utils.read_config import RecursiveNamespace
-from wf_psf.utils.validate_config_dicts import validate_dict
+from wf_psf.utils.validate_dicts.validate_config_dicts import validate_dict
 import logging
 
 logger = logging.getLogger(__name__)
@@ -222,9 +222,7 @@ class ValidateConfig:
                     return msg
                     break
                 else:
-                    msg = "{} is NOK. {} not fulfilled.".format(
-                        config_param, condition
-                    )
+                    msg = "{} is NOK. {} not fulfilled.".format(config_param, condition)
                     continue
         except KeyError:
             msg = "{} is NOK".format(config_param)
