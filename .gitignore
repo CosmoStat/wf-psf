@@ -86,6 +86,11 @@ instance/
 
 # Sphinx documentation
 docs/_build/
+docs/source/wf_psf*.rst
+docs/source/_static/file.png
+docs/source/_static/images/logo_colab.png
+docs/source/_static/minus.png
+docs/source/_static/plus.png
 
 # PyBuilder
 target/
@@ -144,5 +149,4 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# UML plots
-*.png
+

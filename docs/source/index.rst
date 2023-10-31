@@ -3,18 +3,27 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to wf-psf's documentation!
+WaveDiff
 ==================================
+.. Include table of contents
+.. include:: toc.rst
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+WaveDiff is a differentiable data-driven wavefront-based PSF modelling framework developed within the
+|link-to-cosmostat| lab at CEA Paris-Saclay.
 
+This documentation aims to provide all the information needed for installing
+and running WaveDiff. If you are unable to find what you are looking for here,
+please |link-to-issues| on the GitHub repository.
 
+If you use WaveDiff for your academic work, we ask you to please
+cite :cite:t:`Liaudat:23`.
 
-Indices and tables
-==================
+.. |link-to-cosmostat| raw:: html
+.. |link-to-cosmostat| raw:: html
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+  <a href="http://www.cosmostat.org/" target="_blank">CosmoStat</a>
+
+.. |link-to-issues| raw:: html
+
+  <a href="https://github.com/CosmoStat/wf-psf/issues/new"
+  target="_blank">open an issue</a>

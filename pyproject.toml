@@ -24,6 +24,7 @@ dependencies = [
     "matplotlib>=3.3.2",
     "seaborn>=0.12.2",
 ]
+
 version = "1.0.0"
 
 [project.optional-dependencies]
@@ -35,6 +36,9 @@ docs = [
     "sphinxcontrib-bibtex",
     "sphinxawesome-theme",
     "sphinx-gallery",
+    "sphinxemoji",
+    "sphinx_rtd_theme",
+
 ]
 
 lint = [
@@ -78,5 +82,6 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=xml",
     "--junitxml=pytest.xml",
+
 ]
 testpaths = ["src/wf_psf"]
