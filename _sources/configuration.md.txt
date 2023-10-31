@@ -84,13 +84,13 @@ training:
 The key `id_name` is used to apply an identifier to the run. The next parameter `data_config` stores the name of the [data_configuration](data_config) file, which will be parsed by WaveDiff to retrieve the training and test data sets to be used during `training`. The `metrics_config` key is used to trigger the `metrics` pipeline task after the completion of training.  The options are to enter the filename for the [metrics configuration file](metrics_config) which contains the metrics configuration parameters or to leave the field empty. A non-empty `metrics_config` field will prompt WaveDiff to launch the `metrics` evaluation of the trained model. If the field is left empty, WaveDiff will run only the `training` pipeline task. 
 The key `model_params` defines the model parameters for the type of PSF model to be trained.  The identifier of the type of PSF model to be trained is stored in `model_name`.  While the model options are listed in the key description, for now only the `poly` model is implemented. 
 
-Training hyperparameters are defined within the parent key: `training_hparams` such as learning rates, the number of epochs and number of multi-cycles, etc.  These parameters can modified by the user. To save the weights and models of all training cycles, set [save_all_cycles](https://github.com/CosmoStat/wf-psf/blob/425cee776808eb230674103bdb317991dc0922b6/config/training_config.yaml#L105) to `True`.
+Training hyperparameters, defined within the parent key: `training_hparams` include the learning rates, the number of epochs and the number of multi-cycles, etc.  These parameters can modified by the user. Setting the key [save_all_cycles](https://github.com/CosmoStat/wf-psf/blob/425cee776808eb230674103bdb317991dc0922b6/config/training_config.yaml#L105) to `True` will save the weights and models of all training cycles.
 
 
 (metrics_config)=
 ## Metrics Configuration
 
-The [metrics_config.yaml](https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/metrics_config.yaml) file stores the configuration parameters for the WaveDiff pipeline to carry out a set of computations for the four metrics listed in the table below on a trained PSF model for the input training and test data sets, as applied in {cite:t}`Liaudat:23`.
+The [metrics_config.yaml](https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/metrics_config.yaml) file stores the configuration parameters for the WaveDiff pipeline to perform computations of the four metrics listed in the table on a trained PSF model, as applied in {cite:t}`Liaudat:23`.
 
 | Metric type | Description |
 | --- | ----------- |
@@ -142,9 +142,9 @@ metrics:
 
 ```
 The metrics key `model_save_path` enables a choice of running the metrics evaluation for a fully trained PSF model or the weights of a given checkpoint cycle. 
-The parameter `saved_training_cycle` specifies the cycle at which to run metrics evaluation on a fully-trained PSF model or the checkpoint weights.
+The parameter `saved_training_cycle` specifies the cycle at which to run metrics evaluation.
 
-As stated in the previous section, the `metrics` evaluation pipeline can be executed subsequently after the completion of the `training` routine to evaluate the trained PSF model.  It can also be launched independently to compute the metrics of a previously trained model.  This is done by setting the value of the parameter `trained_model_path` to the absolute path of the parent directory containing the output files of the model.  This is the directory with the naming convention: `wf-outputs-timestamp` (see this {ref}`example of the run output directory<wf-outputs>`).  The user must then provide as a value to `trained_model_config` the subdirectory path to the training configuration file, ex: `config/train_config.yaml`. Below we show an example of this for the case where a user wants to run metrics evaluation of the full PSF model of a pre-trained PSF model saved in the directory `wf-outputs-202310161536`. 
+As stated in the previous section, the `metrics` evaluation pipeline can be executed subsequently after the completion of the `training` routine to evaluate the trained PSF model.  It can also be launched independently to compute the metrics of a previously trained model.  This is done by setting the value of the parameter `trained_model_path` to the absolute path of the parent directory containing the output files of the model.  This is the directory with the naming convention: `wf-outputs-timestamp` (see this {ref}`example of the run output directory<wf-outputs>`).  The user must then provide as an entry for the key: `trained_model_config` the subdirectory path to the training configuration file, ex: `config/train_config.yaml`. Below we show an example of this for the case where a user wants to run metrics evaluation of a pretrained full PSF model saved in the directory `wf-outputs-202310161536`. 
 
 ```
 WaveDiff Pre-trained Model

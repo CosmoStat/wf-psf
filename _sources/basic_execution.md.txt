@@ -32,9 +32,9 @@ To run `WaveDiff`, use the following command:
 > wavediff -c /path/to/config/file -r /path/to/wf-psf -o /path/to/output/dir
 ```
 
-WaveDiff begins with the input/output (i.e. retrieving and parsing the configuration file and creating output subdirectories in the main output directory).  The subdirectory name is composed of `wf-outputs-` and the timestamp of the run, i.e. `wf-outputs-202310221632`. Each run will produce its own unique subdirectory. Then within this subdirectory, further subdirectories are generated to store the corresponding output.
+WaveDiff begins with the input/output (i.e. retrieving and parsing the configuration file and creating a set of nested output subdirectories in the main output directory). The name of the top-level subdirectory is a composition of the string `wf-outputs-` and the timestamp of the corresponding run, i.e. `wf-outputs-202310221632`. Each run will produce its own unique subdirectory. Then within this subdirectory, further subdirectories are generated to store the corresponding output.
 
-Below is an example of the all directories generated during each execution of the WaveDiff pipeline.
+Below is an example of the set of directories generated during each execution of the WaveDiff pipeline.
 
 (wf-outputs)=
 ```
