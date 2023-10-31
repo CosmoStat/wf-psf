@@ -82,7 +82,7 @@ training:
 
 ```
 The key `id_name` is used to apply an identifier to the run. The next parameter `data_config` stores the name of the [data_configuration](data_config) file, which will be parsed by WaveDiff to retrieve the training and test data sets to be used during `training`. The `metrics_config` key is used to trigger the `metrics` pipeline task after the completion of training.  Provide the filename for the [metrics configuration file](metrics_config) which contains the metrics configuration parameters. This will prompt WaveDiff to launch the `metrics` evaluation of the trained model. If the field is left empty, WaveDiff will run only the `training` pipeline task. 
-The key `model_params` defines the model parameters for the type of PSF model to be trained.  The identifier of the type of PSF model to be trained is stored in `model_name`.  While the several models options are listed in the key description, for now only the `poly` model is implemented. 
+The key `model_params` defines the model parameters for the type of PSF model to be trained.  The identifier of the type of PSF model to be trained is stored in `model_name`.  While the model options are listed in the key description, for now only the `poly` model is implemented. 
 
 Training hyperparameters are defined within the parent key: `training_hparams` such as learning rates, the number of epochs and number of multi-cycles, etc.  These parameters can modified by the user. To save the weights and models of all training cycles, set [save_all_cycles](https://github.com/CosmoStat/wf-psf/blob/425cee776808eb230674103bdb317991dc0922b6/config/training_config.yaml#L105) to `True`.
 
