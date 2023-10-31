@@ -291,7 +291,7 @@ The `configs.yaml` file is the master configuration file that is used to define 
   ...
   training_conf_n: training_config_n.yaml
 ```
-Each training task is run sequentially and independently of the other.  All of the results are stored in the same `wf-outputs-<timestamp>` directory as shown in the example below.
+Each training task is run sequentially and independently of the others.  All of the results are stored in the same `wf-outputs-<timestamp>` directory as shown in the example below.
 
 ```
 ├── wf-outputs-202310131055
