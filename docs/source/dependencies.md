@@ -1,6 +1,6 @@
 # Dependencies
 
-Third-party software packages required by WaveDiff are installed automatically (see [Installation](installation.md)). Note that all packages are pinned to a given version for each release of ShapePipe to maximise the reproducibility of the results. 
+Third-party software packages required by WaveDiff are installed automatically (see [Installation](installation.md)). 
 
 ## Python Dependencies
 
