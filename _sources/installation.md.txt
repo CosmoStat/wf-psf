@@ -3,7 +3,7 @@
 
 WaveDiff is a software written in Python and uses the [TensorFlow](https://www.tensorflow.org) framework to train and evaluate the model parameters of the PSF model. Therefore, it is advisable to run the WaveDiff software on machines equipped with a GPU.  
 
-Note: You may want to set up a dedicated Python environment for running WaveDiff using [Conda](https://docs.conda.io/en/latest/).  You can use the minimal installer [Miniconda](https://docs.conda.io/projects/miniconda/en/latest/) to set up the environment in which we run the command below to install the subset of packages needed for WaveDiff.
+Note: You may want to set up a dedicated Python environment for running WaveDiff using e.g. [Conda](https://docs.conda.io/en/latest/).  You can use the minimal installer [Miniconda](https://docs.conda.io/projects/miniconda/en/latest/) to set up the environment in which we run the command below to install the subset of packages needed for running WaveDiff.
 
 ## Installation Steps
 
