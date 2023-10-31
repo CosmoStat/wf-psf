@@ -339,6 +339,6 @@ config/
 
 Note, in this version of WaveDiff the plots are produced only per each metric per trained model.  To produce a single plot displaying the metrics for each trained model, the user must do so in a different run following the steps defined in [Plot Configuration](plotting_config). The next upgrade to WaveDiff will feature the option to produce independent metrics plots per trained model and/or a single master plot for each metric comparing the respective metric results for all trained models.
 
-The master configuration file can include a combination of the three pipeline tasks, i.e. training, metrics and plotting, to do independent tasks like train a new PSF model, compute the metrics of pre-trained PSF model, or produce plots for a selection of pre-computed metrics. While currently WaveDiff executes these jobs sequentially on a single GPU, the future plan is to distribute these tasks in parallel across GPUs to accelerate the computation.
+The master configuration file can include a combination of the three pipeline tasks, i.e. training, metrics and plotting, to do independent tasks like train a new PSF model, compute the metrics of a  pre-trained PSF model, or produce plots for a selection of pre-computed metrics. While currently WaveDiff executes these jobs sequentially on a single GPU, the future plan is to distribute these tasks in parallel across multiple GPUs to accelerate the computation.
 
 If you have any questions or feedback, please don't hesitate to open a [Github issue](https://github.com/CosmoStat/wf-psf/issues).
