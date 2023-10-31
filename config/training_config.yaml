@@ -88,11 +88,6 @@ training:
 
   # Training hyperparameters
   training_hparams:
-    # Number of epochs for the training the parametric model parameters
-    n_epochs_params: [2, 2]
-   
-    # Number of epochs for the training the non-parametric model parameters
-    n_epochs_non_params: [2, 2] 
   
     # Batch Size
     batch_size: 32
