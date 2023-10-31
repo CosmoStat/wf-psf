@@ -90,7 +90,7 @@ Training hyperparameters are defined within the parent key: `training_hparams` s
 (metrics_config)=
 ## Metrics Configuration
 
-The [metrics_config.yaml](https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/metrics_config.yaml) file stores the configuration parameters for the WaveDiff pipeline to carry out a set of computations of four metrics listed in the table below on a trained PSF model for the input training and test data sets, as applied in {cite:t}`Liaudat:23`.
+The [metrics_config.yaml](https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/metrics_config.yaml) file stores the configuration parameters for the WaveDiff pipeline to carry out a set of computations for the four metrics listed in the table below on a trained PSF model for the input training and test data sets, as applied in {cite:t}`Liaudat:23`.
 
 | Metric type | Description |
 | --- | ----------- |
