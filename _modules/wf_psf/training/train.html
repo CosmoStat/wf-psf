@@ -249,7 +249,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">n_epochs_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Number of Epochs for Pparametric PSF model.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Number of Epochs for Parametric PSF model.</span>
 
 <span class="sd">        Set the number of epochs for</span>
 <span class="sd">        training parametric PSF model.</span>
@@ -260,7 +260,7 @@
 <span class="sd">            List of number of epochs for training parametric PSF model.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_hparams</span><span class="o">.</span><span class="n">n_epochs_params</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">multi_cycle_params</span><span class="o">.</span><span class="n">n_epochs_params</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">n_epochs_non_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -275,7 +275,7 @@
 <span class="sd">            List of number of epochs for training non-parametric PSF model.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_hparams</span><span class="o">.</span><span class="n">n_epochs_non_params</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">multi_cycle_params</span><span class="o">.</span><span class="n">n_epochs_non_params</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">learning_rate_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
