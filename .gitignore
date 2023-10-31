@@ -5,6 +5,7 @@ __pycache__/
 
 # Remove method comparison data
 method-comparison/compatible-datasets/*
+tf_notebooks
 
 # Log files from slurm
 *.err
@@ -66,6 +67,7 @@ coverage.xml
 *.py,cover
 .hypothesis/
 .pytest_cache/
+src/wf_psf/pytest.xml
 
 # Translations
 *.mo
