@@ -52,7 +52,6 @@ test = [
   "pytest-cases",
   "pytest-cov",
   "pytest-emoji",
-  "pytest-pydocstyle",
   "pytest-raises",
   "pytest-xdist",
 ]
@@ -68,6 +67,7 @@ line-length = 88
 
 [tool.pydocstyle]
 convention = "numpy"
+
 
 [tool.pytest.ini_options]
 addopts = [
