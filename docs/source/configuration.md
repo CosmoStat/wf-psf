@@ -54,7 +54,7 @@ data:
 (training_config)=
 ## Training Configuration
 
-The file [training_config.yaml](https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/training_config.yaml) is used to configure the settings for the training pipeline task. The first line contains the parent key `training`. All the following keys will treated as values of the `training` key. Above each child key a description is provided. Below is a short-hand example of this:
+The file [training_config.yaml](https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/training_config.yaml) is used to configure the settings for the training pipeline task. The first line contains the parent key `training`. All of the following child keys are treated as values of the `training` key. Above each child key a description is provided. Below is a short-hand example of this:
 
 ```
 training:
