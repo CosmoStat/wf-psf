@@ -8,11 +8,11 @@ WaveDiff
 .. Include table of contents
 .. include:: toc.rst
 
-WaveDiff is a differentiable data-driven wavefront-based PSF modelling framework developed within the
+WaveDiff is a differentiable data-driven wavefront-based PSF modelling framework developed in the
 |link-to-cosmostat| lab at CEA Paris-Saclay.
 
-This documentation aims to provide all the information needed for installing
-and running WaveDiff. If you are unable to find what you are looking for here,
+This documentation provides information for the installation
+and running of WaveDiff. If you are unable to find what you are looking for here,
 please |link-to-issues| on the GitHub repository.
 
 If you use WaveDiff for your academic work, we ask you to please

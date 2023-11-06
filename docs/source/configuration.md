@@ -1,17 +1,17 @@
 # Configuration 
 
-The WaveDiff pipeline features four main packages for four pipeline tasks: 
+The WaveDiff pipeline features four main packages for executing four pipeline tasks: 
 
 | Pipeline Task | Description |
 | --- | ----------- |
 |`training` | This pipeline task is used to train a PSF model. |
 |`metrics` | This pipeline task performs metrics evaluations of the trained PSF models.|
 |`plotting`| This pipeline task is a utility feature for generating plots for the various metrics.|
-|`simPSF`| This pipeline task is used to simulate stellar PSFs to used as training and test data for the training procedure.<br> (Currently, it runs as a separate code and is not triggered by the command `wavediff`).|
+|`simPSF`| This pipeline task is used to simulate stellar PSFs to use as training and test data for the training procedure.<br> (Currently, it runs as a separate code and is not triggered by the command `wavediff`).|
 
-Configuring WaveDiff to execute one or more of the pipeline tasks (e.g. `training`, `metrics`, or `plotting`) is done by providing as input a specific configuraton file.
+Configuring WaveDiff to execute one or more of the pipeline tasks (e.g. `training`, `metrics`, or `plotting`) is done by providing a configuraton file with specific parameter settings as input into the software.
 
-The directory tree below shows the various configuration files with their own unique settings for executing a specific task in WaveDiff:
+The directory tree below shows the various configuration files which contain their own unique settings for executing a particular task in WaveDiff:
 
 ```
 config
@@ -23,7 +23,7 @@ config
 └── training_config.yaml
 ```
 
-Most of the input configuration files (ending in .yaml) are constructed using `YAML` (Yet Another Markup Language).   The contents of the yaml file are read in as a nested dictionary with key:value pairs.  The `logging.conf` contains configuration settings for storing a log of the run, and in this case we use the `ini` file syntax, which has a section-based structure.  Each section contains one or more key=value pairs, called properties. As a user, you should not modify the names of the keys or sections.  You can modify the value entries.
+Most of the input configuration files (ending in .yaml) are constructed using `YAML` (Yet Another Markup Language).   The contents of the yaml file are read in as a nested dictionary with key:value pairs.  The `logging.conf` file contains configuration settings for storing a log of the run, and in this case we use the `ini` file syntax, which has a section-based structure.  Each section contains one or more key=value pairs, called properties. As a user, you should not modify the names of the keys or sections.  You can modify the value entries.
 
 Next, we shall describe each configuration file.
 
@@ -54,7 +54,7 @@ data:
 (training_config)=
 ## Training Configuration
 
-The file [training_config.yaml](https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/training_config.yaml) is used to configure the settings for the training pipeline task. The first line contains the parent key `training`. All of the following child keys are treated as values of the `training` key. Above each child key a description is provided. Below is a short-hand example of this:
+The file [training_config.yaml](https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/training_config.yaml) is used to configure the settings for the training pipeline task. The first line contains the parent key `training`. All of the following child keys are treated as values of the `training` key. Above each child key a description is provided. Below is an abridged example of this:
 
 ```
 training:
@@ -81,10 +81,10 @@ training:
      .
 
 ```
-The key `id_name` is used to apply an identifier to the run. The next parameter `data_config` stores the name of the [data_configuration](data_config) file, which will be parsed by WaveDiff to retrieve the training and test data sets to be used during `training`. The `metrics_config` key is used to trigger the `metrics` pipeline task after the completion of training.  The options are to enter the filename for the [metrics configuration file](metrics_config) which contains the metrics configuration parameters or to leave the field empty. A non-empty `metrics_config` field will prompt WaveDiff to launch the `metrics` evaluation of the trained model. If the field is left empty, WaveDiff will run only the `training` pipeline task. 
-The key `model_params` defines the model parameters for the type of PSF model to be trained.  The identifier of the type of PSF model to be trained is stored in `model_name`.  While the model options are listed in the key description, for now only the `poly` model is implemented. 
+The key `id_name` is used to apply an identifier to the run, which the user may define to their preference or leave the field blank. The next parameter `data_config` stores the name of the [data_configuration](data_config) file, which will be parsed by WaveDiff to retrieve the training and test data sets for `training`. The `metrics_config` key is used to trigger the `metrics` pipeline task after the completion of training.  The options are to enter the filename of the [metrics configuration file](metrics_config), which contains the metrics configuration parameters, or to leave the field empty. A non-empty `metrics_config` field will prompt WaveDiff to launch the `metrics` evaluation of the trained PSF model. If the field is left empty, WaveDiff will run only the `training` pipeline task. 
+The key `model_params` stores the model parameters for the type of PSF model to apply during training.  The identifier for the PSF model type to train is stored in `model_name`.  While the model options are listed just above in the key description, for now only the `poly` model is implemented. 
 
-Training hyperparameters, defined within the parent key: `training_hparams` include the learning rates, the number of epochs and the number of multi-cycles, etc.  These parameters can modified by the user. Setting the key [save_all_cycles](https://github.com/CosmoStat/wf-psf/blob/425cee776808eb230674103bdb317991dc0922b6/config/training_config.yaml#L105) to `True` will save the weights and models of all training cycles.
+Training hyperparameters, defined by the parent key: `training_hparams`, include the learning rates, the number of epochs and the number of multi-cycles, etc.  These parameters can modified by the user. Setting the key [save_all_cycles](https://github.com/CosmoStat/wf-psf/blob/425cee776808eb230674103bdb317991dc0922b6/config/training_config.yaml#L105) to `True` will save the weights and models of all training cycles.  Otherwise, if it is set to `False`, only the last training cycle is saved.
 
 
 (metrics_config)=
@@ -197,23 +197,23 @@ When the trained_model fields are left empty as stated in the commented line, Wa
 The WaveDiff `metrics` pipeline is programmed to automatically evaluate the Polychromatic Pixel reconstruction metrics for both the test (at low- and super-pixel resolution) and training data sets (at low-pixel resolution).  The Monochromatic Pixel Reconstruction and OPD Reconstruction metrics are both optional and can be selected by setting the Boolean flags for `eval_{metric_type}_metric_rmse` to `True` to compute the metric or `False` to disable.  Finally, the Weak Lensing Shape Metrics are computed by default for the test data set at super-pixel resolution and as an option for the training data set by setting the parameter `eval_train_shape_sr_metric_rmse` to `True` or `False` (Note: setting this option to `True` will also trigger WaveDiff to compute the Polychromatric Pixel Reconstruction metrics at super-pixel resolution for the training data set).  The table below provides a summary of these different settings. 
 
 (metrics_settings)=
-| Metric type | Test Data Set | Training Data Set |
-|  ----------- | ------- | ------- |
-| Polychromatic Pixel Reconstruction | Default | Default (low-res), Optional (super-res)   |
-| Monochromatic Pixel Reconstruction | Optional | Optional   |
-| Optical Path Differences Reconstruction (OPD) | Optional | Optional |
-| Weak Lensing Shape Metrics (super-res only) | Default  |  Optional  |
+| Metric type | Metric Identifier | Test Data Set | Training Data Set |
+|  ----------- | ------- | ------- | ------- |
+| Polychromatic Pixel Reconstruction | `poly` | Default | Default (low-res), Optional (super-res)   |
+| Monochromatic Pixel Reconstruction | `mono` | Optional | Optional   |
+| Optical Path Differences Reconstruction (OPD) | `opd` | Optional | Optional |
+| Weak Lensing Shape Metrics (super-res only) | `shape_sr` | Default  |  Optional  |
 
 The option to generate plots of the metric evaluation results is provided by setting the value of the parameter `plotting_config` to the name of the [plotting configuration](plotting_config) file, ex: `plotting_config.yaml`.  This will trigger WaveDiff's plotting pipeline to produce plots after completion of the metrics evaluation pipeline.  If the field is left empty, no plots are generated. 
 
-To compute the errors of the trained PSF model, the `metrics` package can retrieve a ground truth data set if it exists in dataset files listed in the [data_configuration](data_config) file. If doesn't exist, WaveDiff can generate at runtime a `ground truth model` using the parameters in the metrics configuration file associated to the key: `ground_truth_model`.  The parameter settings for the ground truth model are similar as those used during [training configuration](training_config).  Currently, for the choice of model indicated by the key `model_name`, only the polychromatic model as denoted by `poly` is implemented.
+To compute the errors of the trained PSF model, the `metrics` package can retrieve a ground truth data set if it exists in the dataset files listed in the [data_configuration](data_config) file. If they do exist, WaveDiff can generate at runtime a `ground truth model` using the parameters in the metrics configuration file associated to the key: `ground_truth_model`.  The parameter settings for the ground truth model are similar to those contained in the [training configuration](training_config) file.  Currently, the choice of model, which is indicated by the key `model_name`, is currently limited to the polychromatic PSF model, referenced by the short name `poly`.
 
-The `metrics` package is run using [TensorFlow](https://www.tensorflow.org) to reconstruct the PSF model and evaluate the various metrics. The `metrics_hparams` key contains a couple usual machine learning parameters such as the `batch_size` as well as additional parameters like `output_dim` to define the dimension of the output pixel postage stamp, etc.  
+The `metrics` package is run using [TensorFlow](https://www.tensorflow.org) to reconstruct the PSF model and to evaluate the various metrics. The `metrics_hparams` key contains a couple of usual machine learning hyperparameters such as the `batch_size` as well as additional parameters like `output_dim`, which sets the dimension of the output pixel postage stamp, etc.  
 
 (plotting_config)=
 ## Plot Configuration
 
-The [plotting_config.yaml](https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/plotting_config.yaml) file stores the configuration parameters for the WaveDiff pipeline to generate plots for the metrics for each dataset listed in the {ref}`metrics settings table <metrics_settings>`.
+The [plotting_config.yaml](https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/plotting_config.yaml) file stores the configuration parameters for the WaveDiff pipeline to generate plots for the metrics listed in the {ref}`metrics settings table <metrics_settings>` for each data set.
 
 An example of the contents of the `plotting_config.yaml` file is shown below.
 
@@ -232,7 +232,7 @@ plotting_params:
   # Show plots flag
   plot_show: False
 ```
-As nearly all of the specific plotting parameters are pre-coded by default, the parameters of the `plotting_config` file are to enable the option to plot multiple metrics from other trained PSF model for comparison. The `metrics_output_path` is the path to the parent directory containing the subdirectories of all runs (see example below).
+As nearly all of the specific plotting parameters are pre-coded by default, the `plotting_config` file parameters enable the option to plot jointly the metrics for other trained PSF models. Consider the example below where the user would like to plot the metrics from three output runs in the directories labelled: `wf-outputs-<timestamp>`. 
 
 ```
 wf-outputs/
@@ -256,6 +256,7 @@ wf-outputs/
 │   │   └── metrics-poly-coherent_euclid_1000stars.npy
 
 ```
+
 Below is the following `plotting_config.yaml` file that would generate plots including each of the three metrics outputs in the example above:
 
 ```
@@ -277,12 +278,12 @@ plotting_params:
   # Show plots flag
   plot_show: False
 ```
-The only plotting parameter `plot_show` is a Boolean used to trigger a display of the plot at runtime (as in an interactive session).  If False, no plot is displayed.
+ In the field for the key: `metrics_output_path`, the user provides the path to the parent directory containing the subdirectories of the runs to be plotted.  Then under the `metrics_dir` key, the user lists row-by-row the names of the parent directories for each run.  Similarly, for the `metrics_config` key, the user can list the names of the `metrics_config` files used for the additional runs row-by-row. Note, if the user only wants to plot the metric from an active metrics evaluation run, i.e. the `plotting` pipeline task is run subsequently after the `metrics` pipeline, these fields can be left empty. The only plotting parameter `plot_show` is a Boolean used to trigger a display of the plot at runtime (as in an interactive session).  If False, no plot is displayed. 
 
 (master_config_file)=
 ## Master Configuration
 
-The `configs.yaml` file is the master configuration file that is used to define all of the pipeline tasks to be submitted and executed by `WaveDiff` during runtime. In the `configs.yaml`, the user lists the processing tasks (one or more) to be performed by setting the values of the associated configuration variables `{pipeline_task}_conf` and the name of the configuration file `{pipeline_task}_config.yaml` in the master `configs.yaml` file.  See an example below to configure `WaveDiff` to launch a sequence of runs to train models 1...n with their respectived configurations set in the files `training_config_{id}.yaml`.
+The `configs.yaml` file is the master configuration file that is used to define all of the pipeline tasks to be submitted and executed by `WaveDiff` during runtime. In this file, the user lists the processing tasks (one or more) to be performed by setting the values of the associated configuration variables `{pipeline_task}_conf` and the name of the configuration file `{pipeline_task}_config.yaml`.  See an example below to configure `WaveDiff` to launch a sequence of runs to train models 1...n with their respective configurations given in the files `training_config_{id}.yaml`.
 
 ```
 ---
@@ -324,7 +325,7 @@ Each training task is run sequentially and independently of the others.  All of 
 │       ├── psf_model_poly-coherent_euclid_200stars_n_cycle1.index
 ```
 
-Likewise, to perform a metrics evaluation and generate plots for each training run, as shown above, the corresponding names of the `metrics_config.yaml` and `plotting_config.yaml` files need to be provided as values to the corresponding `{metrics|plotting}_config` parameters in `training_config_{id}.yaml` and `metrics_config.yaml`, respectively. The same `metrics_config.yaml` and `plotting_config.yaml` files can be used for each `training_config_{id}.yaml` file.  Below is an example of the `config` tree structure for a `training` + `metrics` + `plotting` run:
+Likewise, to perform a metrics evaluation and generate plots for each training run (as in the example above), the corresponding names of the `metrics_config.yaml` and `plotting_config.yaml` files need to be provided as values to the `{metrics}_config` and `{plotting}_config` parameters in `training_config_{id}.yaml` and `metrics_config.yaml` files, respectively. The same `metrics_config.yaml` and `plotting_config.yaml` files can be used for each `training_config_{id}.yaml` file.  Below is an example of the `config` tree structure for a `training` + `metrics` + `plotting` run:
 
 ```
 config/
@@ -337,8 +338,8 @@ config/
 └── training_config_n.yaml
 ```
 
-Note, in this version of WaveDiff the plots are produced only per each metric per trained model.  To produce a single plot displaying the metrics for each trained model, the user must do so in a different run following the steps defined in [Plot Configuration](plotting_config). The next upgrade to WaveDiff will feature the option to produce independent metrics plots per trained model and/or a single master plot for each metric comparing the respective metric results for all trained models.
+Note, in this version of WaveDiff produces a single plot per each metric per trained model.  To display all of the metrics results for each trained model in a single plot, the user must do so in a different run following the steps defined in the section [Plot Configuration](plotting_config). The next upgrade to WaveDiff will feature options to produce independent metrics plots per trained model or a single master plot comparing the respective metric results for all trained models.
 
-The master configuration file can include a combination of the three pipeline tasks, i.e. training, metrics and plotting, to do independent tasks like train a new PSF model, compute the metrics of a  pre-trained PSF model, or produce plots for a selection of pre-computed metrics. While currently WaveDiff executes these jobs sequentially on a single GPU, the future plan is to distribute these tasks in parallel across multiple GPUs to accelerate the computation.
+The master configuration file can include a combination of the three pipeline tasks, i.e. training, metrics and plotting.  This will prompt WaveDiff to do independent tasks like train a new PSF model, compute the metrics of a  pre-trained PSF model, or produce plots for a selection of pre-computed metrics. While currently WaveDiff executes these jobs sequentially on a single GPU, the future plan is to distribute these tasks in parallel across multiple GPUs to accelerate the computation.
 
 If you have any questions or feedback, please don't hesitate to open a [Github issue](https://github.com/CosmoStat/wf-psf/issues).

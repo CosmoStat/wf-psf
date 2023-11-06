@@ -32,7 +32,7 @@ To run `WaveDiff`, use the following command:
 > wavediff -c /path/to/config/file -r /path/to/wf-psf -o /path/to/output/dir
 ```
 
-WaveDiff begins with the input/output (i.e. retrieving and parsing the configuration file and creating a set of nested output subdirectories in the main output directory). The name of the top-level subdirectory is a composition of the string `wf-outputs-` and the timestamp of the corresponding run, i.e. `wf-outputs-202310221632`. Each run will produce its own unique subdirectory. Then within this subdirectory, further subdirectories are generated to store the corresponding output.
+WaveDiff begins with the input/output (i.e. retrieving and parsing the configuration file and creating a set of nested output of directories within the main output directory). The name of the top-level subdirectory is a composition of the string `wf-outputs-` and a timestamp of the current run, i.e. `wf-outputs-202310221632`. Each run of WaveDiff will produce its own unique subdirectory. Then within this subdirectory, further subdirectories are generated to store the corresponding output.
 
 Below is an example of the set of directories generated during each execution of the WaveDiff pipeline.
 
@@ -47,7 +47,7 @@ wf-outputs-202310211641
 ├── plots
 └── psf_model
 ```
-A description of each subdirectory is provided in the table below.
+A description of each subdirectory is provided in the following table.
 
 | Sub-directory    | Purpose                                       |
 |--------------|---------------------------------------------------|
@@ -57,7 +57,7 @@ A description of each subdirectory is provided in the table below.
 | metrics       | Stores the metrics results generated during the metrics pipeline task.  |
 | optim-hist    |  Stores the training history of the model parameters.  |
 | plots         | Stores metrics plots generated during the plotting pipeline task.   | 
-| psf_models    |  Stores the final trained psf models generated for each training cycle. |
+| psf_models    |  Stores the final trained PSF models for each training cycle. |
 
 
 Next, we describe to some detail the configuration file structures and content.
