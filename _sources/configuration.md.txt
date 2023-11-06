@@ -144,7 +144,7 @@ metrics:
 The metrics key `model_save_path` enables a choice of running the metrics evaluation for a fully trained PSF model or the weights of a given checkpoint cycle. 
 The parameter `saved_training_cycle` specifies the cycle at which to run metrics evaluation.
 
-As stated in the previous section, the `metrics` evaluation pipeline can be executed subsequently after the completion of the `training` routine to evaluate the trained PSF model.  It can also be launched independently to compute the metrics of a previously trained model.  This is done by setting the value of the parameter `trained_model_path` to the absolute path of the parent directory containing the output files of the model.  This is the directory with the naming convention: `wf-outputs-timestamp` (see this {ref}`example of the run output directory<wf-outputs>`).  The user must then provide as an entry for the key: `trained_model_config` the subdirectory path to the training configuration file, ex: `config/train_config.yaml`. Below we show an example of this for the case where a user wants to run metrics evaluation of a pretrained full PSF model saved in the directory `wf-outputs-202310161536`. 
+As stated in the previous section, the `metrics` evaluation pipeline can be executed subsequently after the completion of the `training` routine to evaluate the trained PSF model.  It can also be launched independently to compute the metrics of a previously trained model.  This is done by setting the value of the parameter `trained_model_path` to the absolute path of the parent directory containing the output files of the model.  This is the directory with the naming convention: `wf-outputs-timestamp` (see this {ref}`example of the run output directory<wf-outputs>`).  The user must then provide as an entry for the key: `trained_model_config` the subdirectory path to the training configuration file, e.g. `config/train_config.yaml`. Below we show an example of this for the case where a user wants to run metrics evaluation of a pretrained full PSF model saved in the directory `wf-outputs-202310161536`. 
 
 ```
 WaveDiff Pre-trained Model
@@ -204,11 +204,11 @@ The WaveDiff `metrics` pipeline is programmed to automatically evaluate the Poly
 | Optical Path Differences Reconstruction (OPD) | `opd` | Optional | Optional |
 | Weak Lensing Shape Metrics (super-res only) | `shape_sr` | Default  |  Optional  |
 
-The option to generate plots of the metric evaluation results is provided by setting the value of the parameter `plotting_config` to the name of the [plotting configuration](plotting_config) file, ex: `plotting_config.yaml`.  This will trigger WaveDiff's plotting pipeline to produce plots after completion of the metrics evaluation pipeline.  If the field is left empty, no plots are generated. 
+The option to generate plots of the metric evaluation results is provided by setting the value of the parameter `plotting_config` to the name of the [plotting configuration](plotting_config) file, e.g. `plotting_config.yaml`.  This will trigger WaveDiff's plotting pipeline to produce plots after completion of the metrics evaluation pipeline.  If the field is left empty, no plots are generated. 
 
 To compute the errors of the trained PSF model, the `metrics` package can retrieve a ground truth data set if it exists in the dataset files listed in the [data_configuration](data_config) file. If they do exist, WaveDiff can generate at runtime a `ground truth model` using the parameters in the metrics configuration file associated to the key: `ground_truth_model`.  The parameter settings for the ground truth model are similar to those contained in the [training configuration](training_config) file.  Currently, the choice of model, which is indicated by the key `model_name`, is currently limited to the polychromatic PSF model, referenced by the short name `poly`.
 
-The `metrics` package is run using [TensorFlow](https://www.tensorflow.org) to reconstruct the PSF model and to evaluate the various metrics. The `metrics_hparams` key contains a couple of usual machine learning hyperparameters such as the `batch_size` as well as additional parameters like `output_dim`, which sets the dimension of the output pixel postage stamp, etc.  
+The `metrics` package is run using [TensorFlow](https://www.tensorflow.org) to reconstruct the PSF model and to evaluate the various metrics. The `metrics_hparams` key contains some standard machine learning hyperparameters such as the `batch_size` as well as additional parameters like `output_dim`, which sets the dimension of the output pixel postage stamp, etc.  
 
 (plotting_config)=
 ## Plot Configuration
@@ -219,7 +219,7 @@ An example of the contents of the `plotting_config.yaml` file is shown below.
 
 ```
 plotting_params:
-  # Specify path to parent folder containing wf-psf metrics outputs for all runs, ex: $WORK/wf-outputs/
+  # Specify path to parent folder containing wf-psf metrics outputs for all runs, e.g. $WORK/wf-outputs/
   metrics_output_path: <PATH>
   # List all of the parent output directories (i.e. wf-outputs-xxxxxxxxxxx) that contain metrics results to be included in the plot 
   metrics_dir: 
