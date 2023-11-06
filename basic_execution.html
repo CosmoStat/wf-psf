@@ -119,7 +119,7 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">wavediff</span> <span class="o">-</span><span class="n">c</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">config</span><span class="o">/</span><span class="n">file</span> <span class="o">-</span><span class="n">r</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">wf</span><span class="o">-</span><span class="n">psf</span> <span class="o">-</span><span class="n">o</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">output</span><span class="o">/</span><span class="nb">dir</span>
 </pre></div>
 </div>
-<p>WaveDiff begins with the input/output (i.e. retrieving and parsing the configuration file and creating a set of nested output subdirectories in the main output directory). The name of the top-level subdirectory is a composition of the string <code class="docutils literal notranslate"><span class="pre">wf-outputs-</span></code> and the timestamp of the corresponding run, i.e. <code class="docutils literal notranslate"><span class="pre">wf-outputs-202310221632</span></code>. Each run will produce its own unique subdirectory. Then within this subdirectory, further subdirectories are generated to store the corresponding output.</p>
+<p>WaveDiff begins with the input/output (i.e. retrieving and parsing the configuration file and creating a set of nested output of directories within the main output directory). The name of the top-level subdirectory is a composition of the string <code class="docutils literal notranslate"><span class="pre">wf-outputs-</span></code> and a timestamp of the current run, i.e. <code class="docutils literal notranslate"><span class="pre">wf-outputs-202310221632</span></code>. Each run of WaveDiff will produce its own unique subdirectory. Then within this subdirectory, further subdirectories are generated to store the corresponding output.</p>
 <p>Below is an example of the set of directories generated during each execution of the WaveDiff pipeline.</p>
 <div class="highlight-default notranslate" id="wf-outputs"><div class="highlight"><pre><span></span>wf-outputs-202310211641
 ├── checkpoint
@@ -131,7 +131,7 @@
 └── psf_model
 </pre></div>
 </div>
-<p>A description of each subdirectory is provided in the table below.</p>
+<p>A description of each subdirectory is provided in the following table.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Sub-directory</p></th>
@@ -158,7 +158,7 @@
 <td><p>Stores metrics plots generated during the plotting pipeline task.</p></td>
 </tr>
 <tr class="row-even"><td><p>psf_models</p></td>
-<td><p>Stores the final trained psf models generated for each training cycle.</p></td>
+<td><p>Stores the final trained PSF models for each training cycle.</p></td>
 </tr>
 </tbody>
 </table>
