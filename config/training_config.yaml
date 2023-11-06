@@ -103,9 +103,6 @@ training:
 
       # Flag to save all cycles. If "True", create a checkpoint at every cycle, else if "False" only save the checkpoint at the end of the training."
       save_all_cycles: False
-
-      # Set the cycle to save to use for the metrics evaluation. Can be 'cycle1', 'cycle2', ..."
-      saved_cycle: cycle1
    
       # Learning rates for training the parametric model parameters per cycle.
       learning_rate_params: [1.0e-2, 1.0e-2]
