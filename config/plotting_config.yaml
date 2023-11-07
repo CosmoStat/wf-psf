@@ -1,7 +1,7 @@
 plotting_params:
-  # Specify path to parent folder containing wf-psf metrics outputs for all runs, ex: $WORK/wf-outputs/
+  # Specify path to parent folder containing wf-outputs-xxxxxxxxxxx for all runs, ex: $WORK/wf-outputs/
   metrics_output_path: <PATH>
-  # List directory(s) for metrics of trained PSF models to include in plot, 
+  # List all of the parent output directories (i.e. wf-outputs-xxxxxxxxxxx) that contain metrics results to be included in the plot
   metrics_dir: 
     #     - wf-outputs-xxxxxxxxxxx1 
     #     - wf-outputs-xxxxxxxxxxx2  
@@ -9,4 +9,5 @@ plotting_params:
   metrics_config: 
     #     - metrics_config_1.yaml
     #     - metrics_config_2.yaml
+  # Show Plots Flag
   plot_show: False

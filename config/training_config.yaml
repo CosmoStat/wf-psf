@@ -1,10 +1,11 @@
 training:
-  # ID name
+  # Run ID name
   id_name: -coherent_euclid_200stars
   # Name of Data Config file
   data_config: data_config.yaml 
   # Metrics Config file - Enter file to run metrics evaluation else if empty run train only
   metrics_config: metrics_config.yaml
+  # PSF model parameters
   model_params:
     # Model type. Options are: 'mccd', 'graph', 'poly, 'param', 'poly_physical'."
     model_name: poly
@@ -50,16 +51,16 @@ training:
     
     # Hyperparameters for Parametric model 
     param_hparams:
-      # Random seed for Tensor Flow Initialization
+      # Set the random seed for Tensor Flow Initialization
       random_seed: 3877572
       
-      # Parameter for the l2 loss function for the Optical path differences (OPD)/WFE
+      # Set the parameter for the l2 loss function for the Optical path differences (OPD)/WFE
       l2_param: 0.
     
       #Zernike polynomial modes to use on the parametric part.
       n_zernikes: 15
     
-      #Max polynomial degree of the parametric part.  chg to max_deg_param
+      #Max polynomial degree of the parametric part.  m
       d_max: 2  
 
       #Flag to save optimisation history for parametric model
@@ -87,35 +88,31 @@ training:
 
   # Training hyperparameters
   training_hparams:
-    n_epochs_params: [2, 2]
-   
-    n_epochs_non_params: [2, 2] 
   
+    # Batch Size
     batch_size: 32
          
+    # Multi-cyclic Parameters     
     multi_cycle_params:
      
-      # Total amount of cycles to perform.  
+      # Total number of cycles to perform for training.  
       total_cycles: 1
          
       # Train cycle definition. It can be: 'parametric', 'non-parametric', 'complete', 'only-non-parametric' and 'only-parametric'."
       cycle_def: complete
 
-      # Make checkpoint at every cycle or just save the checkpoint at the end of the training."
+      # Flag to save all cycles. If "True", create a checkpoint at every cycle, else if "False" only save the checkpoint at the end of the training."
       save_all_cycles: False
-
-      #"Saved cycle to use for the evaluation. Can be 'cycle1', 'cycle2', ..."
-      saved_cycle: cycle1
    
-      # Learning rates for the parametric parts. It should be a str where numeric values are separated by spaces.
+      # Learning rates for training the parametric model parameters per cycle.
       learning_rate_params: [1.0e-2, 1.0e-2]
  
-      # Learning rates for the non-parametric parts. It should be a str where numeric values are separated by spaces." 
+      # Learning rates for training the non-parametric model parameters per cycle.
       learning_rate_non_params: [1.0e-1, 1.0e-1]
  
-      # Number of training epochs of the parametric parts. It should be a strign where numeric values are separated by spaces."
+      # Number of training epochs for training the parametric model parameters per cycle.
       n_epochs_params: [20, 20] 
   
-      # Number of training epochs of the non-parametric parts. It should be a str where numeric values are separated by spaces."
+      # Number of training epochs for training the non-parametric model parameters per cycle.
       n_epochs_non_params: [100, 120]
   

@@ -36,6 +36,9 @@ docs = [
     "sphinxcontrib-bibtex",
     "sphinxawesome-theme",
     "sphinx-gallery",
+    "sphinxemoji",
+    "sphinx_rtd_theme",
+
 ]
 
 lint = [
@@ -53,7 +56,6 @@ test = [
   "pytest-cases",
   "pytest-cov",
   "pytest-emoji",
-  "pytest-pydocstyle",
   "pytest-raises",
   "pytest-xdist",
 ]
@@ -70,6 +72,7 @@ line-length = 88
 [tool.pydocstyle]
 convention = "numpy"
 
+
 [tool.pytest.ini_options]
 addopts = [
     "--verbose",
@@ -79,5 +82,6 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=xml",
     "--junitxml=pytest.xml",
+
 ]
 testpaths = ["src/wf_psf"]

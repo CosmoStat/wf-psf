@@ -147,7 +147,7 @@ class TrainingParamsHandler:
 
     @property
     def n_epochs_params(self):
-        """Number of Epochs for Pparametric PSF model.
+        """Number of Epochs for Parametric PSF model.
 
         Set the number of epochs for
         training parametric PSF model.
@@ -158,7 +158,7 @@ class TrainingParamsHandler:
             List of number of epochs for training parametric PSF model.
 
         """
-        return self.training_hparams.n_epochs_params
+        return self.multi_cycle_params.n_epochs_params
 
     @property
     def n_epochs_non_params(self):
@@ -173,7 +173,7 @@ class TrainingParamsHandler:
             List of number of epochs for training non-parametric PSF model.
 
         """
-        return self.training_hparams.n_epochs_non_params
+        return self.multi_cycle_params.n_epochs_non_params
 
     @property
     def learning_rate_params(self):

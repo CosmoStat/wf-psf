@@ -12,20 +12,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Prepare the inputs
-# Generate Zernike maps
-zernikes = zernike_generator(
-    n_zernikes=args["n_zernikes"], wfe_dim=args["pupil_diameter"]
-)
-# Now as cubes
-np_zernike_cube = np.zeros((len(zernikes), zernikes[0].shape[0], zernikes[0].shape[1]))
-for it in range(len(zernikes)):
-    np_zernike_cube[it, :, :] = zernikes[it]
-np_zernike_cube[np.isnan(np_zernike_cube)] = 0
-tf_zernike_cube = tf.convert_to_tensor(np_zernike_cube, dtype=tf.float32)
-logger.info("Zernike cube:")
-logger.info(tf_zernike_cube.shape)
-
 
 def zernike_generator(n_zernikes, wfe_dim):
     """
