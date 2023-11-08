@@ -359,7 +359,9 @@
             <span class="k">try</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">training_conf</span> <span class="o">=</span> <span class="n">read_conf</span><span class="p">(</span>
                     <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">metrics_conf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">trained_model_path</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">get_config_dir</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">metrics_conf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">trained_model_path</span>
+                        <span class="p">),</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">metrics_conf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">trained_model_config</span><span class="p">,</span>
                     <span class="p">)</span>
                 <span class="p">)</span>
@@ -535,13 +537,15 @@
 
     <span class="n">ids</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;plotting_conf&quot;</span><span class="p">,)</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plotting_conf</span><span class="p">,</span> <span class="n">file_handler</span><span class="p">,</span> <span class="n">metrics_conf</span><span class="o">=</span><span class="nb">dict</span><span class="p">()):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plotting_conf</span><span class="p">,</span> <span class="n">file_handler</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">plotting_conf</span> <span class="o">=</span> <span class="n">read_conf</span><span class="p">(</span><span class="n">plotting_conf</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">filehandler</span> <span class="o">=</span> <span class="n">file_handler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span> <span class="o">=</span> <span class="n">file_handler</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metrics_confs</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">check_and_update_metrics_confs</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">list_of_metrics_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_dict_of_metrics</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">plots_dir</span> <span class="o">=</span> <span class="n">file_handler</span><span class="o">.</span><span class="n">get_plots_dir</span><span class="p">(</span><span class="n">file_handler</span><span class="o">.</span><span class="n">_run_output_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plots_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">get_plots_dir</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">_run_output_dir</span>
+        <span class="p">)</span>
 
 <div class="viewcode-block" id="PlottingConfigHandler.check_and_update_metrics_confs">
 <a class="viewcode-back" href="../../../wf_psf.utils.configs_handler.html#wf_psf.utils.configs_handler.PlottingConfigHandler.check_and_update_metrics_confs">[docs]</a>
@@ -587,18 +591,13 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">plotting_conf</span><span class="o">.</span><span class="n">plotting_params</span><span class="o">.</span><span class="n">metrics_dir</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">plotting_conf</span><span class="o">.</span><span class="n">plotting_params</span><span class="o">.</span><span class="n">metrics_config</span><span class="p">,</span>
         <span class="p">):</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">metrics_confs</span><span class="p">[</span><span class="n">wf_dir</span><span class="p">]</span> <span class="o">=</span> <span class="n">read_conf</span><span class="p">(</span>
-                    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">plotting_conf</span><span class="o">.</span><span class="n">plotting_params</span><span class="o">.</span><span class="n">metrics_output_path</span><span class="p">,</span>
-                        <span class="n">wf_dir</span><span class="p">,</span>
-                        <span class="s2">&quot;config&quot;</span><span class="p">,</span>
-                        <span class="n">metrics_conf</span><span class="p">,</span>
-                    <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metrics_confs</span><span class="p">[</span><span class="n">wf_dir</span><span class="p">]</span> <span class="o">=</span> <span class="n">read_conf</span><span class="p">(</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">plotting_conf</span><span class="o">.</span><span class="n">plotting_params</span><span class="o">.</span><span class="n">metrics_output_path</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">get_config_dir</span><span class="p">(</span><span class="n">wf_dir</span><span class="p">),</span>
+                    <span class="n">metrics_conf</span><span class="p">,</span>
                 <span class="p">)</span>
-            <span class="k">except</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Problem with config file.&quot;</span><span class="p">)</span>
-                <span class="n">exit</span><span class="p">()</span>
+            <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_metrics_run_id_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wf_outdir</span><span class="p">,</span> <span class="n">metrics_params</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get Metrics Run ID Name.</span>
@@ -616,6 +615,7 @@
 <span class="sd">        metrics_run_id_name: str</span>
 <span class="sd">            String containing the model name and id of the training run</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">try</span><span class="p">:</span>
             <span class="n">training_conf</span> <span class="o">=</span> <span class="n">read_conf</span><span class="p">(</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
@@ -623,7 +623,11 @@
                     <span class="n">metrics_params</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">trained_model_config</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="p">)</span>
-        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+
+            <span class="n">id_name</span> <span class="o">=</span> <span class="n">training_conf</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">id_name</span>
+            <span class="n">model_name</span> <span class="o">=</span> <span class="n">training_conf</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">model_name</span>
+
+        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">FileNotFoundError</span><span class="p">):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Trained model path not provided...&quot;</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                 <span class="s2">&quot;Trying to retrieve training config file from workdir: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
@@ -634,19 +638,21 @@
             <span class="n">training_conf</span> <span class="o">=</span> <span class="n">read_conf</span><span class="p">(</span>
                 <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span>
                     <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">filehandler</span><span class="o">.</span><span class="n">output_path</span><span class="p">,</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">filehandler</span><span class="o">.</span><span class="n">parent_output_dir</span><span class="p">,</span>
-                        <span class="n">wf_outdir</span><span class="p">,</span>
-                        <span class="s2">&quot;config/training*&quot;</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">plotting_conf</span><span class="o">.</span><span class="n">plotting_params</span><span class="o">.</span><span class="n">metrics_output_path</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">get_config_dir</span><span class="p">(</span><span class="n">wf_outdir</span><span class="p">),</span>
+                        <span class="s2">&quot;training*&quot;</span><span class="p">,</span>
                     <span class="p">)</span>
                 <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="p">)</span>
+            <span class="n">id_name</span> <span class="o">=</span> <span class="n">training_conf</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">id_name</span>
+            <span class="n">model_name</span> <span class="o">=</span> <span class="n">training_conf</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">model_name</span>
+
         <span class="k">except</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;File not found.&quot;</span><span class="p">)</span>
-            <span class="n">exit</span><span class="p">()</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;File not found.&quot;</span><span class="p">)</span>
 
         <span class="n">id_name</span> <span class="o">=</span> <span class="n">training_conf</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">id_name</span>
         <span class="n">model_name</span> <span class="o">=</span> <span class="n">training_conf</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">model_name</span>
+
         <span class="k">return</span> <span class="n">model_name</span> <span class="o">+</span> <span class="n">id_name</span>
 
 <div class="viewcode-block" id="PlottingConfigHandler.load_metrics_into_dict">
@@ -665,7 +671,7 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">metrics_dict</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Attempting to read in trained model config file...&quot;</span><span class="p">)</span>
+
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_confs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">run_id_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metrics_run_id_name</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
             <span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
@@ -674,13 +680,17 @@
                 <span class="s2">&quot;metrics&quot;</span><span class="p">,</span>
                 <span class="s2">&quot;metrics-&quot;</span> <span class="o">+</span> <span class="n">run_id_name</span> <span class="o">+</span> <span class="s2">&quot;.npy&quot;</span><span class="p">,</span>
             <span class="p">)</span>
-
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;Attempting to read in trained model config file...</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">output_path</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">metrics_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
                     <span class="n">run_id_name</span><span class="p">:</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="n">allow_pickle</span><span class="o">=</span><span class="kc">True</span><span class="p">)[()]]</span>
                 <span class="p">}</span>
             <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
                     <span class="s2">&quot;The required file for the plots was not found. Please check your configs settings.&quot;</span>
                 <span class="p">)</span>
 
