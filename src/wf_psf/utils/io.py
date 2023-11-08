@@ -161,7 +161,7 @@ class FileIOHandler:
             )
         ).mkdir(exist_ok=True)
 
-    def get_config_dir(self):
+    def get_config_dir(self, run_output_dir):
         """Get Config Directory.
 
         A function that returns path
@@ -170,11 +170,11 @@ class FileIOHandler:
         Returns
         -------
         str
-            Absolute path to checkpoint directory
+            Absolute path to config directory
 
         """
         return os.path.join(
-            self._run_output_dir,
+            run_output_dir,
             self._config,
         )
 
@@ -193,7 +193,7 @@ class FileIOHandler:
         """
 
         source = os.path.join(self.config_path, source_file)
-        destination = os.path.join(self.get_config_dir(), source_file)
+        destination = os.path.join(self.get_config_dir(self._run_output_dir), source_file)
 
         shutil.copy(source, destination)
 
