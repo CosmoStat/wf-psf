@@ -318,6 +318,7 @@ class MetricsConfigHandler:
                     weights_basename,
                 )
             )[0].split(".")[0]
+            
         except IndexError:
             logger.error(
                 "PSF weights file not found. Check that you've specified the correct weights file in the metrics config file."
@@ -492,9 +493,6 @@ class PlottingConfigHandler:
                 )
             )
 
-            id_name = training_conf.training.id_name
-            model_name = training_conf.training.model_params.model_name
-
         except (TypeError, FileNotFoundError):
             logger.info("Trained model path not provided...")
             logger.info(
@@ -512,8 +510,6 @@ class PlottingConfigHandler:
                     )
                 )[0]
             )
-            id_name = training_conf.training.id_name
-            model_name = training_conf.training.model_params.model_name
 
         except:
             logger.exception("File not found.")
