@@ -245,7 +245,9 @@ class MetricsConfigHandler:
             try:
                 self.training_conf = read_conf(
                     os.path.join(
-                        self.metrics_conf.metrics.trained_model_path,
+                        self.file_handler.get_config_dir(
+                            self.metrics_conf.metrics.trained_model_path
+                        ),
                         self.metrics_conf.metrics.trained_model_config,
                     )
                 )
@@ -409,13 +411,15 @@ class PlottingConfigHandler:
 
     ids = ("plotting_conf",)
 
-    def __init__(self, plotting_conf, file_handler, metrics_conf=dict()):
+    def __init__(self, plotting_conf, file_handler):
         self.plotting_conf = read_conf(plotting_conf)
-        self.filehandler = file_handler
+        self.file_handler = file_handler
         self.metrics_confs = {}
         self.check_and_update_metrics_confs()
         self.list_of_metrics_dict = self.make_dict_of_metrics()
-        self.plots_dir = file_handler.get_plots_dir(file_handler._run_output_dir)
+        self.plots_dir = self.file_handler.get_plots_dir(
+            self.file_handler._run_output_dir
+        )
 
     def check_and_update_metrics_confs(self):
         """Check and Update Metrics Confs.
@@ -455,18 +459,13 @@ class PlottingConfigHandler:
             self.plotting_conf.plotting_params.metrics_dir,
             self.plotting_conf.plotting_params.metrics_config,
         ):
-            try:
-                self.metrics_confs[wf_dir] = read_conf(
-                    os.path.join(
-                        self.plotting_conf.plotting_params.metrics_output_path,
-                        wf_dir,
-                        "config",
-                        metrics_conf,
-                    )
+            self.metrics_confs[wf_dir] = read_conf(
+                os.path.join(
+                    self.plotting_conf.plotting_params.metrics_output_path,
+                    self.file_handler.get_config_dir(wf_dir),
+                    metrics_conf,
                 )
-            except:
-                logger.info("Problem with config file.")
-                exit()
+            )
 
     def _metrics_run_id_name(self, wf_outdir, metrics_params):
         """Get Metrics Run ID Name.
@@ -484,6 +483,7 @@ class PlottingConfigHandler:
         metrics_run_id_name: str
             String containing the model name and id of the training run
         """
+
         try:
             training_conf = read_conf(
                 os.path.join(
@@ -491,7 +491,11 @@ class PlottingConfigHandler:
                     metrics_params.metrics.trained_model_config,
                 )
             )
-        except TypeError:
+
+            id_name = training_conf.training.id_name
+            model_name = training_conf.training.model_params.model_name
+
+        except (TypeError, FileNotFoundError):
             logger.info("Trained model path not provided...")
             logger.info(
                 "Trying to retrieve training config file from workdir: {}".format(
@@ -502,19 +506,21 @@ class PlottingConfigHandler:
             training_conf = read_conf(
                 glob.glob(
                     os.path.join(
-                        self.filehandler.output_path,
-                        self.filehandler.parent_output_dir,
-                        wf_outdir,
-                        "config/training*",
+                        self.plotting_conf.plotting_params.metrics_output_path,
+                        self.file_handler.get_config_dir(wf_outdir),
+                        "training*",
                     )
                 )[0]
             )
+            id_name = training_conf.training.id_name
+            model_name = training_conf.training.model_params.model_name
+
         except:
-            logger.info("File not found.")
-            exit()
+            logger.exception("File not found.")
 
         id_name = training_conf.training.id_name
         model_name = training_conf.training.model_params.model_name
+
         return model_name + id_name
 
     def load_metrics_into_dict(self):
@@ -531,7 +537,7 @@ class PlottingConfigHandler:
 
         """
         metrics_dict = {}
-        logger.info("Attempting to read in trained model config file...")
+
         for k, v in self.metrics_confs.items():
             run_id_name = self._metrics_run_id_name(k, v)
             output_path = os.path.join(
@@ -540,13 +546,17 @@ class PlottingConfigHandler:
                 "metrics",
                 "metrics-" + run_id_name + ".npy",
             )
-
+            logger.info(
+                "Attempting to read in trained model config file...{}".format(
+                    output_path
+                )
+            )
             try:
                 metrics_dict[k] = {
                     run_id_name: [np.load(output_path, allow_pickle=True)[()]]
                 }
             except FileNotFoundError:
-                print(
+                logger.error(
                     "The required file for the plots was not found. Please check your configs settings."
                 )
 
