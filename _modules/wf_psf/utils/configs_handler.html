@@ -434,6 +434,7 @@
                     <span class="n">weights_basename</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            
         <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
                 <span class="s2">&quot;PSF weights file not found. Check that you&#39;ve specified the correct weights file in the metrics config file.&quot;</span>
@@ -624,9 +625,6 @@
                 <span class="p">)</span>
             <span class="p">)</span>
 
-            <span class="n">id_name</span> <span class="o">=</span> <span class="n">training_conf</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">id_name</span>
-            <span class="n">model_name</span> <span class="o">=</span> <span class="n">training_conf</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">model_name</span>
-
         <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">FileNotFoundError</span><span class="p">):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Trained model path not provided...&quot;</span><span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
@@ -644,8 +642,6 @@
                     <span class="p">)</span>
                 <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="p">)</span>
-            <span class="n">id_name</span> <span class="o">=</span> <span class="n">training_conf</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">id_name</span>
-            <span class="n">model_name</span> <span class="o">=</span> <span class="n">training_conf</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">model_name</span>
 
         <span class="k">except</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;File not found.&quot;</span><span class="p">)</span>
