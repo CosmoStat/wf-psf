@@ -113,8 +113,297 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="wf-psf-utils-configs-handler-module">
-<h1>wf_psf.utils.configs_handler module<a class="headerlink" href="#wf-psf-utils-configs-handler-module" title="Link to this heading"></a></h1>
+  <section id="module-wf_psf.utils.configs_handler">
+<span id="wf-psf-utils-configs-handler-module"></span><h1>wf_psf.utils.configs_handler module<a class="headerlink" href="#module-wf_psf.utils.configs_handler" title="Link to this heading"></a></h1>
+<p>Configs_Handler.</p>
+<p>A module which provides general utility methods
+to manage the parameters of the config files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Authors<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Jennifer Pollack &lt;<a class="reference external" href="mailto:jennifer&#46;pollack&#37;&#52;&#48;cea&#46;fr">jennifer<span>&#46;</span>pollack<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;</p>
+</dd>
+</dl>
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.DataConfigHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.utils.configs_handler.</span></span><span class="sig-name descname"><span class="pre">DataConfigHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_conf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_model_params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wf_psf/utils/configs_handler.html#DataConfigHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.configs_handler.DataConfigHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>DataConfigHandler.</p>
+<p>A class to handle data configuration
+parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_conf</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Path of the data configuration file</p></li>
+<li><p><strong>training_model_params</strong> (<em>Recursive Namespace object</em>) – Recursive Namespace object containing the training model parameters</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.MetricsConfigHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.utils.configs_handler.</span></span><span class="sig-name descname"><span class="pre">MetricsConfigHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metrics_conf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_handler</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_conf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wf_psf/utils/configs_handler.html#MetricsConfigHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.configs_handler.MetricsConfigHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>MetricsConfigHandler.</p>
+<p>A class to handle metrics configuation
+parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ids</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a>) – A tuple containing a string id for the Configuration Class</p></li>
+<li><p><strong>metrics_conf</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Path to the metrics configuration file</p></li>
+<li><p><strong>file_handler</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><em>object</em></a>) – An instance of the FileIOHandler</p></li>
+<li><p><strong>training_conf</strong> (<em>RecursiveNamespace object</em>) – RecursiveNamespace object containing the training configuration parameters</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.utils.configs_handler.MetricsConfigHandler.call_plot_config_handler_run" title="wf_psf.utils.configs_handler.MetricsConfigHandler.call_plot_config_handler_run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call_plot_config_handler_run</span></code></a>(model_metrics)</p></td>
+<td><p>Make Metrics Plots.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.utils.configs_handler.MetricsConfigHandler.get_psf_model_weights_filepath" title="wf_psf.utils.configs_handler.MetricsConfigHandler.get_psf_model_weights_filepath"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_psf_model_weights_filepath</span></code></a>()</p></td>
+<td><p>Get PSF model weights filepath.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.utils.configs_handler.MetricsConfigHandler.run" title="wf_psf.utils.configs_handler.MetricsConfigHandler.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a>()</p></td>
+<td><p>Run.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.MetricsConfigHandler.call_plot_config_handler_run">
+<span class="sig-name descname"><span class="pre">call_plot_config_handler_run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_metrics</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wf_psf/utils/configs_handler.html#MetricsConfigHandler.call_plot_config_handler_run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.configs_handler.MetricsConfigHandler.call_plot_config_handler_run" title="Link to this definition"></a></dt>
+<dd><p>Make Metrics Plots.</p>
+<p>A function to call the PlottingConfigHandler run
+command to generate metrics plots.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><em>dict</em></a>) – A dictionary storing the metrics
+output generated during evaluation
+of the trained PSF model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.MetricsConfigHandler.get_psf_model_weights_filepath">
+<span class="sig-name descname"><span class="pre">get_psf_model_weights_filepath</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/wf_psf/utils/configs_handler.html#MetricsConfigHandler.get_psf_model_weights_filepath"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.configs_handler.MetricsConfigHandler.get_psf_model_weights_filepath" title="Link to this definition"></a></dt>
+<dd><p>Get PSF model weights filepath.</p>
+<p>A function to return the basename of the user-specified psf model weights path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>weights_filepath</strong> – The basename of the psf model weights to be loaded.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.MetricsConfigHandler.ids">
+<span class="sig-name descname"><span class="pre">ids</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('metrics_conf',)</span></em><a class="headerlink" href="#wf_psf.utils.configs_handler.MetricsConfigHandler.ids" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.MetricsConfigHandler.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/wf_psf/utils/configs_handler.html#MetricsConfigHandler.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.configs_handler.MetricsConfigHandler.run" title="Link to this definition"></a></dt>
+<dd><p>Run.</p>
+<p>A function to run wave-diff according to the
+input configuration.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.PlottingConfigHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.utils.configs_handler.</span></span><span class="sig-name descname"><span class="pre">PlottingConfigHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plotting_conf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_handler</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wf_psf/utils/configs_handler.html#PlottingConfigHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.configs_handler.PlottingConfigHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>PlottingConfigHandler.</p>
+<p>A class to handle plotting config
+settings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ids</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a>) – A tuple containing a string id for the Configuration Class</p></li>
+<li><p><strong>plotting_conf</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Name of plotting configuration file</p></li>
+<li><p><strong>file_handler</strong> (<em>obj</em>) – An instance of the FileIOHandler class</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.utils.configs_handler.PlottingConfigHandler.check_and_update_metrics_confs" title="wf_psf.utils.configs_handler.PlottingConfigHandler.check_and_update_metrics_confs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_and_update_metrics_confs</span></code></a>()</p></td>
+<td><p>Check and Update Metrics Confs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.utils.configs_handler.PlottingConfigHandler.load_metrics_into_dict" title="wf_psf.utils.configs_handler.PlottingConfigHandler.load_metrics_into_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_metrics_into_dict</span></code></a>()</p></td>
+<td><p>Load Metrics into Dictionary.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.utils.configs_handler.PlottingConfigHandler.make_dict_of_metrics" title="wf_psf.utils.configs_handler.PlottingConfigHandler.make_dict_of_metrics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_dict_of_metrics</span></code></a>()</p></td>
+<td><p>Make dictionary of metrics.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.utils.configs_handler.PlottingConfigHandler.run" title="wf_psf.utils.configs_handler.PlottingConfigHandler.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a>()</p></td>
+<td><p>Run.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.PlottingConfigHandler.check_and_update_metrics_confs">
+<span class="sig-name descname"><span class="pre">check_and_update_metrics_confs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/wf_psf/utils/configs_handler.html#PlottingConfigHandler.check_and_update_metrics_confs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.configs_handler.PlottingConfigHandler.check_and_update_metrics_confs" title="Link to this definition"></a></dt>
+<dd><p>Check and Update Metrics Confs.</p>
+<p>A function to check if user provided inputs metrics
+dir to add to metrics_confs dictionary.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.PlottingConfigHandler.ids">
+<span class="sig-name descname"><span class="pre">ids</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('plotting_conf',)</span></em><a class="headerlink" href="#wf_psf.utils.configs_handler.PlottingConfigHandler.ids" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.PlottingConfigHandler.load_metrics_into_dict">
+<span class="sig-name descname"><span class="pre">load_metrics_into_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/wf_psf/utils/configs_handler.html#PlottingConfigHandler.load_metrics_into_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.configs_handler.PlottingConfigHandler.load_metrics_into_dict" title="Link to this definition"></a></dt>
+<dd><p>Load Metrics into Dictionary.</p>
+<p>A method to load a metrics file of
+a trained model from a previous run into a
+dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>metrics_files_dict</strong> – A dictionary containing all of the metrics from the loaded metrics files.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.PlottingConfigHandler.make_dict_of_metrics">
+<span class="sig-name descname"><span class="pre">make_dict_of_metrics</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/wf_psf/utils/configs_handler.html#PlottingConfigHandler.make_dict_of_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.configs_handler.PlottingConfigHandler.make_dict_of_metrics" title="Link to this definition"></a></dt>
+<dd><p>Make dictionary of metrics.</p>
+<p>A function to create a dictionary for each metrics per run.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary containing metrics or an empty dictionary.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.PlottingConfigHandler.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/wf_psf/utils/configs_handler.html#PlottingConfigHandler.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.configs_handler.PlottingConfigHandler.run" title="Link to this definition"></a></dt>
+<dd><p>Run.</p>
+<p>A function to run wave-diff according to the
+input configuration.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.TrainingConfigHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.utils.configs_handler.</span></span><span class="sig-name descname"><span class="pre">TrainingConfigHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">training_conf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_handler</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wf_psf/utils/configs_handler.html#TrainingConfigHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.configs_handler.TrainingConfigHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>TrainingConfigHandler.</p>
+<p>A class to handle training configuration
+parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ids</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><em>tuple</em></a>) – A tuple containing a string id for the Configuration Class</p></li>
+<li><p><strong>training_conf</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Path of the training configuration file</p></li>
+<li><p><strong>file_handler</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><em>object</em></a>) – A instance of the FileIOHandler class</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.utils.configs_handler.TrainingConfigHandler.run" title="wf_psf.utils.configs_handler.TrainingConfigHandler.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a>()</p></td>
+<td><p>Run.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.TrainingConfigHandler.ids">
+<span class="sig-name descname"><span class="pre">ids</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('training_conf',)</span></em><a class="headerlink" href="#wf_psf.utils.configs_handler.TrainingConfigHandler.ids" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.TrainingConfigHandler.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/wf_psf/utils/configs_handler.html#TrainingConfigHandler.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.configs_handler.TrainingConfigHandler.run" title="Link to this definition"></a></dt>
+<dd><p>Run.</p>
+<p>A function to run wave-diff according to the
+input configuration.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.get_run_config">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.utils.configs_handler.</span></span><span class="sig-name descname"><span class="pre">get_run_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_handler</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wf_psf/utils/configs_handler.html#get_run_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.configs_handler.get_run_config" title="Link to this definition"></a></dt>
+<dd><p>Get Run Configuration.</p>
+<p>A function to get the configuration
+for a wf-psf run.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>run_config</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Name of the type of run configuraton</p></li>
+<li><p><strong>config_params</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Path of the run configuration file</p></li>
+<li><p><strong>file_handler</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)"><em>object</em></a>) – A class instance of FileIOHandler</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>config_class</strong> – A class instance of the selected configuration class.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.12)">object</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.register_configclass">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.utils.configs_handler.</span></span><span class="sig-name descname"><span class="pre">register_configclass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_class</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wf_psf/utils/configs_handler.html#register_configclass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.configs_handler.register_configclass" title="Link to this definition"></a></dt>
+<dd><p>Register Config Class.</p>
+<p>A wrapper function to register all config classes
+in a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config_class</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.12)"><em>type</em></a>) – Config Class</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>config_class</strong> – Config class</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.12)">type</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.set_run_config">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.utils.configs_handler.</span></span><span class="sig-name descname"><span class="pre">set_run_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wf_psf/utils/configs_handler.html#set_run_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.configs_handler.set_run_config" title="Link to this definition"></a></dt>
+<dd><p>Set Config Class.</p>
+<p>A function to select the class of
+a configuration from CONFIG_CLASS dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><em>str</em></a>) – Name of config</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>config_class</strong> – Name of config class</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>class</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 

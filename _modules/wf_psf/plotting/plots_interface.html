@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.plotting.plots_interface &mdash; wf-psf 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/twemoji.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
+        <script src="../../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+        <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"></script>
+        <script src="../../../_static/twemoji.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../../../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../wf_psf.html">wf_psf package</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">wf_psf.plotting.plots_interface</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for wf_psf.plotting.plots_interface</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Plot Interface.</span>
+
+<span class="sd">An interface module with classes to handle different</span>
+<span class="sd">plot configurations.</span>
+
+<span class="sd">:Author: Jennifer Pollack &lt;jennifer.pollack@cea.fr&gt;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span> <span class="k">as</span> <span class="nn">mpl</span>
+<span class="kn">import</span> <span class="nn">matplotlib.ticker</span> <span class="k">as</span> <span class="nn">mtick</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;matplotlib&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="define_plot_style">
+<a class="viewcode-back" href="../../../wf_psf.plotting.plots_interface.html#wf_psf.plotting.plots_interface.define_plot_style">[docs]</a>
+<span class="k">def</span> <span class="nf">define_plot_style</span><span class="p">():</span>  <span class="c1"># type: ignore</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Define Plot Style.</span>
+
+<span class="sd">    A function to set plot_style</span>
+<span class="sd">    parameters.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">plot_style</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;figure.figsize&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+        <span class="s2">&quot;figure.dpi&quot;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
+        <span class="s2">&quot;figure.autolayout&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;lines.linewidth&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s2">&quot;lines.linestyle&quot;</span><span class="p">:</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lines.marker&quot;</span><span class="p">:</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;lines.markersize&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="s2">&quot;legend.fontsize&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+        <span class="s2">&quot;legend.loc&quot;</span><span class="p">:</span> <span class="s2">&quot;best&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;axes.titlesize&quot;</span><span class="p">:</span> <span class="mi">24</span><span class="p">,</span>
+        <span class="s2">&quot;font.size&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">plot_style</span><span class="p">)</span>
+    <span class="c1"># Use seaborn style</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">set</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="make_plot">
+<a class="viewcode-back" href="../../../wf_psf.plotting.plots_interface.html#wf_psf.plotting.plots_interface.make_plot">[docs]</a>
+<span class="k">def</span> <span class="nf">make_plot</span><span class="p">(</span>
+    <span class="n">x_axis</span><span class="p">,</span>
+    <span class="n">y_axis</span><span class="p">,</span>
+    <span class="n">y_axis_err</span><span class="p">,</span>
+    <span class="n">label</span><span class="p">,</span>
+    <span class="n">plot_title</span><span class="p">,</span>
+    <span class="n">x_axis_label</span><span class="p">,</span>
+    <span class="n">y_right_axis_label</span><span class="p">,</span>
+    <span class="n">y_left_axis_label</span><span class="p">,</span>
+    <span class="n">filename</span><span class="p">,</span>
+    <span class="n">plot_show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make Plot.</span>
+
+<span class="sd">    A function to generate metrics plots.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x_axis: list</span>
+<span class="sd">        x-axis values</span>
+<span class="sd">    y_axis: list</span>
+<span class="sd">        y-axis values</span>
+<span class="sd">    y_axis_err: list</span>
+<span class="sd">        Error values for y-axis points</span>
+<span class="sd">    label: str</span>
+<span class="sd">        Label for the points</span>
+<span class="sd">    plot_title: str</span>
+<span class="sd">        Name of plot</span>
+<span class="sd">    x_axis_label: str</span>
+<span class="sd">        Label for x-axis</span>
+<span class="sd">    y_left_axis_label: str</span>
+<span class="sd">        Label for left vertical axis of plot</span>
+<span class="sd">    y_right_axis_label: str</span>
+<span class="sd">        Label for right vertical axis of plot</span>
+<span class="sd">    filename: str</span>
+<span class="sd">        Name of file to save plot</span>
+<span class="sd">    plot_show: bool</span>
+<span class="sd">        Boolean flag to set plot display</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">define_plot_style</span><span class="p">()</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+    <span class="n">ax1</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">plot_title</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="n">x_axis_label</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">y_left_axis_label</span><span class="p">)</span>
+    <span class="n">ax1</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_major_formatter</span><span class="p">(</span><span class="n">mtick</span><span class="o">.</span><span class="n">FormatStrFormatter</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%.1e</span><span class="s2">&quot;</span><span class="p">))</span>
+    <span class="n">ax2</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">minorticks_on</span><span class="p">()</span>
+
+    <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">y_right_axis_label</span><span class="p">)</span>
+    <span class="n">ax2</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y_axis</span><span class="p">)):</span>  <span class="c1"># type: ignore</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">y_axis</span><span class="p">[</span><span class="n">it</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span>
+                <span class="n">x</span><span class="o">=</span><span class="n">x_axis</span><span class="p">[</span><span class="n">it</span><span class="p">],</span>
+                <span class="n">y</span><span class="o">=</span><span class="n">y_axis</span><span class="p">[</span><span class="n">it</span><span class="p">][</span><span class="n">k</span><span class="p">],</span>
+                <span class="n">yerr</span><span class="o">=</span><span class="n">y_axis_err</span><span class="p">[</span><span class="n">it</span><span class="p">][</span><span class="n">k</span><span class="p">],</span>
+                <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">[</span><span class="n">it</span><span class="p">],</span>
+                <span class="n">alpha</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">ax1</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;dashed&quot;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;^&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span>
+            <span class="p">)</span>
+            <span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_axis</span><span class="p">[</span><span class="n">it</span><span class="p">],</span> <span class="n">y_axis</span><span class="p">[</span><span class="n">it</span><span class="p">][</span><span class="n">k</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">plot_show</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="MetricsPlotHandler">
+<a class="viewcode-back" href="../../../wf_psf.plotting.plots_interface.html#wf_psf.plotting.plots_interface.MetricsPlotHandler">[docs]</a>
+<span class="k">class</span> <span class="nc">MetricsPlotHandler</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;MetricsPlotHandler class.</span>
+
+<span class="sd">    A class to handle plot parameters for various</span>
+<span class="sd">    metrics results.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    id: str</span>
+<span class="sd">        Class ID name</span>
+<span class="sd">    plotting_params: Recursive Namespace object</span>
+<span class="sd">    metrics: dict</span>
+<span class="sd">        Dictionary containing list of metrics</span>
+<span class="sd">    list_of_stars: list</span>
+<span class="sd">        List containing the number of training stars per run</span>
+<span class="sd">    metric_name: str</span>
+<span class="sd">        Name of metric</span>
+<span class="sd">    rmse: str</span>
+<span class="sd">        Root-mean square error label</span>
+<span class="sd">    std_rmse: str</span>
+<span class="sd">        Standard error on root-mean square error standard label</span>
+<span class="sd">    plots_dir: str</span>
+<span class="sd">        Output directory for metrics plots</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ids</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;poly_metrics&quot;</span><span class="p">,</span> <span class="s2">&quot;opd_metrics&quot;</span><span class="p">,</span> <span class="s2">&quot;poly_pixel&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">plotting_params</span><span class="p">,</span>
+        <span class="n">metrics</span><span class="p">,</span>
+        <span class="n">list_of_stars</span><span class="p">,</span>
+        <span class="n">metric_name</span><span class="p">,</span>
+        <span class="n">rmse</span><span class="p">,</span>
+        <span class="n">std_rmse</span><span class="p">,</span>
+        <span class="n">plot_title</span><span class="p">,</span>
+        <span class="n">plots_dir</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plotting_params</span> <span class="o">=</span> <span class="n">plotting_params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="n">metrics</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metric_name</span> <span class="o">=</span> <span class="n">metric_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rmse</span> <span class="o">=</span> <span class="n">rmse</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">std_rmse</span> <span class="o">=</span> <span class="n">std_rmse</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot_title</span> <span class="o">=</span> <span class="n">plot_title</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plots_dir</span> <span class="o">=</span> <span class="n">plots_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">list_of_stars</span> <span class="o">=</span> <span class="n">list_of_stars</span>
+
+<div class="viewcode-block" id="MetricsPlotHandler.get_metrics">
+<a class="viewcode-back" href="../../../wf_psf.plotting.plots_interface.html#wf_psf.plotting.plots_interface.MetricsPlotHandler.get_metrics">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get Metrics.</span>
+
+<span class="sd">        A function to get metrics: rmse, rmse_std</span>
+<span class="sd">        for each run input, e.g. wf-outputs-xxxxxxxxxxxx.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dataset: str</span>
+<span class="sd">            A str representing dataset type, i.e. test_metrics or train_metrics.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple:</span>
+<span class="sd">            A tuple consisting of the id, root-mean-square (rms) and standard rms errors for a metric for each input run.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rmse</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">std_rmse</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">metrics_id</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">metrics_data</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+                <span class="n">run_id</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">metrics_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">metrics_id</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">run_id</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="n">k</span><span class="p">)</span>
+
+                <span class="n">rmse</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="n">run_id</span><span class="p">):</span> <span class="n">metrics_data</span><span class="p">[</span><span class="n">run_id</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">dataset</span><span class="p">][</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">metric_name</span>
+                        <span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">rmse</span><span class="p">]</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+                <span class="n">std_rmse</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="n">run_id</span><span class="p">):</span> <span class="n">metrics_data</span><span class="p">[</span><span class="n">run_id</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">dataset</span><span class="p">][</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">metric_name</span>
+                        <span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">std_rmse</span><span class="p">]</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">metrics_id</span><span class="p">,</span> <span class="n">rmse</span><span class="p">,</span> <span class="n">std_rmse</span></div>
+
+
+<div class="viewcode-block" id="MetricsPlotHandler.plot">
+<a class="viewcode-back" href="../../../wf_psf.plotting.plots_interface.html#wf_psf.plotting.plots_interface.MetricsPlotHandler.plot">[docs]</a>
+    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot.</span>
+
+<span class="sd">        A function to generate metric plots as function of number of stars</span>
+<span class="sd">        for the train and test metrics.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">plot_dataset</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;test_metrics&quot;</span><span class="p">,</span> <span class="s2">&quot;train_metrics&quot;</span><span class="p">]:</span>
+            <span class="n">metrics_id</span><span class="p">,</span> <span class="n">rmse</span><span class="p">,</span> <span class="n">std_rmse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_metrics</span><span class="p">(</span><span class="n">plot_dataset</span><span class="p">)</span>
+            <span class="n">make_plot</span><span class="p">(</span>
+                <span class="n">x_axis</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">list_of_stars</span><span class="p">,</span>
+                <span class="n">y_axis</span><span class="o">=</span><span class="n">rmse</span><span class="p">,</span>
+                <span class="n">y_axis_err</span><span class="o">=</span><span class="n">std_rmse</span><span class="p">,</span>
+                <span class="n">label</span><span class="o">=</span><span class="n">metrics_id</span><span class="p">,</span>
+                <span class="n">plot_title</span><span class="o">=</span><span class="s2">&quot;Stars &quot;</span> <span class="o">+</span> <span class="n">plot_dataset</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_title</span><span class="p">,</span>
+                <span class="n">x_axis_label</span><span class="o">=</span><span class="s2">&quot;Number of stars&quot;</span><span class="p">,</span>
+                <span class="n">y_left_axis_label</span><span class="o">=</span><span class="s2">&quot;Absolute error&quot;</span><span class="p">,</span>
+                <span class="n">y_right_axis_label</span><span class="o">=</span><span class="s2">&quot;Relative error [%]&quot;</span><span class="p">,</span>
+                <span class="n">filename</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">plots_dir</span><span class="p">,</span>
+                    <span class="n">plot_dataset</span>
+                    <span class="o">+</span> <span class="s2">&quot;_&quot;</span>
+                    <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">metric_name</span>
+                    <span class="o">+</span> <span class="s2">&quot;_nstars_&quot;</span>
+                    <span class="o">+</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">nstar</span><span class="p">)</span> <span class="k">for</span> <span class="n">nstar</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_of_stars</span><span class="p">)</span>
+                    <span class="o">+</span> <span class="s2">&quot;_RMSE.png&quot;</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="n">plot_show</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">plotting_params</span><span class="o">.</span><span class="n">plot_show</span><span class="p">,</span>
+            <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MonochromaticMetricsPlotHandler">
+<a class="viewcode-back" href="../../../wf_psf.plotting.plots_interface.html#wf_psf.plotting.plots_interface.MonochromaticMetricsPlotHandler">[docs]</a>
+<span class="k">class</span> <span class="nc">MonochromaticMetricsPlotHandler</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;MonochromaticMetricsPlotHandler class.</span>
+
+<span class="sd">    A class to handle plot parameters for monochromatic</span>
+<span class="sd">    metrics results.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    id: str</span>
+<span class="sd">        Class ID name</span>
+<span class="sd">    plotting_params: Recursive Namespace object</span>
+<span class="sd">        RecursiveNamespace object containing plotting parameters</span>
+<span class="sd">    metrics_confs: dict</span>
+<span class="sd">        Dictionary containing the metric configurations as RecursiveNamespace objects for each run</span>
+<span class="sd">    metrics: list</span>
+<span class="sd">        Dictionary containing list of metrics</span>
+<span class="sd">    list_of_stars: list</span>
+<span class="sd">        List containing the number of stars used for each training data set</span>
+<span class="sd">    plots_dir: str</span>
+<span class="sd">        Output directory for metrics plots</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ids</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;mono_metrics&quot;</span><span class="p">,)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">plotting_params</span><span class="p">,</span>
+        <span class="n">metrics_confs</span><span class="p">,</span>
+        <span class="n">metrics</span><span class="p">,</span>
+        <span class="n">list_of_stars</span><span class="p">,</span>
+        <span class="n">plots_dir</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plotting_params</span> <span class="o">=</span> <span class="n">plotting_params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics_confs</span> <span class="o">=</span> <span class="n">metrics_confs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="n">metrics</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">list_of_stars</span> <span class="o">=</span> <span class="n">list_of_stars</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plots_dir</span> <span class="o">=</span> <span class="n">plots_dir</span>
+
+<div class="viewcode-block" id="MonochromaticMetricsPlotHandler.plot">
+<a class="viewcode-back" href="../../../wf_psf.plotting.plots_interface.html#wf_psf.plotting.plots_interface.MonochromaticMetricsPlotHandler.plot">[docs]</a>
+    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot.</span>
+
+<span class="sd">        A function to generate plots for the train and test</span>
+<span class="sd">        metrics.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Define common data</span>
+        <span class="c1"># Common data</span>
+        <span class="n">lambda_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.55</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">plot_dataset</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;test_metrics&quot;</span><span class="p">,</span> <span class="s2">&quot;train_metrics&quot;</span><span class="p">]:</span>
+            <span class="n">y_axis</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">y_axis_err</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">metrics_id</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_confs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">eval_mono_metric_rmse</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">metrics_data</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+                        <span class="n">run_id</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">metrics_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">metrics_id</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">run_id</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="n">k</span><span class="p">)</span>
+                        <span class="n">y_axis</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="p">{</span>
+                                <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="n">run_id</span><span class="p">):</span> <span class="n">metrics_data</span><span class="p">[</span><span class="n">run_id</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span>
+                                    <span class="n">plot_dataset</span>
+                                <span class="p">][</span><span class="s2">&quot;mono_metric&quot;</span><span class="p">][</span><span class="s2">&quot;rmse_lda&quot;</span><span class="p">]</span>
+                            <span class="p">}</span>
+                        <span class="p">)</span>
+                        <span class="n">y_axis_err</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="p">{</span>
+                                <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="n">run_id</span><span class="p">):</span> <span class="n">metrics_data</span><span class="p">[</span><span class="n">run_id</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span>
+                                    <span class="n">plot_dataset</span>
+                                <span class="p">][</span><span class="s2">&quot;mono_metric&quot;</span><span class="p">][</span><span class="s2">&quot;std_rmse_lda&quot;</span><span class="p">]</span>
+                            <span class="p">}</span>
+                        <span class="p">)</span>
+
+            <span class="n">make_plot</span><span class="p">(</span>
+                <span class="n">x_axis</span><span class="o">=</span><span class="p">[</span><span class="n">lambda_list</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y_axis</span><span class="p">))],</span>
+                <span class="n">y_axis</span><span class="o">=</span><span class="n">y_axis</span><span class="p">,</span>
+                <span class="n">y_axis_err</span><span class="o">=</span><span class="n">y_axis_err</span><span class="p">,</span>
+                <span class="n">label</span><span class="o">=</span><span class="n">metrics_id</span><span class="p">,</span>
+                <span class="n">plot_title</span><span class="o">=</span><span class="s2">&quot;Stars &quot;</span>
+                <span class="o">+</span> <span class="n">plot_dataset</span>  <span class="c1"># type: ignore</span>
+                <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Monochromatic pixel RMSE @ Euclid resolution&quot;</span><span class="p">,</span>
+                <span class="n">x_axis_label</span><span class="o">=</span><span class="s2">&quot;Wavelength [um]&quot;</span><span class="p">,</span>
+                <span class="n">y_left_axis_label</span><span class="o">=</span><span class="s2">&quot;Absolute error&quot;</span><span class="p">,</span>
+                <span class="n">y_right_axis_label</span><span class="o">=</span><span class="s2">&quot;Relative error [%]&quot;</span><span class="p">,</span>
+                <span class="n">filename</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">plots_dir</span><span class="p">,</span>
+                    <span class="p">(</span>
+                        <span class="n">plot_dataset</span>
+                        <span class="o">+</span> <span class="s2">&quot;_nstars_&quot;</span>
+                        <span class="o">+</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">nstar</span><span class="p">)</span> <span class="k">for</span> <span class="n">nstar</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_of_stars</span><span class="p">)</span>
+                        <span class="o">+</span> <span class="s2">&quot;_monochrom_pixel_RMSE.png&quot;</span>
+                    <span class="p">),</span>
+                <span class="p">),</span>
+                <span class="n">plot_show</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">plotting_params</span><span class="o">.</span><span class="n">plot_show</span><span class="p">,</span>
+            <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ShapeMetricsPlotHandler">
+<a class="viewcode-back" href="../../../wf_psf.plotting.plots_interface.html#wf_psf.plotting.plots_interface.ShapeMetricsPlotHandler">[docs]</a>
+<span class="k">class</span> <span class="nc">ShapeMetricsPlotHandler</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ShapeMetricsPlotHandler class.</span>
+
+<span class="sd">    A class to handle plot parameters shape</span>
+<span class="sd">    metrics results.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    id: str</span>
+<span class="sd">        Class ID name</span>
+<span class="sd">    plotting_params: Recursive Namespace object</span>
+<span class="sd">        Recursive Namespace Object containing plotting parameters</span>
+<span class="sd">    metrics: list</span>
+<span class="sd">        Dictionary containing list of metrics</span>
+<span class="sd">    list_of_stars: list</span>
+<span class="sd">        List containing the number of stars used for each training data set</span>
+<span class="sd">    plots_dir: str</span>
+<span class="sd">        Output directory for metrics plots</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nb">id</span> <span class="o">=</span> <span class="s2">&quot;shape_metrics&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plotting_params</span><span class="p">,</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">list_of_stars</span><span class="p">,</span> <span class="n">plots_dir</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plotting_params</span> <span class="o">=</span> <span class="n">plotting_params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="n">metrics</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">list_of_stars</span> <span class="o">=</span> <span class="n">list_of_stars</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plots_dir</span> <span class="o">=</span> <span class="n">plots_dir</span>
+
+<div class="viewcode-block" id="ShapeMetricsPlotHandler.plot">
+<a class="viewcode-back" href="../../../wf_psf.plotting.plots_interface.html#wf_psf.plotting.plots_interface.ShapeMetricsPlotHandler.plot">[docs]</a>
+    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot.</span>
+
+<span class="sd">        A function to generate plots for the train and test</span>
+<span class="sd">        metrics.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Define common data</span>
+        <span class="c1"># Common data</span>
+        <span class="n">e1_req_euclid</span> <span class="o">=</span> <span class="mf">2e-04</span>
+        <span class="n">e2_req_euclid</span> <span class="o">=</span> <span class="mf">2e-04</span>
+        <span class="n">R2_req_euclid</span> <span class="o">=</span> <span class="mf">1e-03</span>
+        <span class="k">for</span> <span class="n">plot_dataset</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;test_metrics&quot;</span><span class="p">,</span> <span class="s2">&quot;train_metrics&quot;</span><span class="p">]:</span>
+            <span class="n">e1_rmse</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">e1_std_rmse</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">e2_rmse</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">e2_std_rmse</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">rmse_R2_meanR2</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">std_rmse_R2_meanR2</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">metrics_id</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">metrics_data</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+                    <span class="n">run_id</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">metrics_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">metrics_id</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">run_id</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="n">k</span><span class="p">)</span>
+
+                    <span class="n">e1_rmse</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">{</span>
+                            <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="n">run_id</span><span class="p">):</span> <span class="n">metrics_data</span><span class="p">[</span><span class="n">run_id</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">plot_dataset</span><span class="p">][</span>
+                                <span class="s2">&quot;shape_results_dict&quot;</span>
+                            <span class="p">][</span><span class="s2">&quot;rmse_e1&quot;</span><span class="p">]</span>
+                            <span class="o">/</span> <span class="n">e1_req_euclid</span>
+                        <span class="p">}</span>
+                    <span class="p">)</span>
+                    <span class="n">e1_std_rmse</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">{</span>
+                            <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="n">run_id</span><span class="p">):</span> <span class="n">metrics_data</span><span class="p">[</span><span class="n">run_id</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">plot_dataset</span><span class="p">][</span>
+                                <span class="s2">&quot;shape_results_dict&quot;</span>
+                            <span class="p">][</span><span class="s2">&quot;std_rmse_e1&quot;</span><span class="p">]</span>
+                        <span class="p">}</span>
+                    <span class="p">)</span>
+
+                    <span class="n">e2_rmse</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">{</span>
+                            <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="n">run_id</span><span class="p">):</span> <span class="n">metrics_data</span><span class="p">[</span><span class="n">run_id</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">plot_dataset</span><span class="p">][</span>
+                                <span class="s2">&quot;shape_results_dict&quot;</span>
+                            <span class="p">][</span><span class="s2">&quot;rmse_e2&quot;</span><span class="p">]</span>
+                            <span class="o">/</span> <span class="n">e2_req_euclid</span>
+                        <span class="p">}</span>
+                    <span class="p">)</span>
+                    <span class="n">e2_std_rmse</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">{</span>
+                            <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="n">run_id</span><span class="p">):</span> <span class="n">metrics_data</span><span class="p">[</span><span class="n">run_id</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">plot_dataset</span><span class="p">][</span>
+                                <span class="s2">&quot;shape_results_dict&quot;</span>
+                            <span class="p">][</span><span class="s2">&quot;std_rmse_e2&quot;</span><span class="p">]</span>
+                        <span class="p">}</span>
+                    <span class="p">)</span>
+
+                    <span class="n">rmse_R2_meanR2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">{</span>
+                            <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="n">run_id</span><span class="p">):</span> <span class="n">metrics_data</span><span class="p">[</span><span class="n">run_id</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">plot_dataset</span><span class="p">][</span>
+                                <span class="s2">&quot;shape_results_dict&quot;</span>
+                            <span class="p">][</span><span class="s2">&quot;rmse_R2_meanR2&quot;</span><span class="p">]</span>
+                            <span class="o">/</span> <span class="n">R2_req_euclid</span>
+                        <span class="p">}</span>
+                    <span class="p">)</span>
+
+                    <span class="n">std_rmse_R2_meanR2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">{</span>
+                            <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="n">run_id</span><span class="p">):</span> <span class="n">metrics_data</span><span class="p">[</span><span class="n">run_id</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">plot_dataset</span><span class="p">][</span>
+                                <span class="s2">&quot;shape_results_dict&quot;</span>
+                            <span class="p">][</span><span class="s2">&quot;std_rmse_R2_meanR2&quot;</span><span class="p">]</span>
+                        <span class="p">}</span>
+                    <span class="p">)</span>
+
+            <span class="n">make_plot</span><span class="p">(</span>
+                <span class="n">x_axis</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">list_of_stars</span><span class="p">,</span>
+                <span class="n">y_axis</span><span class="o">=</span><span class="n">e1_rmse</span><span class="p">,</span>
+                <span class="n">y_axis_err</span><span class="o">=</span><span class="n">e1_std_rmse</span><span class="p">,</span>
+                <span class="n">label</span><span class="o">=</span><span class="n">metrics_id</span><span class="p">,</span>
+                <span class="n">plot_title</span><span class="o">=</span><span class="s2">&quot;Stars &quot;</span> <span class="o">+</span> <span class="n">plot_dataset</span> <span class="o">+</span> <span class="s2">&quot;.</span><span class="se">\n</span><span class="s2">Shape RMSE&quot;</span><span class="p">,</span>
+                <span class="n">x_axis_label</span><span class="o">=</span><span class="s2">&quot;Number of stars&quot;</span><span class="p">,</span>
+                <span class="n">y_left_axis_label</span><span class="o">=</span><span class="s2">&quot;Absolute error&quot;</span><span class="p">,</span>
+                <span class="n">y_right_axis_label</span><span class="o">=</span><span class="s2">&quot;Relative error [%]&quot;</span><span class="p">,</span>
+                <span class="n">filename</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">plots_dir</span><span class="p">,</span>
+                    <span class="n">plot_dataset</span>
+                    <span class="o">+</span> <span class="s2">&quot;_nstars_&quot;</span>
+                    <span class="o">+</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">nstar</span><span class="p">)</span> <span class="k">for</span> <span class="n">nstar</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_of_stars</span><span class="p">)</span>
+                    <span class="o">+</span> <span class="s2">&quot;_Shape_RMSE.png&quot;</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="n">plot_show</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">plotting_params</span><span class="o">.</span><span class="n">plot_show</span><span class="p">,</span>
+            <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="get_number_of_stars">
+<a class="viewcode-back" href="../../../wf_psf.plotting.plots_interface.html#wf_psf.plotting.plots_interface.get_number_of_stars">[docs]</a>
+<span class="k">def</span> <span class="nf">get_number_of_stars</span><span class="p">(</span><span class="n">metrics</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get Number of Stars.</span>
+
+<span class="sd">    A function to get the number of stars used</span>
+<span class="sd">    in training the model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    metrics: dict</span>
+<span class="sd">        A dictionary containig the metrics results per run</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list_of_stars: list</span>
+<span class="sd">        A list containing the number of training stars per run.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">list_of_stars</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">metrics</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">run</span> <span class="ow">in</span> <span class="n">v</span><span class="p">:</span>
+            <span class="n">run_id</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">run</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">list_of_stars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\d+&quot;</span><span class="p">,</span> <span class="n">run_id</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">()))</span>
+
+    <span class="k">return</span> <span class="n">list_of_stars</span></div>
+
+
+
+<div class="viewcode-block" id="plot_metrics">
+<a class="viewcode-back" href="../../../wf_psf.plotting.plots_interface.html#wf_psf.plotting.plots_interface.plot_metrics">[docs]</a>
+<span class="k">def</span> <span class="nf">plot_metrics</span><span class="p">(</span><span class="n">plotting_params</span><span class="p">,</span> <span class="n">list_of_metrics</span><span class="p">,</span> <span class="n">metrics_confs</span><span class="p">,</span> <span class="n">plot_saving_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Plot model results.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    plotting_params: RecursiveNamespace Object</span>
+<span class="sd">        Recursive Namespace object containing plot configuration parameters</span>
+<span class="sd">    list_of_metrics: list</span>
+<span class="sd">        List containing all model metrics</span>
+<span class="sd">    metrics_confs: list</span>
+<span class="sd">        List containing all metrics configuration parameters</span>
+<span class="sd">    plot_saving_path: str</span>
+<span class="sd">        Directory path for saving output plots</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">metrics</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;poly_metric&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;rmse&quot;</span><span class="p">:</span> <span class="s2">&quot;rmse&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;std_rmse&quot;</span><span class="p">:</span> <span class="s2">&quot;std_rmse&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;plot_title&quot;</span><span class="p">:</span> <span class="s2">&quot;.</span><span class="se">\n</span><span class="s2">Polychromatic pixel RMSE @ Euclid resolution&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;opd_metric&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;rmse&quot;</span><span class="p">:</span> <span class="s2">&quot;rmse_opd&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;std_rmse&quot;</span><span class="p">:</span> <span class="s2">&quot;rmse_std_opd&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;plot_title&quot;</span><span class="p">:</span> <span class="s2">&quot;.</span><span class="se">\n</span><span class="s2">OPD RMSE&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;shape_results_dict&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;rmse&quot;</span><span class="p">:</span> <span class="s2">&quot;pix_rmse&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;std_rmse&quot;</span><span class="p">:</span> <span class="s2">&quot;pix_rmse_std&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;plot_title&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Pixel RMSE @ 3x Euclid resolution&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+
+    <span class="n">list_of_stars</span> <span class="o">=</span> <span class="n">get_number_of_stars</span><span class="p">(</span><span class="n">list_of_metrics</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">metrics</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">metrics_plot</span> <span class="o">=</span> <span class="n">MetricsPlotHandler</span><span class="p">(</span>
+            <span class="n">plotting_params</span><span class="p">,</span>
+            <span class="n">list_of_metrics</span><span class="p">,</span>
+            <span class="n">list_of_stars</span><span class="p">,</span>
+            <span class="n">k</span><span class="p">,</span>
+            <span class="n">v</span><span class="p">[</span><span class="s2">&quot;rmse&quot;</span><span class="p">],</span>
+            <span class="n">v</span><span class="p">[</span><span class="s2">&quot;std_rmse&quot;</span><span class="p">],</span>
+            <span class="n">v</span><span class="p">[</span><span class="s2">&quot;plot_title&quot;</span><span class="p">],</span>
+            <span class="n">plot_saving_path</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">metrics_plot</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+
+    <span class="n">monochrom_metrics_plot</span> <span class="o">=</span> <span class="n">MonochromaticMetricsPlotHandler</span><span class="p">(</span>
+        <span class="n">plotting_params</span><span class="p">,</span> <span class="n">metrics_confs</span><span class="p">,</span> <span class="n">list_of_metrics</span><span class="p">,</span> <span class="n">list_of_stars</span><span class="p">,</span> <span class="n">plot_saving_path</span>
+    <span class="p">)</span>
+    <span class="n">monochrom_metrics_plot</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+
+    <span class="n">shape_metrics_plot</span> <span class="o">=</span> <span class="n">ShapeMetricsPlotHandler</span><span class="p">(</span>
+        <span class="n">plotting_params</span><span class="p">,</span> <span class="n">list_of_metrics</span><span class="p">,</span> <span class="n">list_of_stars</span><span class="p">,</span> <span class="n">plot_saving_path</span>
+    <span class="p">)</span>
+    <span class="n">shape_metrics_plot</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>
