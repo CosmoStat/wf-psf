@@ -133,7 +133,7 @@ class MetricsPlotHandler:
     id: str
         Class ID name
     plotting_params: Recursive Namespace object
-    metrics: list
+    metrics: dict
         Dictionary containing list of metrics
     list_of_stars: list
         List containing the number of training stars per run
@@ -191,19 +191,25 @@ class MetricsPlotHandler:
         std_rmse = []
         metrics_id = []
         for k, v in self.metrics.items():
-            run_id = list(v.keys())[0]
-            metrics_id.append(run_id + "-" + k)
+            for metrics_data in v:
+                run_id = list(metrics_data.keys())[0]
+                metrics_id.append(run_id + "-" + k)
 
-            rmse.append(
-                {k: self.metrics[k][run_id][0][dataset][self.metric_name][self.rmse]}
-            )
-            std_rmse.append(
-                {
-                    k: self.metrics[k][run_id][0][dataset][self.metric_name][
-                        self.std_rmse
-                    ]
-                }
-            )
+                rmse.append(
+                    {
+                        (k + "-" + run_id): metrics_data[run_id][0][dataset][
+                            self.metric_name
+                        ][self.rmse]
+                    }
+                )
+                std_rmse.append(
+                    {
+                        (k + "-" + run_id): metrics_data[run_id][0][dataset][
+                            self.metric_name
+                        ][self.std_rmse]
+                    }
+                )
+
         return metrics_id, rmse, std_rmse
 
     def plot(self):
@@ -278,22 +284,23 @@ class MonochromaticMetricsPlotHandler:
 
             for k, v in self.metrics.items():
                 if self.metrics_confs[k].metrics.eval_mono_metric_rmse:
-                    run_id = list(v.keys())[0]
-                    metrics_id.append(run_id + "-" + k)
-                    y_axis.append(
-                        {
-                            k: self.metrics[k][run_id][0][plot_dataset]["mono_metric"][
-                                "rmse_lda"
-                            ]
-                        }
-                    )
-                    y_axis_err.append(
-                        {
-                            k: self.metrics[k][run_id][0][plot_dataset]["mono_metric"][
-                                "std_rmse_lda"
-                            ]
-                        }
-                    )
+                    for metrics_data in v:
+                        run_id = list(metrics_data.keys())[0]
+                        metrics_id.append(run_id + "-" + k)
+                        y_axis.append(
+                            {
+                                (k + "-" + run_id): metrics_data[run_id][0][plot_dataset]["mono_metric"][
+                                    "rmse_lda"
+                                ]
+                            }
+                        )
+                        y_axis_err.append(
+                            {
+                                (k + "-" + run_id): metrics_data[run_id][0][plot_dataset]["mono_metric"][
+                                    "std_rmse_lda"
+                                ]
+                            }
+                        )
 
             make_plot(
                 x_axis=[lambda_list for _ in range(len(y_axis))],
@@ -363,57 +370,59 @@ class ShapeMetricsPlotHandler:
             metrics_id = []
 
             for k, v in self.metrics.items():
-                run_id = list(v.keys())[0]
-                metrics_id.append(run_id + "-" + k)
+                for metrics_data in v:
+                    run_id = list(metrics_data.keys())[0]
+                    metrics_id.append(run_id + "-" + k)
 
-                e1_rmse.append(
-                    {
-                        k: self.metrics[k][run_id][0][plot_dataset][
-                            "shape_results_dict"
-                        ]["rmse_e1"]
-                        / e1_req_euclid
-                    }
-                )
-                e1_std_rmse.append(
-                    {
-                        k: self.metrics[k][run_id][0][plot_dataset][
-                            "shape_results_dict"
-                        ]["std_rmse_e1"]
-                    }
-                )
+                    e1_rmse.append(
+                        {
+                            (k + "-" + run_id): metrics_data[run_id][0][plot_dataset][
+                                "shape_results_dict"
+                            ]["rmse_e1"]
+                            / e1_req_euclid
+                        }
+                    )
+                    e1_std_rmse.append(
+                        {
+                            (k + "-" + run_id): metrics_data[run_id][0][plot_dataset][
+                                "shape_results_dict"
+                            ]["std_rmse_e1"]
+                        }
+                    )
 
-                e2_rmse.append(
-                    {
-                        k: self.metrics[k][run_id][0][plot_dataset][
-                            "shape_results_dict"
-                        ]["rmse_e2"]
-                        / e2_req_euclid
-                    }
-                )
-                e2_std_rmse.append(
-                    {
-                        k: self.metrics[k][run_id][0][plot_dataset][
-                            "shape_results_dict"
-                        ]["std_rmse_e2"]
-                    }
-                )
+                    e2_rmse.append(
+                        {
+                            (k + "-" + run_id): metrics_data[run_id][0][plot_dataset][
+                                "shape_results_dict"
+                            ]["rmse_e2"]
+                            / e2_req_euclid
+                        }
+                    )
+                    e2_std_rmse.append(
+                        {
+                            (k + "-" + run_id): metrics_data[run_id][0][plot_dataset][
+                                "shape_results_dict"
+                            ]["std_rmse_e2"]
+                        }
+                    )
 
-                rmse_R2_meanR2.append(
-                    {
-                        k: self.metrics[k][run_id][0][plot_dataset][
-                            "shape_results_dict"
-                        ]["rmse_R2_meanR2"]
-                        / R2_req_euclid
-                    }
-                )
+                    rmse_R2_meanR2.append(
+                        {
+                            (k + "-" + run_id): metrics_data[run_id][0][plot_dataset][
+                                "shape_results_dict"
+                            ]["rmse_R2_meanR2"]
+                            / R2_req_euclid
+                        }
+                    )
 
-                std_rmse_R2_meanR2.append(
-                    {
-                        k: self.metrics[k][run_id][0][plot_dataset][
-                            "shape_results_dict"
-                        ]["std_rmse_R2_meanR2"]
-                    }
-                )
+                    std_rmse_R2_meanR2.append(
+                        {
+                            (k + "-" + run_id): metrics_data[run_id][0][plot_dataset][
+                            (k + "-" + run_id): metrics_data[run_id][0][plot_dataset][
+                                "shape_results_dict"
+                            ]["std_rmse_R2_meanR2"]
+                        }
+                    )
 
             make_plot(
                 x_axis=self.list_of_stars,
@@ -446,8 +455,9 @@ def get_number_of_stars(metrics):
     list_of_stars = []
 
     for k, v in metrics.items():
-        run_id = list(v.keys())[0]
-        list_of_stars.append(int(re.search(r"\d+", run_id).group()))
+        for run in v:
+            run_id = list(run.keys())[0]
+            list_of_stars.append(int(re.search(r"\d+", run_id).group()))
 
     return list_of_stars
 

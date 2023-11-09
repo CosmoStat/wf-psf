@@ -318,7 +318,7 @@ class MetricsConfigHandler:
                     weights_basename,
                 )
             )[0].split(".")[0]
-            
+
         except IndexError:
             logger.error(
                 "PSF weights file not found. Check that you've specified the correct weights file in the metrics config file."
@@ -492,6 +492,9 @@ class PlottingConfigHandler:
                     metrics_params.metrics.trained_model_config,
                 )
             )
+            id_name = training_conf.training.id_name
+            model_name = training_conf.training.model_params.model_name
+            return [model_name + id_name]
 
         except (TypeError, FileNotFoundError):
             logger.info("Trained model path not provided...")
@@ -501,23 +504,33 @@ class PlottingConfigHandler:
                 )
             )
 
-            training_conf = read_conf(
-                glob.glob(
+            training_config_files = glob.glob(
+                os.path.join(
+                    self.plotting_conf.plotting_params.metrics_output_path,
+                    self.file_handler.get_config_dir(wf_outdir),
+                    "training*",
+                )
+            )
+            training_confs = [
+                read_conf(training_conf)
+                for training_conf in glob.glob(
                     os.path.join(
                         self.plotting_conf.plotting_params.metrics_output_path,
                         self.file_handler.get_config_dir(wf_outdir),
                         "training*",
                     )
-                )[0]
-            )
+                )
+            ]
 
+            run_ids = [
+                training_conf.training.model_params.model_name
+                + training_conf.training.id_name
+                for training_conf in training_confs
+            ]
+
+            return run_ids
         except:
             logger.exception("File not found.")
-
-        id_name = training_conf.training.id_name
-        model_name = training_conf.training.model_params.model_name
-
-        return model_name + id_name
 
     def load_metrics_into_dict(self):
         """Load Metrics into Dictionary.
@@ -535,27 +548,30 @@ class PlottingConfigHandler:
         metrics_dict = {}
 
         for k, v in self.metrics_confs.items():
-            run_id_name = self._metrics_run_id_name(k, v)
-            output_path = os.path.join(
-                self.plotting_conf.plotting_params.metrics_output_path,
-                k,
-                "metrics",
-                "metrics-" + run_id_name + ".npy",
-            )
-            logger.info(
-                "Attempting to read in trained model config file...{}".format(
-                    output_path
+            run_id_names = self._metrics_run_id_name(k, v)
+            
+            metrics_dict[k] = []
+            for run_id_name in run_id_names:
+                output_path = os.path.join(
+                    self.plotting_conf.plotting_params.metrics_output_path,
+                    k,
+                    "metrics",
+                    "metrics-" + run_id_name + ".npy",
                 )
-            )
-            try:
-                metrics_dict[k] = {
-                    run_id_name: [np.load(output_path, allow_pickle=True)[()]]
-                }
-            except FileNotFoundError:
-                logger.error(
-                    "The required file for the plots was not found. Please check your configs settings."
+                logger.info(
+                    "Attempting to read in trained model config file...{}".format(
+                        output_path
+                    )
                 )
-
+                try:
+                    metrics_dict[k].append({
+                        run_id_name: [np.load(output_path, allow_pickle=True)[()]]
+                    })
+                except FileNotFoundError:
+                    logger.error(
+                        "The required file for the plots was not found. Please check your configs settings."
+                    )
+        
         return metrics_dict
 
     def run(self):
