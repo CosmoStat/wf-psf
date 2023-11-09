@@ -357,10 +357,12 @@ class MetricsConfigHandler:
         ] = self.metrics_conf
 
         # Update metric results dict with latest result
-        plots_config_handler.list_of_metrics_dict[self.file_handler.workdir] = {
-            self.training_conf.training.model_params.model_name
-            + self.training_conf.training.id_name: [model_metrics]
-        }
+        plots_config_handler.list_of_metrics_dict[self.file_handler.workdir] = [
+            {
+                self.training_conf.training.model_params.model_name
+                + self.training_conf.training.id_name: [model_metrics]
+            }
+        ]
 
         plots_config_handler.run()
 
@@ -406,8 +408,7 @@ class PlottingConfigHandler:
         Name of plotting configuration file
     file_handler: obj
         An instance of the FileIOHandler class
-    metrics_conf: dict
-        A dictionary containing the metrics configuration parameters
+
     """
 
     ids = ("plotting_conf",)
@@ -476,13 +477,15 @@ class PlottingConfigHandler:
 
         Parameters
         ----------
+        wf_outdir: str
+            Name of the wf-psf run output directory 
         metrics_params: RecursiveNamespace Object
             RecursiveNamespace object containing the metrics parameters used to evaluated the trained model.
 
         Returns
         -------
-        metrics_run_id_name: str
-            String containing the model name and id of the training run
+        metrics_run_id_name: list
+            List containing the model name and id for each training run
         """
 
         try:
@@ -549,7 +552,7 @@ class PlottingConfigHandler:
 
         for k, v in self.metrics_confs.items():
             run_id_names = self._metrics_run_id_name(k, v)
-            
+
             metrics_dict[k] = []
             for run_id_name in run_id_names:
                 output_path = os.path.join(
@@ -564,14 +567,14 @@ class PlottingConfigHandler:
                     )
                 )
                 try:
-                    metrics_dict[k].append({
-                        run_id_name: [np.load(output_path, allow_pickle=True)[()]]
-                    })
+                    metrics_dict[k].append(
+                        {run_id_name: [np.load(output_path, allow_pickle=True)[()]]}
+                    )
                 except FileNotFoundError:
                     logger.error(
                         "The required file for the plots was not found. Please check your configs settings."
                     )
-        
+
         return metrics_dict
 
     def run(self):
