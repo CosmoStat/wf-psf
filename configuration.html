@@ -125,7 +125,7 @@
 </tr>
 </tbody>
 </table>
-<p>Configuring WaveDiff to execute one or more of the pipeline tasks (e.g. <code class="docutils literal notranslate"><span class="pre">training</span></code>, <code class="docutils literal notranslate"><span class="pre">metrics</span></code>, or <code class="docutils literal notranslate"><span class="pre">plotting</span></code>) is done by providing a configuraton file with specific parameter settings as input into the software.</p>
+<p>Configuring WaveDiff to execute one or more of the pipeline tasks (e.g. <code class="docutils literal notranslate"><span class="pre">training</span></code>, <code class="docutils literal notranslate"><span class="pre">metrics</span></code>, or <code class="docutils literal notranslate"><span class="pre">plotting</span></code>) is done by providing a configuration file with specific parameter settings as input into the software.</p>
 <p>The directory tree below shows the various configuration files which contain their own unique settings for executing a particular task in WaveDiff:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>config
 ├── configs.yaml
@@ -140,7 +140,7 @@
 <p>Next, we shall describe each configuration file.</p>
 <section id="data-configuration">
 <span id="data-config"></span><h2>Data Configuration<a class="headerlink" href="#data-configuration" title="Link to this heading"></a></h2>
-<p>The file <a class="reference external" href="https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/data_config.yaml">data_config.yaml</a> stores the metadata for generating training and test data sets or retrieving existing ones.  A set of training and test data is provided in the <code class="docutils literal notranslate"><span class="pre">data/coherent_euclid_dataset</span></code> directory. New training and test data sets can be produced with the parameters in the file, which <em>should be</em> provided to the <code class="docutils literal notranslate"><span class="pre">simPSF</span></code> code although not at present (implementation upgrade pending).</p>
+<p>The file <a class="reference external" href="https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/data_config.yaml">data_config.yaml</a> stores the metadata for generating training and test data sets or retrieving existing ones.  A set of training and test data is provided in the <code class="docutils literal notranslate"><span class="pre">data/coherent_euclid_dataset</span></code> directory.  <code class="docutils literal notranslate"><span class="pre">Wavediff</span></code> will automatically retrieve the dataset within its directory tree.  In the field <code class="docutils literal notranslate"><span class="pre">data_dir</span></code>, the user should specify the sub-path to the data directory as in the example below.  The actual name of the dataset file is provided as an entry to the field <code class="docutils literal notranslate"><span class="pre">file</span></code>. However, new training and test data sets can be produced with the parameters in the file, which <em>should be</em> provided to the <code class="docutils literal notranslate"><span class="pre">simPSF</span></code> code although not at present (implementation upgrade pending).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Training and test data sets for training and/or metrics evaluation</span>
 <span class="n">data</span><span class="p">:</span>
   <span class="n">training</span><span class="p">:</span>

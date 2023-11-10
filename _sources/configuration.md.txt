@@ -9,7 +9,7 @@ The WaveDiff pipeline features four main packages for executing four pipeline ta
 |`plotting`| This pipeline task is a utility feature for generating plots for the various metrics.|
 |`simPSF`| This pipeline task is used to simulate stellar PSFs to use as training and test data for the training procedure.<br> (Currently, it runs as a separate code and is not triggered by the command `wavediff`).|
 
-Configuring WaveDiff to execute one or more of the pipeline tasks (e.g. `training`, `metrics`, or `plotting`) is done by providing a configuraton file with specific parameter settings as input into the software.
+Configuring WaveDiff to execute one or more of the pipeline tasks (e.g. `training`, `metrics`, or `plotting`) is done by providing a configuration file with specific parameter settings as input into the software.
 
 The directory tree below shows the various configuration files which contain their own unique settings for executing a particular task in WaveDiff:
 
@@ -30,7 +30,7 @@ Next, we shall describe each configuration file.
 (data_config)=
 ## Data Configuration
 
-The file [data_config.yaml](https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/data_config.yaml) stores the metadata for generating training and test data sets or retrieving existing ones.  A set of training and test data is provided in the `data/coherent_euclid_dataset` directory. New training and test data sets can be produced with the parameters in the file, which *should be* provided to the `simPSF` code although not at present (implementation upgrade pending).  
+The file [data_config.yaml](https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/data_config.yaml) stores the metadata for generating training and test data sets or retrieving existing ones.  A set of training and test data is provided in the `data/coherent_euclid_dataset` directory.  `Wavediff` will automatically retrieve the dataset within its directory tree.  In the field `data_dir`, the user should specify the sub-path to the data directory as in the example below.  The actual name of the dataset file is provided as an entry to the field `file`. However, new training and test data sets can be produced with the parameters in the file, which *should be* provided to the `simPSF` code although not at present (implementation upgrade pending).  
 
 ```
 # Training and test data sets for training and/or metrics evaluation
