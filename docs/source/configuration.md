@@ -115,8 +115,8 @@ metrics:
   # Specify path to Parent Directory of Trained Model 
   trained_model_path: </path/to/parent/directory/of/trained/model>
 
-  # Path to Trained Model Config file inside /trained_model_path/ parent directory
-  trained_model_config: </path/to/trained/model/config/file>
+  # Name of the Trained Model Config file stored in config sub-directory in the trained_model_path parent directory
+  trained_model_config: <enter name of trained model config file>
   
   #Evaluate the monchromatic RMSE metric.
   eval_mono_metric_rmse: True
