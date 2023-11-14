@@ -70,6 +70,3 @@ def test_MetricsConfigHandler_weights_basename_filepath(
         weights_filepath
         == "src/wf_psf/tests/data/validation/main_random_seed/checkpoint/checkpoint*_poly*_sample_w_bis1_2k_cycle2*"
     )
-
-
-    
