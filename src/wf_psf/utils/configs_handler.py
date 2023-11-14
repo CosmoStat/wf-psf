@@ -277,6 +277,7 @@ class MetricsConfigHandler:
             self.training_conf.training.training_hparams,
         )
 
+    @property
     def weights_path(self):
         return psf_models.get_psf_model_weights_filepath(self.weights_basename_filepath)
 
@@ -387,6 +388,7 @@ class MetricsConfigHandler:
         logger.info(
             "Running metrics evaluation on psf model: {}".format(self.weights_path)
         )
+        breakpoint()
         model_metrics = evaluate_model(
             self.metrics_conf.metrics,
             self.training_conf.training,
