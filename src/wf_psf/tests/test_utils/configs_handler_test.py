@@ -50,3 +50,23 @@ def test_get_run_config(path_to_repo_dir, path_to_tmp_output_dir, path_to_config
     )
 
     assert type(config_class) is TestClass
+
+
+def test_MetricsConfigHandler_weights_basename_filepath(
+    path_to_repo_dir, path_to_tmp_output_dir, path_to_config_dir
+):
+    test_file_handler = FileIOHandler(
+        path_to_repo_dir, path_to_tmp_output_dir, path_to_config_dir
+    )
+
+    metrics_config_file = "metrics_config.yaml"
+
+    metrics_object = configs_handler.MetricsConfigHandler(
+        os.path.join(path_to_config_dir, metrics_config_file), test_file_handler
+    )
+    weights_filepath = metrics_object.weights_basename_filepath
+
+    assert (
+        weights_filepath
+        == "src/wf_psf/tests/data/validation/main_random_seed/checkpoint/checkpoint*_poly*_sample_w_bis1_2k_cycle2*"
+    )
