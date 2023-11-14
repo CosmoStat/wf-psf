@@ -193,7 +193,9 @@ class FileIOHandler:
         """
 
         source = os.path.join(self.config_path, source_file)
-        destination = os.path.join(self.get_config_dir(self._run_output_dir), source_file)
+        destination = os.path.join(
+            self.get_config_dir(self._run_output_dir), source_file
+        )
 
         shutil.copy(source, destination)
 
