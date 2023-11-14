@@ -388,7 +388,7 @@ class MetricsConfigHandler:
         logger.info(
             "Running metrics evaluation on psf model: {}".format(self.weights_path)
         )
-        breakpoint()
+        
         model_metrics = evaluate_model(
             self.metrics_conf.metrics,
             self.training_conf.training,
