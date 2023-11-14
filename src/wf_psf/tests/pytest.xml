@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="10.968" timestamp="2023-10-24T16:54:13.811532" hostname="apcmc2023.local"><testcase classname="src.wf_psf.tests.verify_config_test" name="BLACK" time="0.165"><failure message="--- /Users/jenniferpollack/Projects/wf-psf/src/wf_psf/tests/verify_config_test.py&#09;2023-10-24 14:54:09.858428+00:00&#10;+++ /Users/jenniferpollack/Projects/wf-psf/src/wf_psf/tests/verify_config_test.py&#09;2023-10-24 14:54:13.972764+00:00&#10;@@ -10,9 +10,8 @@&#10; import pytest&#10; import os&#10; &#10; &#10; def test_config(training_params):&#10;-&#10;     for k, v in training_params.__dict__.items():&#10;         breakpoint()&#10;-        print(k,v)&#10;\ No newline at end of file&#10;+        print(k, v)&#10;">--- /Users/jenniferpollack/Projects/wf-psf/src/wf_psf/tests/verify_config_test.py	2023-10-24 14:54:09.858428+00:00
++++ /Users/jenniferpollack/Projects/wf-psf/src/wf_psf/tests/verify_config_test.py	2023-10-24 14:54:13.972764+00:00
+@@ -10,9 +10,8 @@
+ import pytest
+ import os
+ 
+ 
+ def test_config(training_params):
+-
+     for k, v in training_params.__dict__.items():
+         breakpoint()
+-        print(k,v)
+\ No newline at end of file
++        print(k, v)
+</failure></testcase><testcase classname="src.wf_psf.tests.verify_config_test" name="test_config[training_params0]" time="10.253"><failure message="OSError: pytest: reading from stdin while output is captured!  Consider using `-s`.">training_params = &lt;wf_psf.training.train.TrainingParamsHandler object at 0x1642b10f0&gt;
+
+    def test_config(training_params):
+    
+        for k, v in training_params.__dict__.items():
+            breakpoint()
+&gt;           print(k,v)
+
+verify_config_test.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../../../../miniconda/envs/wf-psf/lib/python3.10/codecs.py:327: in reset
+    def reset(self):
+../../../../../miniconda/envs/wf-psf/lib/python3.10/bdb.py:92: in trace_dispatch
+    return self.dispatch_call(frame, arg)
+../../../../../miniconda/envs/wf-psf/lib/python3.10/bdb.py:136: in dispatch_call
+    self.user_call(frame, arg)
+../../../../../miniconda/envs/wf-psf/lib/python3.10/pdb.py:243: in user_call
+    self.interaction(frame, None)
+../../../../../miniconda/envs/wf-psf/lib/python3.10/pdb.py:348: in interaction
+    self._cmdloop()
+../../../../../miniconda/envs/wf-psf/lib/python3.10/pdb.py:313: in _cmdloop
+    self.cmdloop()
+../../../../../miniconda/envs/wf-psf/lib/python3.10/cmd.py:126: in cmdloop
+    line = input(self.prompt)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;_pytest.capture.DontReadFromInput object at 0x104606710&gt;, size = -1
+
+    def read(self, size: int = -1) -&gt; str:
+&gt;       raise OSError(
+            "pytest: reading from stdin while output is captured!  Consider using `-s`."
+        )
+E       OSError: pytest: reading from stdin while output is captured!  Consider using `-s`.
+
+../../../../../miniconda/envs/wf-psf/lib/python3.10/site-packages/_pytest/capture.py:202: OSError</failure></testcase></testsuite></testsuites>

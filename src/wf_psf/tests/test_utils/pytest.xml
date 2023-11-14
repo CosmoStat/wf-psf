@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="5" time="0.958" timestamp="2023-11-14T16:15:54.986425" hostname="dapmcw30.extra.cea.fr"><testcase classname="src.wf_psf.tests.test_utils.configs_handler_test" name="BLACK" time="0.168" /><testcase classname="src.wf_psf.tests.test_utils.configs_handler_test" name="test_register_configclass" time="0.000" /><testcase classname="src.wf_psf.tests.test_utils.configs_handler_test" name="test_set_run_config" time="0.001" /><testcase classname="src.wf_psf.tests.test_utils.configs_handler_test" name="test_get_run_config" time="0.002" /><testcase classname="src.wf_psf.tests.test_utils.configs_handler_test" name="test_metrics_config_class" time="0.001"><failure message="FileNotFoundError: [Errno 2] No such file or directory: 'metrics_config.yaml'">path_to_repo_dir = '/Users/jenniferpollack/Projects/wf-psf/src/wf_psf/tests/test_utils', path_to_test_dir = '/Users/jenniferpollack/Projects/wf-psf/src/wf_psf/tests/test_utils/src/wf_psf/tests'
+path_to_tmp_output_dir = PosixPath('/private/var/folders/_m/5lz4vq6522q4lhlf3x1pq4_80000gr/T/pytest-of-jenniferpollack/pytest-25/test_metrics_config_class0')
+path_to_config_dir = '/Users/jenniferpollack/Projects/wf-psf/src/wf_psf/tests/test_utils/src/wf_psf/tests/data/config'
+
+    def test_metrics_config_class(
+        path_to_repo_dir, path_to_test_dir, path_to_tmp_output_dir, path_to_config_dir
+    ):
+        test_file_handler = FileIOHandler(
+            path_to_repo_dir, path_to_tmp_output_dir, path_to_config_dir
+        )
+        metrics_config_file = "metrics_config.yaml"
+    
+&gt;       metrics_object = configs_handler.MetricsConfigHandler(
+            metrics_config_file, test_file_handler
+        )
+
+configs_handler_test.py:63: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../../../../../miniconda/envs/wf-psf/lib/python3.10/site-packages/wf_psf/utils/configs_handler.py:249: in __init__
+    self._metrics_conf = read_conf(metrics_conf)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+conf_file = 'metrics_config.yaml'
+
+    def read_conf(conf_file):
+        """Read Conf.
+    
+        A function to read a yaml configuration file, recursively.
+    
+        Parameters
+        ----------
+        conf_file: str
+            Name of configuration file
+    
+        Returns
+        -------
+        RecursiveNamespace
+            Recursive Namespace object
+    
+        """
+        logger.info("Loading...{}".format(conf_file))
+&gt;       with open(conf_file, "r") as f:
+E       FileNotFoundError: [Errno 2] No such file or directory: 'metrics_config.yaml'
+
+../../../../../../miniconda/envs/wf-psf/lib/python3.10/site-packages/wf_psf/utils/read_config.py:105: FileNotFoundError</failure></testcase></testsuite></testsuites>

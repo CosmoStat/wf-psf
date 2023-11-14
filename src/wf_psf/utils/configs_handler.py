@@ -248,6 +248,7 @@ class MetricsConfigHandler:
     def __init__(self, metrics_conf, file_handler, training_conf=None):
         self._metrics_conf = read_conf(metrics_conf)
         self._file_handler = file_handler
+        self.trained_model_path = self._get_trained_model_path(training_conf)
         self._training_conf = self._load_training_conf(training_conf)
 
     @property
@@ -299,12 +300,8 @@ class MetricsConfigHandler:
         """
         if training_conf is None:
             try:
-                return os.path.join(
-                    self._file_handler.get_config_dir(
-                        self._metrics_conf.metrics.trained_model_path
-                    ),
-                    self._metrics_conf.metrics.trained_model_config,
-                )
+                return self._metrics_conf.metrics.trained_model_path
+
             except TypeError as e:
                 logger.exception(e)
                 raise ConfigParameterError(
@@ -334,8 +331,12 @@ class MetricsConfigHandler:
         """
         if training_conf is None:
             try:
-                model_config_path = self._get_trained_model_path(training_conf)
-                return read_conf(model_config_path)
+                return read_conf(
+                    os.path.join(
+                        self._file_handler.get_config_dir(self.trained_model_path),
+                        self._metrics_conf.metrics.trained_model_config,
+                    )
+                )
             except TypeError as e:
                 logger.exception(e)
                 raise ConfigParameterError(
@@ -370,7 +371,7 @@ class MetricsConfigHandler:
 
         """
         return os.path.join(
-            self.metrics_conf.metrics.trained_model_path,
+            self.trained_model_path,
             self.metrics_conf.metrics.model_save_path,
             (
                 f"{self.metrics_conf.metrics.model_save_path}*_{self.training_conf.training.model_params.model_name}"
@@ -427,7 +428,7 @@ class MetricsConfigHandler:
         logger.info(
             "Running metrics evaluation on psf model: {}".format(self.weights_path)
         )
-      
+
         model_metrics = evaluate_model(
             self.metrics_conf.metrics,
             self.training_conf.training,

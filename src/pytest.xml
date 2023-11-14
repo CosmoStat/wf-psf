@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="2" skipped="40" tests="48" time="3.278" timestamp="2023-11-14T17:58:24.521040" hostname="dapmcw30.extra.cea.fr"><testcase classname="src.wf_psf.__init__" name="BLACK" time="0.034"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.run" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.data.__init__" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.data.training_preprocessing" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.metrics.__init__" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.metrics.metrics" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.metrics.metrics_interface" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.plotting.__init__" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.plotting.plots_interface" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.psf_models.__init__" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.psf_models.psf_model_parametric" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.psf_models.psf_model_semiparametric" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.psf_models.psf_models" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.psf_models.tf_layers" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.psf_models.tf_modules" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.psf_models.tf_psf_field" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.psf_models.zernikes" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.sims.__init__" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.sims.SimPSFToolkit" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.tests.conftest" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.tests.metrics_test" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.tests.metrics_test" name="test_eval_metrics_polychromatic_lowres[training_params0]" time="0.000"><skipped type="pytest.skip" message="Requires gpu">/Users/jenniferpollack/Projects/wf-psf/src/wf_psf/tests/metrics_test.py:110: Requires gpu</skipped></testcase><testcase classname="src.wf_psf.tests.metrics_test" name="test_evaluate_metrics_opd[training_params0]" time="0.000"><skipped type="pytest.skip" message="Requires gpu">/Users/jenniferpollack/Projects/wf-psf/src/wf_psf/tests/metrics_test.py:158: Requires gpu</skipped></testcase><testcase classname="src.wf_psf.tests.metrics_test" name="test_eval_metrics_mono_rmse[training_params0]" time="0.000"><skipped type="pytest.skip" message="Requires gpu">/Users/jenniferpollack/Projects/wf-psf/src/wf_psf/tests/metrics_test.py:208: Requires gpu</skipped></testcase><testcase classname="src.wf_psf.tests.metrics_test" name="test_evaluate_metrics_shape[training_params0]" time="0.000"><skipped type="pytest.skip" message="Requires gpu">/Users/jenniferpollack/Projects/wf-psf/src/wf_psf/tests/metrics_test.py:273: Requires gpu</skipped></testcase><testcase classname="src.wf_psf.tests.psf_models_test" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.tests.psf_models_test" name="test_get_psf_model_weights_filepath" time="0.002"><failure message="wf_psf.psf_models.psf_models.PsfModelError: PSF model weights error.">weights_filepath = 'src/wf_psf/tests/data/validation/main_random_seed/checkpoint/checkpoint*_poly*_sample_w_bis1_2k_cycle2*'
+
+    def get_psf_model_weights_filepath(weights_filepath):
+        """Get PSF model weights filepath.
+    
+        A function to return the basename of the user-specified psf model weights path.
+    
+        Parameters
+        ----------
+        weights_filepath: str
+            Basename of the psf model weights to be loaded.
+    
+        Returns
+        -------
+        str
+            The absolute path concatenated to the basename of the psf model weights to be loaded.
+    
+        """
+        try:
+&gt;           return glob.glob(weights_filepath)[0].split(".")[0]
+E           IndexError: list index out of range
+
+../../../miniconda/envs/wf-psf/lib/python3.10/site-packages/wf_psf/psf_models/psf_models.py:128: IndexError
+
+During handling of the above exception, another exception occurred:
+
+    def test_get_psf_model_weights_filepath():
+        weights_filepath = "src/wf_psf/tests/data/validation/main_random_seed/checkpoint/checkpoint*_poly*_sample_w_bis1_2k_cycle2*"
+    
+&gt;       ans = psf_models.get_psf_model_weights_filepath(weights_filepath)
+
+wf_psf/tests/psf_models_test.py:19: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+weights_filepath = 'src/wf_psf/tests/data/validation/main_random_seed/checkpoint/checkpoint*_poly*_sample_w_bis1_2k_cycle2*'
+
+    def get_psf_model_weights_filepath(weights_filepath):
+        """Get PSF model weights filepath.
+    
+        A function to return the basename of the user-specified psf model weights path.
+    
+        Parameters
+        ----------
+        weights_filepath: str
+            Basename of the psf model weights to be loaded.
+    
+        Returns
+        -------
+        str
+            The absolute path concatenated to the basename of the psf model weights to be loaded.
+    
+        """
+        try:
+            return glob.glob(weights_filepath)[0].split(".")[0]
+        except IndexError:
+            logger.exception(
+                "PSF weights file not found. Check that you've specified the correct weights file in the metrics config file."
+            )
+&gt;           raise PsfModelError("PSF model weights error.")
+E           wf_psf.psf_models.psf_models.PsfModelError: PSF model weights error.
+
+../../../miniconda/envs/wf-psf/lib/python3.10/site-packages/wf_psf/psf_models/psf_models.py:133: PsfModelError</failure></testcase><testcase classname="src.wf_psf.tests.train_test" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.tests.train_test" name="test_train[training_params0]" time="0.000"><skipped type="pytest.skip" message="Requires gpu">/Users/jenniferpollack/Projects/wf-psf/src/wf_psf/tests/train_test.py:69: Requires gpu</skipped></testcase><testcase classname="src.wf_psf.tests.test_utils.configs_handler_test" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.tests.test_utils.configs_handler_test" name="test_register_configclass" time="0.000" /><testcase classname="src.wf_psf.tests.test_utils.configs_handler_test" name="test_set_run_config" time="0.001" /><testcase classname="src.wf_psf.tests.test_utils.configs_handler_test" name="test_get_run_config" time="0.001" /><testcase classname="src.wf_psf.tests.test_utils.configs_handler_test" name="test_MetricsConfigHandler_weights_basename_filepath" time="0.001"><failure message="FileNotFoundError: [Errno 2] No such file or directory: '/Users/jenniferpollack/Projects/wf-psf/src/src/wf_psf/tests/data/metrics_config.yaml'">path_to_repo_dir = '/Users/jenniferpollack/Projects/wf-psf/src'
+path_to_tmp_output_dir = PosixPath('/private/var/folders/_m/5lz4vq6522q4lhlf3x1pq4_80000gr/T/pytest-of-jenniferpollack/pytest-63/test_MetricsConfigHandler_weig0')
+path_to_config_dir = '/Users/jenniferpollack/Projects/wf-psf/src/src/wf_psf/tests/data'
+
+    def test_MetricsConfigHandler_weights_basename_filepath(
+        path_to_repo_dir, path_to_tmp_output_dir, path_to_config_dir
+    ):
+        test_file_handler = FileIOHandler(
+            path_to_repo_dir, path_to_tmp_output_dir, path_to_config_dir
+        )
+    
+        metrics_config_file = "metrics_config.yaml"
+    
+&gt;       metrics_object = configs_handler.MetricsConfigHandler(
+            os.path.join(path_to_config_dir, metrics_config_file), test_file_handler
+        )
+
+wf_psf/tests/test_utils/configs_handler_test.py:64: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+../../../miniconda/envs/wf-psf/lib/python3.10/site-packages/wf_psf/utils/configs_handler.py:249: in __init__
+    self._metrics_conf = read_conf(metrics_conf)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+conf_file = '/Users/jenniferpollack/Projects/wf-psf/src/src/wf_psf/tests/data/metrics_config.yaml'
+
+    def read_conf(conf_file):
+        """Read Conf.
+    
+        A function to read a yaml configuration file, recursively.
+    
+        Parameters
+        ----------
+        conf_file: str
+            Name of configuration file
+    
+        Returns
+        -------
+        RecursiveNamespace
+            Recursive Namespace object
+    
+        """
+        logger.info("Loading...{}".format(conf_file))
+&gt;       with open(conf_file, "r") as f:
+E       FileNotFoundError: [Errno 2] No such file or directory: '/Users/jenniferpollack/Projects/wf-psf/src/src/wf_psf/tests/data/metrics_config.yaml'
+
+../../../miniconda/envs/wf-psf/lib/python3.10/site-packages/wf_psf/utils/read_config.py:105: FileNotFoundError</failure></testcase><testcase classname="src.wf_psf.tests.test_utils.conftest" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.tests.test_utils.io_test" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.tests.test_utils.io_test" name="test_make_output_dir" time="0.001" /><testcase classname="src.wf_psf.tests.test_utils.io_test" name="test_make_run_dir" time="0.001" /><testcase classname="src.wf_psf.tests.test_utils.io_test" name="test_setup_dirs" time="0.001" /><testcase classname="src.wf_psf.training.__init__" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.training.train" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.training.train_utils" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.utils.__init__" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.utils.configs_handler" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.utils.graph_utils" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.utils.io" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.utils.read_config" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase><testcase classname="src.wf_psf.utils.utils" name="BLACK" time="0.000"><skipped type="pytest.skip" message="file(s) previously passed black format checks">/Users/jenniferpollack/miniconda/envs/wf-psf/lib/python3.10/site-packages/pytest_black.py:67: file(s) previously passed black format checks</skipped></testcase></testsuite></testsuites>
