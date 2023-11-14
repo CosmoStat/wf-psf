@@ -281,23 +281,68 @@ class MetricsConfigHandler:
     def weights_path(self):
         return psf_models.get_psf_model_weights_filepath(self.weights_basename_filepath)
 
-    def _load_training_conf(self, training_conf):
+    def _get_trained_model_path(self, training_conf):
+        """Get Trained Model Path.
+
+        Helper method to get the trained model path.
+
+        Parameters
+        ----------
+        training_conf: None or RecursiveNamespace
+            None type or RecursiveNamespace
+
+        Returns
+        -------
+        str
+            A string representing the path to the trained model output run directory.
+
+        """
         if training_conf is None:
             try:
-                model_config_path = os.path.join(
+                return os.path.join(
                     self._file_handler.get_config_dir(
                         self._metrics_conf.metrics.trained_model_path
                     ),
                     self._metrics_conf.metrics.trained_model_config,
                 )
-                return read_conf(model_config_path)
-            except TypeError:
-                logger.error(
-                    "Check metrics config file trained model path or config values are empty."
+            except TypeError as e:
+                logger.exception(e)
+                raise ConfigParameterError(
+                    "Metrics config file trained model path or config values are empty."
                 )
-                raise ConfigParameterError("Configuration loading error.")
+        else:
+            return os.path.join(
+                self._file_handler.output_path,
+                self._file_handler.parent_output_dir,
+                self._file_handler.workdir,
+            )
 
-        return training_conf
+    def _load_training_conf(self, training_conf):
+        """Load Training Conf.
+        Load the training configuration if training_conf is not provided.
+
+        Parameters
+        ----------
+        training_conf: None or RecursiveNamespace
+            None type or a RecursiveNamespace storing the training configuration parameter setttings
+            None type or a RecursiveNamespace storing the training configuration parameter setttings
+
+        Returns
+        -------
+            RecursiveNamespace storing the training configuration parameter settings
+
+        """
+        if training_conf is None:
+            try:
+                model_config_path = self._get_trained_model_path(training_conf)
+                return read_conf(model_config_path)
+            except TypeError as e:
+                logger.exception(e)
+                raise ConfigParameterError(
+                    "Metrics config file trained model path or config values are empty."
+                )
+        else:
+            return training_conf
 
     def _load_data_conf(self):
         try:
@@ -320,22 +365,16 @@ class MetricsConfigHandler:
 
         Returns
         -------
-            weights_basename: str
-                The basename of the psf model weights to be loaded.
+        weights_basename: str
+            The basename of the psf model weights to be loaded.
 
         """
         return os.path.join(
             self.metrics_conf.metrics.trained_model_path,
             self.metrics_conf.metrics.model_save_path,
             (
-                self.metrics_conf.metrics.model_save_path
-                + "*_"
-                + self.training_conf.training.model_params.model_name
-                + "*"
-                + self.training_conf.training.id_name
-                + "_cycle"
-                + str(self.metrics_conf.metrics.saved_training_cycle)
-                + "*"
+                f"{self.metrics_conf.metrics.model_save_path}*_{self.training_conf.training.model_params.model_name}"
+                f"*{self.training_conf.training.id_name}_cycle{self.metrics_conf.metrics.saved_training_cycle}*"
             ),
         )
 
@@ -388,7 +427,7 @@ class MetricsConfigHandler:
         logger.info(
             "Running metrics evaluation on psf model: {}".format(self.weights_path)
         )
-        
+      
         model_metrics = evaluate_model(
             self.metrics_conf.metrics,
             self.training_conf.training,
