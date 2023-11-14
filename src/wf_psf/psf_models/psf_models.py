@@ -12,6 +12,7 @@ import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
 from wf_psf.utils.utils import PI_zernikes, zernike_generator
 from wf_psf.sims.SimPSFToolkit import SimPSFToolkit
+import glob
 from sys import exit
 import logging
 
@@ -21,7 +22,13 @@ PSF_CLASS = {}
 
 
 class PsfModelError(Exception):
-    pass
+    """PSF Model Parameter Error exception class for specific error scenarios."""
+
+    def __init__(
+        self, message="An error with your PSF model parameter settings occurred."
+    ):
+        self.message = message
+        super().__init__(self.message)
 
 
 def register_psfclass(psf_class):
@@ -67,10 +74,9 @@ def set_psf_model(model_name):
 
     try:
         psf_class = PSF_CLASS[model_name]
-    except KeyError:
-        logger.exception("PSF model entered is invalid. Check your config settings.")
-        exit()
-
+    except KeyError as e:
+        logger.exception(e)
+        raise PsfModelError("PSF model entered is invalid. Check your config settings.")
     return psf_class
 
 
@@ -100,6 +106,31 @@ def get_psf_model(model_params, training_hparams, *coeff_matrix):
     psf_class = set_psf_model(model_params.model_name)
 
     return psf_class(model_params, training_hparams, *coeff_matrix)
+
+
+def get_psf_model_weights_filepath(weights_filepath):
+    """Get PSF model weights filepath.
+
+    A function to return the basename of the user-specified psf model weights path.
+
+    Parameters
+    ----------
+    weights_filepath: str
+        Basename of the psf model weights to be loaded.
+
+    Returns
+    -------
+    str
+        The absolute path concatenated to the basename of the psf model weights to be loaded.
+
+    """
+    try:
+        return glob.glob(weights_filepath)[0].split(".")[0]
+    except IndexError:
+        logger.exception(
+            "PSF weights file not found. Check that you've specified the correct weights file in the metrics config file."
+        )
+        raise PsfModelError("PSF model weights error.")
 
 
 def tf_zernike_cube(n_zernikes, pupil_diam):
