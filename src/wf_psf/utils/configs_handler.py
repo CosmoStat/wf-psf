@@ -345,6 +345,15 @@ class MetricsConfigHandler:
             return training_conf
 
     def _load_data_conf(self):
+        """Load Data Conf.
+
+        A method to load the data configuration file
+        and return an instance of DataConfigHandler class.
+
+        Returns
+        -------
+        An instance of the DataConfigHandler class.
+        """
         try:
             return DataConfigHandler(
                 os.path.join(
