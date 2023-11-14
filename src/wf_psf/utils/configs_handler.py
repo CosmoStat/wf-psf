@@ -97,7 +97,16 @@ def get_run_config(run_config, config_params, file_handler):
 
     """
     config_class = set_run_config(run_config)
+
     return config_class(config_params, file_handler)
+
+
+class ConfigParameterError(Exception):
+    """Custom Config Parameter Error exception class for specific error scenarios."""
+
+    def __init__(self, message="An error with your config settings occurred."):
+        self.message = message
+        super().__init__(self.message)
 
 
 class DataConfigHandler:
@@ -237,95 +246,97 @@ class MetricsConfigHandler:
     ids = ("metrics_conf",)
 
     def __init__(self, metrics_conf, file_handler, training_conf=None):
-        self.metrics_conf = read_conf(metrics_conf)
-        self.metrics_dir = file_handler.get_metrics_dir(file_handler._run_output_dir)
-        self.file_handler = file_handler
+        self._metrics_conf = read_conf(metrics_conf)
+        self._file_handler = file_handler
+        self._training_conf = self._load_training_conf(training_conf)
 
+    @property
+    def metrics_conf(self):
+        return self._metrics_conf
+
+    @property
+    def metrics_dir(self):
+        return self._file_handler.get_metrics_dir(self._file_handler._run_output_dir)
+
+    @property
+    def training_conf(self):
+        return self._training_conf
+
+    @property
+    def plotting_conf(self):
+        return self.metrics_conf.metrics.plotting_config
+
+    @property
+    def data_conf(self):
+        return self._load_data_conf()
+
+    @property
+    def psf_model(self):
+        return psf_models.get_psf_model(
+            self.training_conf.training.model_params,
+            self.training_conf.training.training_hparams,
+        )
+
+    def weights_path(self):
+        return psf_models.get_psf_model_weights_filepath(self.weights_basename_filepath)
+
+    def _load_training_conf(self, training_conf):
         if training_conf is None:
             try:
-                self.training_conf = read_conf(
-                    os.path.join(
-                        self.file_handler.get_config_dir(
-                            self.metrics_conf.metrics.trained_model_path
-                        ),
-                        self.metrics_conf.metrics.trained_model_config,
-                    )
+                model_config_path = os.path.join(
+                    self._file_handler.get_config_dir(
+                        self._metrics_conf.metrics.trained_model_path
+                    ),
+                    self._metrics_conf.metrics.trained_model_config,
                 )
+                return read_conf(model_config_path)
             except TypeError:
-                logger.info(
+                logger.error(
                     "Check metrics config file trained model path or config values are empty."
                 )
-                exit()
+                raise ConfigParameterError("Configuration loading error.")
 
-            self.trained_model_workdir = os.path.join(
-                self.metrics_conf.metrics.trained_model_path
-            )
+        return training_conf
 
-        else:
-            self.training_conf = training_conf
-
-            self.trained_model_workdir = os.path.join(
-                self.file_handler.output_path,
-                self.file_handler.parent_output_dir,
-                self.file_handler.workdir,
-            )
-
-        self.plotting_conf = self.metrics_conf.metrics.plotting_config
-
+    def _load_data_conf(self):
         try:
-            self.data_conf = DataConfigHandler(
+            return DataConfigHandler(
                 os.path.join(
-                    self.file_handler.config_path,
+                    self._file_handler.config_path,
                     self.training_conf.training.data_config,
                 ),
                 self.training_conf.training.model_params,
             )
         except TypeError as e:
             logger.exception(e)
+            raise ConfigParameterError("Data configuration loading error.")
 
-        self.psf_model = psf_models.get_psf_model(
-            self.training_conf.training.model_params,
-            self.training_conf.training.training_hparams,
-        )
-        self.weights_path = self.get_psf_model_weights_filepath()
-
-    def get_psf_model_weights_filepath(self):
+    @property
+    def weights_basename_filepath(self):
         """Get PSF model weights filepath.
 
         A function to return the basename of the user-specified psf model weights path.
 
         Returns
         -------
-            weights_filepath: str
+            weights_basename: str
                 The basename of the psf model weights to be loaded.
 
         """
-        weights_basename = (
-            self.metrics_conf.metrics.model_save_path
-            + "*_"
-            + self.training_conf.training.model_params.model_name
-            + "*"
-            + self.training_conf.training.id_name
-            + "_cycle"
-            + str(self.metrics_conf.metrics.saved_training_cycle)
-            + "*"
+        return os.path.join(
+            self.metrics_conf.metrics.trained_model_path,
+            self.metrics_conf.metrics.model_save_path,
+            (
+                self.metrics_conf.metrics.model_save_path
+                + "*_"
+                + self.training_conf.training.model_params.model_name
+                + "*"
+                + self.training_conf.training.id_name
+                + "_cycle"
+                + str(self.metrics_conf.metrics.saved_training_cycle)
+                + "*"
+            ),
         )
-        try:
-            weights_filepath = glob.glob(
-                os.path.join(
-                    self.trained_model_workdir,
-                    self.metrics_conf.metrics.model_save_path,
-                    weights_basename,
-                )
-            )[0].split(".")[0]
-
-        except IndexError:
-            logger.error(
-                "PSF weights file not found. Check that you've specified the correct weights file in the metrics config file."
-            )
-            exit()
-
-        return weights_filepath
 
     def call_plot_config_handler_run(self, model_metrics):
         """Make Metrics Plots.
@@ -341,23 +352,23 @@ class MetricsConfigHandler:
             of the trained PSF model.
 
         """
-        self.plotting_conf = os.path.join(
-            self.file_handler.config_path,
-            self.metrics_conf.metrics.plotting_config,
+        self._plotting_conf = os.path.join(
+            self._file_handler.config_path,
+            self.plotting_conf,
         )
 
         plots_config_handler = PlottingConfigHandler(
-            self.plotting_conf,
-            self.file_handler,
+            self._plotting_conf,
+            self._file_handler,
         )
 
         # Update metrics_confs dict with latest result
         plots_config_handler.metrics_confs[
-            self.file_handler.workdir
+            self._file_handler.workdir
         ] = self.metrics_conf
 
         # Update metric results dict with latest result
-        plots_config_handler.list_of_metrics_dict[self.file_handler.workdir] = [
+        plots_config_handler.list_of_metrics_dict[self._file_handler.workdir] = [
             {
                 self.training_conf.training.model_params.model_name
                 + self.training_conf.training.id_name: [model_metrics]
@@ -387,7 +398,7 @@ class MetricsConfigHandler:
         )
 
         if self.plotting_conf is not None:
-            self.file_handler.copy_conffile_to_output_dir(
+            self._file_handler.copy_conffile_to_output_dir(
                 self.metrics_conf.metrics.plotting_config
             )
             self.call_plot_config_handler_run(model_metrics)
@@ -478,7 +489,7 @@ class PlottingConfigHandler:
         Parameters
         ----------
         wf_outdir: str
-            Name of the wf-psf run output directory 
+            Name of the wf-psf run output directory
         metrics_params: RecursiveNamespace Object
             RecursiveNamespace object containing the metrics parameters used to evaluated the trained model.
 
@@ -507,13 +518,6 @@ class PlottingConfigHandler:
                 )
             )
 
-            training_config_files = glob.glob(
-                os.path.join(
-                    self.plotting_conf.plotting_params.metrics_output_path,
-                    self.file_handler.get_config_dir(wf_outdir),
-                    "training*",
-                )
-            )
             training_confs = [
                 read_conf(training_conf)
                 for training_conf in glob.glob(
