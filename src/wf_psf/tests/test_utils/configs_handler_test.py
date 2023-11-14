@@ -59,7 +59,7 @@ def test_MetricsConfigHandler_weights_basename_filepath(
         path_to_repo_dir, path_to_tmp_output_dir, path_to_config_dir
     )
 
-    metrics_config_file = "metrics_config.yaml"
+    metrics_config_file = "validation/main_random_seed/config/metrics_config.yaml"
 
     metrics_object = configs_handler.MetricsConfigHandler(
         os.path.join(path_to_config_dir, metrics_config_file), test_file_handler
