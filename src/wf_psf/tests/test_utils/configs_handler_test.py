@@ -72,5 +72,4 @@ def test_MetricsConfigHandler_weights_basename_filepath(
     )
 
 
-def test_training_and_metrics_config():
     
