@@ -321,12 +321,11 @@ class MetricsConfigHandler:
         Parameters
         ----------
         training_conf: None or RecursiveNamespace
-            None type or a RecursiveNamespace storing the training configuration parameter setttings
-            None type or a RecursiveNamespace storing the training configuration parameter setttings
+            None type or a RecursiveNamespace storing the training configuration parameter setttings.
 
         Returns
         -------
-            RecursiveNamespace storing the training configuration parameter settings
+        RecursiveNamespace storing the training configuration parameter settings.
 
         """
         if training_conf is None:
