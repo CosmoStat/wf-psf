@@ -106,6 +106,7 @@
 <span class="kn">from</span> <span class="nn">tensorflow.python.keras.engine</span> <span class="kn">import</span> <span class="n">data_adapter</span>
 <span class="kn">from</span> <span class="nn">wf_psf.utils.utils</span> <span class="kn">import</span> <span class="n">PI_zernikes</span><span class="p">,</span> <span class="n">zernike_generator</span>
 <span class="kn">from</span> <span class="nn">wf_psf.sims.SimPSFToolkit</span> <span class="kn">import</span> <span class="n">SimPSFToolkit</span>
+<span class="kn">import</span> <span class="nn">glob</span>
 <span class="kn">from</span> <span class="nn">sys</span> <span class="kn">import</span> <span class="n">exit</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 
@@ -117,7 +118,13 @@
 <div class="viewcode-block" id="PsfModelError">
 <a class="viewcode-back" href="../../../wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PsfModelError">[docs]</a>
 <span class="k">class</span> <span class="nc">PsfModelError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-    <span class="k">pass</span></div>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;PSF Model Parameter Error exception class for specific error scenarios.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;An error with your PSF model parameter settings occurred.&quot;</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">message</span><span class="p">)</span></div>
 
 
 
@@ -169,10 +176,9 @@
 
     <span class="k">try</span><span class="p">:</span>
         <span class="n">psf_class</span> <span class="o">=</span> <span class="n">PSF_CLASS</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span>
-    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;PSF model entered is invalid. Check your config settings.&quot;</span><span class="p">)</span>
-        <span class="n">exit</span><span class="p">()</span>
-
+    <span class="k">except</span> <span class="ne">KeyError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">PsfModelError</span><span class="p">(</span><span class="s2">&quot;PSF model entered is invalid. Check your config settings.&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">psf_class</span></div>
 
 
@@ -205,6 +211,34 @@
     <span class="n">psf_class</span> <span class="o">=</span> <span class="n">set_psf_model</span><span class="p">(</span><span class="n">model_params</span><span class="o">.</span><span class="n">model_name</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">psf_class</span><span class="p">(</span><span class="n">model_params</span><span class="p">,</span> <span class="n">training_hparams</span><span class="p">,</span> <span class="o">*</span><span class="n">coeff_matrix</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_psf_model_weights_filepath">
+<a class="viewcode-back" href="../../../wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.get_psf_model_weights_filepath">[docs]</a>
+<span class="k">def</span> <span class="nf">get_psf_model_weights_filepath</span><span class="p">(</span><span class="n">weights_filepath</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get PSF model weights filepath.</span>
+
+<span class="sd">    A function to return the basename of the user-specified psf model weights path.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    weights_filepath: str</span>
+<span class="sd">        Basename of the psf model weights to be loaded.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        The absolute path concatenated to the basename of the psf model weights to be loaded.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">weights_filepath</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
+            <span class="s2">&quot;PSF weights file not found. Check that you&#39;ve specified the correct weights file in the metrics config file.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">raise</span> <span class="n">PsfModelError</span><span class="p">(</span><span class="s2">&quot;PSF model weights error.&quot;</span><span class="p">)</span></div>
 
 
 

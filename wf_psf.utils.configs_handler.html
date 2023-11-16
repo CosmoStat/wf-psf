@@ -123,6 +123,13 @@ to manage the parameters of the config files</p>
 <dd class="field-odd"><p>Jennifer Pollack &lt;<a class="reference external" href="mailto:jennifer&#46;pollack&#37;&#52;&#48;cea&#46;fr">jennifer<span>&#46;</span>pollack<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;</p>
 </dd>
 </dl>
+<dl class="py exception">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.ConfigParameterError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.utils.configs_handler.</span></span><span class="sig-name descname"><span class="pre">ConfigParameterError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'An</span> <span class="pre">error</span> <span class="pre">with</span> <span class="pre">your</span> <span class="pre">config</span> <span class="pre">settings</span> <span class="pre">occurred.'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wf_psf/utils/configs_handler.html#ConfigParameterError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.configs_handler.ConfigParameterError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
+<p>Custom Config Parameter Error exception class for specific error scenarios.</p>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="wf_psf.utils.configs_handler.DataConfigHandler">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.utils.configs_handler.</span></span><span class="sig-name descname"><span class="pre">DataConfigHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_conf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_model_params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wf_psf/utils/configs_handler.html#DataConfigHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.configs_handler.DataConfigHandler" title="Link to this definition"></a></dt>
@@ -156,6 +163,19 @@ parameters.</p>
 <li><p><strong>training_conf</strong> (<em>RecursiveNamespace object</em>) – RecursiveNamespace object containing the training configuration parameters</p></li>
 </ul>
 </dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>data_conf</strong></dt><dd></dd>
+<dt><strong>metrics_conf</strong></dt><dd></dd>
+<dt><strong>metrics_dir</strong></dt><dd></dd>
+<dt><strong>plotting_conf</strong></dt><dd></dd>
+<dt><strong>psf_model</strong></dt><dd></dd>
+<dt><strong>training_conf</strong></dt><dd></dd>
+<dt><a class="reference internal" href="#wf_psf.utils.configs_handler.MetricsConfigHandler.weights_basename_filepath" title="wf_psf.utils.configs_handler.MetricsConfigHandler.weights_basename_filepath"><code class="xref py py-obj docutils literal notranslate"><span class="pre">weights_basename_filepath</span></code></a></dt><dd><p>Get PSF model weights filepath.</p>
+</dd>
+<dt><strong>weights_path</strong></dt><dd></dd>
+</dl>
+</dd>
 </dl>
 <p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
@@ -163,10 +183,7 @@ parameters.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.utils.configs_handler.MetricsConfigHandler.call_plot_config_handler_run" title="wf_psf.utils.configs_handler.MetricsConfigHandler.call_plot_config_handler_run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call_plot_config_handler_run</span></code></a>(model_metrics)</p></td>
 <td><p>Make Metrics Plots.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.utils.configs_handler.MetricsConfigHandler.get_psf_model_weights_filepath" title="wf_psf.utils.configs_handler.MetricsConfigHandler.get_psf_model_weights_filepath"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_psf_model_weights_filepath</span></code></a>()</p></td>
-<td><p>Get PSF model weights filepath.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.utils.configs_handler.MetricsConfigHandler.run" title="wf_psf.utils.configs_handler.MetricsConfigHandler.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.utils.configs_handler.MetricsConfigHandler.run" title="wf_psf.utils.configs_handler.MetricsConfigHandler.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a>()</p></td>
 <td><p>Run.</p></td>
 </tr>
 </tbody>
@@ -186,24 +203,34 @@ of the trained PSF model.</p>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.MetricsConfigHandler.get_psf_model_weights_filepath">
-<span class="sig-name descname"><span class="pre">get_psf_model_weights_filepath</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/wf_psf/utils/configs_handler.html#MetricsConfigHandler.get_psf_model_weights_filepath"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.configs_handler.MetricsConfigHandler.get_psf_model_weights_filepath" title="Link to this definition"></a></dt>
-<dd><p>Get PSF model weights filepath.</p>
-<p>A function to return the basename of the user-specified psf model weights path.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>weights_filepath</strong> – The basename of the psf model weights to be loaded.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a></p>
-</dd>
-</dl>
-</dd></dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.MetricsConfigHandler.data_conf">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data_conf</span></span><a class="headerlink" href="#wf_psf.utils.configs_handler.MetricsConfigHandler.data_conf" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wf_psf.utils.configs_handler.MetricsConfigHandler.ids">
 <span class="sig-name descname"><span class="pre">ids</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('metrics_conf',)</span></em><a class="headerlink" href="#wf_psf.utils.configs_handler.MetricsConfigHandler.ids" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.MetricsConfigHandler.metrics_conf">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">metrics_conf</span></span><a class="headerlink" href="#wf_psf.utils.configs_handler.MetricsConfigHandler.metrics_conf" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.MetricsConfigHandler.metrics_dir">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">metrics_dir</span></span><a class="headerlink" href="#wf_psf.utils.configs_handler.MetricsConfigHandler.metrics_dir" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.MetricsConfigHandler.plotting_conf">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plotting_conf</span></span><a class="headerlink" href="#wf_psf.utils.configs_handler.MetricsConfigHandler.plotting_conf" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.MetricsConfigHandler.psf_model">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">psf_model</span></span><a class="headerlink" href="#wf_psf.utils.configs_handler.MetricsConfigHandler.psf_model" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -213,6 +240,31 @@ of the trained PSF model.</p>
 <p>A function to run wave-diff according to the
 input configuration.</p>
 </dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.MetricsConfigHandler.training_conf">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">training_conf</span></span><a class="headerlink" href="#wf_psf.utils.configs_handler.MetricsConfigHandler.training_conf" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.MetricsConfigHandler.weights_basename_filepath">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">weights_basename_filepath</span></span><a class="headerlink" href="#wf_psf.utils.configs_handler.MetricsConfigHandler.weights_basename_filepath" title="Link to this definition"></a></dt>
+<dd><p>Get PSF model weights filepath.</p>
+<p>A function to return the basename of the user-specified psf model weights path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>weights_basename</strong> – The basename of the psf model weights to be loaded.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.utils.configs_handler.MetricsConfigHandler.weights_path">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">weights_path</span></span><a class="headerlink" href="#wf_psf.utils.configs_handler.MetricsConfigHandler.weights_path" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 

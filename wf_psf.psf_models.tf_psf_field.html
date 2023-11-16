@@ -147,6 +147,8 @@ Although it works with float values it is better to use integer values.</p></li>
 <dd class="field-even"><dl class="simple">
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">activity_regularizer</span></code></dt><dd><p>Optional regularizer function for the output of this layer.</p>
 </dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">autotune_steps_per_execution</span></code></dt><dd><p>Settable property to enable tuning for steps_per_execution</p>
+</dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_dtype</span></code></dt><dd><p>The dtype of the layer’s computations.</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">distribute_reduction_method</span></code></dt><dd><p>The method employed to reduce per-replica values during training.</p>
@@ -159,7 +161,6 @@ Although it works with float values it is better to use integer values.</p></li>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic</span></code></dt><dd><p>Whether the layer is dynamic (eager-only); set in the constructor.</p>
 </dd>
-<dt><strong>enable_tune_steps_per_execution</strong></dt><dd></dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">inbound_nodes</span></code></dt><dd><p>Return Functional API nodes upstream of this layer.</p>
 </dd>
 <dt><a class="reference external" href="https://docs.python.org/3/library/functions.html#input" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">input</span></code></a></dt><dd><p>Retrieves the input tensor(s) of a layer.</p>
@@ -200,6 +201,8 @@ Although it works with float values it is better to use integer values.</p></li>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">state_updates</span></code></dt><dd><p>Deprecated, do NOT use!</p>
 </dd>
 <dt><strong>stateful</strong></dt><dd></dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">steps_per_execution</span></code></dt><dd><p>Settable <a href="#id1"><span class="problematic" id="id2">`</span></a>steps_per_execution variable.</p>
+</dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">submodules</span></code></dt><dd><p>Sequence of all sub-modules.</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">supports_masking</span></code></dt><dd><p>Whether this layer supports computing a mask using <cite>compute_mask</cite>.</p>
@@ -562,6 +565,8 @@ field model.</p></li>
 <dd class="field-even"><dl class="simple">
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">activity_regularizer</span></code></dt><dd><p>Optional regularizer function for the output of this layer.</p>
 </dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">autotune_steps_per_execution</span></code></dt><dd><p>Settable property to enable tuning for steps_per_execution</p>
+</dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_dtype</span></code></dt><dd><p>The dtype of the layer’s computations.</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">distribute_reduction_method</span></code></dt><dd><p>The method employed to reduce per-replica values during training.</p>
@@ -574,7 +579,6 @@ field model.</p></li>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic</span></code></dt><dd><p>Whether the layer is dynamic (eager-only); set in the constructor.</p>
 </dd>
-<dt><strong>enable_tune_steps_per_execution</strong></dt><dd></dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">inbound_nodes</span></code></dt><dd><p>Return Functional API nodes upstream of this layer.</p>
 </dd>
 <dt><a class="reference external" href="https://docs.python.org/3/library/functions.html#input" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">input</span></code></a></dt><dd><p>Retrieves the input tensor(s) of a layer.</p>
@@ -615,6 +619,8 @@ field model.</p></li>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">state_updates</span></code></dt><dd><p>Deprecated, do NOT use!</p>
 </dd>
 <dt><strong>stateful</strong></dt><dd></dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">steps_per_execution</span></code></dt><dd><p>Settable <a href="#id3"><span class="problematic" id="id4">`</span></a>steps_per_execution variable.</p>
+</dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">submodules</span></code></dt><dd><p>Sequence of all sub-modules.</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">supports_masking</span></code></dt><dd><p>Whether this layer supports computing a mask using <cite>compute_mask</cite>.</p>
@@ -942,6 +948,8 @@ field model.</p></li>
 <dd class="field-even"><dl class="simple">
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">activity_regularizer</span></code></dt><dd><p>Optional regularizer function for the output of this layer.</p>
 </dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">autotune_steps_per_execution</span></code></dt><dd><p>Settable property to enable tuning for steps_per_execution</p>
+</dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_dtype</span></code></dt><dd><p>The dtype of the layer’s computations.</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">distribute_reduction_method</span></code></dt><dd><p>The method employed to reduce per-replica values during training.</p>
@@ -954,7 +962,6 @@ field model.</p></li>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic</span></code></dt><dd><p>Whether the layer is dynamic (eager-only); set in the constructor.</p>
 </dd>
-<dt><strong>enable_tune_steps_per_execution</strong></dt><dd></dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">inbound_nodes</span></code></dt><dd><p>Return Functional API nodes upstream of this layer.</p>
 </dd>
 <dt><a class="reference external" href="https://docs.python.org/3/library/functions.html#input" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">input</span></code></a></dt><dd><p>Retrieves the input tensor(s) of a layer.</p>
@@ -995,6 +1002,8 @@ field model.</p></li>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">state_updates</span></code></dt><dd><p>Deprecated, do NOT use!</p>
 </dd>
 <dt><strong>stateful</strong></dt><dd></dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">steps_per_execution</span></code></dt><dd><p>Settable <a href="#id5"><span class="problematic" id="id6">`</span></a>steps_per_execution variable.</p>
+</dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">submodules</span></code></dt><dd><p>Sequence of all sub-modules.</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">supports_masking</span></code></dt><dd><p>Whether this layer supports computing a mask using <cite>compute_mask</cite>.</p>
@@ -1373,6 +1382,8 @@ Default is no interpolation.</p></li>
 <dd class="field-even"><dl class="simple">
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">activity_regularizer</span></code></dt><dd><p>Optional regularizer function for the output of this layer.</p>
 </dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">autotune_steps_per_execution</span></code></dt><dd><p>Settable property to enable tuning for steps_per_execution</p>
+</dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_dtype</span></code></dt><dd><p>The dtype of the layer’s computations.</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">distribute_reduction_method</span></code></dt><dd><p>The method employed to reduce per-replica values during training.</p>
@@ -1385,7 +1396,6 @@ Default is no interpolation.</p></li>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic</span></code></dt><dd><p>Whether the layer is dynamic (eager-only); set in the constructor.</p>
 </dd>
-<dt><strong>enable_tune_steps_per_execution</strong></dt><dd></dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">inbound_nodes</span></code></dt><dd><p>Return Functional API nodes upstream of this layer.</p>
 </dd>
 <dt><a class="reference external" href="https://docs.python.org/3/library/functions.html#input" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">input</span></code></a></dt><dd><p>Retrieves the input tensor(s) of a layer.</p>
@@ -1426,6 +1436,8 @@ Default is no interpolation.</p></li>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">state_updates</span></code></dt><dd><p>Deprecated, do NOT use!</p>
 </dd>
 <dt><strong>stateful</strong></dt><dd></dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">steps_per_execution</span></code></dt><dd><p>Settable <a href="#id7"><span class="problematic" id="id8">`</span></a>steps_per_execution variable.</p>
+</dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">submodules</span></code></dt><dd><p>Sequence of all sub-modules.</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">supports_masking</span></code></dt><dd><p>Whether this layer supports computing a mask using <cite>compute_mask</cite>.</p>

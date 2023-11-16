@@ -300,7 +300,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">source</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="p">,</span> <span class="n">source_file</span><span class="p">)</span>
-        <span class="n">destination</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_config_dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_run_output_dir</span><span class="p">),</span> <span class="n">source_file</span><span class="p">)</span>
+        <span class="n">destination</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_config_dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_run_output_dir</span><span class="p">),</span> <span class="n">source_file</span>
+        <span class="p">)</span>
 
         <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">destination</span><span class="p">)</span></div>
 
