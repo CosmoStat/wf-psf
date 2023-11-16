@@ -8,9 +8,6 @@ wf_psf utils package.
 
 """
 import pytest
-
-from wf_psf.utils.read_config import RecursiveNamespace
-from wf_psf.utils.io import FileIOHandler
 import os
 
 cwd = os.getcwd()
@@ -33,4 +30,4 @@ def path_to_tmp_output_dir(tmp_path):
 
 @pytest.fixture
 def path_to_config_dir(path_to_test_dir):
-    return os.path.join(path_to_test_dir, "data", "config")
+    return os.path.join(path_to_test_dir, "data")

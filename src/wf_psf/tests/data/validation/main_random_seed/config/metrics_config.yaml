@@ -1,0 +1,123 @@
+metrics:
+   # Specify the type of model weights to load by entering "psf_model" to load weights of final psf model or "checkpoint" to load weights from a checkpoint callback.
+  model_save_path: checkpoint
+  # Choose the training cycle for which to evaluate the psf_model. Can be: 1, 2, ...
+  saved_training_cycle: 2
+  # Metrics-only run: Specify model_params for a pre-trained model else leave blank if running training + metrics
+  # Specify path to Parent Directory of Trained Model 
+  trained_model_path: src/wf_psf/tests/data/validation/main_random_seed
+  # Name of the Trained Model Config file stored in config sub-directory in the trained_model_path parent directory
+  trained_model_config: training_config.yaml
+  #Evaluate the monchromatic RMSE metric.
+  eval_mono_metric_rmse: True
+  #Evaluate the OPD RMSE metric.
+  eval_opd_metric_rmse: True
+  #Evaluate the super-resolution and the shape RMSE metrics for the train dataset.
+  eval_train_shape_sr_metric_rmse: True
+  # Name of Plotting Config file - Enter name of yaml file to run plot metrics else if empty run metrics evaluation only
+  plotting_config: <enter name of plotting_config .yaml file or leave empty>
+  ground_truth_model:
+    model_params:
+      #Model used as ground truth for the evaluation. Options are: 'poly' for polychromatic and 'physical' [not available].
+      model_name: poly 
+
+      # Evaluation parameters
+      #Number of bins used for the ground truth model poly PSF generation
+      n_bins_lda: 20
+
+      #Downsampling rate to match the oversampled model to the specified telescope's sampling.
+      output_Q: 3
+
+      #Oversampling rate used for the OPD/WFE PSF model.
+      oversampling_rate: 3 
+    
+      #Dimension of the pixel PSF postage stamp
+      output_dim: 32
+        
+      #Dimension of the OPD/Wavefront space."
+      pupil_diameter: 256
+
+      #Boolean to define if we use sample weights based on the noise standard deviation estimation
+      use_sample_weights: True 
+
+      #Interpolation type for the physical poly model. Options are: 'none', 'all', 'top_K', 'independent_Zk'."
+      interpolation_type: None
+
+      # SED intepolation points per bin
+      sed_interp_pts_per_bin: 0
+
+      # SED extrapolate 
+      sed_extrapolate: True
+      
+      # SED interpolate kind
+      sed_interp_kind: linear
+
+      # Standard deviation of the multiplicative SED Gaussian noise.
+      sed_sigma: 0
+
+      #Limits of the PSF field coordinates for the x axis.
+      x_lims: [0.0, 1.0e+3]
+      
+      #Limits of the PSF field coordinates for the y axis.
+      y_lims: [0.0, 1.0e+3]
+      
+      # Hyperparameters for Parametric model 
+      param_hparams:
+        # Random seed for Tensor Flow Initialization
+        random_seed: 3877572
+        
+        # Parameter for the l2 loss function for the Optical path differences (OPD)/WFE
+        l2_param: 0.
+      
+        #Zernike polynomial modes to use on the parametric part.
+        n_zernikes: 45
+      
+        #Max polynomial degree of the parametric part.
+        d_max: 2  
+
+        #Flag to save optimisation history for parametric model
+        save_optim_history_param: true
+
+      # Hyperparameters for non-parametric model
+      nonparam_hparams:
+        #Max polynomial degree of the non-parametric part. 
+        d_max_nonparam: 5 
+
+        # Number of graph features
+        num_graph_features: 10
+        
+        #L1 regularisation parameter for the non-parametric part."
+        l1_rate: 1.0e-8
+
+        #Flag to enable Projected learning for DD_features to be used with `poly` or `semiparametric` model.
+        project_dd_features: False
+
+        #Flag to reset DD_features to be used with `poly` or `semiparametric` model
+        reset_dd_features: False
+
+        #Flag to save optimisation history for non-parametric model
+        save_optim_history_nonparam: True 
+
+  metrics_hparams:
+    # Batch size to use for the evaluation.
+    batch_size: 16
+  
+    #Save RMS error for each super resolved PSF in the test dataset in addition to the mean across the FOV."
+    #Flag to get Super-Resolution pixel PSF RMSE for each individual test star. 
+    #If `True`, the relative pixel RMSE of each star is added to ther saving dictionary.
+    opt_stars_rel_pix_rmse: False
+  
+    ## Specific parameters
+    # Parameter for the l2 loss of the OPD.
+    l2_param: 0.
+
+    ## Define the resolution at which you'd like to measure the shape of the PSFs
+    #Downsampling rate from the high-resolution pixel modelling space.
+    # Recommended value: 1
+    output_Q: 1
+
+    #Dimension of the pixel PSF postage stamp; it should be big enough so that most of the signal is contained inside the postage stamp. 
+    # It also depends on the Q values used.
+    # Recommended value: 64 or higher
+    output_dim: 64
+      
