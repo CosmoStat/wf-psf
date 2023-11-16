@@ -4,10 +4,8 @@
 name: CD
 
 on:
-  workflow_dispatch:
   push:
     branches:
-      - feature_documentation
       - main
 
 
