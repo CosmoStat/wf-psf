@@ -5,6 +5,7 @@ __pycache__/
 
 # Remove method comparison data
 method-comparison/compatible-datasets/*
+tf_notebooks
 
 # Log files from slurm
 *.err
@@ -61,11 +62,13 @@ htmlcov/
 .coverage.*
 .cache
 nosetests.xml
+pytest.xml
 coverage.xml
 *.cover
 *.py,cover
 .hypothesis/
 .pytest_cache/
+src/wf_psf/pytest.xml
 
 # Translations
 *.mo
@@ -86,6 +89,11 @@ instance/
 
 # Sphinx documentation
 docs/_build/
+docs/source/wf_psf*.rst
+docs/source/_static/file.png
+docs/source/_static/images/logo_colab.png
+docs/source/_static/minus.png
+docs/source/_static/plus.png
 
 # PyBuilder
 target/
@@ -143,3 +151,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+
+# WF-PSF Debug
+/debug/

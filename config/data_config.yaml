@@ -1,0 +1,44 @@
+# Training and test data sets for training and/or metrics evaluation
+data:
+  training:
+    # Specify directory path to data; Default setting is /path/to/repo/data
+    data_dir: data/coherent_euclid_dataset/
+    file: train_Euclid_res_200_TrainStars_id_001.npy
+    # if training data set file does not exist, generate a new one by setting values below
+    stars: null
+    positions: null
+    SEDS: null
+    zernike_coef: null
+    C_poly: null
+    params: # 
+      d_max: 2
+      max_order: 45
+      x_lims: [0, 1000.0]
+      y_lims: [0, 1000.0]
+      grid_points: [4, 4]
+      n_bins: 20
+      max_wfe_rms: 0.1
+      oversampling_rate: 3.0
+      output_Q: 3.0
+      output_dim: 32
+      LP_filter_length: 2
+      pupil_diameter: 256
+      euclid_obsc: true
+      n_stars: 200
+  test:
+    data_dir: data/coherent_euclid_dataset/
+    file: test_Euclid_res_id_001.npy
+    # If test data set file not provided produce a new one
+    stars: null
+    noisy_stars: null
+    positions: null
+    SEDS: null
+    zernike_coef: null
+    C_poly: null
+    parameters:
+      d_max: 2
+      max_order: 45
+      x_lims: [0, 1000.0]
+      y_lims: [0, 1000.0]
+      grid_points: [4,4]
+      max_wfe_rms: 0.1

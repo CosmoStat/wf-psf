@@ -1,0 +1,122 @@
+training:
+  # ID name
+  id_name: _sample_w_bis1_2k
+  # Name of Data Config file
+  data_config: data_config.yaml 
+  # Metrics Config file - Enter file to run metrics evaluation else if empty run train only
+  metrics_config: metrics_config.yaml
+  model_params:
+    # Model type. Options are: 'mccd', 'graph', 'poly, 'param', 'poly_physical'."
+    model_name: poly
+    
+    #Num of wavelength bins to reconstruct polychromatic objects.
+    n_bins_lda: 8 
+
+    #Downsampling rate to match the oversampled model to the specified telescope's sampling.
+    output_Q: 3
+  
+    #Oversampling rate used for the OPD/WFE PSF model.
+    oversampling_rate: 3 
+  
+    #Dimension of the pixel PSF postage stamp
+    output_dim: 32
+      
+    #Dimension of the OPD/Wavefront space."
+    pupil_diameter: 256
+
+    #Boolean to define if we use sample weights based on the noise standard deviation estimation
+    use_sample_weights: True 
+
+    #Interpolation type for the physical poly model. Options are: 'none', 'all', 'top_K', 'independent_Zk'."
+    interpolation_type: None
+
+    # SED intepolation points per bin
+    sed_interp_pts_per_bin: 0
+
+    # SED extrapolate 
+    sed_extrapolate: True
+    
+    # SED interpolate kind
+    sed_interp_kind: linear
+
+    # Standard deviation of the multiplicative SED Gaussian noise.
+    sed_sigma: 0
+
+    #Limits of the PSF field coordinates for the x axis.
+    x_lims: [0.0, 1.0e+3]
+    
+    #Limits of the PSF field coordinates for the y axis.
+    y_lims: [0.0, 1.0e+3]
+    
+    # Hyperparameters for Parametric model 
+    param_hparams:
+      # Random seed for Tensor Flow Initialization
+      random_seed: 3877572
+      
+      # Parameter for the l2 loss function for the Optical path differences (OPD)/WFE
+      l2_param: 0.
+    
+      #Zernike polynomial modes to use on the parametric part.
+      n_zernikes: 15
+    
+      #Max polynomial degree of the parametric part.  chg to max_deg_param
+      d_max: 2  
+
+      #Flag to save optimisation history for parametric model
+      save_optim_history_param: true
+
+    # Hyperparameters for non-parametric model
+    nonparam_hparams:
+     
+      #Max polynomial degree of the non-parametric part. chg to max_deg_nonparam
+      d_max_nonparam: 5 
+
+      # Number of graph features
+      num_graph_features: 10
+      
+      #L1 regularisation parameter for the non-parametric part."
+      l1_rate: 1.0e-8
+
+      #Flag to enable Projected learning for DD_features to be used with `poly` or `semiparametric` model.
+      project_dd_features: False
+
+      #Flag to reset DD_features to be used with `poly` or `semiparametric` model
+      reset_dd_features: False
+
+      #Flag to save optimisation history for non-parametric model
+      save_optim_history_nonparam: true 
+
+  # Training hyperparameters
+  training_hparams:
+    n_epochs_params: [2, 2, 2]
+   
+    n_epochs_non_params: [2, 2, 2] 
+  
+    batch_size: 32
+         
+    multi_cycle_params:
+     
+      # Total amount of cycles to perform.  
+      total_cycles: 2
+         
+      # Train cycle definition. It can be: 'parametric', 'non-parametric', 'complete', 'only-non-parametric' and 'only-parametric'."
+      cycle_def: complete
+
+      # Make checkpoint at every cycle or just save the checkpoint at the end of the training."
+      save_all_cycles: True
+
+      #"Saved cycle to use for the evaluation. Can be 'cycle1', 'cycle2', ..."
+      saved_cycle: cycle2
+   
+      # Learning rates for the parametric parts. It should be a str where numeric values are separated by spaces.
+      learning_rate_params: [1.0e-2, 1.0e-2]
+ 
+      # Learning rates for the non-parametric parts. It should be a str where numeric values are separated by spaces." 
+      learning_rate_non_params: [1.0e-1, 1.0e-1]
+ 
+      # Number of training epochs of the parametric parts. It should be a strign where numeric values are separated by spaces."
+      n_epochs_params: [20, 20] 
+  
+      # Number of training epochs of the non-parametric parts. It should be a str where numeric values are separated by spaces."
+      n_epochs_non_params: [100, 120]
+  
