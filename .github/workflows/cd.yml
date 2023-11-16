@@ -8,7 +8,7 @@ on:
   push:
     branches:
       - feature_documentation
-      - dummy_main
+      - main
 
 
 jobs:
