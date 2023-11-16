@@ -153,3 +153,5 @@ dmypy.json
 .pyre/
 
 
+# WF-PSF Debug
+/debug/
