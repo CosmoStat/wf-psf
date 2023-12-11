@@ -107,7 +107,7 @@ def main_metrics(training_params):
     return np.load(os.path.join(main_dir, metrics_filename), allow_pickle=True)[()]
 
 
-@pytest.mark.skip(reason="Requires gpu")
+@pytest.mark.skipif("GITHUB_ENV" in os.environ, reason="Skipping GPU tests in CI")
 def test_eval_metrics_polychromatic_lowres(
     training_params,
     weights_path_basename,
@@ -155,7 +155,7 @@ def test_eval_metrics_polychromatic_lowres(
     assert ratio_rel_std_rmse < tol
 
 
-@pytest.mark.skip(reason="Requires gpu")
+@pytest.mark.skipif("GITHUB_ENV" in os.environ, reason="Skipping GPU tests in CI")
 def test_evaluate_metrics_opd(
     training_params,
     weights_path_basename,
@@ -205,7 +205,7 @@ def test_evaluate_metrics_opd(
     assert ratio_rel_rmse_std_opd < tol
 
 
-@pytest.mark.skip(reason="Requires gpu")
+@pytest.mark.skipif("GITHUB_ENV" in os.environ, reason="Skipping GPU tests in CI")
 def test_eval_metrics_mono_rmse(
     training_params,
     weights_path_basename,
@@ -270,7 +270,7 @@ def test_eval_metrics_mono_rmse(
     assert ratio_rel_rmse_std_mono < tol
 
 
-@pytest.mark.skip(reason="Requires gpu")
+@pytest.mark.skipif("GITHUB_ENV" in os.environ, reason="Skipping GPU tests in CI")
 def test_evaluate_metrics_shape(
     training_params,
     weights_path_basename,
