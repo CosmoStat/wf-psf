@@ -13,6 +13,7 @@ description = 'A software framework to perform Differentiable wavefront-based PS
 dependencies = [
     "numpy>=1.19.2",
     "scipy>=1.11.2",
+    "keras==2.9.0",
     "tensorflow>=2.9.1",
     "tensorflow-addons>=0.12.1",
     "tensorflow-estimator>=2.9.0",
