@@ -362,7 +362,7 @@ def train(
             learning_rate_non_param=training_handler.learning_rate_non_params[
                 current_cycle - 1
             ],
-            n_epochs_param=training_handler.n_epochs_non_params[current_cycle - 1],
+            n_epochs_param=training_handler.n_epochs_params[current_cycle - 1],
             n_epochs_non_param=training_handler.n_epochs_non_params[current_cycle - 1],
             param_optim=param_optim,
             non_param_optim=non_param_optim,
