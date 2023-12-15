@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wf_psf.training.train &mdash; wf-psf 2.0.0 documentation</title>
-      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/twemoji.css" type="text/css" />
+  <title>wf_psf.training.train &mdash; wf-psf 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/twemoji.css" />
+
+  
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -470,7 +472,7 @@
             <span class="n">learning_rate_non_param</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">learning_rate_non_params</span><span class="p">[</span>
                 <span class="n">current_cycle</span> <span class="o">-</span> <span class="mi">1</span>
             <span class="p">],</span>
-            <span class="n">n_epochs_param</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">n_epochs_non_params</span><span class="p">[</span><span class="n">current_cycle</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span>
+            <span class="n">n_epochs_param</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">n_epochs_params</span><span class="p">[</span><span class="n">current_cycle</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span>
             <span class="n">n_epochs_non_param</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">n_epochs_non_params</span><span class="p">[</span><span class="n">current_cycle</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span>
             <span class="n">param_optim</span><span class="o">=</span><span class="n">param_optim</span><span class="p">,</span>
             <span class="n">non_param_optim</span><span class="o">=</span><span class="n">non_param_optim</span><span class="p">,</span>

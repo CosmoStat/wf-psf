@@ -1,13 +1,15 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Configuration &mdash; wf-psf 2.0.0 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="_static/twemoji.css" type="text/css" />
+  <title>Configuration &mdash; wf-psf 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="_static/twemoji.css" />
+
+  
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -140,7 +142,7 @@
 <p>Next, we shall describe each configuration file.</p>
 <section id="data-configuration">
 <span id="data-config"></span><h2>Data Configuration<a class="headerlink" href="#data-configuration" title="Link to this heading"></a></h2>
-<p>The file <a class="reference external" href="https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/data_config.yaml">data_config.yaml</a> stores the metadata for generating training and test data sets or retrieving existing ones.  A set of training and test data is provided in the <code class="docutils literal notranslate"><span class="pre">data/coherent_euclid_dataset</span></code> directory.  <code class="docutils literal notranslate"><span class="pre">Wavediff</span></code> will automatically retrieve the dataset within its directory tree.  In the field <code class="docutils literal notranslate"><span class="pre">data_dir</span></code>, the user should specify the sub-path to the data directory as in the example below.  The actual name of the dataset file is provided as an entry to the field <code class="docutils literal notranslate"><span class="pre">file</span></code>. However, new training and test data sets can be produced with the parameters in the file, which <em>should be</em> provided to the <code class="docutils literal notranslate"><span class="pre">simPSF</span></code> code although not at present (implementation upgrade pending).</p>
+<p>The file <a class="reference external" href="https://github.com/CosmoStat/wf-psf/blob/main/config/data_config.yaml">data_config.yaml</a> stores the metadata for generating training and test data sets or retrieving existing ones.  A set of training and test data is provided in the <code class="docutils literal notranslate"><span class="pre">data/coherent_euclid_dataset</span></code> directory.  <code class="docutils literal notranslate"><span class="pre">Wavediff</span></code> will automatically retrieve the dataset within its directory tree.  In the field <code class="docutils literal notranslate"><span class="pre">data_dir</span></code>, the user should specify the sub-path to the data directory as in the example below.  The actual name of the dataset file is provided as an entry to the field <code class="docutils literal notranslate"><span class="pre">file</span></code>. However, new training and test data sets can be produced with the parameters in the file, which <em>should be</em> provided to the <code class="docutils literal notranslate"><span class="pre">simPSF</span></code> code although not at present (implementation upgrade pending).</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Training and test data sets for training and/or metrics evaluation</span>
 <span class="n">data</span><span class="p">:</span>
   <span class="n">training</span><span class="p">:</span>
@@ -163,7 +165,7 @@
 </section>
 <section id="training-configuration">
 <span id="training-config"></span><h2>Training Configuration<a class="headerlink" href="#training-configuration" title="Link to this heading"></a></h2>
-<p>The file <a class="reference external" href="https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/training_config.yaml">training_config.yaml</a> is used to configure the settings for the training pipeline task. The first line contains the parent key <code class="docutils literal notranslate"><span class="pre">training</span></code>. All of the following child keys are treated as values of the <code class="docutils literal notranslate"><span class="pre">training</span></code> key. Above each child key a description is provided. Below is an abridged example of this:</p>
+<p>The file <a class="reference external" href="https://github.com/CosmoStat/wf-psf/blob/main/config/training_config.yaml">training_config.yaml</a> is used to configure the settings for the training pipeline task. The first line contains the parent key <code class="docutils literal notranslate"><span class="pre">training</span></code>. All of the following child keys are treated as values of the <code class="docutils literal notranslate"><span class="pre">training</span></code> key. Above each child key a description is provided. Below is an abridged example of this:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">training</span><span class="p">:</span>
   <span class="c1"># Run ID name</span>
   <span class="n">id_name</span><span class="p">:</span> <span class="o">-</span><span class="n">coherent_euclid_200stars</span>
@@ -195,7 +197,7 @@ The key <code class="docutils literal notranslate"><span class="pre">model_param
 </section>
 <section id="metrics-configuration">
 <span id="metrics-config"></span><h2>Metrics Configuration<a class="headerlink" href="#metrics-configuration" title="Link to this heading"></a></h2>
-<p>The <a class="reference external" href="https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/metrics_config.yaml">metrics_config.yaml</a> file stores the configuration parameters for the WaveDiff pipeline to perform computations of the four metrics listed in the table on a trained PSF model, as applied in <span id="id1">Liaudat <em>et al.</em> [<a class="reference internal" href="z_ref.html#id6" title="Tobias Liaudat, Jean-Luc Starck, Martin Kilbinger, and Pierre-Antoine Frugier. Rethinking data-driven point spread function modeling with a differentiable optical model. Inverse Problems, 39(3):035008, feb 2023. URL: https://dx.doi.org/10.1088/1361-6420/acb664, doi:10.1088/1361-6420/acb664.">2023</a>]</span>.</p>
+<p>The <a class="reference external" href="https://github.com/CosmoStat/wf-psf/blob/main/config/metrics_config.yaml">metrics_config.yaml</a> file stores the configuration parameters for the WaveDiff pipeline to perform computations of the four metrics listed in the table on a trained PSF model, as applied in <span id="id1">Liaudat <em>et al.</em> [<a class="reference internal" href="z_ref.html#id6" title="Tobias Liaudat, Jean-Luc Starck, Martin Kilbinger, and Pierre-Antoine Frugier. Rethinking data-driven point spread function modeling with a differentiable optical model. Inverse Problems, 39(3):035008, feb 2023. URL: https://dx.doi.org/10.1088/1361-6420/acb664, doi:10.1088/1361-6420/acb664.">2023</a>]</span>.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Metric type</p></th>
@@ -344,7 +346,7 @@ metrics:
 </section>
 <section id="plot-configuration">
 <span id="plotting-config"></span><h2>Plot Configuration<a class="headerlink" href="#plot-configuration" title="Link to this heading"></a></h2>
-<p>The <a class="reference external" href="https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/plotting_config.yaml">plotting_config.yaml</a> file stores the configuration parameters for the WaveDiff pipeline to generate plots for the metrics listed in the <a class="reference internal" href="#metrics-settings"><span class="std std-ref">metrics settings table</span></a> for each data set.</p>
+<p>The <a class="reference external" href="https://github.com/CosmoStat/wf-psf/blob/main/config/plotting_config.yaml">plotting_config.yaml</a> file stores the configuration parameters for the WaveDiff pipeline to generate plots for the metrics listed in the <a class="reference internal" href="#metrics-settings"><span class="std std-ref">metrics settings table</span></a> for each data set.</p>
 <p>An example of the contents of the <code class="docutils literal notranslate"><span class="pre">plotting_config.yaml</span></code> file is shown below.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">plotting_params</span><span class="p">:</span>
   <span class="c1"># Specify path to parent folder containing wf-psf metrics outputs for all runs, e.g. $WORK/wf-outputs/</span>
@@ -408,7 +410,7 @@ metrics:
 </section>
 <section id="master-configuration">
 <span id="master-config-file"></span><h2>Master Configuration<a class="headerlink" href="#master-configuration" title="Link to this heading"></a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">configs.yaml</span></code> file is the master configuration file that is used to define all of the pipeline tasks to be submitted and executed by <code class="docutils literal notranslate"><span class="pre">WaveDiff</span></code> during runtime. In this file, the user lists the processing tasks (one or more) to be performed by setting the values of the associated configuration variables <code class="docutils literal notranslate"><span class="pre">{pipeline_task}_conf</span></code> and the name of the configuration file <code class="docutils literal notranslate"><span class="pre">{pipeline_task}_config.yaml</span></code>.  See an example below to configure <code class="docutils literal notranslate"><span class="pre">WaveDiff</span></code> to launch a sequence of runs to train models 1…n with their respective configurations given in the files <code class="docutils literal notranslate"><span class="pre">training_config_{id}.yaml</span></code>.</p>
+<p>The <a class="reference external" href="https://github.com/CosmoStat/wf-psf/blob/main/config/configs.yaml">configs.yaml</a> file is the master configuration file that is used to define all of the pipeline tasks to be submitted and executed by <code class="docutils literal notranslate"><span class="pre">WaveDiff</span></code> during runtime. In this file, the user lists the processing tasks (one or more) to be performed by setting the values of the associated configuration variables <code class="docutils literal notranslate"><span class="pre">{pipeline_task}_conf</span></code> and the name of the configuration file <code class="docutils literal notranslate"><span class="pre">{pipeline_task}_config.yaml</span></code>.  See an example below to configure <code class="docutils literal notranslate"><span class="pre">WaveDiff</span></code> to launch a sequence of runs to train models 1…n with their respective configurations given in the files <code class="docutils literal notranslate"><span class="pre">training_config_{id}.yaml</span></code>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">---</span>
   <span class="n">training_conf_1</span><span class="p">:</span> <span class="n">training_config_1</span><span class="o">.</span><span class="n">yaml</span>
   <span class="n">training_conf_2</span><span class="p">:</span> <span class="n">training_config_2</span><span class="o">.</span><span class="n">yaml</span>
