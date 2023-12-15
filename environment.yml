@@ -1,0 +1,19 @@
+name: wavediff-env
+channels:
+  - conda-forge
+dependencies:
+  - keras=2.9.0=pyhd8ed1ab_0
+  - scipy=1.11.4=py310h2b794db_0
+  - tensorflow=2.9.1=cpu_py310h6ecea76_0
+  - pip=23.3.1
+  - pip:
+      - astropy>=6.0.0
+      - galsim>=2.5.1
+      - matplotlib>=3.8.2
+      - opencv-python>=4.8.1.78
+      - pandas>=2.1.4
+      - pillow>=10.1.0
+      - seaborn>=0.13.0
+      - tensorflow-addons>=0.23.0
+      - tensorflow-estimator>=2.15.0
+      - zernike>=0.0.32
