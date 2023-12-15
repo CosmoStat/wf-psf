@@ -11,21 +11,22 @@ maintainers = [
 
 description = 'A software framework to perform Differentiable wavefront-based PSF modelling.'
 dependencies = [
-    "numpy>=1.19.2",
-    "scipy>=1.11.2",
-    "tensorflow>=2.9.1",
-    "tensorflow-addons>=0.12.1",
-    "tensorflow-estimator>=2.9.0",
-    "zernike==0.0.31",
-    "opencv-python>=4.5.1.48",
-    "pillow>=9.5.0",
-    "galsim>=2.4.11",
-    "astropy>=5.3.3",
-    "matplotlib>=3.3.2",
-    "seaborn>=0.12.2",
+    "numpy",
+    "scipy",
+    "keras==2.9.0",
+    "tensorflow==2.9.1",
+    "tensorflow-addons>=0.23.0",
+    "tensorflow-estimator",
+    "zernike",
+    "opencv-python",
+    "pillow",
+    "galsim",
+    "astropy",
+    "matplotlib",
+    "seaborn",
 ]
 
-version = "2.0.0"
+version = "2.0.1"
 
 [project.optional-dependencies]
 docs = [
