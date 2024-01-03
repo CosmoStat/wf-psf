@@ -1,7 +1,12 @@
 ## Summary
 
 > Developers should provide a summary of the proposed changes here and include "closes #<ISSUE NUMBER>" if this addresses an open issue.
-> Developers should include validation test reports demonstrating that the reported errors have been solved.
+
+## Validation Test Reports
+
+> Developers should include training and metrics validation test reports demonstrating that all tests passed.
+
+(Copy and paste the output of validation tests report here in markdown.)
 
 ## Reviewer Checklist
 
@@ -20,4 +25,3 @@
 - [ ] All changed files have been checked and comments provided to the developer
 - [ ] All of the reviewer's comments have been satisfactorily addressed by the developer
 - [ ] All Validation tests for the reported error are passing
-
