@@ -1,25 +1,31 @@
 ---
 name: Installation Issue
 about: Problem with package installation
-title: "[INSTALL ISSUE]"
+title: "[INSTALL ISSUE] Brief Description of Installation Problem"
 labels: install issue
 assignees: ''
 
 ---
 
-Describe the problem
-A clear and concise description of the problem encountered.
+**Description of the Problem**
+Provide a clear and concise description of the problem encountered during installation.
 
-To Reproduce
-Steps to reproduce the behaviour:
+**Steps to Reproduce**
+Outline the steps to reproduce the behavior.
 
-Screenshots
-If applicable, add screenshots to help explain your problem.
+**Screenshots (if applicable)**
+Attach any screenshots to help explain your problem.
 
-Desktop (please complete the following information):
+**Your Setup**
+- OS: [e.g., iOS]
+- Browser: [e.g., Chrome, Safari]
+- Version: [e.g., 22]
 
-OS: [e.g. iOS]
-Browser [e.g. chrome, safari]
-Version [e.g. 22]
-Additional context
-Add any other context about the problem here
+**Error Messages (if any)**
+Include any error messages you received during the installation process.
+
+**Additional Context**
+Add any other relevant context about the problem here.
+
+Thank you for reporting the installation issue. We'll do our best to assist you in resolving it! 🛠️
+
