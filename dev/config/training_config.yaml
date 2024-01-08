@@ -11,7 +11,7 @@ training:
     model_name: poly
 
     #Num of wavelength bins to reconstruct polychromatic objects.
-    n_bins_lda: 8 
+    n_bins_lda: 20
 
     #Downsampling rate to match the oversampled model to the specified telescope's sampling.
     output_Q: 3
@@ -111,8 +111,8 @@ training:
       learning_rate_non_params: [1.0e-1, 1.0e-1]
  
       # Number of training epochs for training the parametric model parameters per cycle.
-      n_epochs_params: [20, 20] 
+      n_epochs_params: [2, 2] 
   
       # Number of training epochs for training the non-parametric model parameters per cycle.
-      n_epochs_non_params: [100, 120]
+      n_epochs_non_params: [5, 5]
   
