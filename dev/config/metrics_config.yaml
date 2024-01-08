@@ -7,7 +7,7 @@ metrics:
   # Specify path to Parent Directory of Trained Model 
   trained_model_path:
   # Name of the Trained Model Config file stored in config sub-directory in the trained_model_path parent directory
-  trained_model_config:
+  trained_model_config: training_config.yaml
   #Evaluate the monchromatic RMSE metric.
   eval_mono_metric_rmse: True
   #Evaluate the OPD RMSE metric.

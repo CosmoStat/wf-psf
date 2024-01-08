@@ -114,5 +114,5 @@ training:
       n_epochs_params: [2, 2] 
   
       # Number of training epochs for training the non-parametric model parameters per cycle.
-      n_epochs_non_params: [5, 5]
+      n_epochs_non_params: [2, 2]
   
