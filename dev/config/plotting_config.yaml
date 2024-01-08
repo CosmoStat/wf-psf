@@ -1,0 +1,13 @@
+plotting_params:
+  # Specify path to parent folder containing wf-outputs-xxxxxxxxxxx for all runs, ex: $WORK/wf-outputs/
+  metrics_output_path: <PATH>
+  # List all of the parent output directories (i.e. wf-outputs-xxxxxxxxxxx) that contain metrics results to be included in the plot
+  metrics_dir: 
+    #     - wf-outputs-xxxxxxxxxxx1 
+    #     - wf-outputs-xxxxxxxxxxx2  
+  # List of name of metric config file to add to plot (would like to change such that code goes and finds them in the metrics_dir)
+  metrics_config: 
+    #     - metrics_config_1.yaml
+    #     - metrics_config_2.yaml
+  # Show Plots Flag
+  plot_show: False
