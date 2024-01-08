@@ -2,7 +2,7 @@
 data:
   training:
     # Specify directory path to data; Default setting is /path/to/repo/data
-    data_dir: data/coherent_euclid_dataset/
+    data_dir: /gpfswork/rech/ynx/ulx23va/wfv2/repos/phase-retrieval-PR/wf-psf/data/coherent_euclid_dataset/
     file: train_Euclid_res_200_TrainStars_id_001.npy
     # if training data set file does not exist, generate a new one by setting values below
     stars: null
@@ -26,7 +26,7 @@ data:
       euclid_obsc: true
       n_stars: 200
   test:
-    data_dir: data/coherent_euclid_dataset/
+    data_dir: /gpfswork/rech/ynx/ulx23va/wfv2/repos/phase-retrieval-PR/wf-psf/data/coherent_euclid_dataset/
     file: test_Euclid_res_id_001.npy
     # If test data set file not provided produce a new one
     stars: null

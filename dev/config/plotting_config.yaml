@@ -1,6 +1,6 @@
 plotting_params:
   # Specify path to parent folder containing wf-outputs-xxxxxxxxxxx for all runs, ex: $WORK/wf-outputs/
-  metrics_output_path: <PATH>
+  metrics_output_path: /gpfsscratch/rech/ynx/ulx23va/wfv2/phase-retrieval-PR/outputs/
   # List all of the parent output directories (i.e. wf-outputs-xxxxxxxxxxx) that contain metrics results to be included in the plot
   metrics_dir: 
     #     - wf-outputs-xxxxxxxxxxx1 
