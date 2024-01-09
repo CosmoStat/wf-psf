@@ -279,12 +279,17 @@ class TF_SemiParam_field(tf.keras.Model):
         """Assign DD features matrix."""
         self.tf_np_poly_opd.assign_S_mat(S_mat)
 
-    def project_DD_features(self, tf_zernike_cube):
-        """
-        Project non-parametric wavefront onto first n_z Zernikes and transfer
+    def project_DD_features(self, tf_zernike_cube=None):
+        """ 
+        Project non-parametric wavefront onto first n_z Zernikes and transfer 
         their parameters to the parametric model.
-
+        
         """
+        # If no Zernike maps are provided, use the ones from the 
+        # Zernike to OPD layer
+        if tf_zernike_cube is None:
+            tf_zernike_cube = self.tf_zernike_OPD.zernike_maps
+
         # Number of monomials in the parametric part -> n_poly(d_max)
         n_poly_param = self.tf_poly_Z_field.coeff_mat.shape[1]
         # Multiply Alpha matrix with DD features matrix S
