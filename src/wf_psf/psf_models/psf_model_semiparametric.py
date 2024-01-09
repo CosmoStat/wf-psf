@@ -283,6 +283,16 @@ class TF_SemiParam_field(tf.keras.Model):
         """ 
         Project non-parametric wavefront onto first n_z Zernikes and transfer 
         their parameters to the parametric model.
+
+        Parameters
+        ----------
+        tf_zernike_cube: Tensor
+            Zernike maps used for the projection.
+
+        Returns
+        -------
+        Updates the value of the S matrix in the non-parametric layer
+        `tf_np_poly_opd`.
         
         """
         # If no Zernike maps are provided, use the ones from the 
@@ -334,7 +344,8 @@ class TF_SemiParam_field(tf.keras.Model):
             ) for S_tilde_slice in S_tilde[:n_poly_param, :, :]
         ])
 
-        # Only pad in the firs dimention so we get a matrix of size (d_max_nonparam_terms)x(n_zernikes)  --> 21x15 or 21x45.
+        # Only pad in the first dimention so we get a 
+        # matrix of size (d_max_nonparam_terms)x(n_zernikes) --> 21x15 or 21x45.
         beta_tilde = np.pad(
             beta_tilde_inner,
             [(0, S_tilde.shape[0] - beta_tilde_inner.shape[0]), (0, 0)],
