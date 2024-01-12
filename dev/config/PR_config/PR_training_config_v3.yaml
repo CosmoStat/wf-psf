@@ -2,9 +2,9 @@ training:
   # Run ID name
   id_name: -wf_PR_NewPRoj_12_cycles_v3
   # Name of Data Config file
-  data_config: /Users/tl255879/Documents/research/projects/wf-projects/refactor-phase-retrieval/wf-psf/dev/config/PR_config/PR_data_config.yaml 
+  data_config: /gpfswork/rech/ynx/ulx23va/wfv2/repos/phase-retrieval-PR/wf-psf/dev/config/PR_config/PR_data_config.yaml 
   # Metrics Config file - Enter file to run metrics evaluation else if empty run train only
-  metrics_config: /Users/tl255879/Documents/research/projects/wf-projects/refactor-phase-retrieval/wf-psf/dev/config/PR_config/PR_metrics_config_v3.yaml
+  metrics_config: /gpfswork/rech/ynx/ulx23va/wfv2/repos/phase-retrieval-PR/wf-psf/dev/config/PR_config/PR_metrics_config_v3.yaml
   # PSF model parameters
   model_params:
     # Model type. Options are: 'mccd', 'graph', 'poly, 'param', 'poly_physical'."

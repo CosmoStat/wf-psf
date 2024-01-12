@@ -26,10 +26,10 @@ module load tensorflow-gpu/py3/2.9.1
 # echo des commandes lancees
 set -x
 
-opt[0]="-c /Users/tl255879/Documents/research/projects/wf-projects/refactor-phase-retrieval/wf-psf/dev/config/PR_config/PR_configs_v0.yaml -r /Users/tl255879/Documents/research/projects/wf-projects/refactor-phase-retrieval/wf-psf -o /gpfsscratch/rech/ynx/ulx23va/wfv2/phase-retrieval-PR/output_v2"
-opt[1]="-c /Users/tl255879/Documents/research/projects/wf-projects/refactor-phase-retrieval/wf-psf/dev/config/PR_config/PR_configs_v1.yaml -r /Users/tl255879/Documents/research/projects/wf-projects/refactor-phase-retrieval/wf-psf -o /gpfsscratch/rech/ynx/ulx23va/wfv2/phase-retrieval-PR/output_v2"
-opt[2]="-c /Users/tl255879/Documents/research/projects/wf-projects/refactor-phase-retrieval/wf-psf/dev/config/PR_config/PR_configs_v2.yaml -r /Users/tl255879/Documents/research/projects/wf-projects/refactor-phase-retrieval/wf-psf -o /gpfsscratch/rech/ynx/ulx23va/wfv2/phase-retrieval-PR/output_v2"
-opt[3]="-c /Users/tl255879/Documents/research/projects/wf-projects/refactor-phase-retrieval/wf-psf/dev/config/PR_config/PR_configs_v3.yaml -r /Users/tl255879/Documents/research/projects/wf-projects/refactor-phase-retrieval/wf-psf -o /gpfsscratch/rech/ynx/ulx23va/wfv2/phase-retrieval-PR/output_v2"
+opt[0]=" -c /dev/config/PR_config/PR_configs_v0.yaml -r /gpfswork/rech/ynx/ulx23va/wfv2/repos/phase-retrieval-PR/wf-psf -o /gpfsscratch/rech/ynx/ulx23va/wfv2/phase-retrieval-PR/output_v2"
+opt[1]=" -c /dev/config/PR_config/PR_configs_v1.yaml -r /gpfswork/rech/ynx/ulx23va/wfv2/repos/phase-retrieval-PR/wf-psf -o /gpfsscratch/rech/ynx/ulx23va/wfv2/phase-retrieval-PR/output_v2"
+opt[2]=" -c /dev/config/PR_config/PR_configs_v2.yaml -r /gpfswork/rech/ynx/ulx23va/wfv2/repos/phase-retrieval-PR/wf-psf -o /gpfsscratch/rech/ynx/ulx23va/wfv2/phase-retrieval-PR/output_v2"
+opt[3]=" -c /dev/config/PR_config/PR_configs_v3.yaml -r /gpfswork/rech/ynx/ulx23va/wfv2/repos/phase-retrieval-PR/wf-psf -o /gpfsscratch/rech/ynx/ulx23va/wfv2/phase-retrieval-PR/output_v2"
 
 
 wavediff ${opt[$SLURM_ARRAY_TASK_ID]}
