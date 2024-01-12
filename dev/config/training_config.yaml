@@ -11,7 +11,7 @@ training:
     model_name: poly
 
     #Num of wavelength bins to reconstruct polychromatic objects.
-    n_bins_lda: 20
+    n_bins_lda: 8
 
     #Downsampling rate to match the oversampled model to the specified telescope's sampling.
     output_Q: 3
@@ -51,14 +51,14 @@ training:
     
     # Hyperparameters for Parametric model 
     param_hparams:
-      # Set the random seed for Tensor Flow Initialization
+      # Set the random seed for TensorFlow Initialization
       random_seed: 3877572
       
       # Set the parameter for the l2 loss function for the Optical path differences (OPD)/WFE
       l2_param: 0.
     
       #Zernike polynomial modes to use on the parametric part.
-      n_zernikes: 15
+      n_zernikes: 45
     
       #Max polynomial degree of the parametric part.  m
       d_max: 2  
@@ -78,10 +78,10 @@ training:
       l1_rate: 1.0e-8
 
       #Flag to enable Projected learning for DD_features to be used with `poly` or `semiparametric` model.
-      project_dd_features: False
+      project_dd_features: True
 
       #Flag to reset DD_features to be used with `poly` or `semiparametric` model
-      reset_dd_features: False
+      reset_dd_features: True
 
       #Flag to save optimisation history for non-parametric model
       save_optim_history_nonparam: true 
@@ -96,13 +96,13 @@ training:
     multi_cycle_params:
      
       # Total number of cycles to perform for training.  
-      total_cycles: 2
+      total_cycles: 12
          
       # Train cycle definition. It can be: 'parametric', 'non-parametric', 'complete', 'only-non-parametric' and 'only-parametric'."
       cycle_def: complete
 
       # Flag to save all cycles. If "True", create a checkpoint at every cycle, else if "False" only save the checkpoint at the end of the training."
-      save_all_cycles: False
+      save_all_cycles: True
    
       # Learning rates for training the parametric model parameters per cycle.
       learning_rate_params: [1.0e-2, 1.0e-2]
@@ -116,3 +116,4 @@ training:
       # Number of training epochs for training the non-parametric model parameters per cycle.
       n_epochs_non_params: [2, 2]
   
+   

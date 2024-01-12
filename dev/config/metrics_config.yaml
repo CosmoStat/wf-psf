@@ -2,7 +2,7 @@ metrics:
    # Specify the type of model weights to load by entering "psf_model" to load weights of final psf model or "checkpoint" to load weights from a checkpoint callback.
   model_save_path: checkpoint
   # Choose the training cycle for which to evaluate the psf_model. Can be: 1, 2, ...
-  saved_training_cycle: 2
+  saved_training_cycle: 12
   # Metrics-only run: Specify model_params for a pre-trained model else leave blank if running training + metrics
   # Specify path to Parent Directory of Trained Model 
   trained_model_path:
@@ -23,7 +23,7 @@ metrics:
 
       # Evaluation parameters
       #Number of bins used for the ground truth model poly PSF generation
-      n_bins_lda: 20
+      n_bins_lda: 8
 
       #Downsampling rate to match the oversampled model to the specified telescope's sampling.
       output_Q: 3
