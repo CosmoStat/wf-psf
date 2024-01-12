@@ -15,7 +15,7 @@ metrics:
   #Evaluate the super-resolution and the shape RMSE metrics for the train dataset.
   eval_train_shape_sr_metric_rmse: True
   # Name of Plotting Config file - Enter name of yaml file to run plot metrics else if empty run metrics evaluation only
-  plotting_config: /gpfswork/rech/ynx/ulx23va/wfv2/repos/phase-retrieval-PR/wf-psf/dev/config/PR_config/PR_plotting_config.yaml
+  plotting_config: PR_plotting_config.yaml
   ground_truth_model:
     model_params:
       #Model used as ground truth for the evaluation. Options are: 'poly' for polychromatic and 'physical' [not available].

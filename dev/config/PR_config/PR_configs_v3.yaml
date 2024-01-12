@@ -1,2 +1,2 @@
 ---
-  training_conf: /gpfswork/rech/ynx/ulx23va/wfv2/repos/phase-retrieval-PR/wf-psf/dev/config/PR_config/PR_training_config_v3.yaml
+  training_conf: PR_training_config_v3.yaml
