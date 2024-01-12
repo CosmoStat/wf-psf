@@ -135,9 +135,6 @@ class FileIOHandler:
             self._log_files,
             logfile,
         )
-        # DEBUG
-        print("self.repodir_path: ", self.repodir_path)
-        print("os.path.join(): ", os.path.join(self.repodir_path, "config/logging.conf"))
         logging.config.fileConfig(
             os.path.join(self.repodir_path, "config/logging.conf"),
             defaults={"filename": logfile},
