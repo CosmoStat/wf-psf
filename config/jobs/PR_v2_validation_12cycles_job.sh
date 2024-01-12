@@ -26,6 +26,8 @@ module load tensorflow-gpu/py3/2.9.1
 # echo des commandes lancees
 set -x
 
+cd /Users/tl255879/Documents/research/projects/wf-projects/refactor-phase-retrieval/wf-psf/
+
 opt[0]="-c /Users/tl255879/Documents/research/projects/wf-projects/refactor-phase-retrieval/wf-psf/config/PR_configs_v0.yaml -r /Users/tl255879/Documents/research/projects/wf-projects/refactor-phase-retrieval/wf-psf -o /gpfsscratch/rech/ynx/ulx23va/wfv2/phase-retrieval-PR/output_v2"
 opt[1]="-c /Users/tl255879/Documents/research/projects/wf-projects/refactor-phase-retrieval/wf-psf/config/PR_configs_v1.yaml -r /Users/tl255879/Documents/research/projects/wf-projects/refactor-phase-retrieval/wf-psf -o /gpfsscratch/rech/ynx/ulx23va/wfv2/phase-retrieval-PR/output_v2"
 opt[2]="-c /Users/tl255879/Documents/research/projects/wf-projects/refactor-phase-retrieval/wf-psf/config/PR_configs_v2.yaml -r /Users/tl255879/Documents/research/projects/wf-projects/refactor-phase-retrieval/wf-psf -o /gpfsscratch/rech/ynx/ulx23va/wfv2/phase-retrieval-PR/output_v2"
