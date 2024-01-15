@@ -1,6 +1,6 @@
 training:
   # Run ID name
-  id_name: -coherent_euclid_200stars
+  id_name: -wf_PR_std_run_v0
   # Name of Data Config file
   data_config: data_config.yaml 
   # Metrics Config file - Enter file to run metrics evaluation else if empty run train only
@@ -96,7 +96,7 @@ training:
     multi_cycle_params:
      
       # Total number of cycles to perform for training.  
-      total_cycles: 12
+      total_cycles: 2
          
       # Train cycle definition. It can be: 'parametric', 'non-parametric', 'complete', 'only-non-parametric' and 'only-parametric'."
       cycle_def: complete
@@ -105,15 +105,15 @@ training:
       save_all_cycles: True
    
       # Learning rates for training the parametric model parameters per cycle.
-      learning_rate_params: [1.0e-2, 1.0e-2]
+      learning_rate_params: [0.01, 0.004]
  
       # Learning rates for training the non-parametric model parameters per cycle.
-      learning_rate_non_params: [1.0e-1, 1.0e-1]
+      learning_rate_non_params: [0.1, 0.06]
  
       # Number of training epochs for training the parametric model parameters per cycle.
-      n_epochs_params: [2, 2] 
+      n_epochs_params: [15, 15] 
   
       # Number of training epochs for training the non-parametric model parameters per cycle.
-      n_epochs_non_params: [2, 2]
+      n_epochs_non_params: [100, 50]
   
    

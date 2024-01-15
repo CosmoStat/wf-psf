@@ -16,7 +16,7 @@ data:
       x_lims: [0, 1000.0]
       y_lims: [0, 1000.0]
       grid_points: [4, 4]
-      n_bins: 20
+      n_bins: 8
       max_wfe_rms: 0.1
       oversampling_rate: 3.0
       output_Q: 3.0
