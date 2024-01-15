@@ -25,6 +25,5 @@ Submodules
 
 .. toctree::
    :maxdepth: 4
-
-   wf_psf.info
+   
    wf_psf.run
