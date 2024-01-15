@@ -3,13 +3,15 @@ plotting_params:
   metrics_output_path: /gpfsscratch/rech/ynx/ulx23va/wfv2/phase-retrieval-PR/output_v2/
   # List all of the parent output directories (i.e. wf-outputs-xxxxxxxxxxx) that contain metrics results to be included in the plot
   metrics_dir: 
-        - wf-outputs-202401121903 
+        - wf-outputs-202401121902 
+        - wf-outputs-202401121902 
         - wf-outputs-202401121902  
+        - wf-outputs-202401121903 
   # List of name of metric config file to add to plot (would like to change such that code goes and finds them in the metrics_dir)
   metrics_config: 
         - PR_metrics_config_v0.yaml
         - PR_metrics_config_v1.yaml
-        - PR_metrics_config_v2.yaml
-        - PR_metrics_config_v3.yaml        
+        - PR_metrics_config_v2.yaml  
+        - PR_metrics_config_v3.yaml      
   # Show Plots Flag
   plot_show: False
