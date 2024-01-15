@@ -27,5 +27,5 @@ module load tensorflow-gpu/py3/2.9.1
 set -x
 
 
-wavediff -c /gpfswork/rech/ynx/ulx23va/wfv2/repos/phase-retrieval-PR/wf-psf/dev/config/PR_config/PR_plotting_config_all.yaml -r /gpfswork/rech/ynx/ulx23va/wfv2/repos/phase-retrieval-PR/wf-psf -o /gpfsscratch/rech/ynx/ulx23va/wfv2/phase-retrieval-PR/output_v2
+wavediff -c /gpfswork/rech/ynx/ulx23va/wfv2/repos/phase-retrieval-PR/wf-psf/dev/config/PR_config/PR_configs_plot_all.yaml -r /gpfswork/rech/ynx/ulx23va/wfv2/repos/phase-retrieval-PR/wf-psf -o /gpfsscratch/rech/ynx/ulx23va/wfv2/phase-retrieval-PR/output_v2
 
