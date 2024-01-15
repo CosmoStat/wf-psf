@@ -78,10 +78,10 @@ training:
       l1_rate: 1.0e-8
 
       #Flag to enable Projected learning for DD_features to be used with `poly` or `semiparametric` model.
-      project_dd_features: True
+      project_dd_features: False
 
       #Flag to reset DD_features to be used with `poly` or `semiparametric` model
-      reset_dd_features: True
+      reset_dd_features: False
 
       #Flag to save optimisation history for non-parametric model
       save_optim_history_nonparam: true 
