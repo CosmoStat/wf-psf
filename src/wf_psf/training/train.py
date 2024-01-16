@@ -312,9 +312,9 @@ def train(
                 psf_model.zernike_maps
             )  # make this a callable function
             logger.info("Project non-param DD features onto param model: done!")
-            if psf_model.reset_dd_features:
-                psf_model.tf_np_poly_opd.init_vars()
-                logger.info("DD features reset to random initialisation.")
+        if psf_model.reset_dd_features:
+            psf_model.tf_np_poly_opd.init_vars()
+            logger.info("DD features reset to random initialisation.")
 
         # Prepare the saving callback
         # Prepare to save the model as a callback
