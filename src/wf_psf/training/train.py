@@ -307,11 +307,13 @@ def train(
         current_cycle += 1
 
         # If projected learning is enabled project DD_features.
+        # TODO: TL include both in the current_cycle condition
         if psf_model.project_dd_features:  # need to change this
-            psf_model.project_DD_features(
-                psf_model.zernike_maps
-            )  # make this a callable function
-            logger.info("Project non-param DD features onto param model: done!")
+            if current_cycle > 1:
+                psf_model.project_DD_features(
+                    psf_model.zernike_maps
+                )  # make this a callable function
+                logger.info("Project non-param DD features onto param model: done!")
         if psf_model.reset_dd_features:
             psf_model.tf_np_poly_opd.init_vars()
             logger.info("DD features reset to random initialisation.")
