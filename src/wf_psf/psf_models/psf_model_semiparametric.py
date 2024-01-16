@@ -66,7 +66,6 @@ class TF_SemiParam_field(tf.keras.Model):
         self.d_max_nonparam = model_params.nonparam_hparams.d_max_nonparam
         self.zernike_maps = psfm.tf_zernike_cube(self.n_zernikes, self.pupil_diam)
         self.opd_dim = tf.shape(self.zernike_maps)[1].numpy()
-        self.opd_dim = tf.shape(self.zernike_maps)[1].numpy()
 
         # Inputs: TF_batch_poly_PSF
         self.batch_size = training_params.batch_size
