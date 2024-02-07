@@ -9,7 +9,7 @@ to manage the parameters of the config files
 
 import numpy as np
 from wf_psf.utils.read_config import read_conf
-from wf_psf.data.training_preprocessing import TrainingDataHandler, TestDataHandler
+from wf_psf.data.training_preprocessing import DataHandler
 from wf_psf.training import train
 from wf_psf.psf_models import psf_models
 from wf_psf.metrics.metrics_interface import evaluate_model
@@ -50,10 +50,10 @@ def register_configclass(config_class):
 
 
 def set_run_config(config_name):
-    """Set Config Class.
+    """Set Run Configuration Class.
 
-    A function to select the class of
-    a configuration from CONFIG_CLASS dictionary.
+    A function to retrieve the appropriate configuration 
+    class based on the provided config name.
 
     Parameters
     ----------
@@ -70,26 +70,25 @@ def set_run_config(config_name):
         config_id = [id for id in CONFIG_CLASS.keys() if re.search(id, config_name)][0]
         config_class = CONFIG_CLASS[config_id]
     except KeyError as e:
-        logger.exception("Config name entered is invalid. Check your config settings.")
+        logger.exception("Invalid config name. Check your config settings.")
         exit()
 
     return config_class
 
 
-def get_run_config(run_config, config_params, file_handler):
-    """Get Run Configuration.
+def get_run_config(run_config_name, *config_params):
+    """Get Run Configuration Instance.
 
-    A function to get the configuration
-    for a wf-psf run.
+    A function to retrieve an instance of
+    the appropriate configuration class for
+    a WF-PSF run.
 
     Parameters
     ----------
-    run_config: str
-        Name of the type of run configuraton
-    config_params: str
-        Path of the run configuration file
-    file_handler: object
-        A class instance of FileIOHandler
+    run_config_name: str
+        Name of the run configuraton
+    *config_params: str
+        Run configuration parameters used for class instantiation.
 
     Returns
     -------
@@ -99,7 +98,7 @@ def get_run_config(run_config, config_params, file_handler):
     """
     config_class = set_run_config(run_config)
 
-    return config_class(config_params, file_handler)
+    return config_class(*config_params)
 
 
 class ConfigParameterError(Exception):
@@ -136,13 +135,14 @@ class DataConfigHandler:
             exit()
 
         self.simPSF = psf_models.simPSF(training_model_params)
-        self.training_data = TrainingDataHandler(
-            self.data_conf.data.training,
+        
+        self.training_data = DataHandler("training",
+            self.data_conf.data,
             self.simPSF,
             training_model_params.n_bins_lda,
         )
-        self.test_data = TestDataHandler(
-            self.data_conf.data.test,
+        self.test_data = DataHandler("test",
+            self.data_conf.data,
             self.simPSF,
             training_model_params.n_bins_lda,
         )
@@ -199,8 +199,7 @@ class TrainingConfigHandler:
         """
         train.train(
             self.training_conf.training,
-            self.data_conf.training_data,
-            self.data_conf.test_data,
+            self.data_conf,
             self.checkpoint_dir,
             self.optimizer_dir,
             self.psf_model_dir,
@@ -441,8 +440,7 @@ class MetricsConfigHandler:
         model_metrics = evaluate_model(
             self.metrics_conf.metrics,
             self.training_conf.training,
-            self.data_conf.training_data,
-            self.data_conf.test_data,
+            self.data_conf,
             self.psf_model,
             self.weights_path,
             self.metrics_dir,
