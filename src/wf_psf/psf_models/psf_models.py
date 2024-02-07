@@ -45,8 +45,6 @@ def register_psfclass(psf_factory_class):
 
     Parameters
     ----------
-    psf_identifier: str
-        Identifier for the PSF model
     factory_class: type
         PSF Factory Class
 
@@ -89,12 +87,14 @@ def get_psf_model(*psf_model_params):
 
     Parameters
     ----------
-    model_params: type
-        Recursive Namespace object
-
+    *psf_model_params : tuple
+        Positional arguments representing the parameters required to instantiate the PSF model.
+        
     Returns
     -------
     PSF model class instance
+        An instance of the PSF model class based on the provided parameters.
+
 
     """
 
