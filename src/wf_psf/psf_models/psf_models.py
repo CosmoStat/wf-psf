@@ -18,7 +18,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-PSF_CLASS = {}
+PSF_FACTORY = {}
 
 
 class PsfModelError(Exception):
@@ -31,27 +31,25 @@ class PsfModelError(Exception):
         super().__init__(self.message)
 
 
-def register_psfclass(psf_class):
-    """Register PSF Class.
+class PSFModelBaseFactory:
+    def get_model_instance(self,model_params, training_params, data=None, coeff_matrix=None):
+        pass
+    
+def register_psfclass(psf_factory_class):
+    """Register PSF Factory Class.
 
-    A wrapper function to register all PSF model classes
-    in a dictionary.
+    A function to register a PSF factory class in a dictionary.
 
     Parameters
     ----------
-    psf_class: type
-        PSF Class
-
-    Returns
-    -------
-    psf_class: type
-        PSF class
+    psf_identifier: str
+        Identifier for the PSF model
+    factory_class: type
+        PSF Factory Class
 
     """
-    for id in psf_class.ids:
-        PSF_CLASS[id] = psf_class
-
-    return psf_class
+    for id in psf_factory_class.ids:
+        PSF_FACTORY[id] = psf_factory_class
 
 
 def set_psf_model(model_name):
@@ -71,16 +69,16 @@ def set_psf_model(model_name):
         Name of PSF model class
 
     """
-
+  
     try:
-        psf_class = PSF_CLASS[model_name]
+        psf_factory_class = PSF_FACTORY[model_name]
     except KeyError as e:
         logger.exception(e)
         raise PsfModelError("PSF model entered is invalid. Check your config settings.")
-    return psf_class
+    return psf_factory_class
 
 
-def get_psf_model(model_params, training_hparams, *coeff_matrix):
+def get_psf_model(*psf_model_params):
     """Get PSF Model Class Instance.
 
     A function to instantiate a
@@ -88,8 +86,8 @@ def get_psf_model(model_params, training_hparams, *coeff_matrix):
 
     Parameters
     ----------
-    model_name: str
-        Short name of PSF model
+    model_id: str
+        PSF model identifier
     model_params: type
         Recursive Namespace object
     training_hparams: type
@@ -103,9 +101,14 @@ def get_psf_model(model_params, training_hparams, *coeff_matrix):
         PSF model class instance
 
     """
-    psf_class = set_psf_model(model_params.model_name)
+  
+    model_name = psf_model_params[0].model_name
+    psf_class = set_psf_model(model_name)
+    psf_factory_class = PSF_FACTORY.get(model_name)
+    if psf_factory_class is None:
+        raise PsfModelError("PSF model entered is invalid. Check your config settings.")
 
-    return psf_class(model_params, training_hparams, *coeff_matrix)
+    return psf_factory_class().create_instance(*psf_model_params)
 
 
 def get_psf_model_weights_filepath(weights_filepath):
