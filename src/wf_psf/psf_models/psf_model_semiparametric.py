@@ -22,8 +22,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 @psfm.register_psfclass
+class SemiParam_field_Factory(psfm.PSFModelBaseFactory):
+    ids = ("poly",)
+    def get_model_instance(self, model_params, training_params, data=None, coeff_mat=None):
+        return TF_SemiParam_field(model_params, training_params, coeff_mat)
+
+
 class TF_SemiParam_field(tf.keras.Model):
     """PSF field forward model.
 
@@ -61,11 +66,10 @@ class TF_SemiParam_field(tf.keras.Model):
         self.d_max = model_params.param_hparams.d_max
         self.x_lims = model_params.x_lims
         self.y_lims = model_params.y_lims
+        self.zernike_maps = psfm.tf_zernike_cube(self.n_zernikes, self.pupil_diam)
 
         # Inputs: TF_NP_poly_OPD
         self.d_max_nonparam = model_params.nonparam_hparams.d_max_nonparam
-        self.zernike_maps = psfm.tf_zernike_cube(self.n_zernikes, self.pupil_diam)
-        self.opd_dim = tf.shape(self.zernike_maps)[1].numpy()
         self.opd_dim = tf.shape(self.zernike_maps)[1].numpy()
 
         # Inputs: TF_batch_poly_PSF
