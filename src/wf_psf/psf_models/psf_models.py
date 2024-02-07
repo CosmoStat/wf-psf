@@ -89,7 +89,7 @@ def get_psf_model(*psf_model_params):
     ----------
     *psf_model_params : tuple
         Positional arguments representing the parameters required to instantiate the PSF model.
-        
+
     Returns
     -------
     PSF model class instance
