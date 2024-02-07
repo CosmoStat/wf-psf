@@ -135,7 +135,6 @@ class DataConfigHandler:
             exit()
 
         self.simPSF = psf_models.simPSF(training_model_params)
-
         self.training_data = DataHandler(
             "training",
             self.data_conf.data,
@@ -202,8 +201,7 @@ class TrainingConfigHandler:
 
         train.train(
             self.training_conf.training,
-            self.data_conf.training_data,
-            self.data_conf.test_data,
+            self.data_conf,
             self.checkpoint_dir,
             self.optimizer_dir,
             self.psf_model_dir,
@@ -416,9 +414,9 @@ class MetricsConfigHandler:
         )
 
         # Update metrics_confs dict with latest result
-        plots_config_handler.metrics_confs[self._file_handler.workdir] = (
-            self.metrics_conf
-        )
+        plots_config_handler.metrics_confs[
+            self._file_handler.workdir
+        ] = self.metrics_conf
 
         # Update metric results dict with latest result
         plots_config_handler.list_of_metrics_dict[self._file_handler.workdir] = [
