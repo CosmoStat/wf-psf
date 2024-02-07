@@ -32,9 +32,12 @@ class PsfModelError(Exception):
 
 
 class PSFModelBaseFactory:
-    def get_model_instance(self,model_params, training_params, data=None, coeff_matrix=None):
+    def get_model_instance(
+        self, model_params, training_params, data=None, coeff_matrix=None
+    ):
         pass
-    
+
+
 def register_psfclass(psf_factory_class):
     """Register PSF Factory Class.
 
@@ -69,7 +72,7 @@ def set_psf_model(model_name):
         Name of PSF model class
 
     """
-  
+
     try:
         psf_factory_class = PSF_FACTORY[model_name]
     except KeyError as e:
@@ -86,22 +89,15 @@ def get_psf_model(*psf_model_params):
 
     Parameters
     ----------
-    model_id: str
-        PSF model identifier
     model_params: type
         Recursive Namespace object
-    training_hparams: type
-        Recursive Namespace object
-    coeff_matrix: Tensor or None, optional
-        Initialization of the coefficient matrix defining the parametric psf field model
 
     Returns
     -------
-    psf_class: class instance
-        PSF model class instance
+    PSF model class instance
 
     """
-  
+
     model_name = psf_model_params[0].model_name
     psf_class = set_psf_model(model_name)
     psf_factory_class = PSF_FACTORY.get(model_name)
