@@ -36,8 +36,6 @@ class TF_SemiParam_field(tf.keras.Model):
 
     Parameters
     ----------
-    ids: tuple
-        A tuple storing the string attribute of the PSF model class
     model_params: Recursive Namespace
         Recursive Namespace object containing parameters for this PSF model class
     training_params: Recursive Namespace
@@ -46,8 +44,6 @@ class TF_SemiParam_field(tf.keras.Model):
         Initialization of the coefficient matrix defining the parametric psf field model
 
     """
-
-    ids = ("poly",)
 
     def __init__(self, model_params, training_params, coeff_mat=None):
         super().__init__()
