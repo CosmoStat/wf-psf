@@ -13,7 +13,7 @@ import time
 import tensorflow as tf
 import tensorflow_addons as tfa
 import wf_psf.data.training_preprocessing as training_preprocessing
-from wf_psf.data.training_preprocessing import TrainingDataHandler, TestDataHandler
+from wf_psf.data.training_preprocessing import DataHandler
 from wf_psf.psf_models import psf_models
 from wf_psf.metrics import metrics as wf_metrics
 import os
@@ -235,8 +235,7 @@ class MetricsParamsHandler:
 def evaluate_model(
     metrics_params,
     trained_model_params,
-    training_data,
-    test_data,
+    data,
     psf_model,
     weights_path,
     metrics_output,
@@ -251,10 +250,8 @@ def evaluate_model(
         Recursive Namespace object containing metrics input parameters
     trained_model_params: Recursive Namespace object
         Recursive Namespace object containing trained model input parameters
-    training_data: object
-        TrainingDataHandler object
-    test_data: object
-        TestDataHandler object
+    data: DataHandler object
+        DataHandler object containing training and test data
     psf_model: object
         PSF model object
     weights_path: str
@@ -277,7 +274,7 @@ def evaluate_model(
 
         ## Prepare models
         # Prepare np input
-        simPSF_np = training_data.simPSF
+        simPSF_np = data.training_data.simPSF
 
         ## Load the model's weights
         try:
@@ -292,13 +289,13 @@ def evaluate_model(
 
         # Polychromatic star reconstructions
         poly_metric = metrics_handler.evaluate_metrics_polychromatic_lowres(
-            psf_model, simPSF_np, test_data.test_dataset
+            psf_model, simPSF_np, data.test_data.test_dataset
         )
 
         # Monochromatic star reconstructions
         if metrics_params.eval_mono_metric_rmse:
             mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
-                psf_model, simPSF_np, test_data.test_dataset
+                psf_model, simPSF_np, data.test_data.test_dataset
             )
         else:
             mono_metric = None
@@ -306,7 +303,7 @@ def evaluate_model(
         # OPD metrics
         if metrics_params.eval_opd_metric_rmse:
             opd_metric = metrics_handler.evaluate_metrics_opd(
-                psf_model, simPSF_np, test_data.test_dataset
+                psf_model, simPSF_np, data.test_data.test_dataset
             )
         else:
             opd_metric = None
@@ -316,7 +313,7 @@ def evaluate_model(
             "Computing polychromatic high-resolution metrics and shape metrics."
         )
         shape_results_dict = metrics_handler.evaluate_metrics_shape(
-            psf_model, simPSF_np, test_data.test_dataset
+            psf_model, simPSF_np, data.test_data.test_dataset
         )
         # Save metrics
         test_metrics = {
@@ -339,7 +336,7 @@ def evaluate_model(
         # Monochromatic star reconstructions turn into a class
         if metrics_params.eval_mono_metric_rmse:
             train_mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
-                psf_model, simPSF_np, training_data.train_dataset
+                psf_model, simPSF_np, data.training_data.train_dataset
             )
         else:
             train_mono_metric = None
@@ -347,7 +344,7 @@ def evaluate_model(
         # OPD metrics turn into a class
         if metrics_params.eval_opd_metric_rmse:
             train_opd_metric = metrics_handler.evaluate_metrics_opd(
-                psf_model, simPSF_np, training_data.train_dataset
+                psf_model, simPSF_np, data.training_data.train_dataset
             )
         else:
             train_opd_metric = None
@@ -355,7 +352,7 @@ def evaluate_model(
         # Shape metrics  turn into a class
         if metrics_params.eval_train_shape_sr_metric_rmse:
             train_shape_results_dict = metrics_handler.evaluate_metrics_shape(
-                psf_model, simPSF_np, training_data.train_dataset
+                psf_model, simPSF_np, data.training_data.train_dataset
             )
         else:
             train_shape_results_dict = None
