@@ -52,7 +52,7 @@ release = [
 ]
 
 test = [
-  "pytest==6.2.0",
+  "pytest==7.4.4",
   "pytest-black",
   "pytest-cases",
   "pytest-cov",
