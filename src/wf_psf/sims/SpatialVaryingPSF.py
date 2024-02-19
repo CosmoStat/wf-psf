@@ -703,7 +703,7 @@ class SpatialVaryingPSF(object):
          """Calculate the polychromatic Point Spread Function (PSF) for a specific position and Spectral Energy Distribution (SED).
 
         This method calculates the polychromatic PSF for a given position and SED. It utilizes the Zernike coefficients
-        of the specific field to generate the PSF using the PSF toolkit generator.
+        of the specific field to generate the PSF using the PSF Simulator generator.
 
         Parameters
         ----------
@@ -733,7 +733,7 @@ class SpatialVaryingPSF(object):
         """
         # Calculate the specific field's zernike coeffs
         zernikes = ZernikeHelper.calculate_zernike(xv_flat, yv_flat)
-        # Set the Z coefficients to the PSF toolkit generator
+        # Set the Z coefficients to the PSF Simulator generator
         self.psf_simulator.set_z_coeffs(zernikes)
         polychromatic_psf = self.psf_simulator.generate_poly_PSF(SED, n_bins=self.n_bins)
         opd = self.psf_simulator.opd
