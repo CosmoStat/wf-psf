@@ -39,4 +39,14 @@ jobs:
       - name: Check code formatting with Black
         run: black . --check --diff
 
+  linter_name:
+    name: Run Black formatter
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
+      - name: Run Black formatter
+        uses: rickstaa/action-black@v1
+        with:
+          black_args: ". --check"
