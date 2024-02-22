@@ -5,6 +5,7 @@ This module contains unit tests for the wf_psf.metrics module.
 :Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 
 """
+
 import pytest
 from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.training import train
