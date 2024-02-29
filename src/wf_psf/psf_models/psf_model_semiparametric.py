@@ -22,10 +22,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 @psfm.register_psfclass
 class SemiParam_field_Factory(psfm.PSFModelBaseFactory):
     ids = ("poly",)
-    def get_model_instance(self, model_params, training_params, data=None, coeff_mat=None):
+
+    def get_model_instance(
+        self, model_params, training_params, data=None, coeff_mat=None
+    ):
         return TF_SemiParam_field(model_params, training_params, coeff_mat)
 
 
