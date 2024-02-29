@@ -28,7 +28,15 @@ jobs:
 
       - name: Install dependencies
         run: python -m pip install ".[test]"
-       
+
       - name: Test with pytest
         run: python -m pytest
+
+      # Add Black formatter
+      - name: Install Black formatter
+        run: python -m pip install black
+      
+      - name: Check code formatting with Black
+        run: black . --check --diff
+
 

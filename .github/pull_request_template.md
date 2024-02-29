@@ -25,3 +25,9 @@
 - [ ] All changed files have been checked and comments provided to the developer
 - [ ] All of the reviewer's comments have been satisfactorily addressed by the developer
 - [ ] All Validation tests for the reported error are passing
+
+## CI Log Review
+
+> Reviewers should check the following box after reviewing the CI log to evaluate whether any files had to be changed or not.
+
+- [ ] I have reviewed the CI log to evaluate whether any files had to be changed or not.
