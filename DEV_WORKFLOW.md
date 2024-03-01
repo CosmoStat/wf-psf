@@ -11,7 +11,7 @@
 Make a milestone related to a release on possibly a minor release schedule (e.g. monthly schedule). Differentiate between the different types of releases (minor, major, patch).
 
 ## 2.  **Git Workflow Branching Model (Made with** [**mermaid**](https://mermaid.js.org)**)**
-![](branching_model.png)
+![](assets/branching_model.png)
 
    *   **main**: Stores official release history with tagged version numbers (see top row in the diagram above).
     
