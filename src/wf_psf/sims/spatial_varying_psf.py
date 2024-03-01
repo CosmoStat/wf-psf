@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class MeshHelper:
@@ -241,19 +244,17 @@ class CoordinateHelper:
         y_check = np.sum(yv >= y_lims[1] * 1.1) + np.sum(yv <= y_lims[0] * 1.1)
 
         if verbose and x_check > 0:
-            print(
+            logger.info(
                 "WARNING! x value is outside the limits [%f, %f]"
                 % (x_lims[0], x_lims[1])
             )
-            print(xv)
-            print(x_check)
+           
         if verbose and y_check > 0:
-            print(
+            logger.info(
                 "WARNING! y value is outside the limits [%f, %f]"
                 % (y_lims[0], y_lims[1])
             )
-            print(yv)
-            print(y_check)
+          
 
 class PolynomialMatrixHelper:
     """PolynomialMatrixHelper.
@@ -750,7 +751,7 @@ class SpatialVaryingPSF(object):
         # Return the generated PSF
         return self.psf_simulator.get_psf()
 
-    def get_polychromatic_PSF(self, xv_flat, yv_flat, SED):
+    def get_polychromatic_PSF(self, xv, yv, SED):
         """Calculate the polychromatic Point Spread Function (PSF) for a specific position and Spectral Energy Distribution (SED).
 
         This method calculates the polychromatic PSF for a given position and SED. It utilizes the Zernike coefficients
@@ -758,9 +759,9 @@ class SpatialVaryingPSF(object):
 
         Parameters
         ----------
-        xv_flat: numpy.ndarray
+        xv: numpy.ndarray
             1-dimensional numpy array containing the x positions.
-        yv_flat: numpy.ndarray
+        yv: numpy.ndarray
             1-dimensional numpy array containing the y positions.
         SED: array_like
             Spectral Energy Distribution (SED) describing the relative intensity of light at different wavelengths.
@@ -784,7 +785,7 @@ class SpatialVaryingPSF(object):
         """
         # Calculate the specific field's zernike coeffs
         zernikes = ZernikeHelper.calculate_zernike(xv, yv, self.x_lims, self.y_lims, self.d_max, self.polynomial_coeffs)
-        print(zernikes)
+
         # Set the Z coefficients to the PSF Simulator generator
         self.psf_simulator.set_z_coeffs(zernikes)
         polychromatic_psf = self.psf_simulator.generate_poly_PSF(
