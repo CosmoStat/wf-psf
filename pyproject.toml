@@ -54,7 +54,7 @@ release = [
 test = [
   "pytest",
   #"pytest-black",
-  "pytest-cases",
+  #"pytest-cases",
   "pytest-cov",
   "pytest-emoji",
   "pytest-raises",
