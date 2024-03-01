@@ -1,6 +1,6 @@
 """UNIT TESTS FOR PACKAGE MODULE: Sims.
 
-This module contains unit tests for the wf_psf.sims.spatialvaryingpsf module.
+This module contains unit tests for the wf_psf.sims.spatial_varying_psf module.
 
 :Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 
