@@ -30,7 +30,7 @@ Next, we shall describe each configuration file.
 (data_config)=
 ## Data Configuration
 
-The file [data_config.yaml](https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/data_config.yaml) stores the metadata for generating training and test data sets or retrieving existing ones.  A set of training and test data is provided in the `data/coherent_euclid_dataset` directory.  `Wavediff` will automatically retrieve the dataset within its directory tree.  In the field `data_dir`, the user should specify the sub-path to the data directory as in the example below.  The actual name of the dataset file is provided as an entry to the field `file`. However, new training and test data sets can be produced with the parameters in the file, which *should be* provided to the `simPSF` code although not at present (implementation upgrade pending).  
+The file [data_config.yaml](https://github.com/CosmoStat/wf-psf/blob/main/config/data_config.yaml) stores the metadata for generating training and test data sets or retrieving existing ones.  A set of training and test data is provided in the `data/coherent_euclid_dataset` directory.  `Wavediff` will automatically retrieve the dataset within its directory tree.  In the field `data_dir`, the user should specify the sub-path to the data directory as in the example below.  The actual name of the dataset file is provided as an entry to the field `file`. However, new training and test data sets can be produced with the parameters in the file, which *should be* provided to the `simPSF` code although not at present (implementation upgrade pending).  
 
 ```
 # Training and test data sets for training and/or metrics evaluation
@@ -54,7 +54,7 @@ data:
 (training_config)=
 ## Training Configuration
 
-The file [training_config.yaml](https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/training_config.yaml) is used to configure the settings for the training pipeline task. The first line contains the parent key `training`. All of the following child keys are treated as values of the `training` key. Above each child key a description is provided. Below is an abridged example of this:
+The file [training_config.yaml](https://github.com/CosmoStat/wf-psf/blob/main/config/training_config.yaml) is used to configure the settings for the training pipeline task. The first line contains the parent key `training`. All of the following child keys are treated as values of the `training` key. Above each child key a description is provided. Below is an abridged example of this:
 
 ```
 training:
@@ -90,7 +90,7 @@ Training hyperparameters, defined by the parent key: `training_hparams`, include
 (metrics_config)=
 ## Metrics Configuration
 
-The [metrics_config.yaml](https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/metrics_config.yaml) file stores the configuration parameters for the WaveDiff pipeline to perform computations of the four metrics listed in the table on a trained PSF model, as applied in {cite:t}`Liaudat:23`.
+The [metrics_config.yaml](https://github.com/CosmoStat/wf-psf/blob/main/config/metrics_config.yaml) file stores the configuration parameters for the WaveDiff pipeline to perform computations of the four metrics listed in the table on a trained PSF model, as applied in {cite:t}`Liaudat:23`.
 
 | Metric type | Description |
 | --- | ----------- |
@@ -213,7 +213,7 @@ The `metrics` package is run using [TensorFlow](https://www.tensorflow.org) to r
 (plotting_config)=
 ## Plot Configuration
 
-The [plotting_config.yaml](https://github.com/CosmoStat/wf-psf/blob/dummy_main/config/plotting_config.yaml) file stores the configuration parameters for the WaveDiff pipeline to generate plots for the metrics listed in the {ref}`metrics settings table <metrics_settings>` for each data set.
+The [plotting_config.yaml](https://github.com/CosmoStat/wf-psf/blob/main/config/plotting_config.yaml) file stores the configuration parameters for the WaveDiff pipeline to generate plots for the metrics listed in the {ref}`metrics settings table <metrics_settings>` for each data set.
 
 An example of the contents of the `plotting_config.yaml` file is shown below.
 
@@ -283,7 +283,7 @@ plotting_params:
 (master_config_file)=
 ## Master Configuration
 
-The `configs.yaml` file is the master configuration file that is used to define all of the pipeline tasks to be submitted and executed by `WaveDiff` during runtime. In this file, the user lists the processing tasks (one or more) to be performed by setting the values of the associated configuration variables `{pipeline_task}_conf` and the name of the configuration file `{pipeline_task}_config.yaml`.  See an example below to configure `WaveDiff` to launch a sequence of runs to train models 1...n with their respective configurations given in the files `training_config_{id}.yaml`.
+The [configs.yaml](https://github.com/CosmoStat/wf-psf/blob/main/config/configs.yaml) file is the master configuration file that is used to define all of the pipeline tasks to be submitted and executed by `WaveDiff` during runtime. In this file, the user lists the processing tasks (one or more) to be performed by setting the values of the associated configuration variables `{pipeline_task}_conf` and the name of the configuration file `{pipeline_task}_config.yaml`.  See an example below to configure `WaveDiff` to launch a sequence of runs to train models 1...n with their respective configurations given in the files `training_config_{id}.yaml`.
 
 ```
 ---

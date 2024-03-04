@@ -12,5 +12,4 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   wf_psf.plotting.plot_optimisation_metrics
    wf_psf.plotting.plots_interface
