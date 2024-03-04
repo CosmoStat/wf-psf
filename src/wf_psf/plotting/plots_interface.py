@@ -366,6 +366,23 @@ class MonochromaticMetricsPlotHandler:
 
 
 class ShapeMetricsPlotHandler:
+    """ShapeMetricsPlotHandler class.
+    A class to handle plot parameters shape
+    metrics results.
+    Parameters
+    ----------
+    id: str
+        Class ID name
+    plotting_params: Recursive Namespace object
+        Recursive Namespace Object containing plotting parameters
+    metrics: list
+        Dictionary containing list of metrics
+    list_of_stars: list
+        List containing the number of stars used for each training data set
+    plots_dir: str
+        Output directory for metrics plots
+    """
+
     id = "shape_metrics"
 
     def __init__(self, plotting_params, metrics, list_of_stars, plots_dir):
