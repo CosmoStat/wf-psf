@@ -75,7 +75,6 @@ convention = "numpy"
 [tool.pytest.ini_options]
 addopts = [
     "--verbose",
-    #"--black",
     "--emoji",
     "--cov=wf_psf",
     "--cov-report=term-missing",
