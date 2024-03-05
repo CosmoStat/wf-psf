@@ -126,7 +126,7 @@ class TF_batch_poly_PSF(tf.keras.layers.Layer):
     """Calculate a polychromatic PSF from an OPD and stored SED values.
 
     The calculation of the packed values with the respective SED is done
-    with the SimPSFToolkit class but outside the TF class.
+    with the PSFSimulator class but outside the TF class.
 
     Parameters
     ----------
@@ -238,7 +238,7 @@ class TF_batch_mono_PSF(tf.keras.layers.Layer):
     """Calculate a monochromatic PSF from a batch of OPDs.
 
     The calculation of the ``phase_N`` variable is done
-    with the SimPSFToolkit class but outside the TF class.
+    with the PSFSimulator class but outside the TF class.
 
     Parameters
     ----------
@@ -945,7 +945,7 @@ class OLD_TF_batch_poly_PSF(tf.keras.layers.Layer):
     """Calculate a polychromatic PSF from an OPD and stored SED values.
 
     The calculation of the packed values with the respective SED is done
-    with the SimPSFToolkit class but outside the TF class.
+    with the PSFSimulator class but outside the TF class.
 
 
 

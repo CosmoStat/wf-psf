@@ -66,7 +66,7 @@ class MetricsParamsHandler:
         psf_model: object
             PSF model class instance of the psf model selected for metrics evaluation.
         simPSF: object
-            SimPSFToolkit instance
+            PSFSimulator instance
         test_dataset: dict
             Test dataset dictionary
 
@@ -111,7 +111,7 @@ class MetricsParamsHandler:
         psf_model: object
             PSF model class instance of the psf model selected for metrics evaluation.
         simPSF: object
-            SimPSFToolkit instance
+            PSFSimulator instance
         test_dataset: dict
             Test dataset dictionary
 
@@ -157,7 +157,7 @@ class MetricsParamsHandler:
         psf_model: object
             PSF model class instance of the psf model selected for metrics evaluation.
         simPSF: object
-            SimPSFToolkit instance
+            PSFSimulator instance
         test_dataset: dict
             Test dataset dictionary
 
@@ -201,7 +201,7 @@ class MetricsParamsHandler:
         psf_model: object
             PSF model class instance of the psf model selected for metrics evaluation.
         simPSF: object
-            SimPSFToolkit instance
+            PSFSimulator instance
         dataset: dict
             Test dataset dictionary
 

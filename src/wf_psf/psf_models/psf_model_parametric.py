@@ -170,7 +170,7 @@ class TF_PSF_field_model(tf.keras.Model):
 
         phase_N: int
             Required wavefront dimension. Should be calculated with as:
-            ``simPSF_np = wf.SimPSFToolkit(...)``
+            ``simPSF_np = wf.PSFSimulator(...)``
             ``phase_N = simPSF_np.feasible_N(lambda_obs)``
         """
 

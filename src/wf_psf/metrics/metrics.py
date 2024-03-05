@@ -5,7 +5,7 @@ import galsim as gs
 import wf_psf.utils.utils as utils
 from wf_psf.psf_models.tf_psf_field import build_PSF_model
 from wf_psf.psf_models import tf_psf_field as psf_field
-from wf_psf.sims import SimPSFToolkit as SimPSFToolkit
+from wf_psf.sims import PSFSimulator as PSFSimulator
 import logging
 
 logger = logging.getLogger(__name__)
@@ -640,7 +640,7 @@ def gen_GT_wf_model(test_wf_file_path, pred_output_Q=1, pred_output_dim=64):
 
     ## Generate initializations
     # Prepare np input
-    simPSF_np = SimPSFToolkit(
+    simPSF_np = PSFSimulator(
         zernikes,
         max_order=wf_test_params["max_order"],
         pupil_diameter=wf_test_params["pupil_diameter"],

@@ -10,7 +10,7 @@ import numpy as np
 import wf_psf.utils.utils as utils
 import tensorflow as tf
 import tensorflow_addons as tfa
-import wf_psf.sims.SimPSFToolkit as SimPSFToolkit
+import wf_psf.sims.PSFSimulator as PSFSimulator
 import os
 
 
@@ -24,7 +24,7 @@ class TrainingDataHandler:
     training_data_params: Recursive Namespace object
         Recursive Namespace object containing training data parameters
     simPSF: object
-        SimPSFToolkit instance
+        PSFSimulator instance
     n_bins_lambda: int
         Number of bins in wavelength
 
@@ -66,7 +66,7 @@ class TestDataHandler:
     test_data_params: Recursive Namespace object
         Recursive Namespace object containing test data parameters
     simPSF: object
-        SimPSFToolkit instance
+        PSFSimulator instance
     n_bins_lambda: int
         Number of bins in wavelength
 

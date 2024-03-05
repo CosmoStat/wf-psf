@@ -1,7 +1,7 @@
-wf\_psf.sims.SimPSFToolkit module
+wf\_psf.sims.PSFSimulator module
 =================================
 
-.. automodule:: wf_psf.sims.SimPSFToolkit
+.. automodule:: wf_psf.sims.PSFSimulator
    :members:
    :undoc-members:
    :show-inheritance:
