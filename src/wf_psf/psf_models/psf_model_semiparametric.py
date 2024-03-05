@@ -25,11 +25,46 @@ logger = logging.getLogger(__name__)
 
 @psfm.register_psfclass
 class SemiParam_field_Factory(psfm.PSFModelBaseFactory):
+    """Factory class for the SemiParametric PSF Field Model.
+    
+    This factory class is responsible for instantiating instances of the SemiParametric PSF Field Model.
+    It is registered with the PSF model factory registry.
+    
+    Parameters
+    ----------
+    ids: tuple
+        A tuple containing identifiers for the factory class.
+
+    Methods
+    -------
+    get_model_instance(model_params, training_params, data=None, coeff_mat=None)
+        Instantiates an instance of the SemiParametric PSF Field Model with the provided parameters.
+    """
     ids = ("poly",)
 
     def get_model_instance(
         self, model_params, training_params, data=None, coeff_mat=None
     ):
+        """Get Model Instance.
+
+        This method creates an instance of the SemiParametric PSF Field Model using the provided parameters.
+
+        Parameters
+        ----------
+        model_params : object
+            Parameters for configuring the PSF model.
+        training_params : object
+            Parameters for training the PSF model.
+        data : object or None, optional
+            Data used for training the PSF model.
+        coeff_mat : object or None, optional
+            Coefficient matrix defining the parametric PSF field model.
+
+        Returns
+        -------
+        PSF model instance
+            An instance of the SemiParametric PSF Field Model.
+        """
         return TF_SemiParam_field(model_params, training_params, coeff_mat)
 
 

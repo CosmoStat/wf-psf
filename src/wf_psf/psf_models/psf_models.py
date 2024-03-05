@@ -21,9 +21,16 @@ logger = logging.getLogger(__name__)
 PSF_FACTORY = {}
 
 
-class PsfModelError(Exception):
-    """PSF Model Parameter Error exception class for specific error scenarios."""
+class PSFModelError(Exception):
+    """PSF Model Parameter Error exception class.
 
+    This exception class is used to handle errors related to PSF (Point Spread Function) model parameters.
+
+    Parameters
+    ----------
+    message : str, optional
+        Error message to be raised. Defaults to "An error with your PSF model parameter settings occurred."
+    """
     def __init__(
         self, message="An error with your PSF model parameter settings occurred."
     ):
@@ -32,9 +39,47 @@ class PsfModelError(Exception):
 
 
 class PSFModelBaseFactory:
+    """Base factory class for PSF models.
+
+    This class serves as the base factory for instantiating PSF (Point Spread Function) models.
+    Subclasses should implement the `get_model_instance` method to provide specific PSF model instances.
+
+    Attributes
+    ----------
+    None
+
+    Methods
+    -------
+    get_model_instance(model_params, training_params, data=None, coeff_matrix=None)
+        Instantiates a PSF model with the provided parameters.
+
+    Notes
+    -----
+    Subclasses of `PSFModelBaseFactory` should override the `get_model_instance` method to provide
+    implementation-specific logic for instantiating PSF model instances.
+    """
+    
     def get_model_instance(
         self, model_params, training_params, data=None, coeff_matrix=None
     ):
+        """Instantiate a PSF model instance.
+
+        Parameters
+        ----------
+        model_params: object
+            Parameters for configuring the PSF model.
+        training_params: object
+            Parameters for training the PSF model.
+        data: object or None, optional
+            Data used for training the PSF model.
+        coeff_matrix: object or None, optional
+            Coefficient matrix defining the PSF model.
+
+        Returns
+        -------
+        PSF model instance
+            An instance of the PSF model.
+        """
         pass
 
 
@@ -75,7 +120,7 @@ def set_psf_model(model_name):
         psf_factory_class = PSF_FACTORY[model_name]
     except KeyError as e:
         logger.exception(e)
-        raise PsfModelError("PSF model entered is invalid. Check your config settings.")
+        raise PSFModelError("PSF model entered is invalid. Check your config settings.")
     return psf_factory_class
 
 
@@ -102,7 +147,7 @@ def get_psf_model(*psf_model_params):
     psf_class = set_psf_model(model_name)
     psf_factory_class = PSF_FACTORY.get(model_name)
     if psf_factory_class is None:
-        raise PsfModelError("PSF model entered is invalid. Check your config settings.")
+        raise PSFModelError("PSF model entered is invalid. Check your config settings.")
 
     return psf_factory_class().create_instance(*psf_model_params)
 
@@ -129,7 +174,7 @@ def get_psf_model_weights_filepath(weights_filepath):
         logger.exception(
             "PSF weights file not found. Check that you've specified the correct weights file in the metrics config file."
         )
-        raise PsfModelError("PSF model weights error.")
+        raise PSFModelError("PSF model weights error.")
 
 
 def tf_zernike_cube(n_zernikes, pupil_diam):
@@ -189,9 +234,6 @@ def tf_obscurations(pupil_diam, N_filter=2):
         N_pix=pupil_diam, N_filter=N_filter
     )
     return tf.convert_to_tensor(obscurations, dtype=tf.complex64)
-
-    ## Generate initializations -- This looks like it could be moved to PSF model package
-    # Prepare np input
 
 
 def simPSF(model_params):
