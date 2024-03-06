@@ -25,3 +25,4 @@
 - [ ] All changed files have been checked and comments provided to the developer
 - [ ] All of the reviewer's comments have been satisfactorily addressed by the developer
 - [ ] All Validation tests for the reported error are passing
+- [ ] I have reviewed the CI log to verify if any files require formatting with Black. If any files are found to be improperly formatted, I have provided comments indicating the need for formatting.

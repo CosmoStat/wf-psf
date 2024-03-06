@@ -5,6 +5,7 @@ This module setups the run of the WF_PSF pipeline.
 :Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 
 """
+
 import argparse
 from wf_psf.utils.read_config import read_stream
 from wf_psf.utils.io import FileIOHandler
