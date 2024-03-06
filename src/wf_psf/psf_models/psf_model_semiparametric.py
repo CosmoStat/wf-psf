@@ -12,7 +12,11 @@ import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
 from wf_psf.psf_models import psf_models as psfm
 from wf_psf.psf_models import tf_layers as tfl
-from wf_psf.utils.utils import PI_zernikes, zernike_generator, tf_decompose_obscured_opd_basis
+from wf_psf.utils.utils import (
+    PI_zernikes,
+    zernike_generator,
+    tf_decompose_obscured_opd_basis,
+)
 from wf_psf.psf_models.tf_layers import (
     TF_batch_poly_PSF,
     TF_batch_mono_PSF,
@@ -279,8 +283,8 @@ class TF_SemiParam_field(tf.keras.Model):
         self.tf_np_poly_opd.assign_S_mat(S_mat)
 
     def project_DD_features(self, tf_zernike_cube=None):
-        """ 
-        Project non-parametric wavefront onto first n_z Zernikes and transfer 
+        """
+        Project non-parametric wavefront onto first n_z Zernikes and transfer
         their parameters to the parametric model.
 
         Parameters
@@ -292,9 +296,9 @@ class TF_SemiParam_field(tf.keras.Model):
         -------
         Updates the value of the S matrix in the non-parametric layer
         `tf_np_poly_opd`.
-        
+
         """
-        # If no Zernike maps are provided, use the ones from the 
+        # If no Zernike maps are provided, use the ones from the
         # Zernike to OPD layer
         if tf_zernike_cube is None:
             tf_zernike_cube = self.tf_zernike_OPD.zernike_maps
@@ -305,20 +309,25 @@ class TF_SemiParam_field(tf.keras.Model):
         inter_res_v2 = tf.tensordot(
             self.tf_np_poly_opd.alpha_mat[:n_poly_param, :],
             self.tf_np_poly_opd.S_mat,
-            axes=1
+            axes=1,
         )
         # Project over first n_z Zernikes
         delta_C_poly = tf.constant(
-            np.transpose(np.array([
-                tf_decompose_obscured_opd_basis(
-                    tf_opd=inter_res_v2[j,:,:],
-                    tf_obscurations=self.obscurations,
-                    tf_zk_basis=tf_zernike_cube,
-                    n_zernike=self.n_zernikes,
-                    iters=40
-                ) for j in range(n_poly_param)
-            ])),
-            dtype=tf.float32
+            np.transpose(
+                np.array(
+                    [
+                        tf_decompose_obscured_opd_basis(
+                            tf_opd=inter_res_v2[j, :, :],
+                            tf_obscurations=self.obscurations,
+                            tf_zk_basis=tf_zernike_cube,
+                            n_zernike=self.n_zernikes,
+                            iters=40,
+                        )
+                        for j in range(n_poly_param)
+                    ]
+                )
+            ),
+            dtype=tf.float32,
         )
         old_C_poly = self.tf_poly_Z_field.coeff_mat
         # Corrected parametric coeff matrix
@@ -328,33 +337,33 @@ class TF_SemiParam_field(tf.keras.Model):
         # Remove extracted features from non-parametric model
         # Mix DD features with matrix alpha
         S_tilde = tf.tensordot(
-            self.tf_np_poly_opd.alpha_mat,
-            self.tf_np_poly_opd.S_mat,
-            axes=1
+            self.tf_np_poly_opd.alpha_mat, self.tf_np_poly_opd.S_mat, axes=1
         )
         # Get beta tilde as the proyection of the first n_param_poly_terms (6 for d_max=2) onto the first n_zernikes.
-        beta_tilde_inner = np.array([
-            tf_decompose_obscured_opd_basis(
-                tf_opd=S_tilde_slice,
-                tf_obscurations=self.obscurations,
-                tf_zk_basis=tf_zernike_cube,
-                n_zernike=self.n_zernikes,
-                iters=40
-            ) for S_tilde_slice in S_tilde[:n_poly_param, :, :]
-        ])
+        beta_tilde_inner = np.array(
+            [
+                tf_decompose_obscured_opd_basis(
+                    tf_opd=S_tilde_slice,
+                    tf_obscurations=self.obscurations,
+                    tf_zk_basis=tf_zernike_cube,
+                    n_zernike=self.n_zernikes,
+                    iters=40,
+                )
+                for S_tilde_slice in S_tilde[:n_poly_param, :, :]
+            ]
+        )
 
-        # Only pad in the first dimention so we get a 
+        # Only pad in the first dimention so we get a
         # matrix of size (d_max_nonparam_terms)x(n_zernikes) --> 21x15 or 21x45.
         beta_tilde = np.pad(
             beta_tilde_inner,
             [(0, S_tilde.shape[0] - beta_tilde_inner.shape[0]), (0, 0)],
-            mode='constant'
+            mode="constant",
         )
 
         # Unmix beta tilde with the inverse of alpha
         beta = tf.constant(
-            np.linalg.inv(self.tf_np_poly_opd.alpha_mat) @ beta_tilde,
-            dtype=tf.float32
+            np.linalg.inv(self.tf_np_poly_opd.alpha_mat) @ beta_tilde, dtype=tf.float32
         )
         # Get the projection for the unmixed features
 

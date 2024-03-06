@@ -15,19 +15,18 @@ from wf_psf.sims.SimPSFToolkit import SimPSFToolkit
 from wf_psf.psf_models.tf_layers import TF_zernike_OPD
 
 
-
 def test_tf_decompose_obscured_opd_basis():
     from wf_psf.utils.utils import tf_decompose_obscured_opd_basis
 
-    n_zernikes=20
-    wfe_dim=256
+    n_zernikes = 20
+    wfe_dim = 256
     tol = 1e-5
 
     # Create zernike basis
-    zernikes = zernike_generator(
-        n_zernikes=n_zernikes, wfe_dim=wfe_dim
+    zernikes = zernike_generator(n_zernikes=n_zernikes, wfe_dim=wfe_dim)
+    np_zernike_cube = np.zeros(
+        (len(zernikes), zernikes[0].shape[0], zernikes[0].shape[1])
     )
-    np_zernike_cube = np.zeros((len(zernikes), zernikes[0].shape[0], zernikes[0].shape[1]))
     for it in range(len(zernikes)):
         np_zernike_cube[it, :, :] = zernikes[it]
     np_zernike_cube[np.isnan(np_zernike_cube)] = 0
@@ -38,7 +37,7 @@ def test_tf_decompose_obscured_opd_basis():
     tf_obscurations = tf.convert_to_tensor(obscurations, dtype=tf.float32)
 
     # Create random zernike coefficient array
-    zk_array = np.random.randn(1,n_zernikes,1,1)
+    zk_array = np.random.randn(1, n_zernikes, 1, 1)
     tf_zk_array = tf.convert_to_tensor(zk_array, dtype=tf.float32)
 
     # Generate layer
@@ -47,8 +46,7 @@ def test_tf_decompose_obscured_opd_basis():
     tf_unobscured_opd = tf_zernike_opd(tf_zk_array)
     # Obscure the OPD
     tf_obscured_opd = tf.math.multiply(
-        tf_unobscured_opd,
-        tf.expand_dims(tf_obscurations, axis=0)
+        tf_unobscured_opd, tf.expand_dims(tf_obscurations, axis=0)
     )
 
     # Compute zernike array from OPD
@@ -57,10 +55,9 @@ def test_tf_decompose_obscured_opd_basis():
         tf_obscurations=tf_obscurations,
         tf_zk_basis=tf_zernike_cube,
         n_zernike=n_zernikes,
-        iters=100
+        iters=100,
     )
 
-    rmse_error = np.linalg.norm(obsc_coeffs - zk_array[0,:,0,0])
+    rmse_error = np.linalg.norm(obsc_coeffs - zk_array[0, :, 0, 0])
 
     assert rmse_error < tol
-
