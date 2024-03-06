@@ -15,6 +15,7 @@ from wf_psf.sims.spatial_varying_psf import (
     SpatialVaryingPSF,
 )
 import os
+import logging
 
 
 @pytest.fixture
@@ -33,7 +34,7 @@ def mock_grid_points():
 
 
 @pytest.fixture
-def mock_num_of_grid_pts():
+def mock_grid_size():
     return 15
 
 
@@ -45,27 +46,25 @@ def test_build_mesh_with_grid_points(mock_x_lims, mock_y_lims, mock_grid_points)
     assert y_grid.shape == (mock_grid_points[1], mock_grid_points[0])
 
 
-def test_build_mesh_with_num_of_grid_pts(
-    mock_x_lims, mock_y_lims, mock_num_of_grid_pts
-):
+def test_build_mesh_with_grid_size(mock_x_lims, mock_y_lims, mock_grid_size):
     x_grid, y_grid = MeshHelper.build_mesh(
-        mock_x_lims, mock_y_lims, num_of_grid_pts=mock_num_of_grid_pts
+        mock_x_lims, mock_y_lims, grid_size=mock_grid_size
     )
-    assert x_grid.shape == (mock_num_of_grid_pts, mock_num_of_grid_pts)
-    assert y_grid.shape == (mock_num_of_grid_pts, mock_num_of_grid_pts)
+    assert x_grid.shape == (mock_grid_size, mock_grid_size)
+    assert y_grid.shape == (mock_grid_size, mock_grid_size)
 
 
 def test_build_mesh_with_both_params(
-    mock_x_lims, mock_y_lims, mock_grid_points, mock_num_of_grid_pts
+    mock_x_lims, mock_y_lims, mock_grid_points, mock_grid_size
 ):
     x_grid, y_grid = MeshHelper.build_mesh(
         mock_x_lims,
         mock_y_lims,
         grid_points=mock_grid_points,
-        num_of_grid_pts=mock_num_of_grid_pts,
+        grid_size=mock_grid_size,
     )
-    assert x_grid.shape == (mock_num_of_grid_pts, mock_num_of_grid_pts)
-    assert y_grid.shape == (mock_num_of_grid_pts, mock_num_of_grid_pts)
+    assert x_grid.shape == (mock_grid_size, mock_grid_size)
+    assert y_grid.shape == (mock_grid_size, mock_grid_size)
 
 
 def test_build_mesh_with_no_params(mock_x_lims, mock_y_lims):
@@ -110,14 +109,14 @@ def test_build_mesh_custom_params():
     ), "Mesh y coordinates are incorrect"
 
 
-def test_build_mesh_num_of_grid_pts_parameter():
+def test_build_mesh_grid_size_parameter():
     # Test case: Custom number of points
     x_lims = [0, 1]
     y_lims = [0, 1]
     grid_points = [3, 3]  # 3x3 grid
-    num_of_grid_pts = 2  # 2 points in each direction
+    grid_size = 2  # 2 points in each direction
     mesh_x, mesh_y = MeshHelper.build_mesh(
-        x_lims, y_lims, grid_points, num_of_grid_pts=num_of_grid_pts
+        x_lims, y_lims, grid_points, grid_size=grid_size
     )
     assert mesh_x.shape == (2, 2), "Mesh grid shape should be (2, 2)"
     assert mesh_y.shape == (2, 2), "Mesh grid shape should be (2, 2)"
@@ -176,47 +175,55 @@ def test_check_and_adjust_coordinate_limits(example_limits_bounds):
     assert np.logical_and(adjusted_y >= y_lims[0], adjusted_y <= y_lims[1]).all()
 
 
-def test_check_position_coordinate_limits_within_limits(capfd):
+def test_check_position_coordinate_limits_within_limits(caplog):
     # Test case: xv and yv within the limits
     xv = np.array([0.5, 1.5, 2.5])
     yv = np.array([1.0, 2.0, 3.0])
     x_lims = [0, 3]
     y_lims = [0, 4]
-    CoordinateHelper.check_position_coordinate_limits(
-        xv, yv, x_lims, y_lims, verbose=True
-    )
-    out, _ = capfd.readouterr()
-    assert (
-        "WARNING!" not in out
-    ), "Warning message should not be printed for coordinates within limits"
+    with caplog.at_level(logging.DEBUG):
+        CoordinateHelper.check_position_coordinate_limits(
+            xv, yv, x_lims, y_lims, verbose=True
+        )
+    # Check if log messages are captured
+    assert not any(
+        record.levelname == "INFO" and "WARNING!" in record.message
+        for record in caplog.records
+    ), "No warning message should be logged for coordinates within limits"
 
 
-def test_check_position_coordinate_limits_outside_limits(capfd):
+def test_check_position_coordinate_limits_outside_limits(caplog):
     # Test case: xv and yv outside the limits
     xv = np.array([-0.5, 3.5, 2.5])
     yv = np.array([1.0, 4.0, 3.0])
     x_lims = [0, 3]
     y_lims = [0, 3]
-    CoordinateHelper.check_position_coordinate_limits(
-        xv, yv, x_lims, y_lims, verbose=True
-    )
-    out, _ = capfd.readouterr()
-    assert (
-        "WARNING!" in out
-    ), "Warning message should be printed for coordinates outside limits"
+    with caplog.at_level(logging.DEBUG):
+        CoordinateHelper.check_position_coordinate_limits(
+            xv, yv, x_lims, y_lims, verbose=True
+        )
+
+    # Check if log messages are captured
+    for record in caplog.records:
+        assert record.levelname == "WARNING"
+    assert "x value" in caplog.text
 
 
-def test_check_position_coordinate_limits_no_verbose(capfd):
+def test_check_position_coordinate_limits_no_verbose(caplog):
     # Test case: No verbose output
     xv = np.array([-0.5, 3.5, 2.5])
     yv = np.array([1.0, 4.0, 3.0])
     x_lims = [0, 3]
     y_lims = [0, 3]
-    CoordinateHelper.check_position_coordinate_limits(
-        xv, yv, x_lims, y_lims, verbose=False
-    )
-    out, _ = capfd.readouterr()
-    assert out == "", "No output should be printed when verbose is False"
+    with caplog.at_level(logging.DEBUG):
+        CoordinateHelper.check_position_coordinate_limits(
+            xv, yv, x_lims, y_lims, verbose=False
+        )
+    # Check if log messages are captured
+    assert not any(
+        record.levelname == "INFO" and "WARNING!" in record.message
+        for record in caplog.records
+    ), "No warning message should be logged for coordinates within limits"
 
 
 def test_bounds_polynomial_matrix_coefficients(example_limits_bounds):
