@@ -12,4 +12,4 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   wf_psf.sims.PSFSimulator
+   wf_psf.sims.psf_simulator

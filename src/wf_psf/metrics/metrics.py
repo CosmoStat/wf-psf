@@ -5,7 +5,7 @@ import galsim as gs
 import wf_psf.utils.utils as utils
 from wf_psf.psf_models.tf_psf_field import build_PSF_model
 from wf_psf.psf_models import tf_psf_field as psf_field
-from wf_psf.sims import PSFSimulator as PSFSimulator
+from wf_psf.sims import psf_simulator as psf_simulator
 import logging
 
 logger = logging.getLogger(__name__)
