@@ -66,7 +66,7 @@ def psf_model_dir():
     )
 
 
-@pytest.mark.skip(reason="Requires gpu")
+@pytest.mark.skipif("GITHUB_ENV" in os.environ, reason="Skipping GPU tests in CI")
 def test_train(
     training_params,
     training_data,
