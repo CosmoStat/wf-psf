@@ -7,7 +7,7 @@ on: [workflow_dispatch]
 
 jobs:
   docs:
-    name: Deploy API documentation
+    name: Test API documentation build
     runs-on: [ubuntu-latest]
 
     steps:
