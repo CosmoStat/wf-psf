@@ -489,7 +489,6 @@ def PI_zernikes(tf_z1, tf_z2, norm_factor=None):
      """ Compute internal product between zernikes and OPDs
 
      Defined such that Zernikes are orthonormal to each other
-     Defined such that Zernikes are orthonormal to each other.
 
      First one should compute: norm_factor =  PI_zernikes(tf_zernike,tf_zernike)
      for futur calls: PI_zernikes(OPD,tf_zernike_k, norm_factor)
