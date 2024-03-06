@@ -15,6 +15,49 @@ from wf_psf.sims.SimPSFToolkit import SimPSFToolkit
 from wf_psf.psf_models.tf_layers import TF_zernike_OPD
 
 
+def test_PI_zernikes():
+    from wf_psf.utils.utils import PI_zernikes
+
+    n_zernikes=20
+    wfe_dim=256
+    tol = 1e-1
+
+    # Create zernike basis
+    zernikes = zernike_generator(
+        n_zernikes=n_zernikes, wfe_dim=wfe_dim
+    )
+    np_zernike_cube = np.zeros((len(zernikes), zernikes[0].shape[0], zernikes[0].shape[1]))
+    for it in range(len(zernikes)):
+        np_zernike_cube[it, :, :] = zernikes[it]
+    np_zernike_cube[np.isnan(np_zernike_cube)] = 0
+    tf_zernike_cube = tf.convert_to_tensor(np_zernike_cube, dtype=tf.float32)
+
+    # Create random zernike coefficient array
+    zk_array = np.random.randn(1,n_zernikes,1,1)
+    tf_zk_array = tf.convert_to_tensor(zk_array, dtype=tf.float32)
+
+    # Generate layer
+    tf_zernike_opd = TF_zernike_OPD(tf_zernike_cube)
+    # Compute OPD
+    tf_unobscured_opd = tf_zernike_opd(tf_zk_array)
+
+    # Compute normalisation factor
+    norm_factor = PI_zernikes(tf_zernike_cube[0, :, :],tf_zernike_cube[0, :, :])
+
+    # Compute projections for each zernike
+    estimated_zk_array = np.array([
+        PI_zernikes(
+            tf_unobscured_opd,
+            tf_zernike_cube[j, :, :],
+            norm_factor=norm_factor
+        ) for j in range(n_zernikes)
+    ])
+
+    rmse_error = np.linalg.norm(estimated_zk_array - zk_array[0,:,0,0])
+
+    assert rmse_error < tol
+
+
 def test_tf_decompose_obscured_opd_basis():
     from wf_psf.utils.utils import tf_decompose_obscured_opd_basis
 
