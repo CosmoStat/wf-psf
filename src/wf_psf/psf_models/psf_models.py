@@ -31,6 +31,7 @@ class PSFModelError(Exception):
     message : str, optional
         Error message to be raised. Defaults to "An error with your PSF model parameter settings occurred."
     """
+
     def __init__(
         self, message="An error with your PSF model parameter settings occurred."
     ):
@@ -58,7 +59,7 @@ class PSFModelBaseFactory:
     Subclasses of `PSFModelBaseFactory` should override the `get_model_instance` method to provide
     implementation-specific logic for instantiating PSF model instances.
     """
-    
+
     def get_model_instance(
         self, model_params, training_params, data=None, coeff_matrix=None
     ):
@@ -149,7 +150,7 @@ def get_psf_model(*psf_model_params):
     if psf_factory_class is None:
         raise PSFModelError("PSF model entered is invalid. Check your config settings.")
 
-    return psf_factory_class().create_instance(*psf_model_params)
+    return psf_factory_class().get_model_instance(*psf_model_params)
 
 
 def get_psf_model_weights_filepath(weights_filepath):
