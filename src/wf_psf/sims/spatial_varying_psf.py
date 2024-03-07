@@ -16,8 +16,10 @@ class MeshHelper:
     """
 
     @staticmethod
-    def build_mesh(x_lims, y_lims, grid_points=None, num_of_grid_pts=None, endpoint=True):
+    def build_mesh(x_lims, y_lims, grid_points=None, grid_size=None, endpoint=True):
         """Build Mesh.
+
+        A method to build a mesh.
 
         Parameters
         ----------
@@ -27,10 +29,10 @@ class MeshHelper:
             A list representing the lower and upper limits along the y-axis.
         grid_points: list or None, optional
             List defining the size of each axis grid for constructing the mesh grid.
-            If provided and `num_of_grid_pts` is also provided, `num_of_grid_pts` will
+            If provided and `grid_size` is also provided, `grid_size` will
             override this parameter. (default is None)
-        num_of_grid_pts: int or None, optional
-            Number of points to generate for each axis of the grid. If None and `grid_points` 
+        grid_size: int or None, optional
+            Number of points to generate for each axis of the grid. If None and `grid_points`
             is not provided, the default grid size is used. (default is None)
         endpoint: bool, optional
             If True, `stop` is the last sample. Otherwise, it is not included. (default is True).
@@ -41,13 +43,15 @@ class MeshHelper:
             A tuple containing two 2-dimensional arrays for x- and y-coordinate axes.
 
         """
-        if num_of_grid_pts is None:
+        if grid_size is None:
             if grid_points is None:
-                raise ValueError("At least one of 'grid_points' or 'num_of_grid_pts' must be provided.")
+                raise ValueError(
+                    "At least one of 'grid_points' or 'grid_size' must be provided."
+                )
             num_x, num_y = grid_points
         else:
-            num_x = num_of_grid_pts
-            num_y = num_of_grid_pts
+            num_x = grid_size
+            num_y = grid_size
 
         # Choose the anchor points on a regular grid
         x = np.linspace(x_lims[0], x_lims[1], num=num_x, endpoint=endpoint)
@@ -125,7 +129,6 @@ class CoordinateHelper:
 
         return x_step, y_step
 
-
     @staticmethod
     def add_random_shift_to_positions(
         xv_grid, yv_grid, grid_points, x_lims, y_lims, seed=None
@@ -185,7 +188,7 @@ class CoordinateHelper:
     def check_and_adjust_coordinate_limits(x, y, x_lims, y_lims):
         """Check and adjust coordinate limits.
 
-        A method to check and adjust coordinate limits to within 
+        A method to check and adjust coordinate limits to within
         the range of x_lims and y_lims, respectively.
 
         Parameters
@@ -217,44 +220,44 @@ class CoordinateHelper:
     @staticmethod
     def check_position_coordinate_limits(xv, yv, x_lims, y_lims, verbose):
         """Check Position Coordinate Limits.
-         
+
         This function checks if the given position coordinates (xv, yv) are within the specified limits
         (x_lims, y_lims). It raises a warning if any coordinate is outside the limits.
 
         Parameters
         ----------
-        xv: numpy.ndarray 
+        xv: numpy.ndarray
             The x coordinates to be checked.
-        yv: numpy.ndarray 
+        yv: numpy.ndarray
             The y coordinates to be checked.
-        x_lims: tuple 
+        x_lims: tuple
             A tuple (min, max) specifying the lower and upper limits for x coordinates.
-        y_lims: tuple 
+        y_lims: tuple
             A tuple (min, max) specifying the lower and upper limits for y coordinates.
-        verbose: bool 
+        verbose: bool
             If True, print warning messages when coordinates are outside the limits.
 
         Returns
         -------
         None
-    
+
         """
-        
+
         x_check = np.sum(xv >= x_lims[1] * 1.1) + np.sum(xv <= x_lims[0] * 1.1)
         y_check = np.sum(yv >= y_lims[1] * 1.1) + np.sum(yv <= y_lims[0] * 1.1)
 
         if verbose and x_check > 0:
-            logger.info(
+            logger.warning(
                 "WARNING! x value is outside the limits [%f, %f]"
                 % (x_lims[0], x_lims[1])
             )
-           
+
         if verbose and y_check > 0:
-            logger.info(
+            logger.warning(
                 "WARNING! y value is outside the limits [%f, %f]"
                 % (y_lims[0], y_lims[1])
             )
-          
+
 
 class PolynomialMatrixHelper:
     """PolynomialMatrixHelper.
@@ -298,7 +301,7 @@ class PolynomialMatrixHelper:
 
         # Scale positions to the square [-1,1] x [-1,1]
         scaled_x, scaled_y = CoordinateHelper.scale_positions(x, y, x_lims, y_lims)
-        
+
         for d in range(d_max + 1):
             row_idx = d * (d + 1) // 2
             for p in range(d + 1):
@@ -306,8 +309,7 @@ class PolynomialMatrixHelper:
 
         return Pi
 
-    
-    
+
 class ZernikeHelper:
     """ZernikeHelper.
 
@@ -315,8 +317,9 @@ class ZernikeHelper:
 
 
     """
+
     @staticmethod
-    def initialize_Z_matrix(max_order,size, seed=None):
+    def initialize_Z_matrix(max_order, size, seed=None):
         """Initialize Zernike Matrix.
 
         This method initializes a Zernike matrix with a specified size determined by
@@ -370,14 +373,15 @@ class ZernikeHelper:
         norm_weights = np.sqrt(np.sum(Z**2, axis=1))
         Z /= norm_weights.reshape((-1, 1)) / lim_max_wfe_rms
         return Z
-    
-        
+
     @staticmethod
-    def initialize_normalized_zernike_matrix(max_order, size, lim_max_wfe_rms, seed=None):
+    def initialize_normalized_zernike_matrix(
+        max_order, size, lim_max_wfe_rms, seed=None
+    ):
         """Initialize Normalized Zernike Matrix.
-        
+
         This method initializes a normalized Zernike matrix.
-        
+
         Parameters
         ----------
         max_order: int
@@ -388,16 +392,17 @@ class ZernikeHelper:
             The upper maximum value limit for the Wave Front Error (WFE) Root-Mean-Square (RMS) error.
         seed: int
             Seed for random number generation.
-            
+
         Returns
         -------
         numpy.ndarray
             A normalized Zernike matrix.
-          
+
         """
         return ZernikeHelper.normalize_Z_matrix(
-            ZernikeHelper.initialize_Z_matrix(max_order, size, seed), lim_max_wfe_rms)
-    
+            ZernikeHelper.initialize_Z_matrix(max_order, size, seed), lim_max_wfe_rms
+        )
+
     @staticmethod
     def generate_zernike_polynomials(xv, yv, x_lims, y_lims, d_max, polynomial_coeffs):
         """Generate Zernike Polynomials.
@@ -434,10 +439,11 @@ class ZernikeHelper:
         )
 
         return polynomial_coeffs @ Pi_samples
-    
 
     @staticmethod
-    def calculate_zernike(xv, yv, x_lims, y_lims, d_max, polynomial_coeffs, verbose=False):
+    def calculate_zernike(
+        xv, yv, x_lims, y_lims, d_max, polynomial_coeffs, verbose=False
+    ):
         """Calculate Zernikes for a specific position.
 
         This method computes Zernike polynomials for given positions (xv, yv).
@@ -465,13 +471,15 @@ class ZernikeHelper:
 
         """
         # Check limits
-        CoordinateHelper.check_position_coordinate_limits(xv,yv,x_lims,y_lims,verbose)
+        CoordinateHelper.check_position_coordinate_limits(
+            xv, yv, x_lims, y_lims, verbose
+        )
 
         # Return Zernikes
         # The position scaling is done inside generate_zernike_polynomials
-        return ZernikeHelper.generate_zernike_polynomials(xv, yv, x_lims, y_lims, d_max, polynomial_coeffs)
-    
-    
+        return ZernikeHelper.generate_zernike_polynomials(
+            xv, yv, x_lims, y_lims, d_max, polynomial_coeffs
+        )
 
 
 class SpatialVaryingPSF(object):
@@ -487,7 +495,7 @@ class SpatialVaryingPSF(object):
         Integer representing the maximum polynomial degree for the FOV spatial variation of WFE.
     grid_points: list
         List defining the size of each axis grid for constructing the (constrained random realisation) polynomial coefficient matrix.
-    num_of_grid_pts: int or None, optional
+    grid_size: int or None, optional
         Number of points to generate for the grid. If None, the value from
         grid_points attribute will be used. (default is None)
     max_order: int
@@ -510,7 +518,7 @@ class SpatialVaryingPSF(object):
         psf_simulator,
         d_max=2,
         grid_points=[4, 4],
-        num_of_grid_pts=None,
+        grid_size=None,
         max_order=45,
         x_lims=[0, 1e3],
         y_lims=[0, 1e3],
@@ -524,9 +532,9 @@ class SpatialVaryingPSF(object):
         self.max_order = max_order
         self.d_max = d_max
         self.x_lims = x_lims
-        self.y_lims = y_lims    
+        self.y_lims = y_lims
         self.grid_points = grid_points
-        self.num_of_grid_pts = num_of_grid_pts
+        self.grid_size = grid_size
         self.n_bins = n_bins
         self.verbose = verbose
         self.seed = seed
@@ -594,7 +602,6 @@ class SpatialVaryingPSF(object):
         )
 
         return Z @ np.linalg.pinv(Pi)
-     
 
     def calculate_wfe_rms(self, xv, yv, polynomial_coeffs):
         """Calculate the Wave Front Error (WFE) Root-Mean-Square (RMS).
@@ -645,23 +652,24 @@ class SpatialVaryingPSF(object):
         xv_grid, yv_grid = MeshHelper.build_mesh(
             self.x_lims, self.y_lims, self.grid_points
         )
-        
+
         # Apply random position shifts
         xv, yv = CoordinateHelper.add_random_shift_to_positions(
             xv_grid, yv_grid, self.grid_points, self.x_lims, self.y_lims, self.seed
         )
-      
+
         # Generate normalized Z matrix
-        Z = ZernikeHelper.initialize_normalized_zernike_matrix(self.max_order, len(xv), self.lim_max_wfe_rms, self.seed)
-        
-        
+        Z = ZernikeHelper.initialize_normalized_zernike_matrix(
+            self.max_order, len(xv), self.lim_max_wfe_rms, self.seed
+        )
+
         # Generate Polynomial coefficients for each Zernike
         self.polynomial_coeffs = self.estimate_polynomial_coeffs(xv, yv, Z)
 
         ## Sampling the space
         # Choose the anchor points on a regular grid
         xv_grid, yv_grid = MeshHelper.build_mesh(
-            self.x_lims, self.y_lims, self.grid_points, self.num_of_grid_pts, endpoint=True
+            self.x_lims, self.y_lims, self.grid_points, self.grid_size, endpoint=True
         )
 
         ## Renormalize and check that the WFE RMS has a max value near the expected one
@@ -742,8 +750,10 @@ class SpatialVaryingPSF(object):
 
         """
         # Calculate the specific field's zernike coeffs
-        zernikes = ZernikeHelper.calculate_zernike(xv, yv, self.x_lims, self.y_lims, self.d_max, self.polynomial_coeffs)
- 
+        zernikes = ZernikeHelper.calculate_zernike(
+            xv, yv, self.x_lims, self.y_lims, self.d_max, self.polynomial_coeffs
+        )
+
         # Set the Z coefficients to the PSF toolkit generator
         self.psf_simulator.set_z_coeffs(zernikes)
         # Generate the monochromatic psf
@@ -784,7 +794,9 @@ class SpatialVaryingPSF(object):
 
         """
         # Calculate the specific field's zernike coeffs
-        zernikes = ZernikeHelper.calculate_zernike(xv, yv, self.x_lims, self.y_lims, self.d_max, self.polynomial_coeffs)
+        zernikes = ZernikeHelper.calculate_zernike(
+            xv, yv, self.x_lims, self.y_lims, self.d_max, self.polynomial_coeffs
+        )
 
         # Set the Z coefficients to the PSF Simulator generator
         self.psf_simulator.set_z_coeffs(zernikes)
