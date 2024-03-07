@@ -640,7 +640,7 @@ def gen_GT_wf_model(test_wf_file_path, pred_output_Q=1, pred_output_dim=64):
 
     ## Generate initializations
     # Prepare np input
-    simPSF_np =psf_simulator.PSFSimulator(
+    simPSF_np = psf_simulator.PSFSimulator(
         zernikes,
         max_order=wf_test_params["max_order"],
         pupil_diameter=wf_test_params["pupil_diameter"],
