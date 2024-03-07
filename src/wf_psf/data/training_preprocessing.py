@@ -9,49 +9,83 @@ A module to load and preprocess training and validation test data.
 import numpy as np
 import wf_psf.utils.utils as utils
 import tensorflow as tf
-import tensorflow_addons as tfa
 import os
 
 
 class DataHandler:
-    """Training Data Handler.
+    """Data Handler.
 
-    A class to manage training data.
+    This class manages loading and processing of training and testing data for use in machine learning models.
+    It provides methods to access and preprocess the data.
 
     Parameters
     ----------
-    training_data_params: Recursive Namespace object
+    data_type: str
+        A string indicating type of data ("train" or "test").
+    data_params: Recursive Namespace object
         Recursive Namespace object containing training data parameters
-    simPSF: object
-        PSFSimulator instance
+    simPSF: PSFSimulator
+        An instance of the PSFSimulator class for simulating a PSF.
     n_bins_lambda: int
-        Number of bins in wavelength
+        The number of bins in wavelength.
+    init_flag: bool, optional
+        A flag indicating whether to perform initialization steps upon object creation.
+        If True (default), the dataset is loaded and processed. If False, initialization
+        steps are skipped, and manual initialization is required.
+
+    Attributes
+    ----------
+    dataset: dict
+        A dictionary containing the loaded dataset, including positions and stars/noisy_stars.
+    simPSF: object
+        An instance of the SimPSFToolkit class for simulating PSF.
+    n_bins_lambda: int
+        The number of bins in wavelength.
+    sed_data: tf.Tensor
+        A TensorFlow tensor containing the SED data for training/testing.
+    init_flag: bool, optional
+        A flag used to control initialization steps. If True, initialization is performed
+        upon object creation.
+
 
     """
 
-    def __init__(self, data_type, data_params, simPSF, n_bins_lambda):
+    def __init__(self, data_type, data_params, simPSF, n_bins_lambda, init_flag=True):
         self.data_params = data_params.__dict__[data_type]
+        self.dataset = None
+        self.simPSF = simPSF
+        self.n_bins_lambda = n_bins_lambda
+        self.sed_data = None
+        self.initialize(init_flag)
+
+    def load_dataset(self):
+        """Load dataset.
+
+        Load the dataset based on the specified data type.
+
+        """
         self.dataset = np.load(
-            os.path.join(
-                self.data_params.data_dir, self.data_params.file
-            ),
+            os.path.join(self.data_params.data_dir, self.data_params.file),
             allow_pickle=True,
         )[()]
         self.dataset["positions"] = tf.convert_to_tensor(
             self.dataset["positions"], dtype=tf.float32
         )
-        
         if "train" in self.data_params.file:
             self.dataset["noisy_stars"] = tf.convert_to_tensor(
                 self.dataset["noisy_stars"], dtype=tf.float32
             )
         elif "test" in self.data_params.file:
             self.dataset["stars"] = tf.convert_to_tensor(
-            self.dataset["stars"], dtype=tf.float32
+                self.dataset["stars"], dtype=tf.float32
             )
-            
-        self.simPSF = simPSF
-        self.n_bins_lambda = n_bins_lambda
+
+    def process_sed_data(self):
+        """Process SED Data.
+
+        A method to generate and process SED data.
+
+        """
         self.sed_data = [
             utils.generate_SED_elems_in_tensorflow(
                 _sed, self.simPSF, n_bins=self.n_bins_lambda, tf_dtype=tf.float64
@@ -60,3 +94,21 @@ class DataHandler:
         ]
         self.sed_data = tf.convert_to_tensor(self.sed_data, dtype=tf.float32)
         self.sed_data = tf.transpose(self.sed_data, perm=[0, 2, 1])
+
+    def initialize(self, init_flag):
+        """Initialize.
+
+        Initialize the DataHandler instance by loading and processing the dataset,
+        if the init_flag is True.
+
+        Parameters
+        ----------
+        init_flag : bool
+            A flag indicating whether to perform initialization steps. If True,
+            the dataset is loaded and processed. If False, initialization steps
+            are skipped.
+
+        """
+        if init_flag:
+            self.load_dataset()
+            self.process_sed_data()
