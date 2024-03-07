@@ -52,7 +52,7 @@ def register_configclass(config_class):
 def set_run_config(config_name):
     """Set Run Configuration Class.
 
-    A function to retrieve the appropriate configuration 
+    A function to retrieve the appropriate configuration
     class based on the provided config name.
 
     Parameters
@@ -96,7 +96,7 @@ def get_run_config(run_config_name, *config_params):
         A class instance of the selected configuration class.
 
     """
-    config_class = set_run_config(run_config)
+    config_class = set_run_config(run_config_name)
 
     return config_class(*config_params)
 
@@ -135,13 +135,15 @@ class DataConfigHandler:
             exit()
 
         self.simPSF = psf_models.simPSF(training_model_params)
-        
-        self.training_data = DataHandler("training",
+
+        self.training_data = DataHandler(
+            "training",
             self.data_conf.data,
             self.simPSF,
             training_model_params.n_bins_lda,
         )
-        self.test_data = DataHandler("test",
+        self.test_data = DataHandler(
+            "test",
             self.data_conf.data,
             self.simPSF,
             training_model_params.n_bins_lda,
