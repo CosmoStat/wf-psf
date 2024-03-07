@@ -10,7 +10,6 @@ import numpy as np
 import wf_psf.utils.utils as utils
 import tensorflow as tf
 import tensorflow_addons as tfa
-import wf_psf.sims.psf_simulator as psf_simulator
 import os
 
 
