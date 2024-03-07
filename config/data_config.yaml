@@ -1,6 +1,6 @@
 # Training and test data sets for training and/or metrics evaluation
 data:
-  training:
+  train:
     # Specify directory path to data; Default setting is /path/to/repo/data
     data_dir: data/coherent_euclid_dataset/
     file: train_Euclid_res_200_TrainStars_id_001.npy
