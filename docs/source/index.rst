@@ -32,4 +32,11 @@ Contributing
 ------------
 
 For information on how to contribute to the development of WaveDiff, see
-`Contributing to WaveDiff <../../CONTRIBUTING.md>`_.
+|link-to-contribution|.
+
+
+
+.. |link-to-contribution| raw:: html
+
+  <a href="https://github.com/CosmoStat/wf-psf/blob/8186939e51a1bc2fa05a0e6bc830890b92170185/CONTRIBUTING.md"
+  target="_blank">Contributing to WaveDiff</a>
