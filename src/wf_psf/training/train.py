@@ -307,7 +307,6 @@ def train(
         current_cycle += 1
 
         # If projected learning is enabled project DD_features.
-        # TODO: TL include both in the current_cycle condition
         if psf_model.project_dd_features:  # need to change this
             if current_cycle > 1:
                 psf_model.project_DD_features(
