@@ -67,7 +67,7 @@ training_config = RecursiveNamespace(
 )
 
 data = RecursiveNamespace(
-    training=RecursiveNamespace(
+    train=RecursiveNamespace(
         data_dir="data",
         file="coherent_euclid_dataset/train_Euclid_res_200_TrainStars_id_001.npy",
         stars=None,
