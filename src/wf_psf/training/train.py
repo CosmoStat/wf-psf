@@ -344,16 +344,16 @@ def train(
             psf_model,
             # training data
             inputs=[
-                training_data.train_dataset["positions"],
+                training_data.dataset["positions"],
                 training_data.sed_data,
             ],
-            outputs=training_data.train_dataset["noisy_stars"],
+            outputs=training_data.dataset["noisy_stars"],
             validation_data=(
                 [
-                    test_data.test_dataset["positions"],
+                    test_data.dataset["positions"],
                     test_data.sed_data,
                 ],
-                test_data.test_dataset["stars"],
+                test_data.dataset["stars"],
             ),
             batch_size=training_handler.training_hparams.batch_size,
             learning_rate_param=training_handler.learning_rate_params[
