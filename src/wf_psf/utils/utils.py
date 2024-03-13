@@ -486,7 +486,7 @@ def load_multi_cycle_params_click(args):
 
 
 def PI_zernikes(tf_z1, tf_z2, norm_factor=None):
-    """Compute internal product between zernikes and OPDs
+    """Compute internal product between zernikes and OPDs.
 
     Defined such that Zernikes are orthonormal to each other
 
@@ -512,25 +512,26 @@ def tf_decompose_obscured_opd_basis(
 
     Parameters
     ----------
-    tf_opd: tf.Tensor(opd_dim, opd_dim)
-        Input OPD that requires to be decomposed on `tf_zk_basis`.
-    tf_obscurations: tf.Tensor(opd_dim, opd_dim)
-        Tensor with the obscuration map.
-    tf_zk_basis: Tensor(n_batch, opd_dim, opd_dim)
-        Zernike polynomial maps.
-    n_zernike: int
+    tf_opd : tf.Tensor
+        Input OPD that requires to be decomposed on `tf_zk_basis`. The tensor shape is (opd_dim, opd_dim).
+    tf_obscurations : tf.Tensor
+        Tensor with the obscuration map.  The tensor shape is (opd_dim, opd_dim).
+    tf_zk_basis : tf.Tensor
+        Zernike polynomial maps. The tensor shape is (n_batch, opd_dim, opd_dim)
+    n_zernike : int
         Number of Zernike polynomials to project on.
-    iters: int
+    iters : int
         Number of iterations of the algorithm.
 
     Returns
     -------
-    obsc_coeffs: np.ndarray(n_zernike)
-        Array with projected Zernike coefficients
+    obsc_coeffs: np.ndarray
+        Array of size `n_zernike` with projected Zernike coefficients
 
     Raises
     ------
-        ValueError: If `n_zernike` is bigger than tf_zk_basis.shape[0].
+    ValueError
+        If `n_zernike` is bigger than tf_zk_basis.shape[0].
 
     """
     if n_zernike > tf_zk_basis.shape[0]:
