@@ -94,8 +94,6 @@ def test_build_mesh_custom_params():
     y_lims = [1, 3]
     grid_points = [2, 4]  # 2x4 grid
     mesh_x, mesh_y = MeshHelper.build_mesh(x_lims, y_lims, grid_points)
-    print("mesh x:", mesh_x)
-    print("mesh y:", mesh_y)
     assert mesh_x.shape == (4, 2), "Mesh grid shape should be (4, 2)"
     assert mesh_y.shape == (4, 2), "Mesh grid shape should be (4, 2)"
     assert np.allclose(
