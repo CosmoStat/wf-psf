@@ -152,6 +152,36 @@ def get_psf_model(*psf_model_params):
 
     return psf_factory_class().get_model_instance(*psf_model_params)
 
+def build_PSF_model(model_inst, optimizer=None, loss=None, metrics=None):
+    """Define the model-compilation parameters.
+
+    Specially the loss function, the optimizer and the metrics.
+    """
+    # Define model loss function
+    if loss is None:
+        loss = tf.keras.losses.MeanSquaredError()
+
+    # Define optimizer function
+    if optimizer is None:
+        optimizer = tf.keras.optimizers.Adam(
+            learning_rate=1e-2, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=False
+        )
+
+    # Define metric functions
+    if metrics is None:
+        metrics = [tf.keras.metrics.MeanSquaredError()]
+
+    # Compile the model
+    model_inst.compile(
+        optimizer=optimizer,
+        loss=loss,
+        metrics=metrics,
+        loss_weights=None,
+        weighted_metrics=None,
+        run_eagerly=False,
+    )
+
+    return model_inst
 
 def get_psf_model_weights_filepath(weights_filepath):
     """Get PSF model weights filepath.
