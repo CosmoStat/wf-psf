@@ -259,13 +259,13 @@ class TF_SemiParam_field(tf.keras.Model):
 
         Parameters
         ----------
-        input_positions: Tensor(batch_dim x 2)
-            Positions to predict the OPD.
+        input_positions : tf.Tensor
+            Positions to predict the OPD. Tensor dimensions are (batch_dim, 2)
 
         Returns
         -------
-        opd_maps : Tensor [batch x opd_dim x opd_dim]
-            OPD at requested positions.
+        opd_maps : tf.Tensor
+            OPD at requested positions. Tensor dimensions are (batch, opd_dim, opd_dim)
 
         """
         # Calculate parametric part
@@ -291,7 +291,7 @@ class TF_SemiParam_field(tf.keras.Model):
 
         Parameters
         ----------
-        tf_zernike_cube: tf.Tensor
+        tf_zernike_cube : tf.Tensor
             Zernike maps used for the projection.
 
 
