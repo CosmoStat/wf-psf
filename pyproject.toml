@@ -52,7 +52,7 @@ release = [
 ]
 
 test = [
-  "pytest",
+  "pytest>=7.0.0,<8.1",
   "pytest-cov",
   "pytest-emoji",
   "pytest-raises",
