@@ -66,51 +66,53 @@ training_config = RecursiveNamespace(
     ),
 )
 
-data = RecursiveNamespace(
-    train=RecursiveNamespace(
-        data_dir="data",
-        file="coherent_euclid_dataset/train_Euclid_res_200_TrainStars_id_001.npy",
-        stars=None,
-        positions=None,
-        SEDS=None,
-        zernike_coef=None,
-        C_poly=None,
-        params=RecursiveNamespace(
-            d_max=2,
-            max_order=45,
-            x_lims=[0, 1000.0],
-            y_lims=[0, 1000.0],
-            grid_points=[4, 4],
-            n_bins=20,
-            max_wfe_rms=0.1,
-            oversampling_rate=3.0,
-            output_Q=3.0,
-            output_dim=32,
-            LP_filter_length=2,
-            pupil_diameter=256,
-            euclid_obsc=True,
-            n_stars=200,
-        ),
-    ),
-    test=RecursiveNamespace(
-        data_dir="data",
-        file="coherent_euclid_dataset/test_Euclid_res_id_001.npy",
-        stars=None,
-        noisy_stars=None,
-        positions=None,
-        SEDS=None,
-        zernike_coef=None,
-        C_poly=None,
-        parameters=RecursiveNamespace(
-            d_max=2,
-            max_order=45,
-            x_lims=[0, 1000.0],
-            y_lims=[0, 1000.0],
-            grid_points=[4, 4],
-            max_wfe_rms=0.1,
-        ),
-    ),
-)
+data_conf = RecursiveNamespace(data=
+                               RecursiveNamespace(
+                                training=RecursiveNamespace(
+                                    data_dir="data",
+                                    file="coherent_euclid_dataset/train_Euclid_res_200_TrainStars_id_001.npy",
+                                    stars=None,
+                                    positions=None,
+                                    SEDS=None,
+                                    zernike_coef=None,
+                                    C_poly=None,
+                                    params=RecursiveNamespace(
+                                        d_max=2,
+                                        max_order=45,
+                                        x_lims=[0, 1000.0],
+                                        y_lims=[0, 1000.0],
+                                        grid_points=[4, 4],
+                                        n_bins=20,
+                                        max_wfe_rms=0.1,
+                                        oversampling_rate=3.0,
+                                        output_Q=3.0,
+                                        output_dim=32,
+                                        LP_filter_length=2,
+                                        pupil_diameter=256,
+                                        euclid_obsc=True,
+                                        n_stars=200,
+                                    ),
+                                ),
+                                test=RecursiveNamespace(
+                                    data_dir="data",
+                                    file="coherent_euclid_dataset/test_Euclid_res_id_001.npy",
+                                    stars=None,
+                                    noisy_stars=None,
+                                    positions=None,
+                                    SEDS=None,
+                                    zernike_coef=None,
+                                    C_poly=None,
+                                    parameters=RecursiveNamespace(
+                                        d_max=2,
+                                        max_order=45,
+                                        x_lims=[0, 1000.0],
+                                        y_lims=[0, 1000.0],
+                                        grid_points=[4, 4],
+                                        max_wfe_rms=0.1,
+                                    ),
+                                ),
+                            ),
+                        )
 
 
 @pytest.fixture(scope="module", params=[training_config])
@@ -121,8 +123,8 @@ def training_params():
 @pytest.fixture(scope="module")
 def training_data():
     return DataHandler(
-        "train",
-        data.training,
+        "training",
+        data_conf.data,
         psf_models.simPSF(training_config.model_params),
         training_config.model_params.n_bins_lda,
     )
@@ -132,7 +134,7 @@ def training_data():
 def test_data():
     return DataHandler(
         "test",
-        data.test,
+        data_conf.data,
         psf_models.simPSF(training_config.model_params),
         training_config.model_params.n_bins_lda,
     )
@@ -140,7 +142,7 @@ def test_data():
 
 @pytest.fixture(scope="module")
 def test_dataset(test_data):
-    return test_data.test_dataset
+    return test_data.dataset
 
 
 @pytest.fixture(scope="module")
