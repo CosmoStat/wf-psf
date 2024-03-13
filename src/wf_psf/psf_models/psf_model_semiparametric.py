@@ -286,7 +286,7 @@ class TF_SemiParam_field(tf.keras.Model):
         """Project data-driven features.
 
         Project non-parametric wavefront onto first n_z Zernikes and transfer
-        their parameters to the parametric model. This method updates the value 
+        their parameters to the parametric model. This method updates the value
         of the S matrix in the non-parametric layer `self.tf_np_poly_opd`.
 
         Parameters
