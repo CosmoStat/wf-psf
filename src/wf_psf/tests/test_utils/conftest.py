@@ -79,7 +79,7 @@ def mock_data_config(mock_config_dir):
     # Create a mock data configuration
     mock_data_conf_content = """
     data:
-       train:
+       training:
           data_dir: data/mock_dataset/
           file: train_data.npy
        test:
