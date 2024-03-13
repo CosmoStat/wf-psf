@@ -330,7 +330,7 @@ def evaluate_model(
         logger.info("Computing polychromatic metrics at low resolution.")
 
         train_poly_metric = metrics_handler.evaluate_metrics_polychromatic_lowres(
-            psf_model, simPSF_np, training_data.dataset
+            psf_model, simPSF_np, data.training_data.dataset
         )
 
         # Monochromatic star reconstructions turn into a class
