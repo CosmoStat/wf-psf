@@ -81,7 +81,7 @@ class MetricsParamsHandler:
 
         rmse, rel_rmse, std_rmse, std_rel_rmse = wf_metrics.compute_poly_metric(
             tf_semiparam_field=psf_model,
-            GT_tf_semiparam_field=ground_truth_psf_model(
+            gt_tf_semiparam_field=ground_truth_psf_model(
                 self.metrics_params, dataset["C_poly"]
             ),
             simPSF_np=simPSF,
@@ -131,7 +131,7 @@ class MetricsParamsHandler:
             std_rel_rmse_lda,
         ) = wf_metrics.compute_mono_metric(
             tf_semiparam_field=psf_model,
-            GT_tf_semiparam_field=ground_truth_psf_model(
+            gt_tf_semiparam_field=ground_truth_psf_model(
                 self.metrics_params, dataset["C_poly"]
             ),
             simPSF_np=simPSF,
@@ -176,7 +176,7 @@ class MetricsParamsHandler:
             rel_rmse_std_opd,
         ) = wf_metrics.compute_opd_metrics(
             tf_semiparam_field=psf_model,
-            GT_tf_semiparam_field=ground_truth_psf_model(
+            gt_tf_semiparam_field=ground_truth_psf_model(
                 self.metrics_params, dataset["C_poly"]
             ),
             pos=dataset["positions"],
@@ -215,7 +215,7 @@ class MetricsParamsHandler:
 
         shape_results = wf_metrics.compute_shape_metrics(
             tf_semiparam_field=psf_model,
-            GT_tf_semiparam_field=ground_truth_psf_model(
+            gt_tf_semiparam_field=ground_truth_psf_model(
                 self.metrics_params, dataset["C_poly"]
             ),
             simPSF_np=simPSF,

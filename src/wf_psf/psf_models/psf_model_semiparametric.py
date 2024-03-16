@@ -12,10 +12,10 @@ import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
 from wf_psf.psf_models import psf_models as psfm
 from wf_psf.psf_models import tf_layers as tfl
-from wf_psf.utils.utils import PI_zernikes, zernike_generator
+from wf_psf.utils.utils import pi_zernikes, zernike_generator
 from wf_psf.psf_models.tf_layers import (
-    TF_batch_poly_PSF,
-    TF_batch_mono_PSF,
+    TFBatchPolychromaticPSF,
+    TFBatchMonochromaticPSF,
 )
 import logging
 
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 @psfm.register_psfclass
-class SemiParam_field_Factory(psfm.PSFModelBaseFactory):
+class SemiParamFieldFactory(psfm.PSFModelBaseFactory):
     """Factory class for the SemiParametric PSF Field Model.
 
     This factory class is responsible for instantiating instances of the SemiParametric PSF Field Model.
@@ -66,10 +66,10 @@ class SemiParam_field_Factory(psfm.PSFModelBaseFactory):
         PSF model instance
             An instance of the SemiParametric PSF Field Model.
         """
-        return TF_SemiParam_field(model_params, training_params, coeff_mat)
+        return TFSemiParametricField(model_params, training_params, coeff_mat)
 
 
-class TF_SemiParam_field(tf.keras.Model):
+class TFSemiParametricField(tf.keras.Model):
     """PSF field forward model.
 
     Semi parametric model based on the Zernike polynomial basis.
@@ -133,7 +133,7 @@ class TF_SemiParam_field(tf.keras.Model):
         )
 
         # Initialize the first layer
-        self.tf_poly_Z_field = tfl.TF_poly_Z_field(
+        self.tf_poly_Z_field = tfl.TFPolynomialZernikeField(
             x_lims=self.x_lims,
             y_lims=self.y_lims,
             random_seed=self.random_seed,
@@ -142,10 +142,10 @@ class TF_SemiParam_field(tf.keras.Model):
         )
 
         # Initialize the zernike to OPD layer
-        self.tf_zernike_OPD = tfl.TF_zernike_OPD(zernike_maps=self.zernike_maps)
+        self.tf_zernike_OPD = tfl.TFZernikeOPD(zernike_maps=self.zernike_maps)
 
         # Initialize the non-parametric (np) layer
-        self.tf_np_poly_opd = tfl.TF_NP_poly_OPD(
+        self.tf_np_poly_opd = tfl.TFNonParametricPolynomialVariationsOPD(
             x_lims=self.x_lims,
             y_lims=self.y_lims,
             random_seed=self.random_seed,
@@ -154,7 +154,7 @@ class TF_SemiParam_field(tf.keras.Model):
         )
 
         # Initialize the batch opd to batch polychromatic PSF layer
-        self.tf_batch_poly_PSF = tfl.TF_batch_poly_PSF(
+        self.tf_batch_poly_PSF = tfl.TFBatchPolychromaticPSF(
             obscurations=self.obscurations,
             output_Q=self.output_Q,
             output_dim=self.output_dim,
@@ -244,8 +244,8 @@ class TF_SemiParam_field(tf.keras.Model):
         if output_dim is not None:
             self.output_dim = output_dim
 
-        # Reinitialize the PSF batch poly generator
-        self.tf_batch_poly_PSF = TF_batch_poly_PSF(
+        # Reinitialize the PSF batch polychromatic generator
+        self.tf_batch_poly_PSF = TFBatchPolychromaticPSF(
             obscurations=self.obscurations,
             output_Q=self.output_Q,
             output_dim=self.output_dim,
@@ -268,7 +268,7 @@ class TF_SemiParam_field(tf.keras.Model):
 
         """
         # Initialise the monochromatic PSF batch calculator
-        tf_batch_mono_psf = TF_batch_mono_PSF(
+        tf_batch_mono_psf = TFBatchMonochromaticPSF(
             obscurations=self.obscurations,
             output_Q=self.output_Q,
             output_dim=self.output_dim,
@@ -315,9 +315,9 @@ class TF_SemiParam_field(tf.keras.Model):
 
         return opd_maps
 
-    def assign_S_mat(self, S_mat):
+    def assign_S_mat(self, s_mat):
         """Assign DD features matrix."""
-        self.tf_np_poly_opd.assign_S_mat(S_mat)
+        self.tf_np_poly_opd.assign_S_mat(s_mat)
 
     def project_DD_features(self, tf_zernike_cube):
         """
@@ -326,7 +326,7 @@ class TF_SemiParam_field(tf.keras.Model):
 
         """
         # Compute Zernike norm for projections
-        n_pix_zernike = PI_zernikes(tf_zernike_cube[0, :, :], tf_zernike_cube[0, :, :])
+        n_pix_zernike = pi_zernikes(tf_zernike_cube[0, :, :], tf_zernike_cube[0, :, :])
         # Multiply Alpha matrix with DD features matrix S
         inter_res_v2 = tf.tensordot(
             self.tf_np_poly_opd.alpha_mat[: self.tf_poly_Z_field.coeff_mat.shape[1], :],
@@ -339,7 +339,7 @@ class TF_SemiParam_field(tf.keras.Model):
             np.array(
                 [
                     [
-                        PI_zernikes(
+                        pi_zernikes(
                             tf_zernike_cube[i, :, :],
                             inter_res_v2[j, :, :],
                             n_pix_zernike,
@@ -358,7 +358,7 @@ class TF_SemiParam_field(tf.keras.Model):
 
         # Remove extracted features from non-parametric model
         # Mix DD features with matrix alpha
-        S_tilde = tf.tensordot(
+        s_tilde = tf.tensordot(
             self.tf_np_poly_opd.alpha_mat, self.tf_np_poly_opd.S_mat, axes=1
         )
         # TO DO: Clean Up
@@ -366,10 +366,10 @@ class TF_SemiParam_field(tf.keras.Model):
         beta_tilde_inner = np.array(
             [
                 [
-                    PI_zernikes(tf_zernike_cube[j, :, :], S_tilde_slice, n_pix_zernike)
+                    pi_zernikes(tf_zernike_cube[j, :, :], S_tilde_slice, n_pix_zernike)
                     for j in range(self.n_zernikes)
                 ]
-                for S_tilde_slice in S_tilde[
+                for s_tilde_slice in s_tilde[
                     : self.tf_poly_Z_field.coeff_mat.shape[1], :, :
                 ]
             ]
@@ -378,7 +378,7 @@ class TF_SemiParam_field(tf.keras.Model):
         # Only pad in the first dimension so we get a matrix of size (d_max_nonparam_terms)x(n_zernikes)  --> 21x15 or 21x45.
         beta_tilde = np.pad(
             beta_tilde_inner,
-            [(0, S_tilde.shape[0] - beta_tilde_inner.shape[0]), (0, 0)],
+            [(0, s_tilde.shape[0] - beta_tilde_inner.shape[0]), (0, 0)],
             mode="constant",
         )
 

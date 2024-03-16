@@ -2,21 +2,13 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
 from wf_psf.psf_models.tf_layers import (
-    TF_poly_Z_field,
-    TF_zernike_OPD,
-    TF_batch_poly_PSF,
+    TFZernikeOPD,
+    TFBatchPolychromaticPSF,
+    TFBatchMonochromaticPSF
 )
-from wf_psf.psf_models.tf_layers import (
-    TF_NP_poly_OPD,
-    TF_batch_mono_PSF,
-    TF_physical_layer,
-)
-from wf_psf.utils.utils import PI_zernikes
 
-
-
-class TF_GT_physical_field(tf.keras.Model):
-    """Ground truth PSF field forward model with a physical layer
+class TFGroundTruthPhysicalField(tf.keras.Model):
+    """Ground Truth PSF field forward model with a physical layer
 
     Ground truth PSF field used for evaluation purposes.
 
@@ -59,7 +51,7 @@ class TF_GT_physical_field(tf.keras.Model):
         output_dim=64,
         name="TF_GT_physical_field",
     ):
-        super(TF_GT_physical_field, self).__init__()
+        super(TFGroundTruthPhysicalField, self).__init__()
 
         # Inputs: oversampling used
         self.output_Q = output_Q
@@ -90,10 +82,10 @@ class TF_GT_physical_field(tf.keras.Model):
             interpolation_type="none",
         )
         # Initialize the zernike to OPD layer
-        self.tf_zernike_OPD = TF_zernike_OPD(zernike_maps=zernike_maps)
+        self.tf_zernike_OPD = TFZernikeOPD(zernike_maps=zernike_maps)
 
         # Initialize the batch opd to batch polychromatic PSF layer
-        self.tf_batch_poly_PSF = TF_batch_poly_PSF(
+        self.tf_batch_poly_PSF = TFBatchPolychromaticPSF(
             obscurations=self.obscurations,
             output_Q=self.output_Q,
             output_dim=self.output_dim,
@@ -109,7 +101,7 @@ class TF_GT_physical_field(tf.keras.Model):
             self.output_dim = output_dim
 
         # Reinitialize the PSF batch poly generator
-        self.tf_batch_poly_PSF = TF_batch_poly_PSF(
+        self.tf_batch_poly_PSF = TFBatchPolychromaticPSF(
             obscurations=self.obscurations,
             output_Q=self.output_Q,
             output_dim=self.output_dim,
@@ -159,7 +151,7 @@ class TF_GT_physical_field(tf.keras.Model):
         """
 
         # Initialise the monochromatic PSF batch calculator
-        tf_batch_mono_psf = TF_batch_mono_PSF(
+        tf_batch_mono_psf = TFBatchMonochromaticPSF(
             obscurations=self.obscurations,
             output_Q=self.output_Q,
             output_dim=self.output_dim,

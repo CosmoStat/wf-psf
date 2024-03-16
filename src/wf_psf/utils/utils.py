@@ -485,7 +485,7 @@ def load_multi_cycle_params_click(args):
     return args
 
 
-def PI_zernikes(tf_z1, tf_z2, norm_factor=None):
+def pi_zernikes(tf_z1, tf_z2, norm_factor=None):
     """Compute internal product between zernikes and OPDs
 
     Defined such that Zernikes are orthonormal to each other

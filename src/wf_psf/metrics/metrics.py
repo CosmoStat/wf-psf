@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def compute_poly_metric(
     tf_semiparam_field,
-    GT_tf_semiparam_field,
+    gt_tf_semiparam_field,
     simPSF_np,
     tf_pos,
     tf_SEDs,
@@ -25,7 +25,7 @@ def compute_poly_metric(
     """Calculate metrics for polychromatic reconstructions.
 
     The ``tf_semiparam_field`` should be the model to evaluate, and the
-    ``GT_tf_semiparam_field`` should be loaded with the ground truth PSF field.
+    ``gt_tf_semiparam_field`` should be loaded with the ground truth PSF field.
 
     Relative values returned in [%] (so multiplied by 100).
 
@@ -33,8 +33,8 @@ def compute_poly_metric(
     ----------
     tf_semiparam_field: PSF field object
         Trained model to evaluate.
-    GT_tf_semiparam_field: PSF field object
-        Ground truth model to produce GT observations at any position
+    gt_tf_semiparam_field: PSF field object
+        Ground truth model to produce gt observations at any position
         and wavelength.
     simPSF_np: PSF simulator object
         Simulation object to be used by ``generate_packed_elems`` function.
@@ -51,7 +51,7 @@ def compute_poly_metric(
     dataset_dict: dict
         Dictionary containing the dataset information. If provided, and if the `'stars'` key
         is present, the noiseless stars from the dataset are used to compute the metrics.
-        Otherwise, the stars are generated from the GT model.
+        Otherwise, the stars are generated from the gt model.
         Default is `None`.
 
     Returns
@@ -78,15 +78,15 @@ def compute_poly_metric(
     # Model prediction
     preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
-    # GT data preparation
+    # gt data preparation
     if dataset_dict is None or "stars" not in dataset_dict:
-        logger.info("Regenerating GT stars from model.")
-        # Change interpolation parameters for the GT simPSF
+        logger.info("Regenerating gt stars from model.")
+        # Change interpolation parameters for the gt simPSF
         interp_pts_per_bin = simPSF_np.SED_interp_pts_per_bin
         simPSF_np.SED_interp_pts_per_bin = 0
         SED_sigma = simPSF_np.SED_sigma
         simPSF_np.SED_sigma = 0
-        # Generate SED data list for GT model
+        # Generate SED data list for gt model
         packed_SED_data = [
             utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_gt)
             for _sed in tf_SEDs
@@ -95,24 +95,24 @@ def compute_poly_metric(
         tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
         pred_inputs = [tf_pos, tf_packed_SED_data]
 
-        # GT model prediction
-        GT_preds = GT_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
+        # Ground Truth model prediction
+        gt_preds = gt_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
     else:
-        logger.info("Using GT stars from dataset.")
-        GT_preds = dataset_dict["stars"]
+        logger.info("Using Ground Truth stars from dataset.")
+        gt_preds = dataset_dict["stars"]
 
     # Calculate residuals
-    residuals = np.sqrt(np.mean((GT_preds - preds) ** 2, axis=(1, 2)))
-    GT_star_mean = np.sqrt(np.mean((GT_preds) ** 2, axis=(1, 2)))
+    residuals = np.sqrt(np.mean((gt_preds - preds) ** 2, axis=(1, 2)))
+    gt_star_mean = np.sqrt(np.mean((gt_preds) ** 2, axis=(1, 2)))
 
     # RMSE calculations
     rmse = np.mean(residuals)
-    rel_rmse = 100.0 * np.mean(residuals / GT_star_mean)
+    rel_rmse = 100.0 * np.mean(residuals / gt_star_mean)
 
     # STD calculations
     std_rmse = np.std(residuals)
-    std_rel_rmse = 100.0 * np.std(residuals / GT_star_mean)
+    std_rel_rmse = 100.0 * np.std(residuals / gt_star_mean)
 
     # Print RMSE values
     logger.info("Absolute RMSE:\t %.4e \t +/- %.4e" % (rmse, std_rmse))
@@ -123,7 +123,7 @@ def compute_poly_metric(
 
 def compute_mono_metric(
     tf_semiparam_field,
-    GT_tf_semiparam_field,
+    gt_tf_semiparam_field,
     simPSF_np,
     tf_pos,
     lambda_list,
@@ -132,7 +132,7 @@ def compute_mono_metric(
     """Calculate metrics for monochromatic reconstructions.
 
     The ``tf_semiparam_field`` should be the model to evaluate, and the
-    ``GT_tf_semiparam_field`` should be loaded with the ground truth PSF field.
+    ``gt_tf_semiparam_field`` should be loaded with the ground truth PSF field.
 
     Relative values returned in [%] (so multiplied by 100).
 
@@ -140,8 +140,8 @@ def compute_mono_metric(
     ----------
     tf_semiparam_field: PSF field object
         Trained model to evaluate.
-    GT_tf_semiparam_field: PSF field object
-        Ground truth model to produce GT observations at any position
+    gt_tf_semiparam_field: PSF field object
+        Ground truth model to produce gt observations at any position
         and wavelength.
     simPSF_np: PSF simulator object
         Simulation object capable of calculating ``phase_N`` values from
@@ -181,7 +181,7 @@ def compute_mono_metric(
         phase_N = simPSF_np.feasible_N(lambda_obs)
 
         residuals = np.zeros((total_samples))
-        GT_star_mean = np.zeros((total_samples))
+        gt_star_mean = np.zeros((total_samples))
 
         # Total number of epochs
         n_epochs = int(np.ceil(total_samples / batch_size))
@@ -196,7 +196,7 @@ def compute_mono_metric(
             batch_pos = tf_pos[ep_low_lim:ep_up_lim, :]
 
             # Estimate the monochromatic PSFs
-            GT_mono_psf = GT_tf_semiparam_field.predict_mono_psfs(
+            gt_mono_psf = gt_tf_semiparam_field.predict_mono_psfs(
                 input_positions=batch_pos, lambda_obs=lambda_obs, phase_N=phase_N
             )
 
@@ -204,13 +204,13 @@ def compute_mono_metric(
                 input_positions=batch_pos, lambda_obs=lambda_obs, phase_N=phase_N
             )
 
-            num_pixels = GT_mono_psf.shape[1] * GT_mono_psf.shape[2]
+            num_pixels = gt_mono_psf.shape[1] * gt_mono_psf.shape[2]
 
             residuals[ep_low_lim:ep_up_lim] = (
-                np.sum((GT_mono_psf - model_mono_psf) ** 2, axis=(1, 2)) / num_pixels
+                np.sum((gt_mono_psf - model_mono_psf) ** 2, axis=(1, 2)) / num_pixels
             )
-            GT_star_mean[ep_low_lim:ep_up_lim] = (
-                np.sum((GT_mono_psf) ** 2, axis=(1, 2)) / num_pixels
+            gt_star_mean[ep_low_lim:ep_up_lim] = (
+                np.sum((gt_mono_psf) ** 2, axis=(1, 2)) / num_pixels
             )
 
             # Increase lower limit
@@ -218,20 +218,20 @@ def compute_mono_metric(
 
         # Calculate residuals
         residuals = np.sqrt(residuals)
-        GT_star_mean = np.sqrt(GT_star_mean)
+        gt_star_mean = np.sqrt(gt_star_mean)
 
         # RMSE calculations
         rmse_lda.append(np.mean(residuals))
-        rel_rmse_lda.append(100.0 * np.mean(residuals / GT_star_mean))
+        rel_rmse_lda.append(100.0 * np.mean(residuals / gt_star_mean))
 
         # STD calculations
         std_rmse_lda.append(np.std(residuals))
-        std_rel_rmse_lda.append(100.0 * np.std(residuals / GT_star_mean))
+        std_rel_rmse_lda.append(100.0 * np.std(residuals / gt_star_mean))
 
     return rmse_lda, rel_rmse_lda, std_rmse_lda, std_rel_rmse_lda
 
 
-def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, pos, batch_size=16):
+def compute_opd_metrics(tf_semiparam_field, gt_tf_semiparam_field, pos, batch_size=16):
     """Compute the OPD metrics.
 
     Need to handle a batch size to avoid Out-Of-Memory errors with
@@ -246,8 +246,8 @@ def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, pos, batch_si
     ----------
     tf_semiparam_field: PSF field object
         Trained model to evaluate.
-    GT_tf_semiparam_field: PSF field object
-        Ground truth model to produce GT observations at any position
+    gt_tf_semiparam_field: PSF field object
+        Ground truth model to produce gt observations at any position
         and wavelength.
     pos: numpy.ndarray [batch x 2]
         Positions at where to predict the OPD maps.
@@ -267,13 +267,13 @@ def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, pos, batch_si
 
     """
     # Get OPD obscurations
-    np_obscurations = np.real(GT_tf_semiparam_field.obscurations.numpy())
+    np_obscurations = np.real(gt_tf_semiparam_field.obscurations.numpy())
     # Define total number of samples
     n_samples = pos.shape[0]
 
     # Initialise batch variables
     opd_batch = None
-    GT_opd_batch = None
+    gt_opd_batch = None
     counter = 0
     # Initialise result lists
     rmse_vals = np.zeros(n_samples)
@@ -290,13 +290,13 @@ def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, pos, batch_si
         batch_pos = pos[counter:end_sample, :]
         # We calculate a batch of OPDs
         opd_batch = tf_semiparam_field.predict_opd(batch_pos).numpy()
-        GT_opd_batch = GT_tf_semiparam_field.predict_opd(batch_pos).numpy()
+        gt_opd_batch = gt_tf_semiparam_field.predict_opd(batch_pos).numpy()
         # Remove the mean of the OPD
         opd_batch -= np.mean(opd_batch, axis=(1, 2)).reshape(-1, 1, 1)
-        GT_opd_batch -= np.mean(GT_opd_batch, axis=(1, 2)).reshape(-1, 1, 1)
+        gt_opd_batch -= np.mean(gt_opd_batch, axis=(1, 2)).reshape(-1, 1, 1)
         # Obscure the OPDs
         opd_batch *= np_obscurations
-        GT_opd_batch *= np_obscurations
+        gt_opd_batch *= np_obscurations
         # Generate obscuration mask
         obsc_mask = np_obscurations > 0
         nb_mask_elems = np.sum(obsc_mask)
@@ -305,18 +305,18 @@ def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, pos, batch_si
             np.array(
                 [
                     np.sum((im1[obsc_mask] - im2[obsc_mask]) ** 2) / nb_mask_elems
-                    for im1, im2 in zip(opd_batch, GT_opd_batch)
+                    for im1, im2 in zip(opd_batch, gt_opd_batch)
                 ]
             )
         )
-        GT_opd_mean = np.sqrt(
+        gt_opd_mean = np.sqrt(
             np.array(
-                [np.sum(im2[obsc_mask] ** 2) / nb_mask_elems for im2 in GT_opd_batch]
+                [np.sum(im2[obsc_mask] ** 2) / nb_mask_elems for im2 in gt_opd_batch]
             )
         )
         # RMSE calculations
         rmse_vals[counter:end_sample] = res_opd
-        rel_rmse_vals[counter:end_sample] = 100.0 * (res_opd / GT_opd_mean)
+        rel_rmse_vals[counter:end_sample] = 100.0 * (res_opd / gt_opd_mean)
 
         # Add the results to the lists
         counter += batch_size
@@ -336,7 +336,7 @@ def compute_opd_metrics(tf_semiparam_field, GT_tf_semiparam_field, pos, batch_si
 
 def compute_shape_metrics(
     tf_semiparam_field,
-    GT_tf_semiparam_field,
+    gt_tf_semiparam_field,
     simPSF_np,
     SEDs,
     tf_pos,
@@ -357,8 +357,8 @@ def compute_shape_metrics(
     ----------
     tf_semiparam_field: PSF field object
         Trained model to evaluate.
-    GT_tf_semiparam_field: PSF field object
-        Ground truth model to produce GT observations at any position
+    gt_tf_semiparam_field: PSF field object
+        Ground truth model to produce gt observations at any position
         and wavelength.
     simPSF_np:
     SEDs: numpy.ndarray [batch x SED_samples x 2]
@@ -389,7 +389,7 @@ def compute_shape_metrics(
     dataset_dict: dict
         Dictionary containing the dataset information. If provided, and if the `'super_res_stars'`
         key is present, the noiseless super resolved stars from the dataset are used to compute
-        the metrics. Otherwise, the stars are generated from the GT model.
+        the metrics. Otherwise, the stars are generated from the gt model.
         Default is `None`.
 
     Returns
@@ -401,16 +401,16 @@ def compute_shape_metrics(
     # Save original output_Q and output_dim
     original_out_Q = tf_semiparam_field.output_Q
     original_out_dim = tf_semiparam_field.output_dim
-    GT_original_out_Q = GT_tf_semiparam_field.output_Q
-    GT_original_out_dim = GT_tf_semiparam_field.output_dim
+    gt_original_out_Q = gt_tf_semiparam_field.output_Q
+    gt_original_out_dim = gt_tf_semiparam_field.output_dim
 
     # Set the required output_Q and output_dim parameters in the models
     tf_semiparam_field.set_output_Q(output_Q=output_Q, output_dim=output_dim)
-    GT_tf_semiparam_field.set_output_Q(output_Q=output_Q, output_dim=output_dim)
+    gt_tf_semiparam_field.set_output_Q(output_Q=output_Q, output_dim=output_dim)
 
     # Need to compile the models again
     tf_semiparam_field = build_PSF_model(tf_semiparam_field)
-    GT_tf_semiparam_field = build_PSF_model(GT_tf_semiparam_field)
+    gt_tf_semiparam_field = build_PSF_model(gt_tf_semiparam_field)
 
     # Generate SED data list
     packed_SED_data = [
@@ -425,19 +425,19 @@ def compute_shape_metrics(
     # PSF model
     predictions = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
-    # GT data preparation
+    # gt data preparation
     if (
         dataset_dict is None
         or "super_res_stars" not in dataset_dict
         or "SR_stars" not in dataset_dict
     ):
-        logger.info("Generating GT super resolved stars from the GT model.")
-        # Change interpolation parameters for the GT simPSF
+        logger.info("Generating gt super resolved stars from the gt model.")
+        # Change interpolation parameters for the gt simPSF
         interp_pts_per_bin = simPSF_np.SED_interp_pts_per_bin
         simPSF_np.SED_interp_pts_per_bin = 0
         SED_sigma = simPSF_np.SED_sigma
         simPSF_np.SED_sigma = 0
-        # Generate SED data list for GT model
+        # Generate SED data list for gt model
         packed_SED_data = [
             utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_gt)
             for _sed in SEDs
@@ -449,32 +449,32 @@ def compute_shape_metrics(
         pred_inputs = [tf_pos, tf_packed_SED_data]
 
         # Ground Truth model
-        GT_predictions = GT_tf_semiparam_field.predict(
+        gt_predictions = gt_tf_semiparam_field.predict(
             x=pred_inputs, batch_size=batch_size
         )
 
     else:
         logger.info("Using super resolved stars from dataset.")
         if "super_res_stars" in dataset_dict:
-            GT_predictions = dataset_dict["super_res_stars"]
+            gt_predictions = dataset_dict["super_res_stars"]
         elif "SR_stars" in dataset_dict:
-            GT_predictions = dataset_dict["SR_stars"]
+            gt_predictions = dataset_dict["SR_stars"]
 
     # Calculate residuals
-    residuals = np.sqrt(np.mean((GT_predictions - predictions) ** 2, axis=(1, 2)))
-    GT_star_mean = np.sqrt(np.mean((GT_predictions) ** 2, axis=(1, 2)))
+    residuals = np.sqrt(np.mean((gt_predictions - predictions) ** 2, axis=(1, 2)))
+    gt_star_mean = np.sqrt(np.mean((gt_predictions) ** 2, axis=(1, 2)))
 
     # Pixel RMSE for each star
     if opt_stars_rel_pix_rmse:
-        stars_rel_pix_rmse = 100.0 * residuals / GT_star_mean
+        stars_rel_pix_rmse = 100.0 * residuals / gt_star_mean
 
     # RMSE calculations
     pix_rmse = np.mean(residuals)
-    rel_pix_rmse = 100.0 * np.mean(residuals / GT_star_mean)
+    rel_pix_rmse = 100.0 * np.mean(residuals / gt_star_mean)
 
     # STD calculations
     pix_rmse_std = np.std(residuals)
-    rel_pix_rmse_std = 100.0 * np.std(residuals / GT_star_mean)
+    rel_pix_rmse_std = 100.0 * np.std(residuals / gt_star_mean)
 
     # Print pixel RMSE values
     logger.info(
@@ -491,40 +491,40 @@ def compute_shape_metrics(
     ]
 
     # Measure shapes of the reconstructions
-    GT_pred_moments = [
+    gt_pred_moments = [
         gs.hsm.FindAdaptiveMom(gs.Image(_pred), strict=False)
-        for _pred in GT_predictions
+        for _pred in gt_predictions
     ]
 
     pred_e1_HSM, pred_e2_HSM, pred_R2_HSM = [], [], []
-    GT_pred_e1_HSM, GT_pred_e2_HSM, GT_pred_R2_HSM = [], [], []
+    gt_pred_e1_HSM, gt_pred_e2_HSM, gt_pred_R2_HSM = [], [], []
 
-    for it in range(len(GT_pred_moments)):
+    for it in range(len(gt_pred_moments)):
         if (
             pred_moments[it].moments_status == 0
-            and GT_pred_moments[it].moments_status == 0
+            and gt_pred_moments[it].moments_status == 0
         ):
             pred_e1_HSM.append(pred_moments[it].observed_shape.g1)
             pred_e2_HSM.append(pred_moments[it].observed_shape.g2)
             pred_R2_HSM.append(2 * (pred_moments[it].moments_sigma ** 2))
 
-            GT_pred_e1_HSM.append(GT_pred_moments[it].observed_shape.g1)
-            GT_pred_e2_HSM.append(GT_pred_moments[it].observed_shape.g2)
-            GT_pred_R2_HSM.append(2 * (GT_pred_moments[it].moments_sigma ** 2))
+            gt_pred_e1_HSM.append(gt_pred_moments[it].observed_shape.g1)
+            gt_pred_e2_HSM.append(gt_pred_moments[it].observed_shape.g2)
+            gt_pred_R2_HSM.append(2 * (gt_pred_moments[it].moments_sigma ** 2))
 
     pred_e1_HSM = np.array(pred_e1_HSM)
     pred_e2_HSM = np.array(pred_e2_HSM)
     pred_R2_HSM = np.array(pred_R2_HSM)
 
-    GT_pred_e1_HSM = np.array(GT_pred_e1_HSM)
-    GT_pred_e2_HSM = np.array(GT_pred_e2_HSM)
-    GT_pred_R2_HSM = np.array(GT_pred_R2_HSM)
+    gt_pred_e1_HSM = np.array(gt_pred_e1_HSM)
+    gt_pred_e2_HSM = np.array(gt_pred_e2_HSM)
+    gt_pred_R2_HSM = np.array(gt_pred_R2_HSM)
 
     # Calculate metrics
 
     # e1
-    e1_res = GT_pred_e1_HSM - pred_e1_HSM
-    e1_res_rel = (GT_pred_e1_HSM - pred_e1_HSM) / GT_pred_e1_HSM
+    e1_res = gt_pred_e1_HSM - pred_e1_HSM
+    e1_res_rel = (gt_pred_e1_HSM - pred_e1_HSM) / gt_pred_e1_HSM
 
     rmse_e1 = np.sqrt(np.mean(e1_res**2))
     rel_rmse_e1 = 100.0 * np.sqrt(np.mean(e1_res_rel**2))
@@ -532,8 +532,8 @@ def compute_shape_metrics(
     std_rel_rmse_e1 = 100.0 * np.std(e1_res_rel)
 
     # e2
-    e2_res = GT_pred_e2_HSM - pred_e2_HSM
-    e2_res_rel = (GT_pred_e2_HSM - pred_e2_HSM) / GT_pred_e2_HSM
+    e2_res = gt_pred_e2_HSM - pred_e2_HSM
+    e2_res_rel = (gt_pred_e2_HSM - pred_e2_HSM) / gt_pred_e2_HSM
 
     rmse_e2 = np.sqrt(np.mean(e2_res**2))
     rel_rmse_e2 = 100.0 * np.sqrt(np.mean(e2_res_rel**2))
@@ -541,10 +541,10 @@ def compute_shape_metrics(
     std_rel_rmse_e2 = 100.0 * np.std(e2_res_rel)
 
     # R2
-    R2_res = GT_pred_R2_HSM - pred_R2_HSM
+    R2_res = gt_pred_R2_HSM - pred_R2_HSM
 
-    rmse_R2_meanR2 = np.sqrt(np.mean(R2_res**2)) / np.mean(GT_pred_R2_HSM)
-    std_rmse_R2_meanR2 = np.std(R2_res / GT_pred_R2_HSM)
+    rmse_R2_meanR2 = np.sqrt(np.mean(R2_res**2)) / np.mean(gt_pred_R2_HSM)
+    std_rmse_R2_meanR2 = np.std(R2_res / gt_pred_R2_HSM)
 
     # Print shape/size errors
     logger.info("\nsigma(e1) RMSE =\t\t %.4e \t +/- %.4e " % (rmse_e1, std_rmse_e1))
@@ -564,32 +564,32 @@ def compute_shape_metrics(
     )
 
     # Print number of stars
-    logger.info("\nTotal number of stars: \t\t%d" % (len(GT_pred_moments)))
+    logger.info("\nTotal number of stars: \t\t%d" % (len(gt_pred_moments)))
     logger.info(
         "Problematic number of stars: \t%d"
-        % (len(GT_pred_moments) - GT_pred_e1_HSM.shape[0])
+        % (len(gt_pred_moments) - gt_pred_e1_HSM.shape[0])
     )
 
     # Re-et the original output_Q and output_dim parameters in the models
     tf_semiparam_field.set_output_Q(
         output_Q=original_out_Q, output_dim=original_out_dim
     )
-    GT_tf_semiparam_field.set_output_Q(
-        output_Q=GT_original_out_Q, output_dim=GT_original_out_dim
+    gt_tf_semiparam_field.set_output_Q(
+        output_Q=gt_original_out_Q, output_dim=gt_original_out_dim
     )
 
     # Need to compile the models again
     tf_semiparam_field = build_PSF_model(tf_semiparam_field)
-    GT_tf_semiparam_field = build_PSF_model(GT_tf_semiparam_field)
+    gt_tf_semiparam_field = build_PSF_model(gt_tf_semiparam_field)
 
     # Moment results
     result_dict = {
         "pred_e1_HSM": pred_e1_HSM,
         "pred_e2_HSM": pred_e2_HSM,
         "pred_R2_HSM": pred_R2_HSM,
-        "GT_pred_e1_HSM": GT_pred_e1_HSM,
-        "GT_ped_e2_HSM": GT_pred_e2_HSM,
-        "GT_pred_R2_HSM": GT_pred_R2_HSM,
+        "gt_pred_e1_HSM": gt_pred_e1_HSM,
+        "gt_ped_e2_HSM": gt_pred_e2_HSM,
+        "gt_pred_R2_HSM": gt_pred_R2_HSM,
         "rmse_e1": rmse_e1,
         "std_rmse_e1": std_rmse_e1,
         "rel_rmse_e1": rel_rmse_e1,
@@ -615,7 +615,7 @@ def compute_shape_metrics(
     return result_dict
 
 
-def gen_GT_wf_model(test_wf_file_path, pred_output_Q=1, pred_output_dim=64):
+def gen_gt_wf_model(test_wf_file_path, pred_output_Q=1, pred_output_dim=64):
     r"""Generate the ground truth model and output test PSF ar required resolution.
 
     If `pred_output_Q=1` the resolution will be 3 times the one of Euclid.
@@ -630,7 +630,7 @@ def gen_GT_wf_model(test_wf_file_path, pred_output_Q=1, pred_output_dim=64):
     tf_test_pos = tf.convert_to_tensor(wf_test_pos, dtype=tf.float32)
     wf_test_SEDs = wf_test_dataset["SEDs"]
 
-    # Generate GT model
+    # Generate gt model
     batch_size = 16
 
     # Generate Zernike maps
@@ -673,7 +673,7 @@ def gen_GT_wf_model(test_wf_file_path, pred_output_Q=1, pred_output_dim=64):
     tf_zernike_cube = tf.convert_to_tensor(np_zernike_cube, dtype=tf.float32)
 
     # Initialize the model
-    GT_tf_semiparam_field = psf_field.TF_SemiParam_field(
+    gt_tf_semiparam_field = psf_field.TF_SemiParam_field(
         zernike_maps=tf_zernike_cube,
         obscurations=tf_obscurations,
         batch_size=batch_size,
@@ -687,18 +687,18 @@ def gen_GT_wf_model(test_wf_file_path, pred_output_Q=1, pred_output_dim=64):
     )
 
     # For the Ground truth model
-    GT_tf_semiparam_field.tf_poly_Z_field.assign_coeff_matrix(wf_test_C_poly)
-    _ = GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat.assign(
-        tf.zeros_like(GT_tf_semiparam_field.tf_np_poly_opd.alpha_mat)
+    gt_tf_semiparam_field.tf_poly_Z_field.assign_coeff_matrix(wf_test_C_poly)
+    _ = gt_tf_semiparam_field.tf_np_poly_opd.alpha_mat.assign(
+        tf.zeros_like(gt_tf_semiparam_field.tf_np_poly_opd.alpha_mat)
     )
 
     # Set required output_Q
 
-    GT_tf_semiparam_field.set_output_Q(
+    gt_tf_semiparam_field.set_output_Q(
         output_Q=pred_output_Q, output_dim=pred_output_dim
     )
 
-    GT_tf_semiparam_field = psf_field.build_PSF_model(GT_tf_semiparam_field)
+    gt_tf_semiparam_field = psf_field.build_PSF_model(gt_tf_semiparam_field)
 
     packed_SED_data = [
         utils.generate_packed_elems(_sed, simPSF_np, n_bins=wf_test_params["n_bins"])
@@ -711,9 +711,9 @@ def gen_GT_wf_model(test_wf_file_path, pred_output_Q=1, pred_output_dim=64):
     pred_inputs = [tf_test_pos, tf_packed_SED_data]
 
     # Ground Truth model
-    GT_predictions = GT_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
+    gt_predictions = gt_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
-    return GT_predictions, wf_test_pos, GT_tf_semiparam_field
+    return gt_predictions, wf_test_pos, gt_tf_semiparam_field
 
 
 ## Below this line there are DEPRECATED functions
@@ -779,7 +779,7 @@ def compute_metrics(
 
 
 def compute_opd_metrics_mccd(
-    tf_semiparam_field, GT_tf_semiparam_field, test_pos, train_pos
+    tf_semiparam_field, gt_tf_semiparam_field, test_pos, train_pos
 ):
     """Compute the OPD metrics."""
 
@@ -794,19 +794,19 @@ def compute_opd_metrics_mccd(
     # OPD prediction
     opd_pred = tf.math.add(P_opd_pred, NP_opd_pred)
 
-    # GT model
-    GT_zernike_coeffs = GT_tf_semiparam_field.tf_poly_Z_field(test_pos)
-    GT_opd_maps = GT_tf_semiparam_field.tf_zernike_OPD(GT_zernike_coeffs)
+    # gt model
+    gt_zernike_coeffs = gt_tf_semiparam_field.tf_poly_Z_field(test_pos)
+    gt_opd_maps = gt_tf_semiparam_field.tf_zernike_OPD(gt_zernike_coeffs)
 
     # Compute residual and obscure the OPD
-    res_opd = (GT_opd_maps.numpy() - opd_pred.numpy()) * np_obscurations
+    res_opd = (gt_opd_maps.numpy() - opd_pred.numpy()) * np_obscurations
 
     # Calculate absolute RMSE values
     test_opd_rmse = np.sqrt(np.mean(res_opd**2))
 
     # Calculate relative RMSE values
     relative_test_opd_rmse = test_opd_rmse / np.sqrt(
-        np.mean((GT_opd_maps.numpy() * np_obscurations) ** 2)
+        np.mean((gt_opd_maps.numpy() * np_obscurations) ** 2)
     )
 
     # Print RMSE values
@@ -824,19 +824,19 @@ def compute_opd_metrics_mccd(
     # OPD prediction
     opd_pred = tf.math.add(P_opd_pred, NP_opd_pred)
 
-    # GT model
-    GT_zernike_coeffs = GT_tf_semiparam_field.tf_poly_Z_field(train_pos)
-    GT_opd_maps = GT_tf_semiparam_field.tf_zernike_OPD(GT_zernike_coeffs)
+    # gt model
+    gt_zernike_coeffs = gt_tf_semiparam_field.tf_poly_Z_field(train_pos)
+    gt_opd_maps = gt_tf_semiparam_field.tf_zernike_OPD(gt_zernike_coeffs)
 
     # Compute residual and obscure the OPD
-    res_opd = (GT_opd_maps.numpy() - opd_pred.numpy()) * np_obscurations
+    res_opd = (gt_opd_maps.numpy() - opd_pred.numpy()) * np_obscurations
 
     # Calculate RMSE values
     train_opd_rmse = np.sqrt(np.mean(res_opd**2))
 
     # Calculate relative RMSE values
     relative_train_opd_rmse = train_opd_rmse / np.sqrt(
-        np.mean((GT_opd_maps.numpy() * np_obscurations) ** 2)
+        np.mean((gt_opd_maps.numpy() * np_obscurations) ** 2)
     )
 
     # Print RMSE values
@@ -849,7 +849,7 @@ def compute_opd_metrics_mccd(
 
 
 def compute_opd_metrics_polymodel(
-    tf_semiparam_field, GT_tf_semiparam_field, test_pos, train_pos
+    tf_semiparam_field, gt_tf_semiparam_field, test_pos, train_pos
 ):
     """Compute the OPD metrics."""
 
@@ -864,19 +864,19 @@ def compute_opd_metrics_polymodel(
     # OPD prediction
     opd_pred = tf.math.add(P_opd_pred, NP_opd_pred)
 
-    # GT model
-    GT_zernike_coeffs = GT_tf_semiparam_field.tf_poly_Z_field(test_pos)
-    GT_opd_maps = GT_tf_semiparam_field.tf_zernike_OPD(GT_zernike_coeffs)
+    # gt model
+    gt_zernike_coeffs = gt_tf_semiparam_field.tf_poly_Z_field(test_pos)
+    gt_opd_maps = gt_tf_semiparam_field.tf_zernike_OPD(gt_zernike_coeffs)
 
     # Compute residual and obscure the OPD
-    res_opd = (GT_opd_maps.numpy() - opd_pred.numpy()) * np_obscurations
+    res_opd = (gt_opd_maps.numpy() - opd_pred.numpy()) * np_obscurations
 
     # Calculate RMSE values
     test_opd_rmse = np.sqrt(np.mean(res_opd**2))
 
     # Calculate relative RMSE values
     relative_test_opd_rmse = test_opd_rmse / np.sqrt(
-        np.mean((GT_opd_maps.numpy() * np_obscurations) ** 2)
+        np.mean((gt_opd_maps.numpy() * np_obscurations) ** 2)
     )
 
     # Print RMSE values
@@ -894,19 +894,19 @@ def compute_opd_metrics_polymodel(
     # OPD prediction
     opd_pred = tf.math.add(P_opd_pred, NP_opd_pred)
 
-    # GT model
-    GT_zernike_coeffs = GT_tf_semiparam_field.tf_poly_Z_field(train_pos)
-    GT_opd_maps = GT_tf_semiparam_field.tf_zernike_OPD(GT_zernike_coeffs)
+    # gt model
+    gt_zernike_coeffs = gt_tf_semiparam_field.tf_poly_Z_field(train_pos)
+    gt_opd_maps = gt_tf_semiparam_field.tf_zernike_OPD(gt_zernike_coeffs)
 
     # Compute residual and obscure the OPD
-    res_opd = (GT_opd_maps.numpy() - opd_pred.numpy()) * np_obscurations
+    res_opd = (gt_opd_maps.numpy() - opd_pred.numpy()) * np_obscurations
 
     # Calculate RMSE values
     train_opd_rmse = np.sqrt(np.mean(res_opd**2))
 
     # Calculate relative RMSE values
     relative_train_opd_rmse = train_opd_rmse / np.sqrt(
-        np.mean((GT_opd_maps.numpy() * np_obscurations) ** 2)
+        np.mean((gt_opd_maps.numpy() * np_obscurations) ** 2)
     )
 
     # Pritn RMSE values
@@ -919,7 +919,7 @@ def compute_opd_metrics_polymodel(
 
 
 def compute_opd_metrics_param_model(
-    tf_semiparam_field, GT_tf_semiparam_field, test_pos, train_pos
+    tf_semiparam_field, gt_tf_semiparam_field, test_pos, train_pos
 ):
     """Compute the OPD metrics."""
 
@@ -930,19 +930,19 @@ def compute_opd_metrics_param_model(
     zernike_coeffs = tf_semiparam_field.tf_poly_Z_field(test_pos)
     opd_pred = tf_semiparam_field.tf_zernike_OPD(zernike_coeffs)
 
-    # GT model
-    GT_zernike_coeffs = GT_tf_semiparam_field.tf_poly_Z_field(test_pos)
-    GT_opd_maps = GT_tf_semiparam_field.tf_zernike_OPD(GT_zernike_coeffs)
+    # gt model
+    gt_zernike_coeffs = gt_tf_semiparam_field.tf_poly_Z_field(test_pos)
+    gt_opd_maps = gt_tf_semiparam_field.tf_zernike_OPD(gt_zernike_coeffs)
 
     # Compute residual and obscure the OPD
-    res_opd = (GT_opd_maps.numpy() - opd_pred.numpy()) * np_obscurations
+    res_opd = (gt_opd_maps.numpy() - opd_pred.numpy()) * np_obscurations
 
     # Calculate absolute RMSE values
     test_opd_rmse = np.sqrt(np.mean(res_opd**2))
 
     # Calculate relative RMSE values
     relative_test_opd_rmse = test_opd_rmse / np.sqrt(
-        np.mean((GT_opd_maps.numpy() * np_obscurations) ** 2)
+        np.mean((gt_opd_maps.numpy() * np_obscurations) ** 2)
     )
 
     # Print RMSE values
@@ -956,19 +956,19 @@ def compute_opd_metrics_param_model(
     zernike_coeffs = tf_semiparam_field.tf_poly_Z_field(train_pos)
     opd_pred = tf_semiparam_field.tf_zernike_OPD(zernike_coeffs)
 
-    # GT model
-    GT_zernike_coeffs = GT_tf_semiparam_field.tf_poly_Z_field(train_pos)
-    GT_opd_maps = GT_tf_semiparam_field.tf_zernike_OPD(GT_zernike_coeffs)
+    # gt model
+    gt_zernike_coeffs = gt_tf_semiparam_field.tf_poly_Z_field(train_pos)
+    gt_opd_maps = gt_tf_semiparam_field.tf_zernike_OPD(gt_zernike_coeffs)
 
     # Compute residual and obscure the OPD
-    res_opd = (GT_opd_maps.numpy() - opd_pred.numpy()) * np_obscurations
+    res_opd = (gt_opd_maps.numpy() - opd_pred.numpy()) * np_obscurations
 
     # Calculate RMSE values
     train_opd_rmse = np.sqrt(np.mean(res_opd**2))
 
     # Calculate relative RMSE values
     relative_train_opd_rmse = train_opd_rmse / np.sqrt(
-        np.mean((GT_opd_maps.numpy() * np_obscurations) ** 2)
+        np.mean((gt_opd_maps.numpy() * np_obscurations) ** 2)
     )
 
     # Print RMSE values
@@ -980,7 +980,7 @@ def compute_opd_metrics_param_model(
     return test_opd_rmse, train_opd_rmse
 
 
-def compute_one_opd_rmse(GT_tf_semiparam_field, tf_semiparam_field, pos, is_poly=False):
+def compute_one_opd_rmse(gt_tf_semiparam_field, tf_semiparam_field, pos, is_poly=False):
     """Compute the OPD map for one position."""
 
     np_obscurations = np.real(tf_semiparam_field.obscurations.numpy())
@@ -999,12 +999,12 @@ def compute_one_opd_rmse(GT_tf_semiparam_field, tf_semiparam_field, pos, is_poly
     # OPD prediction
     opd_pred = tf.math.add(P_opd_pred, NP_opd_pred)
 
-    # GT model
-    GT_zernike_coeffs = GT_tf_semiparam_field.tf_poly_Z_field(tf_pos)
-    GT_opd_maps = GT_tf_semiparam_field.tf_zernike_OPD(GT_zernike_coeffs)
+    # gt model
+    gt_zernike_coeffs = gt_tf_semiparam_field.tf_poly_Z_field(tf_pos)
+    gt_opd_maps = gt_tf_semiparam_field.tf_zernike_OPD(gt_zernike_coeffs)
 
     # Compute residual and obscure the OPD
-    res_opd = (GT_opd_maps.numpy() - opd_pred.numpy()) * np_obscurations
+    res_opd = (gt_opd_maps.numpy() - opd_pred.numpy()) * np_obscurations
 
     # Calculate RMSE values
     opd_rmse = np.sqrt(np.mean(res_opd**2))
@@ -1051,7 +1051,7 @@ def plot_function(mesh_pos, residual, tf_train_pos, tf_test_pos, title="Error"):
 
 
 def plot_residual_maps(
-    GT_tf_semiparam_field,
+    gt_tf_semiparam_field,
     tf_semiparam_field,
     simPSF_np,
     train_SEDs,
@@ -1101,21 +1101,21 @@ def plot_residual_maps(
 
     # Predict mesh stars
     model_mesh_preds = tf_semiparam_field.predict(x=mesh_pred_inputs, batch_size=16)
-    GT_mesh_preds = GT_tf_semiparam_field.predict(x=mesh_pred_inputs, batch_size=16)
+    gt_mesh_preds = gt_tf_semiparam_field.predict(x=mesh_pred_inputs, batch_size=16)
 
     # Calculate pixel RMSE for each star
     pix_rmse = np.array(
         [
-            np.sqrt(np.mean((_GT_pred - _model_pred) ** 2))
-            for _GT_pred, _model_pred in zip(GT_mesh_preds, model_mesh_preds)
+            np.sqrt(np.mean((_gt_pred - _model_pred) ** 2))
+            for _gt_pred, _model_pred in zip(gt_mesh_preds, model_mesh_preds)
         ]
     )
 
     relative_pix_rmse = np.array(
         [
-            np.sqrt(np.mean((_GT_pred - _model_pred) ** 2))
-            / np.sqrt(np.mean((_GT_pred) ** 2))
-            for _GT_pred, _model_pred in zip(GT_mesh_preds, model_mesh_preds)
+            np.sqrt(np.mean((_gt_pred - _model_pred) ** 2))
+            / np.sqrt(np.mean((_gt_pred) ** 2))
+            for _gt_pred, _model_pred in zip(gt_mesh_preds, model_mesh_preds)
         ]
     )
 
@@ -1136,7 +1136,7 @@ def plot_residual_maps(
     opd_rmse = np.array(
         [
             compute_one_opd_rmse(
-                GT_tf_semiparam_field, tf_semiparam_field, _pos.reshape(1, -1), is_poly
+                gt_tf_semiparam_field, tf_semiparam_field, _pos.reshape(1, -1), is_poly
             )
             for _pos in mesh_pos
         ]
