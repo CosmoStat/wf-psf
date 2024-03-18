@@ -36,7 +36,9 @@ def test_unobscured_zernike_projection():
     tf_zk_array = tf.convert_to_tensor(zk_array, dtype=tf.float32)
 
     # Compute OPD
-    tf_unobscured_opd = tf.math.reduce_sum(tf.math.multiply(tf_zernike_cube, tf_zk_array), axis=1)
+    tf_unobscured_opd = tf.math.reduce_sum(
+        tf.math.multiply(tf_zernike_cube, tf_zk_array), axis=1
+    )
 
     # Compute normalisation factor
     norm_factor = unobscured_zernike_projection(
@@ -84,7 +86,9 @@ def test_tf_decompose_obscured_opd_basis():
     tf_zk_array = tf.convert_to_tensor(zk_array, dtype=tf.float32)
 
     # Compute OPD
-    tf_unobscured_opd = tf.math.reduce_sum(tf.math.multiply(tf_zernike_cube, tf_zk_array), axis=1)
+    tf_unobscured_opd = tf.math.reduce_sum(
+        tf.math.multiply(tf_zernike_cube, tf_zk_array), axis=1
+    )
     # Obscure the OPD
     tf_obscured_opd = tf.math.multiply(
         tf_unobscured_opd, tf.expand_dims(tf_obscurations, axis=0)
