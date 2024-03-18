@@ -92,7 +92,7 @@ def mock_training_config_handler(mocker, mock_training_conf, mock_data_conf):
 
 
 @configs_handler.register_configclass
-class TestClass:
+class RegisterConfigClass:
     ids = ("test_conf",)
 
     def __init__(self, config_params, file_handler):
@@ -101,12 +101,12 @@ class TestClass:
 
 
 def test_register_configclass():
-    assert configs_handler.CONFIG_CLASS["test_conf"] == TestClass
+    assert configs_handler.CONFIG_CLASS["test_conf"] == RegisterConfigClass
 
 
 def test_set_run_config():
     config_class = configs_handler.set_run_config("test_conf")
-    assert config_class == TestClass
+    assert config_class == RegisterConfigClass
 
     config_class = configs_handler.set_run_config("training_conf")
     assert config_class == configs_handler.TrainingConfigHandler
@@ -127,7 +127,7 @@ def test_get_run_config(path_to_repo_dir, path_to_tmp_output_dir, path_to_config
         "test_conf", "fake_config.yaml", test_file_handler
     )
 
-    assert type(config_class) is TestClass
+    assert type(config_class) is RegisterConfigClass
 
 
 def test_data_config_handler_init(
