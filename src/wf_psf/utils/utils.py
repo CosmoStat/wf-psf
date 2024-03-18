@@ -527,7 +527,7 @@ def tf_decompose_obscured_opd_basis(
 
     Returns
     -------
-    obsc_coeffs: np.ndarray
+    obsc_coeffs : np.ndarray
         Array of size `n_zernike` with projected Zernike coefficients
 
     Raises
