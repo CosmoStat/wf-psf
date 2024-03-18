@@ -446,10 +446,15 @@ class TF_SemiParam_field(tf.keras.Model):
         self.tf_np_poly_opd.assign_S_mat(S_mat)
 
     def project_DD_features(self, tf_zernike_cube):
-        """
-        Project non-parametric wavefront onto first n_z Zernikes and transfer
+        """Project data-driven features to parametric part.
+
+        This method projects non-parametric wavefront onto first n_z Zernikes and transfer
         their parameters to the parametric model.
 
+        Parameters
+        ----------
+        tf_zernike_cube : tf.Tensor
+            Cube with zernike polynomial maps with shape (n_batch, opd_dim, opd_dim).
         """
         # If no Zernike maps are provided, use the ones from the
         # Zernike to OPD layer
