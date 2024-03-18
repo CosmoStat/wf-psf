@@ -12,20 +12,18 @@ import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
 from wf_psf.psf_models.psf_models import register_psfclass
 from wf_psf.psf_models.tf_layers import (
-    TF_poly_Z_field,
-    TF_zernike_OPD,
-    TF_batch_poly_PSF,
-)
-from wf_psf.psf_models.tf_layers import (
-    TF_NP_poly_OPD,
-    TF_batch_mono_PSF,
-    TF_physical_layer,
+    TFPolynomialZernikeField,
+    TFZernikeOPD,
+    TFBatchPolychromaticPSF,
+    TFBatchMonochromaticPSF,
+    TFNonParametricPolynomialVariationsOPD,
+    TFPhysicalLayer,
 )
 from wf_psf.utils.utils import PI_zernikes
 
 
 @register_psfclass
-class TF_PSF_field_model(tf.keras.Model):
+class TFParametricPSFFieldModel(tf.keras.Model):
     """Parametric PSF field model!
 
     Fully parametric model based on the Zernike polynomial basis.
@@ -109,7 +107,7 @@ class TF_PSF_field_model(tf.keras.Model):
         self.l2_param = l2_param
 
         # Initialize the first layer
-        self.tf_poly_Z_field = TF_poly_Z_field(
+        self.tf_poly_Z_field = TFPolynomialZernikeField(
             x_lims=self.x_lims,
             y_lims=self.y_lims,
             n_zernikes=self.n_zernikes,
@@ -117,10 +115,10 @@ class TF_PSF_field_model(tf.keras.Model):
         )
 
         # Initialize the zernike to OPD layer
-        self.tf_zernike_OPD = TF_zernike_OPD(zernike_maps=zernike_maps)
+        self.tf_zernike_OPD = TFZernikeOPD(zernike_maps=zernike_maps)
 
         # Initialize the batch opd to batch polychromatic PSF layer
-        self.tf_batch_poly_PSF = TF_batch_poly_PSF(
+        self.tf_batch_poly_PSF = TFBatchPolychromaticPSF(
             obscurations=self.obscurations,
             output_Q=self.output_Q,
             output_dim=self.output_dim,
@@ -154,7 +152,7 @@ class TF_PSF_field_model(tf.keras.Model):
         if output_dim is not None:
             self.output_dim = output_dim
         # Reinitialize the PSF batch poly generator
-        self.tf_batch_poly_PSF = TF_batch_poly_PSF(
+        self.tf_batch_poly_PSF = TFBatchPolychromaticPSF(
             obscurations=self.obscurations,
             output_Q=self.output_Q,
             output_dim=self.output_dim,
@@ -175,7 +173,7 @@ class TF_PSF_field_model(tf.keras.Model):
         """
 
         # Initialise the monochromatic PSF batch calculator
-        tf_batch_mono_psf = TF_batch_mono_PSF(
+        tf_batch_mono_psf = TFBatchMonochromaticPSF(
             obscurations=self.obscurations,
             output_Q=self.output_Q,
             output_dim=self.output_dim,
