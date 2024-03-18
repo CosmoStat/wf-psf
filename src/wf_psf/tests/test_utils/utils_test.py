@@ -12,7 +12,6 @@ import tensorflow as tf
 import numpy as np
 from wf_psf.utils.utils import zernike_generator
 from wf_psf.sims.SimPSFToolkit import SimPSFToolkit
-from wf_psf.psf_models.tf_layers import TF_zernike_OPD
 
 
 def test_unobscured_zernike_projection():
@@ -36,10 +35,8 @@ def test_unobscured_zernike_projection():
     zk_array = np.random.randn(1, n_zernikes, 1, 1)
     tf_zk_array = tf.convert_to_tensor(zk_array, dtype=tf.float32)
 
-    # Generate layer
-    tf_zernike_opd = TF_zernike_OPD(tf_zernike_cube)
     # Compute OPD
-    tf_unobscured_opd = tf_zernike_opd(tf_zk_array)
+    tf_unobscured_opd = tf.math.reduce_sum(tf.math.multiply(tf_zernike_cube, tf_zk_array), axis=1)
 
     # Compute normalisation factor
     norm_factor = unobscured_zernike_projection(
@@ -86,10 +83,8 @@ def test_tf_decompose_obscured_opd_basis():
     zk_array = np.random.randn(1, n_zernikes, 1, 1)
     tf_zk_array = tf.convert_to_tensor(zk_array, dtype=tf.float32)
 
-    # Generate layer
-    tf_zernike_opd = TF_zernike_OPD(tf_zernike_cube)
     # Compute OPD
-    tf_unobscured_opd = tf_zernike_opd(tf_zk_array)
+    tf_unobscured_opd = tf.math.reduce_sum(tf.math.multiply(tf_zernike_cube, tf_zk_array), axis=1)
     # Obscure the OPD
     tf_obscured_opd = tf.math.multiply(
         tf_unobscured_opd, tf.expand_dims(tf_obscurations, axis=0)
