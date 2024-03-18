@@ -448,8 +448,9 @@ class TF_SemiParam_field(tf.keras.Model):
     def project_DD_features(self, tf_zernike_cube):
         """Project data-driven features to parametric part.
 
-        This method projects non-parametric wavefront onto first n_z Zernikes and transfer
-        their parameters to the parametric model.
+        This method projects non-parametric wavefront onto the first `n_poly_param` Zernikes, 
+        which is defined by the order of zernike polynomials used in the parametric part.
+        Then, it transfers their parameters to the parametric model.
 
         Parameters
         ----------
@@ -487,9 +488,11 @@ class TF_SemiParam_field(tf.keras.Model):
             ),
             dtype=tf.float32,
         )
+        # Get old parametric model coefficients
         old_C_poly = self.tf_poly_Z_field.coeff_mat
         # Corrected parametric coeff matrix
         new_C_poly = old_C_poly + delta_C_poly
+        # Save the new parametric model coefficients
         self.assign_coeff_matrix(new_C_poly)
 
         # Remove extracted features from non-parametric model
