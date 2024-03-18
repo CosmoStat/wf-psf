@@ -308,9 +308,6 @@ class TFPhysicalPolychromaticField(TFSemiParametricField):
         training_params : RecursiveNamespace
             Object containing training hyperparameters for this PSF model class.
 
-        Returns
-        -------
-        None
 
         """
        # Initialize the batch opd to batch polychromatic PSF layer
@@ -337,10 +334,6 @@ class TFPhysicalPolychromaticField(TFSemiParametricField):
             Object containing parameters for this PSF model class.
         training_params : RecursiveNamespace
             Object containing training hyperparameters for this PSF model class.
-
-        Returns
-        -------
-        None
 
         """
         self.d_max_nonparam = model_params.nonparam_hparams.d_max_nonparam
@@ -463,15 +456,15 @@ class TFPhysicalPolychromaticField(TFSemiParametricField):
 
         Parameters
         ----------
-        data 
+        data : NOT SURE
            
         evaluate_step : bool
             Boolean flag to evaluate step
 
         Returns
         -------
-        poly_psfs CHECK
-            CHECK
+        poly_psfs TFBatchPolychromaticPSF
+            Instance of TFBatchPolychromaticPSF class containing computed polychromatic PSFs.
 
         """
         if evaluate_step:
