@@ -536,7 +536,7 @@ def tf_decompose_obscured_opd_basis(
     """
     if n_zernike > tf_zk_basis.shape[0]:
         raise ValueError(
-            "Cannot project as n_zernike is bigger than the zernike elements in the provided basis tf_zk_basis."
+            "Number of Zernike polynomials to project (n_zernike) exceeds the available Zernike elements in the provided basis (tf_zk_basis). Please ensure that n_zernike is less than or equal to the number of Zernike elements in tf_zk_basis."
         )
     # Clone input OPD
     input_tf_opd = tf.identity(tf_opd)
