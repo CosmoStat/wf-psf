@@ -6,7 +6,7 @@ import zernike as zk
 
 try:
     from cv2 import resize, INTER_AREA
-except:
+except ModuleNotFoundError:
     print("Problem importing opencv..")
 import sys
 
