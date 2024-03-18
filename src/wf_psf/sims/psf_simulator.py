@@ -21,7 +21,7 @@ except:
         print("Problem importing skimage..")
 
 
-class SimPSFToolkit(object):
+class PSFSimulator(object):
     """Simulate PSFs.
 
     In the future the zernike maps could be created with galsim or some other

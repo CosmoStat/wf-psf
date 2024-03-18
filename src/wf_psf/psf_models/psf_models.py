@@ -11,7 +11,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
 from wf_psf.utils.utils import PI_zernikes, zernike_generator
-from wf_psf.sims.SimPSFToolkit import SimPSFToolkit
+from wf_psf.sims.psf_simulator import PSFSimulator
 import glob
 from sys import exit
 import logging
@@ -186,7 +186,7 @@ def tf_obscurations(pupil_diam, N_filter=2):
         TensorFlow EagerTensor type
 
     """
-    obscurations = SimPSFToolkit.generate_pupil_obscurations(
+    obscurations = PSFSimulator.generate_pupil_obscurations(
         N_pix=pupil_diam, N_filter=N_filter
     )
     return tf.convert_to_tensor(obscurations, dtype=tf.complex64)
@@ -208,7 +208,7 @@ def simPSF(model_params):
 
     """
 
-    simPSF_np = SimPSFToolkit(
+    simPSF_np = PSFSimulator(
         max_order=model_params.param_hparams.n_zernikes,
         pupil_diameter=model_params.pupil_diameter,
         output_dim=model_params.output_dim,

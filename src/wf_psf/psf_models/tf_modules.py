@@ -231,7 +231,7 @@ class TF_mono_PSF(tf.Module):
 #     """Calculate a polychromatic PSF from an OPD and stored SED values.
 
 #     The calculation of the packed values with the respective SED is done
-#     with the SimPSFToolkit class but outside the TF class.
+#     with the PSFSimulator class but outside the TF class.
 
 #     packed_elems: Tuple of tensors
 #         Contains three 1D tensors with the parameters needed for

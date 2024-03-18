@@ -155,7 +155,7 @@ class TF_PSF_field_model(tf.keras.Model):
 
         phase_N: int
             Required wavefront dimension. Should be calculated with as:
-            ``simPSF_np = wf.SimPSFToolkit(...)``
+            ``simPSF_np = wf_psf.sims.psf_simulator.PSFSimulator(...)``
             ``phase_N = simPSF_np.feasible_N(lambda_obs)``
         """
 
@@ -391,7 +391,7 @@ class TF_SemiParam_field(tf.keras.Model):
 
         phase_N: int
             Required wavefront dimension. Should be calculated with as:
-            ``simPSF_np = wf.SimPSFToolkit(...)``
+            ``simPSF_np =wf_psf.sims.psf_simulator.PSFSimulator(...)``
             ``phase_N = simPSF_np.feasible_N(lambda_obs)``
         """
 
@@ -821,7 +821,7 @@ class TF_physical_poly_field(tf.keras.Model):
             Observed wavelength in um.
         phase_N: int
             Required wavefront dimension. Should be calculated with as:
-            ``simPSF_np = wf.SimPSFToolkit(...)``
+            ``simPSF_np = wf_psf.sims.psf_simulator.PSFSimulator(...)``
             ``phase_N = simPSF_np.feasible_N(lambda_obs)``
 
         """
@@ -1103,7 +1103,7 @@ class TF_GT_physical_field(tf.keras.Model):
             Observed wavelength in um.
         phase_N: int
             Required wavefront dimension. Should be calculated with as:
-            ``simPSF_np = wf.SimPSFToolkit(...)``
+            ``simPSF_np = wf_psf.sims.psf_simulator.PSFSimulator(...)``
             ``phase_N = simPSF_np.feasible_N(lambda_obs)``
 
         """
