@@ -15,8 +15,8 @@ from wf_psf.sims.SimPSFToolkit import SimPSFToolkit
 from wf_psf.psf_models.tf_layers import TF_zernike_OPD
 
 
-def test_PI_zernikes():
-    from wf_psf.utils.utils import PI_zernikes
+def test_unobscured_zernike_projection():
+    from wf_psf.utils.utils import unobscured_zernike_projection
 
     n_zernikes = 20
     wfe_dim = 256
@@ -42,12 +42,12 @@ def test_PI_zernikes():
     tf_unobscured_opd = tf_zernike_opd(tf_zk_array)
 
     # Compute normalisation factor
-    norm_factor = PI_zernikes(tf_zernike_cube[0, :, :], tf_zernike_cube[0, :, :])
+    norm_factor = unobscured_zernike_projection(tf_zernike_cube[0, :, :], tf_zernike_cube[0, :, :])
 
     # Compute projections for each zernike
     estimated_zk_array = np.array(
         [
-            PI_zernikes(
+            unobscured_zernike_projection(
                 tf_unobscured_opd, tf_zernike_cube[j, :, :], norm_factor=norm_factor
             )
             for j in range(n_zernikes)

@@ -485,13 +485,15 @@ def load_multi_cycle_params_click(args):
     return args
 
 
-def PI_zernikes(tf_z1, tf_z2, norm_factor=None):
-    """Compute internal product between zernikes and OPDs.
+def unobscured_zernike_projection(tf_z1, tf_z2, norm_factor=None):
+    """Compute a zernike projection for unobscured wavefronts (OPDs).
+    
+    Compute internal product between zernikes and OPDs.
 
-    Defined such that Zernikes are orthonormal to each other
+    Defined such that Zernikes are orthonormal to each other.
 
-    First one should compute: norm_factor =  PI_zernikes(tf_zernike,tf_zernike)
-    for futur calls: PI_zernikes(OPD,tf_zernike_k, norm_factor)
+    First one should compute: norm_factor =  unobscured_zernike_projection(tf_zernike,tf_zernike)
+    for futur calls: unobscured_zernike_projection(OPD,tf_zernike_k, norm_factor)
 
     If the OPD has obscurations, or is not an unobscured circular aperture,
     the Zernike polynomials are no longer orthonormal. Therefore, you should consider

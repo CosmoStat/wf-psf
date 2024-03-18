@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from wf_psf.utils.utils import PI_zernikes, zernike_generator
+from wf_psf.utils.utils import unobscured_zernike_projection, zernike_generator
 
 try:
     from cv2 import resize, INTER_AREA
