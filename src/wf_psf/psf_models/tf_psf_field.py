@@ -448,7 +448,7 @@ class TF_SemiParam_field(tf.keras.Model):
     def project_DD_features(self, tf_zernike_cube):
         """Project data-driven features to parametric part.
 
-        This method projects non-parametric wavefront onto the first `n_poly_param` Zernikes, 
+        This method projects non-parametric wavefront onto the first `n_poly_param` Zernikes,
         which is defined by the order of zernike polynomials used in the parametric part.
         Then, it transfers their parameters to the parametric model.
 

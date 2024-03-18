@@ -42,7 +42,9 @@ def test_unobscured_zernike_projection():
     tf_unobscured_opd = tf_zernike_opd(tf_zk_array)
 
     # Compute normalisation factor
-    norm_factor = unobscured_zernike_projection(tf_zernike_cube[0, :, :], tf_zernike_cube[0, :, :])
+    norm_factor = unobscured_zernike_projection(
+        tf_zernike_cube[0, :, :], tf_zernike_cube[0, :, :]
+    )
 
     # Compute projections for each zernike
     estimated_zk_array = np.array(

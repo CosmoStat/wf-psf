@@ -312,7 +312,9 @@ def train(
                 psf_model.project_DD_features(
                     psf_model.zernike_maps
                 )  # make this a callable function
-                logger.info("Projected non-parametric DD features onto the parametric model.")
+                logger.info(
+                    "Projected non-parametric DD features onto the parametric model."
+                )
         if psf_model.reset_dd_features:
             psf_model.tf_np_poly_opd.init_vars()
             logger.info("DataDriven features were reset to random initialisation.")
