@@ -21,7 +21,6 @@ from wf_psf.psf_models.tf_layers import (
     TF_batch_mono_PSF,
     TF_physical_layer,
 )
-from wf_psf.utils.utils import PI_zernikes
 
 
 @register_psfclass
