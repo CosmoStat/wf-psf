@@ -128,7 +128,7 @@ def calc_poly_position_mat(pos, x_lims, y_lims, d_max):
     poly_list = []
 
     for d in range(d_max + 1):
-        row_idx = d * (d + 1) // 2
+        # row_idx = d * (d + 1) // 2
         for p in range(d + 1):
             poly_list.append(scaled_pos_x ** (d - p) * scaled_pos_y**p)
 
