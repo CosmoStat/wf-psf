@@ -208,24 +208,28 @@ def get_psf_model_weights_filepath(weights_filepath):
         raise PSFModelError("PSF model weights error.")
 
 
-def tf_zernike_cube(n_zernikes, pupil_diam):
-    """Tensor Flow Zernike Cube.
+def generate_zernike_maps_3d(n_zernikes, pupil_diam):
+    """Generate 3D Zernike Maps.
 
-    A function to generate Zernike maps on
-    a three-dimensional tensor.
+    This function generates Zernike maps on a three-dimensional tensor.
 
     Parameters
     ----------
-    n_zernikes: int
-        Number of Zernike polynomials
-    pupil_diam: float
-        Size of the pupil diameter
+    n_zernikes : int
+        The number of Zernike polynomials.
+    pupil_diam : float
+        The diameter of the pupil.
 
     Returns
     -------
-    Zernike map tensor
-        TensorFlow EagerTensor type
+    tf.Tensor
+        A TensorFlow EagerTensor containing the Zernike map tensor.
 
+    Notes
+    -----
+    The Zernike maps are generated using the specified number of Zernike
+    polynomials and the size of the pupil diameter. The resulting tensor
+    contains the Zernike maps in a three-dimensional format.
     """
     # Prepare the inputs
     # Generate Zernike maps

@@ -102,7 +102,7 @@ class TFSemiParametricField(tf.keras.Model):
         self.d_max = model_params.param_hparams.d_max
         self.x_lims = model_params.x_lims
         self.y_lims = model_params.y_lims
-        self.zernike_maps = psfm.tf_zernike_cube(self.n_zernikes, self.pupil_diam)
+        self.zernike_maps = psfm.generate_zernike_maps_3d(self.n_zernikes, self.pupil_diam)
 
         # Inputs: TF_NP_poly_OPD
         self.d_max_nonparam = model_params.nonparam_hparams.d_max_nonparam
