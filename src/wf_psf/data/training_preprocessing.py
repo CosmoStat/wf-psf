@@ -12,6 +12,7 @@ import tensorflow as tf
 import os
 
 
+
 class DataHandler:
     """Data Handler.
 
@@ -112,3 +113,35 @@ class DataHandler:
         if init_flag:
             self.load_dataset()
             self.process_sed_data()
+
+
+def get_obs_positions(data):
+    """Get observed positions from the provided dataset.
+
+    This method concatenates the positions of the stars from both the training
+    and test datasets to obtain the observed positions.
+
+    Parameters
+    ----------
+    data : DataConfigHandler
+        Object containing training and test datasets.
+
+    Returns
+    -------
+    tf.Tensor
+        Tensor containing the observed positions of the stars.
+
+    Notes
+    -----
+    The observed positions are obtained by concatenating the positions of stars
+    from both the training and test datasets along the 0th axis.
+
+    """
+    obs_positions = np.concatenate(
+        (
+            data.training_data.dataset["positions"],
+            data.test_data.dataset["positions"],
+        ),
+        axis=0,
+    )
+    return tf.convert_to_tensor(obs_positions, dtype=tf.float32)
