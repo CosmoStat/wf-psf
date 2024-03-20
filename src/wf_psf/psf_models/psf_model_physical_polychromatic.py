@@ -13,7 +13,7 @@ from tensorflow.python.keras.engine import data_adapter
 from wf_psf.psf_models import psf_models as psfm
 from wf_psf.psf_models import tf_layers as tfl
 from wf_psf.utils.utils import zernike_generator
-from wf_psf.data.training_preprocessing import get_obs_positions
+from wf_psf.data.training_preprocessing import get_obs_positions, get_zernike_prior
 from wf_psf.psf_models.tf_layers import (
     TFPolynomialZernikeField,
     TFZernikeOPD,
@@ -92,7 +92,8 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         training_params : RecursiveNamespace
             Object containing training hyperparameters for this PSF model class.
         data : DataConfigHandler
-            Object containing training and test datasets.
+            Object containing training and test datasets and zernike prior.
+
         coeff_mat : Tensor or None
             Coefficient matrix defining the parametric PSF field model.
 
@@ -125,14 +126,14 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         self.output_Q = model_params.output_Q
         self.obs_pos = get_obs_positions(data)
 
-        self._initialize_zernike_parameters(model_params)
+        self._initialize_zernike_parameters(model_params, data)
         self._initialize_layers(model_params, training_params)
 
         # Initialize the model parameters with non-default value
         if coeff_mat is not None:
             self.assign_coeff_matrix(coeff_mat)
 
-    def _initialize_zernike_parameters(self, model_params):
+    def _initialize_zernike_parameters(self, model_params, data):
         """Initialize the Zernike paraemters.
 
         Parameters
@@ -142,7 +143,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
 
         """
         self.n_zernikes = model_params.param_hparams.n_zernikes
-        self.zks_prior = model_params.zks_prior
+        self.zks_prior = get_zernike_prior(data)
         self.n_zks_total = max(
             self.n_zernikes, tf.cast(tf.shape(self.zks_prior)[1], tf.int32)
         )
