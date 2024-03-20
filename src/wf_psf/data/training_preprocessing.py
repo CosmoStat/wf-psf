@@ -145,3 +145,35 @@ def get_obs_positions(data):
         axis=0,
     )
     return tf.convert_to_tensor(obs_positions, dtype=tf.float32)
+
+
+def get_zernike_prior(data):
+    """Get Zernike priors from the provided dataset.
+
+    This method concatenates the Zernike priors from both the training
+    and test datasets.
+
+    Parameters
+    ----------
+    data : DataConfigHandler
+        Object containing training and test datasets.
+
+    Returns
+    -------
+    tf.Tensor
+        Tensor containing the observed positions of the stars.
+
+    Notes
+    -----
+    The Zernike prior are obtained by concatenating the Zernike priors
+    from both the training and test datasets along the 0th axis.
+
+    """
+    zernike_prior = np.concatenate(
+        (
+            data.training_data.dataset["zernike_prior"],
+            data.test_data.dataset["zernike_prior"],
+        ),
+        axis=0,
+    )
+    return tf.convert_to_tensor(zernike_prior, dtype=tf.float32)
