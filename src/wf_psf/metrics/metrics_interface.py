@@ -23,7 +23,42 @@ import wf_psf.utils.io as io
 logger = logging.getLogger(__name__)
 
 
-def ground_truth_psf_model(metrics_params, coeff_matrix):
+def create_ground_truth_psf_model(metrics_params, coeff_matrix):
+    """Create a Ground Truth PSF Model for metrics evaluation.
+
+    This function creates a Ground Truth PSF Model instance specifically designed
+    for metrics evaluation purposes. It uses the provided configuration parameters
+    and coefficient matrix to initialize the model.
+
+    Parameters
+    ----------
+    metrics_params : RecursiveNamespace
+        Object storing the metric configuration parameters, including the model
+        parameters for the Ground Truth PSF Model.
+    coeff_matrix : Tensor or None
+        Coefficient matrix defining the parametric PSF field model. This matrix
+        is used to initialize the polynomial Zernike field of the PSF model.
+
+    Returns
+    -------
+    psf_model : Object
+        Class instance of the Ground Truth SemiParametric PSF model.
+
+    Notes
+    -----
+    The provided coefficient matrix initializes the polynomial Zernike field of
+    the Ground Truth PSF Model. The function also resets the alpha matrix of the
+    non-parametric polychromatic OPD to zeros.
+
+    Example
+    -------
+    metrics_params = load_metrics_params()
+    coeff_matrix = load_coeff_matrix()
+    ground_truth_model = create_ground_truth_psf_model(metrics_params, coeff_matrix)
+
+    # Use the ground_truth_model for metrics evaluation
+    metrics_results = evaluate_metrics(ground_truth_model, ...)
+    """
     psf_model = psf_models.get_psf_model(
         metrics_params.ground_truth_model.model_params,
         metrics_params.metrics_hparams,
@@ -81,7 +116,7 @@ class MetricsParamsHandler:
 
         rmse, rel_rmse, std_rmse, std_rel_rmse = wf_metrics.compute_poly_metric(
             tf_semiparam_field=psf_model,
-            gt_tf_semiparam_field=ground_truth_psf_model(
+            gt_tf_semiparam_field=create_ground_truth_psf_model(
                 self.metrics_params, dataset["C_poly"]
             ),
             simPSF_np=simPSF,
@@ -131,7 +166,7 @@ class MetricsParamsHandler:
             std_rel_rmse_lda,
         ) = wf_metrics.compute_mono_metric(
             tf_semiparam_field=psf_model,
-            gt_tf_semiparam_field=ground_truth_psf_model(
+            gt_tf_semiparam_field=create_ground_truth_psf_model(
                 self.metrics_params, dataset["C_poly"]
             ),
             simPSF_np=simPSF,
@@ -176,7 +211,7 @@ class MetricsParamsHandler:
             rel_rmse_std_opd,
         ) = wf_metrics.compute_opd_metrics(
             tf_semiparam_field=psf_model,
-            gt_tf_semiparam_field=ground_truth_psf_model(
+            gt_tf_semiparam_field=create_ground_truth_psf_model(
                 self.metrics_params, dataset["C_poly"]
             ),
             pos=dataset["positions"],
@@ -215,7 +250,7 @@ class MetricsParamsHandler:
 
         shape_results = wf_metrics.compute_shape_metrics(
             tf_semiparam_field=psf_model,
-            gt_tf_semiparam_field=ground_truth_psf_model(
+            gt_tf_semiparam_field=create_ground_truth_psf_model(
                 self.metrics_params, dataset["C_poly"]
             ),
             simPSF_np=simPSF,
