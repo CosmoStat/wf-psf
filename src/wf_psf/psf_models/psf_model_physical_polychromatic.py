@@ -184,13 +184,11 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
             Object containing parameters for this PSF model class.
 
         """
-        self.interpolation_type = model_params.interpolation_type
-        self.interpolation_args = model_params.interpolation_args
         self.tf_physical_layer = TFPhysicalLayer(
             self.obs_pos,
             self.zks_prior,
-            interpolation_type=self.interpolation_type,
-            interpolation_args=self.interpolation_args,
+            interpolation_type=model_params.interpolation_type,
+            interpolation_args=model_params.interpolation_args,
         )
 
     def _initialize_polynomial_Z_field(self, model_params):
