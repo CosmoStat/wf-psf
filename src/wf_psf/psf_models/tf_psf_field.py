@@ -4,8 +4,9 @@ from tensorflow.python.keras.engine import data_adapter
 from wf_psf.psf_models.tf_layers import (
     TFZernikeOPD,
     TFBatchPolychromaticPSF,
-    TFBatchMonochromaticPSF
+    TFBatchMonochromaticPSF,
 )
+
 
 class TFGroundTruthPhysicalField(tf.keras.Model):
     """Ground Truth PSF field forward model with a physical layer

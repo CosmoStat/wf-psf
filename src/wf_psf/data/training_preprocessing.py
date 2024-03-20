@@ -12,7 +12,6 @@ import tensorflow as tf
 import os
 
 
-
 class DataHandler:
     """Data Handler.
 

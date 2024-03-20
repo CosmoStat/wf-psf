@@ -936,5 +936,3 @@ class TFPhysicalLayer(tf.keras.layers.Layer):
         batch_zks = tf.gather(self.zks_prior, indices=indices, axis=0, batch_dims=0)
 
         return batch_zks[:, :, tf.newaxis, tf.newaxis]
-
-

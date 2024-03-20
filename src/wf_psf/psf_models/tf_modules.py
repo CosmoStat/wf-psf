@@ -225,4 +225,3 @@ class TFMonochromaticPSF(tf.Module):
         psf = self.tf_fft_diffract.__call__(phase)
 
         return tf.cast(psf, dtype=opd.dtype)
-

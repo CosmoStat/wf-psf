@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.data.training_preprocessing import (
-    DataHandler, 
+    DataHandler,
     get_obs_positions,
     get_zernike_prior,
 )
@@ -130,13 +130,21 @@ def test_process_sed_data(data_params, simPSF):
 
 
 class MockData:
-    def __init__(self, training_positions, test_positions, training_zernike_priors, test_zernike_priors):
+    def __init__(
+        self,
+        training_positions,
+        test_positions,
+        training_zernike_priors,
+        test_zernike_priors,
+    ):
         self.training_data = MockDataset(training_positions, training_zernike_priors)
         self.test_data = MockDataset(test_positions, test_zernike_priors)
 
+
 class MockDataset:
     def __init__(self, positions, zernike_priors):
-        self.dataset = {"positions": positions, "zernike_prior": zernike_priors }
+        self.dataset = {"positions": positions, "zernike_prior": zernike_priors}
+
 
 @pytest.fixture
 def mock_data():
@@ -144,17 +152,23 @@ def mock_data():
     test_positions = np.array([[5, 6], [7, 8]])
     training_zernike_priors = np.array([[0.1, 0.2], [0.3, 0.4]])
     test_zernike_priors = np.array([[0.5, 0.6], [0.7, 0.8]])
-    return MockData(training_positions, test_positions, training_zernike_priors, test_zernike_priors)
+    return MockData(
+        training_positions, test_positions, training_zernike_priors, test_zernike_priors
+    )
+
 
 def test_get_obs_positions(mock_data):
     observed_positions = get_obs_positions(mock_data)
     expected_positions = np.array([[1, 2], [3, 4], [5, 6], [7, 8]])
     assert tf.reduce_all(tf.equal(observed_positions, expected_positions))
-    
-    
+
+
 def test_get_zernike_prior(mock_data):
     zernike_priors = get_zernike_prior(mock_data)
-    expected_shape = (4, 2)  # Assuming 2 Zernike priors for each dataset (training and test)
+    expected_shape = (
+        4,
+        2,
+    )  # Assuming 2 Zernike priors for each dataset (training and test)
     assert zernike_priors.shape == expected_shape
 
 
@@ -162,13 +176,17 @@ def test_get_zernike_prior_dtype(mock_data):
     zernike_priors = get_zernike_prior(mock_data)
     assert zernike_priors.dtype == np.float32
 
+
 def test_get_zernike_prior_concatenation(mock_data):
     zernike_priors = get_zernike_prior(mock_data)
-    expected_zernike_priors = tf.convert_to_tensor(np.array([[0.1, 0.2], [0.3, 0.4], [0.5, 0.6], [0.7, 0.8]]), dtype=tf.float32)
-  
+    expected_zernike_priors = tf.convert_to_tensor(
+        np.array([[0.1, 0.2], [0.3, 0.4], [0.5, 0.6], [0.7, 0.8]]), dtype=tf.float32
+    )
+
     assert np.array_equal(zernike_priors, expected_zernike_priors)
+
 
 def test_get_zernike_prior_empty_data():
     empty_data = MockData(np.array([]), np.array([]), np.array([]), np.array([]))
     zernike_priors = get_zernike_prior(empty_data)
-    assert zernike_priors.shape == tf.TensorShape([0]) # Check for empty array shape
+    assert zernike_priors.shape == tf.TensorShape([0])  # Check for empty array shape
