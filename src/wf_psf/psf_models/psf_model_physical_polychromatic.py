@@ -134,7 +134,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
             self.assign_coeff_matrix(coeff_mat)
 
     def _initialize_zernike_parameters(self, model_params, data):
-        """Initialize the Zernike paraemters.
+        """Initialize the Zernike parameters.
 
         Parameters
         ----------
@@ -319,7 +319,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         self.tf_np_poly_opd.trainable = nonparam_bool
         self.tf_poly_Z_field.trainable = param_bool
 
-    def zks_pad(self, zk_param, zk_prior):
+    def pad_zernikes(self, zk_param, zk_prior):
         """Pad the zernike coefficients with zeros to have the same length.
 
         Pad them to have `n_zks_total` length.
@@ -503,7 +503,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         # Calculate the physical layer
         zks_prior = self.tf_physical_layer.call(input_positions)
         # Pad and sum the zernike coefficients
-        padded_zk_param, padded_zk_prior = self.zks_pad(zks_params, zks_prior)
+        padded_zk_param, padded_zk_prior = self.pad_zernikes(zks_params, zks_prior)
         zks_coeffs = tf.math.add(padded_zk_param, padded_zk_prior)
 
         return zks_coeffs
