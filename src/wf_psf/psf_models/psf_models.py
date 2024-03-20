@@ -152,6 +152,7 @@ def get_psf_model(*psf_model_params):
 
     return psf_factory_class().get_model_instance(*psf_model_params)
 
+
 def build_PSF_model(model_inst, optimizer=None, loss=None, metrics=None):
     """Define the model-compilation parameters.
 
@@ -182,6 +183,7 @@ def build_PSF_model(model_inst, optimizer=None, loss=None, metrics=None):
     )
 
     return model_inst
+
 
 def get_psf_model_weights_filepath(weights_filepath):
     """Get PSF model weights filepath.
