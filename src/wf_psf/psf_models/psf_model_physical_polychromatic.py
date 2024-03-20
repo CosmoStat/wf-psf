@@ -231,7 +231,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         # Initialize the batch opd to batch polychromatic PSF layer
         # Inputs: TFBatchPolychromaticPSF
         self.batch_size = training_params.batch_size
-        self.obscurations = psfm.tf_obscurations(model_params.pupil_diam)
+        self.obscurations = psfm.tf_obscurations(model_params.pupil_diameter)
         self.output_dim = model_params.output_dim
 
         self.tf_batch_poly_PSF = TFBatchPolychromaticPSF(
