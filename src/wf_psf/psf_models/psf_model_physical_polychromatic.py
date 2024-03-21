@@ -143,10 +143,10 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
             Object containing parametrs for this PSF model class.
 
         """
-        self.n_zernikes = model_params.param_hparams.n_zernikes
         self.zks_prior = get_zernike_prior(data)
         self.n_zks_total = max(
-            self.n_zernikes, tf.cast(tf.shape(self.zks_prior)[1], tf.int32)
+            model_params.param_hparams.n_zernikes,
+            tf.cast(tf.shape(self.zks_prior)[1], tf.int32),
         )
         self.zernike_maps = psfm.generate_zernike_maps_3d(
             self.n_zks_total, model_params.pupil_diameter
@@ -209,7 +209,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
             x_lims=model_params.x_lims,
             y_lims=model_params.y_lims,
             random_seed=model_params.param_hparams.random_seed,
-            n_zernikes=self.n_zernikes,
+            n_zernikes=model_params.param_hparams.n_zernikes,
             d_max=model_params.param_hparams.d_max,
         )
 
@@ -337,55 +337,13 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         padded_zk_prior: tf.Tensor
             Padded Zernike coefficients for the prior part. Shape [batch, n_zks_total, 1, 1].
         """
-
         # Calculate the number of Zernikes to pad for parametric and prior parts
-        pad_num = tf.cast(self.n_zks_total - self.n_zernikes, dtype=tf.int32)
-
-        # Pad the zernike coefficients
-        padding = [
-            (0, 0),
-            (0, pad_num),
-            (0, 0),
-            (0, 0),
-        ]
-        padded_zk_param = tf.pad(zk_param, padding)
-
-        # Calculate the number of zernikes to pad
-        pad_num = tf.cast(self.n_zks_total - self.n_zks_prior, dtype=tf.int32)
-        # Pad the zernike coefficients
-        padding = [
-            (0, 0),
-            (0, pad_num),
-            (0, 0),
-            (0, 0),
-        ]
-        padded_zk_prior = tf.pad(zk_prior, padding)
-
-        return padded_zk_param, padded_zk_prior
-
-    def pad_zernikes_new(self, zk_param, zk_prior):
-        """Pad the Zernike coefficients to match the maximum length.
-
-        Pad the input Zernike coefficient tensors to match the length of the
-        maximum number of Zernike coefficients among the parametric and prior parts.
-
-        Parameters
-        ----------
-        zk_param: tf.Tensor
-            Zernike coefficients for the parametric part. Shape [batch, n_zks_param, 1, 1].
-        zk_prior: tf.Tensor
-            Zernike coefficients for the prior part. Shape [batch, n_zks_prior, 1, 1].
-
-        Returns
-        -------
-        padded_zk_param: tf.Tensor
-            Padded Zernike coefficients for the parametric part. Shape [batch, n_zks_total, 1, 1].
-        padded_zk_prior: tf.Tensor
-            Padded Zernike coefficients for the prior part. Shape [batch, n_zks_total, 1, 1].
-        """
-        # Calculate the number of Zernikes to pad for parametric and prior parts
-        pad_num_param = tf.cast(self.n_zks_total - self.n_zernikes, dtype=tf.int32)
-        pad_num_prior = tf.cast(self.n_zks_total - self.n_zks_prior, dtype=tf.int32)
+        pad_num_param = tf.cast(
+            self.n_zks_total - tf.shape(zk_param)[1].numpy(), dtype=tf.int32
+        )
+        pad_num_prior = tf.cast(
+            self.n_zks_total - tf.shape(zk_prior)[1].numpy(), dtype=tf.int32
+        )
 
         # Pad the Zernike coefficients for parametric and prior parts
         padding_param = [(0, 0), (0, pad_num_param), (0, 0), (0, 0)]
@@ -538,8 +496,10 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         """
         # Calculate parametric part
         zernike_params = self.tf_poly_Z_field(input_positions)
+
         # Calculate the physical layer
         zernike_prior = self.tf_physical_layer.call(input_positions)
+
         # Pad and sum the zernike coefficients
         padded_zernike_params, padded_zernike_prior = self.pad_zernikes(
             zernike_params, zernike_prior
