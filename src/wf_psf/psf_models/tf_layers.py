@@ -934,7 +934,7 @@ class TFPhysicalLayer(tf.keras.layers.Layer):
         The method retrieves the Zernike coefficients for each input position from the pre-computed
         Zernike coefficients stored for observed positions. It matches each input position with
         the closest observed position and retrieves the corresponding Zernike coefficients.
-        
+
         Before calling this method, ensure that the position polynomial matrix and the
         corresponding Zernike coefficients have been precomputed and set for the layer.
 
