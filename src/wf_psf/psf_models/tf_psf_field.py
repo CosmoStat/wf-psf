@@ -5,6 +5,7 @@ from wf_psf.psf_models.tf_layers import (
     TFZernikeOPD,
     TFBatchPolychromaticPSF,
     TFBatchMonochromaticPSF,
+    TFPhysicalLayer,
 )
 
 
@@ -77,7 +78,7 @@ class TFGroundTruthPhysicalField(tf.keras.Model):
         self.output_dim = output_dim
 
         # Initialize the physical layer
-        self.tf_physical_layer = TF_physical_layer(
+        self.tf_physical_layer = TFPhysicalLayer(
             self.obs_pos,
             self.zks_prior,
             interpolation_type="none",
