@@ -912,19 +912,38 @@ class TFPhysicalLayer(tf.keras.layers.Layer):
         return interp_zks[:, :, tf.newaxis, tf.newaxis]
 
     def call(self, positions):
-        """Calculate the prior zernike coefficients for a given position.
+        """Calculate the prior Zernike coefficients for a batch of positions.
 
-        The position polynomial matrix and the coefficients should be
-        set before calling this function.
+        This method calculates the Zernike coefficients for a batch of input positions
+        based on the pre-computed Zernike coefficients for observed positions.
 
         Parameters
         ----------
-        positions: Tensor(batch, 2)
-            First element is x-axis, second is y-axis.
+        positions : tf.Tensor
+            Tensor of shape (batch_size, 2) representing the positions.
+            The first element represents the x-axis, and the second element represents the y-axis.
 
         Returns
         -------
-        zernikes_coeffs: Tensor(batch, n_zernikes, 1, 1)
+        zernike_coeffs : tf.Tensor
+            Tensor of shape (batch_size, n_zernikes, 1, 1) containing the prior Zernike coefficients
+            corresponding to the input positions.
+
+        Notes
+        -----
+        The method retrieves the Zernike coefficients for each input position from the pre-computed
+        Zernike coefficients stored for observed positions. It matches each input position with
+        the closest observed position and retrieves the corresponding Zernike coefficients.
+        
+        Before calling this method, ensure that the position polynomial matrix and the
+        corresponding Zernike coefficients have been precomputed and set for the layer.
+
+
+        Raises
+        ------
+        ValueError
+            If the shape of the input `positions` tensor is not compatible.
+
         """
 
         def calc_index(idx_pos):
