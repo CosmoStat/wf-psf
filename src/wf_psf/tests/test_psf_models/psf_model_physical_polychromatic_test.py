@@ -254,3 +254,35 @@ def test_pad_zernikes_param_greater_than_prior(physical_layer_instance):
     # Assert that the padded tensors have the correct shapes
     assert padded_zk_param.shape == (1, 4, 1, 1)
     assert padded_zk_prior.shape == (1, 4, 1, 1)
+
+    
+def test_compute_zernikes(
+    mocker, physical_layer_instance
+):
+    #Mock padded tensors
+    padded_zk_param = tf.constant([[[[10]], [[20]], [[30]], [[40]]]])  # Shape: (1, 4, 1, 1)
+    padded_zk_prior = tf.constant([[[[1]], [[2]], [[0]],  [[0]]]])  # Shape: (1, 4, 1, 1)
+    
+    # Reset n_zks_total attribute
+    physical_layer_instance.n_zks_total = 4  # Assuming a specific value for simplicity
+
+    # Define the mock return values for tf_poly_Z_field and tf_physical_layer.call
+    padded_zernike_param = tf.constant([[[[10]], [[20]], [[30]], [[40]]]])  # Shape: (1, 4, 1, 1)
+    padded_zernike_prior = tf.constant([[[[1]], [[2]], [[0]],  [[0]]]])  # Shape: (1, 4, 1, 1)
+
+
+    mocker.patch.object(physical_layer_instance, "tf_poly_Z_field", return_value=padded_zk_param)
+    mocker.patch.object(physical_layer_instance, "call", return_value=padded_zk_prior)
+    mocker.patch.object(physical_layer_instance, "pad_zernikes", return_value=(padded_zernike_param, padded_zernike_prior))
+       
+     # Call the method under test
+    zernike_coeffs = physical_layer_instance.compute_zernikes(tf.constant([[0.0, 0.0]]))
+   
+    # Define the expected values
+    expected_values = tf.constant([[[[11]], [[22]], [[30]], [[40]]]])  # Shape: (1, 4, 1, 1)
+
+    # Assert that the shapes are equal
+    assert zernike_coeffs.shape == expected_values.shape
+
+    # Assert that the tensor values are equal
+    assert tf.reduce_all(tf.equal(zernike_coeffs, expected_values))
