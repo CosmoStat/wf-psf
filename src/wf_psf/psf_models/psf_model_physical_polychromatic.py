@@ -345,11 +345,18 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
             self.n_zks_total - tf.shape(zk_prior)[1].numpy(), dtype=tf.int32
         )
 
-        # Pad the Zernike coefficients for parametric and prior parts
-        padding_param = [(0, 0), (0, pad_num_param), (0, 0), (0, 0)]
-        padding_prior = [(0, 0), (0, pad_num_prior), (0, 0), (0, 0)]
-        padded_zk_param = tf.pad(zk_param, padding_param)
-        padded_zk_prior = tf.pad(zk_prior, padding_prior)
+        if pad_num_param != 0:
+            # Pad the Zernike coefficients for parametric and prior parts
+            padding_param = [(0, 0), (0, pad_num_param), (0, 0), (0, 0)]
+            padded_zk_param = tf.pad(zk_param, padding_param)
+        else:
+            padded_zk_param = zk_param
+
+        if pad_num_prior != 0:
+            padding_prior = [(0, 0), (0, pad_num_prior), (0, 0), (0, 0)]
+            padded_zk_prior = tf.pad(zk_prior, padding_prior)
+        else:
+            padded_zk_prior = zk_prior
 
         return padded_zk_param, padded_zk_prior
 
@@ -504,7 +511,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         padded_zernike_params, padded_zernike_prior = self.pad_zernikes(
             zernike_params, zernike_prior
         )
-        zernike_coeffs = tf.math.add(padded_zernike_param, padded_zernike_prior)
+        zernike_coeffs = tf.math.add(padded_zernike_params, padded_zernike_prior)
 
         return zernike_coeffs
 
