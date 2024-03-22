@@ -385,7 +385,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         packed_SEDs = input_data[1]
 
         # Compute zernikes from parametric model and physical layer
-        zks_coeffs = self.compute_zernikes(input_positions)
+        zks_coeffs = self.predict_zernikes(input_positions)
         # Propagate to obtain the OPD
         param_opd_maps = self.tf_zernike_OPD(zks_coeffs)
         # Calculate the non parametric part
@@ -433,8 +433,8 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         # Set the lambda_obs and the phase_N parameters
         tf_batch_mono_psf.set_lambda_phaseN(phase_N, lambda_obs)
 
-        # Compute zernikes from parametric model and physical layer
-        zks_coeffs = self.compute_zernikes(input_positions)
+        # Predict zernikes from parametric model and physical layer
+        zks_coeffs = self.predict_zernikes(input_positions)
         # Propagate to obtain the OPD
         param_opd_maps = self.tf_zernike_OPD(zks_coeffs)
         # Calculate the non parametric part
@@ -461,7 +461,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
             OPD at requested positions.
 
         """
-        # Compute zernikes from parametric model and physical layer
+        # Predict zernikes from parametric model and physical layer
         zks_coeffs = self.predict_zernikes(input_positions)
         # Propagate to obtain the OPD
         param_opd_maps = self.tf_zernike_OPD(zks_coeffs)
