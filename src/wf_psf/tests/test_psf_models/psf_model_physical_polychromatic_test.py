@@ -191,10 +191,14 @@ def physical_layer_instance(mocker, mock_model_params, mock_data, zks_prior):
     return psf_field_instance
 
 
-def test_pad_zernikes_different_lengths_num_of_zernikes_equal(physical_layer_instance):
-    # Define input tensors with different lengths
-    zk_param = tf.constant([[[[1]]], [[[2]]]])
-    zk_prior = tf.constant([[[[1]]]])
+def test_pad_zernikes_num_of_zernikes_equal(physical_layer_instance):
+    # Define input tensors with same length and num of Zernikes
+    zk_param = tf.constant([[[[1]]], [[[2]]]])  # Shape: (2, 1, 1, 1)
+    zk_prior = tf.constant([[[[1]]], [[[2]]]])  # Shape: (2, 1, 1, 1)
+    
+    # Reshape the tensors to have the desired shapes
+    zk_param = tf.reshape(zk_param, (1, 2, 1, 1))  # Reshaping tensor1 to (1, 2, 1, 1)
+    zk_prior = tf.reshape(zk_prior, (1, 2, 1, 1))  # Reshaping tensor2 to (1, 2, 1, 1)
 
     # Reset n_zks_total attribute
     physical_layer_instance.n_zks_total = max(
@@ -206,8 +210,8 @@ def test_pad_zernikes_different_lengths_num_of_zernikes_equal(physical_layer_ins
     )
 
     # Assert that the padded tensors have the correct shapes
-    assert padded_zk_param.shape == (2, 1, 1, 1)
-    assert padded_zk_prior.shape == (1, 1, 1, 1)
+    assert padded_zk_param.shape == (1, 2, 1, 1)
+    assert padded_zk_prior.shape == (1, 2, 1, 1)
 
 
 def test_pad_zernikes_prior_greater_than_param(physical_layer_instance):
@@ -232,6 +236,18 @@ def test_pad_zernikes_prior_greater_than_param(physical_layer_instance):
     assert padded_zk_param.shape == (1, 5, 1, 1)
     assert padded_zk_prior.shape == (1, 5, 1, 1)
 
+def test_pad_zernikes_shapes_mismatch(physical_layer_instance):
+    zk_param = tf.constant([[[[1]]], [[[2]]]])  # Shape: (2, 1, 1, 1)
+    zk_prior = tf.constant([[[[1]], [[2]], [[3]], [[4]], [[5]]]])  # Shape: (5, 1, 1, 1)
+
+    # Reset n_zks_total attribute
+    physical_layer_instance.n_zks_total = max(
+        tf.shape(zk_param)[1].numpy(), tf.shape(zk_prior)[1].numpy()
+    )
+
+    # Call the method under test and expect a ValueError
+    with pytest.raises(ValueError):
+        physical_layer_instance.pad_zernikes(zk_param, zk_prior)
 
 def test_pad_zernikes_param_greater_than_prior(physical_layer_instance):
     zk_param = tf.constant([[[[10]], [[20]], [[30]], [[40]]]])  # Shape: (4, 1, 1, 1)
