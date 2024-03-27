@@ -1,4 +1,4 @@
-"""UNIT TESTS FOR PACKAGE MODULE: psf_model_physical_polychromatic.
+src/wf_psf/tests/test_psf_models/psf_model_physical_polychromatic_test.py"""UNIT TESTS FOR PACKAGE MODULE: psf_model_physical_polychromatic.
 
 This module contains unit tests for the wf_psf.psf_models.psf_model_physical_polychromatic module.
 
@@ -195,7 +195,7 @@ def test_pad_zernikes_num_of_zernikes_equal(physical_layer_instance):
     # Define input tensors with same length and num of Zernikes
     zk_param = tf.constant([[[[1]]], [[[2]]]])  # Shape: (2, 1, 1, 1)
     zk_prior = tf.constant([[[[1]]], [[[2]]]])  # Shape: (2, 1, 1, 1)
-    
+
     # Reshape the tensors to have the desired shapes
     zk_param = tf.reshape(zk_param, (1, 2, 1, 1))  # Reshaping tensor1 to (1, 2, 1, 1)
     zk_prior = tf.reshape(zk_prior, (1, 2, 1, 1))  # Reshaping tensor2 to (1, 2, 1, 1)
@@ -236,6 +236,7 @@ def test_pad_zernikes_prior_greater_than_param(physical_layer_instance):
     assert padded_zk_param.shape == (1, 5, 1, 1)
     assert padded_zk_prior.shape == (1, 5, 1, 1)
 
+
 def test_pad_zernikes_shapes_mismatch(physical_layer_instance):
     zk_param = tf.constant([[[[1]]], [[[2]]]])  # Shape: (2, 1, 1, 1)
     zk_prior = tf.constant([[[[1]], [[2]], [[3]], [[4]], [[5]]]])  # Shape: (5, 1, 1, 1)
@@ -248,6 +249,7 @@ def test_pad_zernikes_shapes_mismatch(physical_layer_instance):
     # Call the method under test and expect a ValueError
     with pytest.raises(ValueError):
         physical_layer_instance.pad_zernikes(zk_param, zk_prior)
+
 
 def test_pad_zernikes_param_greater_than_prior(physical_layer_instance):
     zk_param = tf.constant([[[[10]], [[20]], [[30]], [[40]]]])  # Shape: (4, 1, 1, 1)
@@ -271,31 +273,42 @@ def test_pad_zernikes_param_greater_than_prior(physical_layer_instance):
     assert padded_zk_param.shape == (1, 4, 1, 1)
     assert padded_zk_prior.shape == (1, 4, 1, 1)
 
-    
-def test_compute_zernikes(
-    mocker, physical_layer_instance
-):
-    #Mock padded tensors
-    padded_zk_param = tf.constant([[[[10]], [[20]], [[30]], [[40]]]])  # Shape: (1, 4, 1, 1)
-    padded_zk_prior = tf.constant([[[[1]], [[2]], [[0]],  [[0]]]])  # Shape: (1, 4, 1, 1)
-    
+
+def test_compute_zernikes(mocker, physical_layer_instance):
+    # Mock padded tensors
+    padded_zk_param = tf.constant(
+        [[[[10]], [[20]], [[30]], [[40]]]]
+    )  # Shape: (1, 4, 1, 1)
+    padded_zk_prior = tf.constant([[[[1]], [[2]], [[0]], [[0]]]])  # Shape: (1, 4, 1, 1)
+
     # Reset n_zks_total attribute
     physical_layer_instance.n_zks_total = 4  # Assuming a specific value for simplicity
 
     # Define the mock return values for tf_poly_Z_field and tf_physical_layer.call
-    padded_zernike_param = tf.constant([[[[10]], [[20]], [[30]], [[40]]]])  # Shape: (1, 4, 1, 1)
-    padded_zernike_prior = tf.constant([[[[1]], [[2]], [[0]],  [[0]]]])  # Shape: (1, 4, 1, 1)
+    padded_zernike_param = tf.constant(
+        [[[[10]], [[20]], [[30]], [[40]]]]
+    )  # Shape: (1, 4, 1, 1)
+    padded_zernike_prior = tf.constant(
+        [[[[1]], [[2]], [[0]], [[0]]]]
+    )  # Shape: (1, 4, 1, 1)
 
-
-    mocker.patch.object(physical_layer_instance, "tf_poly_Z_field", return_value=padded_zk_param)
+    mocker.patch.object(
+        physical_layer_instance, "tf_poly_Z_field", return_value=padded_zk_param
+    )
     mocker.patch.object(physical_layer_instance, "call", return_value=padded_zk_prior)
-    mocker.patch.object(physical_layer_instance, "pad_zernikes", return_value=(padded_zernike_param, padded_zernike_prior))
-       
-     # Call the method under test
+    mocker.patch.object(
+        physical_layer_instance,
+        "pad_zernikes",
+        return_value=(padded_zernike_param, padded_zernike_prior),
+    )
+
+    # Call the method under test
     zernike_coeffs = physical_layer_instance.compute_zernikes(tf.constant([[0.0, 0.0]]))
-   
+
     # Define the expected values
-    expected_values = tf.constant([[[[11]], [[22]], [[30]], [[40]]]])  # Shape: (1, 4, 1, 1)
+    expected_values = tf.constant(
+        [[[[11]], [[22]], [[30]], [[40]]]]
+    )  # Shape: (1, 4, 1, 1)
 
     # Assert that the shapes are equal
     assert zernike_coeffs.shape == expected_values.shape

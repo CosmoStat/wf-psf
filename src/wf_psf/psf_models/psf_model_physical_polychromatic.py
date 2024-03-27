@@ -357,10 +357,12 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
             padded_zk_prior = tf.pad(zk_prior, padding_prior)
         else:
             padded_zk_prior = zk_prior
-        
+
         # Assert that the shapes are correct
         if padded_zk_param.shape != padded_zk_prior.shape:
-            raise ValueError("Shapes of padded tensors {zk_param.shape} and {zk_prior.shape} do not match.")
+            raise ValueError(
+                "Shapes of padded tensors {zk_param.shape} and {zk_prior.shape} do not match."
+            )
 
         return padded_zk_param, padded_zk_prior
 
