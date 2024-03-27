@@ -10,12 +10,15 @@ This module contains unit tests for the wf_psf.utils utils module.
 import pytest
 import tensorflow as tf
 import numpy as np
-from wf_psf.utils.utils import zernike_generator
+from wf_psf.utils.utils import (
+    zernike_generator, 
+    compute_unobscured_zernike_projection,
+    decompose_tf_obscured_opd_basis
+)
 from wf_psf.sims.psf_simulator import PSFSimulator
 
 
 def test_unobscured_zernike_projection():
-    from wf_psf.utils.utils import unobscured_zernike_projection
 
     n_zernikes = 20
     wfe_dim = 256
@@ -41,14 +44,14 @@ def test_unobscured_zernike_projection():
     )
 
     # Compute normalisation factor
-    norm_factor = unobscured_zernike_projection(
+    norm_factor = compute_unobscured_zernike_projection(
         tf_zernike_cube[0, :, :], tf_zernike_cube[0, :, :]
     )
 
     # Compute projections for each zernike
     estimated_zk_array = np.array(
         [
-            unobscured_zernike_projection(
+            compute_unobscured_zernike_projection(
                 tf_unobscured_opd, tf_zernike_cube[j, :, :], norm_factor=norm_factor
             )
             for j in range(n_zernikes)
@@ -61,8 +64,7 @@ def test_unobscured_zernike_projection():
 
 
 def test_tf_decompose_obscured_opd_basis():
-    from wf_psf.utils.utils import tf_decompose_obscured_opd_basis
-
+   
     n_zernikes = 20
     wfe_dim = 256
     tol = 1e-5
@@ -95,7 +97,7 @@ def test_tf_decompose_obscured_opd_basis():
     )
 
     # Compute zernike array from OPD
-    obsc_coeffs = tf_decompose_obscured_opd_basis(
+    obsc_coeffs = decompose_tf_obscured_opd_basis(
         tf_opd=tf_obscured_opd,
         tf_obscurations=tf_obscurations,
         tf_zk_basis=tf_zernike_cube,

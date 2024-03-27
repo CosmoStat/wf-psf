@@ -12,7 +12,7 @@ import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
 from wf_psf.psf_models import psf_models as psfm
 from wf_psf.psf_models import tf_layers as tfl
-from wf_psf.utils.utils import tf_decompose_obscured_opd_basis
+from wf_psf.utils.utils import decompose_tf_obscured_opd_basis
 from wf_psf.psf_models.tf_layers import (
     TFBatchPolychromaticPSF,
     TFBatchMonochromaticPSF,
@@ -358,7 +358,7 @@ class TFSemiParametricField(tf.keras.Model):
             np.transpose(
                 np.array(
                     [
-                        tf_decompose_obscured_opd_basis(
+                        decompose_tf_obscured_opd_basis(
                             tf_opd=inter_res_v2[j, :, :],
                             tf_obscurations=self.obscurations,
                             tf_zk_basis=tf_zernike_cube,
