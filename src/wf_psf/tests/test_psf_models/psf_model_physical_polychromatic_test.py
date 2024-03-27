@@ -1,4 +1,4 @@
-src/wf_psf/tests/test_psf_models/psf_model_physical_polychromatic_test.py"""UNIT TESTS FOR PACKAGE MODULE: psf_model_physical_polychromatic.
+"""UNIT TESTS FOR PACKAGE MODULE: psf_model_physical_polychromatic.
 
 This module contains unit tests for the wf_psf.psf_models.psf_model_physical_polychromatic module.
 
