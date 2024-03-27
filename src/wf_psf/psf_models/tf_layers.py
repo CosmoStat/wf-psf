@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 import tensorflow_addons as tfa
-from wf_psf.psf_models.tf_modules import TF_mono_PSF
+from wf_psf.psf_models.tf_modules import TFMonochromaticPSF
 from wf_psf.utils.utils import calc_poly_position_mat
 import wf_psf.utils.utils as utils
 import logging
@@ -9,7 +9,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class TF_poly_Z_field(tf.keras.layers.Layer):
+class TFPolynomialZernikeField(tf.keras.layers.Layer):
     """Calculate the zernike coefficients for a given position.
 
     This module implements a polynomial model of Zernike
@@ -90,7 +90,7 @@ class TF_poly_Z_field(tf.keras.layers.Layer):
         return zernikes_coeffs[:, :, tf.newaxis, tf.newaxis]
 
 
-class TF_zernike_OPD(tf.keras.layers.Layer):
+class TFZernikeOPD(tf.keras.layers.Layer):
     """Turn zernike coefficients into an OPD.
 
     Will use all of the Zernike maps provided.
@@ -122,11 +122,11 @@ class TF_zernike_OPD(tf.keras.layers.Layer):
         return tf.math.reduce_sum(tf.math.multiply(self.zernike_maps, z_coeffs), axis=1)
 
 
-class TF_batch_poly_PSF(tf.keras.layers.Layer):
+class TFBatchPolychromaticPSF(tf.keras.layers.Layer):
     """Calculate a polychromatic PSF from an OPD and stored SED values.
 
     The calculation of the packed values with the respective SED is done
-    with the SimPSFToolkit class but outside the TF class.
+    with the PSFSimulator class but outside the TF class.
 
     Parameters
     ----------
@@ -159,7 +159,7 @@ class TF_batch_poly_PSF(tf.keras.layers.Layer):
 
         self.current_opd = None
 
-    def calculate_mono_PSF(self, packed_elems):
+    def calculate_monochromatic_PSF(self, packed_elems):
         """Calculate monochromatic PSF from packed elements.
 
         packed_elems[0]: phase_N
@@ -172,7 +172,7 @@ class TF_batch_poly_PSF(tf.keras.layers.Layer):
         SED_norm_val = packed_elems[2]
 
         # Build the monochromatic PSF generator
-        tf_mono_psf_gen = TF_mono_PSF(
+        tf_monochromatic_psf_gen = TFMonochromaticPSF(
             phase_N,
             lambda_obs,
             self.obscurations,
@@ -181,22 +181,21 @@ class TF_batch_poly_PSF(tf.keras.layers.Layer):
         )
 
         # Calculate the PSF
-        mono_psf = tf_mono_psf_gen.__call__(self.current_opd)
-        mono_psf = tf.squeeze(mono_psf, axis=0)
-        # mono_psf = tf.reshape(mono_psf, shape=(mono_psf.shape[1],mono_psf.shape[2]))
+        monochromatic_psf = tf_monochromatic_psf_gen.__call__(self.current_opd)
+        monochromatic_psf = tf.squeeze(monochromatic_psf, axis=0)
 
         # Multiply with the respective normalized SED and return
-        return tf.math.scalar_mul(SED_norm_val, mono_psf)
+        return tf.math.scalar_mul(SED_norm_val, monochromatic_psf)
 
-    def calculate_poly_PSF(self, packed_elems):
+    def calculate_polychromatic_PSF(self, packed_elems):
         """Calculate a polychromatic PSF."""
 
         self.current_opd = packed_elems[0][tf.newaxis, :, :]
         SED_pack_data = packed_elems[1]
 
-        def _calculate_poly_PSF(elems_to_unpack):
+        def _calculate_polychromatic_PSF(elems_to_unpack):
             return tf.map_fn(
-                self.calculate_mono_PSF,
+                self.calculate_monochromatic_PSF,
                 elems_to_unpack,
                 parallel_iterations=10,
                 fn_output_signature=tf.float32,
@@ -208,13 +207,13 @@ class TF_batch_poly_PSF(tf.keras.layers.Layer):
         # poly_psf = tf.math.reduce_sum(stacked_psfs, axis=0)
         # return poly_psf
 
-        stack_psf = _calculate_poly_PSF(SED_pack_data)
-        poly_psf = tf.math.reduce_sum(stack_psf, axis=0)
+        stack_psf = _calculate_polychromatic_PSF(SED_pack_data)
+        polychromatic_psf = tf.math.reduce_sum(stack_psf, axis=0)
 
-        return poly_psf
+        return polychromatic_psf
 
     def call(self, inputs):
-        """Calculate the batch poly PSFs."""
+        """Calculate the batch polychromatic PSFs."""
 
         # Unpack Inputs
         opd_batch = inputs[0]
@@ -222,23 +221,23 @@ class TF_batch_poly_PSF(tf.keras.layers.Layer):
 
         def _calculate_PSF_batch(elems_to_unpack):
             return tf.map_fn(
-                self.calculate_poly_PSF,
+                self.calculate_polychromatic_PSF,
                 elems_to_unpack,
                 parallel_iterations=10,
                 fn_output_signature=tf.float32,
                 swap_memory=True,
             )
 
-        psf_poly_batch = _calculate_PSF_batch((opd_batch, packed_SED_data))
+        psf_polychromatic_batch = _calculate_PSF_batch((opd_batch, packed_SED_data))
 
-        return psf_poly_batch
+        return psf_polychromatic_batch
 
 
-class TF_batch_mono_PSF(tf.keras.layers.Layer):
+class TFBatchMonochromaticPSF(tf.keras.layers.Layer):
     """Calculate a monochromatic PSF from a batch of OPDs.
 
     The calculation of the ``phase_N`` variable is done
-    with the SimPSFToolkit class but outside the TF class.
+    with the PSFSimulator class but outside the TF class.
 
     Parameters
     ----------
@@ -255,7 +254,7 @@ class TF_batch_mono_PSF(tf.keras.layers.Layer):
 
     """
 
-    def __init__(self, obscurations, output_Q, output_dim=64, name="TF_batch_mono_PSF"):
+    def __init__(self, obscurations, output_Q, output_dim=64, name="Pbatch_mono_PSF"):
         super().__init__(name=name)
 
         self.output_Q = output_Q
@@ -268,7 +267,7 @@ class TF_batch_mono_PSF(tf.keras.layers.Layer):
 
         self.current_opd = None
 
-    def calculate_mono_PSF(self, current_opd):
+    def calculate_monochromatic_PSF(self, current_opd):
         """Calculate monochromatic PSF from OPD info."""
         # Calculate the PSF
         mono_psf = self.tf_mono_psf_gen.__call__(current_opd[tf.newaxis, :, :])
@@ -278,7 +277,7 @@ class TF_batch_mono_PSF(tf.keras.layers.Layer):
 
     def init_mono_PSF(self):
         """Initialise or restart the PSF generator."""
-        self.tf_mono_psf_gen = TF_mono_PSF(
+        self.tf_mono_psf_gen = TFMonochromaticPSF(
             self.phase_N,
             self.lambda_obs,
             self.obscurations,
@@ -306,7 +305,7 @@ class TF_batch_mono_PSF(tf.keras.layers.Layer):
 
         def _calculate_PSF_batch(elems_to_unpack):
             return tf.map_fn(
-                self.calculate_mono_PSF,
+                self.calculate_monochromatic_PSF,
                 elems_to_unpack,
                 parallel_iterations=10,
                 fn_output_signature=tf.float32,
@@ -318,7 +317,7 @@ class TF_batch_mono_PSF(tf.keras.layers.Layer):
         return mono_psf_batch
 
 
-class TF_NP_poly_OPD(tf.keras.layers.Layer):
+class TFNonParametricPolynomialVariationsOPD(tf.keras.layers.Layer):
     """Non-parametric OPD generation with polynomial variations.
 
 
@@ -422,7 +421,7 @@ class TF_NP_poly_OPD(tf.keras.layers.Layer):
         return tf.tensordot(inter_res, self.S_mat, axes=1)
 
 
-class TF_NP_MCCD_OPD_v2(tf.keras.layers.Layer):
+class TFNonParametricMCCDOPDv2(tf.keras.layers.Layer):
     """Non-parametric OPD generation with hybrid-MCCD variations.
 
 
@@ -640,7 +639,7 @@ class TF_NP_MCCD_OPD_v2(tf.keras.layers.Layer):
         return tf.math.add(contribution_poly, contribution_graph)
 
 
-class TF_NP_GRAPH_OPD(tf.keras.layers.Layer):
+class TFNonParametricGraphOPD(tf.keras.layers.Layer):
     """Non-parametric OPD generation with only graph-cosntraint variations.
 
 
@@ -819,8 +818,8 @@ class TF_NP_GRAPH_OPD(tf.keras.layers.Layer):
         return contribution_graph
 
 
-class TF_physical_layer(tf.keras.layers.Layer):
-    """Store and calculate the zernike coefficients for a given position.
+class TFPhysicalLayer(tf.keras.layers.Layer):
+    """Store and calculate the zernike coefficients for a given position
 
     This layer gives the Zernike contribution of the physical layer.
     It is fixed and not trainable.
@@ -925,19 +924,38 @@ class TF_physical_layer(tf.keras.layers.Layer):
         return interp_zks[:, :, tf.newaxis, tf.newaxis]
 
     def call(self, positions):
-        """Calculate the prior zernike coefficients for a given position.
+        """Calculate the prior Zernike coefficients for a batch of positions.
 
-        The position polynomial matrix and the coefficients should be
-        set before calling this function.
+        This method calculates the Zernike coefficients for a batch of input positions
+        based on the pre-computed Zernike coefficients for observed positions.
 
         Parameters
         ----------
-        positions: Tensor(batch, 2)
-            First element is x-axis, second is y-axis.
+        positions : tf.Tensor
+            Tensor of shape (batch_size, 2) representing the positions.
+            The first element represents the x-axis, and the second element represents the y-axis.
 
         Returns
         -------
-        zernikes_coeffs: Tensor(batch, n_zernikes, 1, 1)
+        zernike_coeffs : tf.Tensor
+            Tensor of shape (batch_size, n_zernikes, 1, 1) containing the prior Zernike coefficients
+            corresponding to the input positions.
+
+        Notes
+        -----
+        The method retrieves the Zernike coefficients for each input position from the pre-computed
+        Zernike coefficients stored for observed positions. It matches each input position with
+        the closest observed position and retrieves the corresponding Zernike coefficients.
+
+        Before calling this method, ensure that the position polynomial matrix and the
+        corresponding Zernike coefficients have been precomputed and set for the layer.
+
+
+        Raises
+        ------
+        ValueError
+            If the shape of the input `positions` tensor is not compatible.
+
         """
 
         def calc_index(idx_pos):
@@ -949,133 +967,3 @@ class TF_physical_layer(tf.keras.layers.Layer):
         batch_zks = tf.gather(self.zks_prior, indices=indices, axis=0, batch_dims=0)
 
         return batch_zks[:, :, tf.newaxis, tf.newaxis]
-
-
-# --- #
-# Deprecated #
-class OLD_TF_batch_poly_PSF(tf.keras.layers.Layer):
-    """Calculate a polychromatic PSF from an OPD and stored SED values.
-
-    The calculation of the packed values with the respective SED is done
-    with the SimPSFToolkit class but outside the TF class.
-
-
-
-    obscurations: Tensor(pupil_len, pupil_len)
-        Obscurations to apply to the wavefront.
-
-    packed_SED_data: Tensor(batch_size, 3, n_bins_lda)
-
-    Comes from: tf.convert_to_tensor(list(list(Tensor,Tensor,Tensor)))
-        Where each inner list consist of a packed_elem:
-
-            packed_elems: Tuple of tensors
-            Contains three 1D tensors with the parameters needed for
-            the calculation of one monochromatic PSF.
-
-            packed_elems[0]: phase_N
-            packed_elems[1]: lambda_obs
-            packed_elems[2]: SED_norm_val
-        The SED data is constant in a FoV.
-
-    psf_batch: Tensor(batch_size, output_dim, output_dim)
-        Tensor containing the psfs that will be updated each
-        time a calculation is required.
-
-    """
-
-    def __init__(
-        self, obscurations, psf_batch, output_dim=64, name="TF_batch_poly_PSF"
-    ):
-        super().__init__(name=name)
-
-        self.obscurations = obscurations
-        self.output_dim = output_dim
-        self.psf_batch = psf_batch
-
-        self.current_opd = None
-
-    def set_psf_batch(self, psf_batch):
-        """Set poly PSF batch."""
-        self.psf_batch = psf_batch
-
-    def calculate_mono_PSF(self, packed_elems):
-        """Calculate monochromatic PSF from packed elements.
-
-        packed_elems[0]: phase_N
-        packed_elems[1]: lambda_obs
-        packed_elems[2]: SED_norm_val
-        """
-        # Unpack elements
-        phase_N = packed_elems[0]
-        lambda_obs = packed_elems[1]
-        SED_norm_val = packed_elems[2]
-
-        # Build the monochromatic PSF generator
-        tf_mono_psf_gen = TF_mono_PSF(
-            phase_N, lambda_obs, self.obscurations, output_dim=self.output_dim
-        )
-
-        # Calculate the PSF
-        mono_psf = tf_mono_psf_gen.__call__(self.current_opd)
-
-        # Multiply with the respective normalized SED and return
-        return tf.math.scalar_mul(SED_norm_val, mono_psf)
-
-    def calculate_poly_PSF(self, packed_elems):
-        """Calculate a polychromatic PSF."""
-
-        logger.info("TF_batch_poly_PSF: calculate_poly_PSF: packed_elems.type")
-        logger.info(packed_elems.dtype)
-
-        def _calculate_poly_PSF(elems_to_unpack):
-            return tf.map_fn(
-                self.calculate_mono_PSF,
-                elems_to_unpack,
-                parallel_iterations=10,
-                fn_output_signature=tf.float32,
-                swap_memory=True,
-            )
-
-        # Readability
-        # stacked_psfs = _calculate_poly_PSF(packed_elems)
-        # poly_psf = tf.math.reduce_sum(stacked_psfs, axis=0)
-        # return poly_psf
-
-        return tf.math.reduce_sum(_calculate_poly_PSF(packed_elems), axis=0)
-
-    def call(self, inputs):
-        """Calculate the batch poly PSFs."""
-
-        # Unpack Inputs
-        opd_batch = inputs[0]
-        packed_SED_data = inputs[1]
-
-        batch_num = opd_batch.shape[0]
-
-        it = tf.constant(0)
-        while_condition = lambda it: tf.less(it, batch_num)
-
-        def while_body(it):
-            # Extract the required data of _it_
-            packed_elems = packed_SED_data[it]
-            self.current_opd = opd_batch[it][tf.newaxis, :, :]
-
-            # Calculate the _it_ poly PSF
-            poly_psf = self.calculate_poly_PSF(packed_elems)
-
-            # Update the poly PSF tensor with the result
-            # Slice update of a tensor
-            # See tf doc of _tensor_scatter_nd_update_ to understand
-            indices = tf.reshape(it, shape=(1, 1))
-            # self.psf_batch = tf.tensor_scatter_nd_update(self.psf_batch, indices, poly_psf)
-
-            # increment i
-            return [tf.add(it, 1)]
-
-        # Loop over the PSF batches
-        r = tf.while_loop(
-            while_condition, while_body, [it], swap_memory=True, parallel_iterations=10
-        )
-
-        return self.psf_batch

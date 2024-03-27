@@ -9,91 +9,170 @@ A module to load and preprocess training and validation test data.
 import numpy as np
 import wf_psf.utils.utils as utils
 import tensorflow as tf
-import tensorflow_addons as tfa
-import wf_psf.sims.SimPSFToolkit as SimPSFToolkit
 import os
 
 
-class TrainingDataHandler:
-    """Training Data Handler.
+class DataHandler:
+    """Data Handler.
 
-    A class to manage training data.
+    This class manages loading and processing of training and testing data for use in machine learning models.
+    It provides methods to access and preprocess the data.
 
     Parameters
     ----------
-    training_data_params: Recursive Namespace object
+    data_type: str
+        A string indicating type of data ("train" or "test").
+    data_params: Recursive Namespace object
         Recursive Namespace object containing training data parameters
-    simPSF: object
-        SimPSFToolkit instance
+    simPSF: PSFSimulator
+        An instance of the PSFSimulator class for simulating a PSF.
     n_bins_lambda: int
-        Number of bins in wavelength
+        The number of bins in wavelength.
+    init_flag: bool, optional
+        A flag indicating whether to perform initialization steps upon object creation.
+        If True (default), the dataset is loaded and processed. If False, initialization
+        steps are skipped, and manual initialization is required.
+
+    Attributes
+    ----------
+    dataset: dict
+        A dictionary containing the loaded dataset, including positions and stars/noisy_stars.
+    simPSF: object
+        An instance of the SimPSFToolkit class for simulating PSF.
+    n_bins_lambda: int
+        The number of bins in wavelength.
+    sed_data: tf.Tensor
+        A TensorFlow tensor containing the SED data for training/testing.
+    init_flag: bool, optional
+        A flag used to control initialization steps. If True, initialization is performed
+        upon object creation.
+
 
     """
 
-    def __init__(self, training_data_params, simPSF, n_bins_lambda):
-        self.training_data_params = training_data_params
-        self.train_dataset = np.load(
-            os.path.join(
-                self.training_data_params.data_dir, self.training_data_params.file
-            ),
-            allow_pickle=True,
-        )[()]
-        self.train_dataset["positions"] = tf.convert_to_tensor(
-            self.train_dataset["positions"], dtype=tf.float32
-        )
-        self.train_dataset["noisy_stars"] = tf.convert_to_tensor(
-            self.train_dataset["noisy_stars"], dtype=tf.float32
-        )
+    def __init__(self, data_type, data_params, simPSF, n_bins_lambda, init_flag=True):
+        self.data_params = data_params.__dict__[data_type]
+        self.dataset = None
         self.simPSF = simPSF
         self.n_bins_lambda = n_bins_lambda
+        self.sed_data = None
+        self.initialize(init_flag)
+
+    def load_dataset(self):
+        """Load dataset.
+
+        Load the dataset based on the specified data type.
+
+        """
+        self.dataset = np.load(
+            os.path.join(self.data_params.data_dir, self.data_params.file),
+            allow_pickle=True,
+        )[()]
+        self.dataset["positions"] = tf.convert_to_tensor(
+            self.dataset["positions"], dtype=tf.float32
+        )
+        if "train" in self.data_params.file:
+            self.dataset["noisy_stars"] = tf.convert_to_tensor(
+                self.dataset["noisy_stars"], dtype=tf.float32
+            )
+        elif "test" in self.data_params.file:
+            self.dataset["stars"] = tf.convert_to_tensor(
+                self.dataset["stars"], dtype=tf.float32
+            )
+
+    def process_sed_data(self):
+        """Process SED Data.
+
+        A method to generate and process SED data.
+
+        """
         self.sed_data = [
             utils.generate_SED_elems_in_tensorflow(
                 _sed, self.simPSF, n_bins=self.n_bins_lambda, tf_dtype=tf.float64
             )
-            for _sed in self.train_dataset["SEDs"]
+            for _sed in self.dataset["SEDs"]
         ]
         self.sed_data = tf.convert_to_tensor(self.sed_data, dtype=tf.float32)
         self.sed_data = tf.transpose(self.sed_data, perm=[0, 2, 1])
 
+    def initialize(self, init_flag):
+        """Initialize.
 
-class TestDataHandler:
-    """Test Data Handler.
+        Initialize the DataHandler instance by loading and processing the dataset,
+        if the init_flag is True.
 
-    A class to handle test data for model validation.
+        Parameters
+        ----------
+        init_flag : bool
+            A flag indicating whether to perform initialization steps. If True,
+            the dataset is loaded and processed. If False, initialization steps
+            are skipped.
+
+        """
+        if init_flag:
+            self.load_dataset()
+            self.process_sed_data()
+
+
+def get_obs_positions(data):
+    """Get observed positions from the provided dataset.
+
+    This method concatenates the positions of the stars from both the training
+    and test datasets to obtain the observed positions.
 
     Parameters
     ----------
-    test_data_params: Recursive Namespace object
-        Recursive Namespace object containing test data parameters
-    simPSF: object
-        SimPSFToolkit instance
-    n_bins_lambda: int
-        Number of bins in wavelength
+    data : DataConfigHandler
+        Object containing training and test datasets.
+
+    Returns
+    -------
+    tf.Tensor
+        Tensor containing the observed positions of the stars.
+
+    Notes
+    -----
+    The observed positions are obtained by concatenating the positions of stars
+    from both the training and test datasets along the 0th axis.
 
     """
+    obs_positions = np.concatenate(
+        (
+            data.training_data.dataset["positions"],
+            data.test_data.dataset["positions"],
+        ),
+        axis=0,
+    )
+    return tf.convert_to_tensor(obs_positions, dtype=tf.float32)
 
-    def __init__(self, test_data_params, simPSF, n_bins_lambda):
-        self.test_data_params = test_data_params
-        self.test_dataset = np.load(
-            os.path.join(self.test_data_params.data_dir, self.test_data_params.file),
-            allow_pickle=True,
-        )[()]
-        self.test_dataset["stars"] = tf.convert_to_tensor(
-            self.test_dataset["stars"], dtype=tf.float32
-        )
-        self.test_dataset["positions"] = tf.convert_to_tensor(
-            self.test_dataset["positions"], dtype=tf.float32
-        )
 
-        # Prepare validation data inputs
-        self.simPSF = simPSF
-        self.n_bins_lambda = n_bins_lambda
+def get_zernike_prior(data):
+    """Get Zernike priors from the provided dataset.
 
-        self.sed_data = [
-            utils.generate_SED_elems_in_tensorflow(
-                _sed, self.simPSF, n_bins=self.n_bins_lambda, tf_dtype=tf.float64
-            )
-            for _sed in self.test_dataset["SEDs"]
-        ]
-        self.sed_data = tf.convert_to_tensor(self.sed_data, dtype=tf.float32)
-        self.sed_data = tf.transpose(self.sed_data, perm=[0, 2, 1])
+    This method concatenates the Zernike priors from both the training
+    and test datasets.
+
+    Parameters
+    ----------
+    data : DataConfigHandler
+        Object containing training and test datasets.
+
+    Returns
+    -------
+    tf.Tensor
+        Tensor containing the observed positions of the stars.
+
+    Notes
+    -----
+    The Zernike prior are obtained by concatenating the Zernike priors
+    from both the training and test datasets along the 0th axis.
+
+    """
+    zernike_prior = np.concatenate(
+        (
+            data.training_data.dataset["zernike_prior"],
+            data.test_data.dataset["zernike_prior"],
+        ),
+        axis=0,
+    )
+    return tf.convert_to_tensor(zernike_prior, dtype=tf.float32)

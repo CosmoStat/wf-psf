@@ -13,7 +13,7 @@ import time
 import tensorflow as tf
 import tensorflow_addons as tfa
 import wf_psf.data.training_preprocessing as training_preprocessing
-from wf_psf.data.training_preprocessing import TrainingDataHandler, TestDataHandler
+from wf_psf.data.training_preprocessing import DataHandler
 from wf_psf.psf_models import psf_models
 from wf_psf.metrics import metrics as wf_metrics
 import os
@@ -23,7 +23,42 @@ import wf_psf.utils.io as io
 logger = logging.getLogger(__name__)
 
 
-def ground_truth_psf_model(metrics_params, coeff_matrix):
+def create_ground_truth_psf_model(metrics_params, coeff_matrix):
+    """Create a Ground Truth PSF Model for metrics evaluation.
+
+    This function creates a Ground Truth PSF Model instance specifically designed
+    for metrics evaluation purposes. It uses the provided configuration parameters
+    and coefficient matrix to initialize the model.
+
+    Parameters
+    ----------
+    metrics_params : RecursiveNamespace
+        Object storing the metric configuration parameters, including the model
+        parameters for the Ground Truth PSF Model.
+    coeff_matrix : Tensor or None
+        Coefficient matrix defining the parametric PSF field model. This matrix
+        is used to initialize the polynomial Zernike field of the PSF model.
+
+    Returns
+    -------
+    psf_model : Object
+        Class instance of the Ground Truth SemiParametric PSF model.
+
+    Notes
+    -----
+    The provided coefficient matrix initializes the polynomial Zernike field of
+    the Ground Truth PSF Model. The function also resets the alpha matrix of the
+    non-parametric polychromatic OPD to zeros.
+
+    Example
+    -------
+    metrics_params = load_metrics_params()
+    coeff_matrix = load_coeff_matrix()
+    ground_truth_model = create_ground_truth_psf_model(metrics_params, coeff_matrix)
+
+    # Use the ground_truth_model for metrics evaluation
+    metrics_results = evaluate_metrics(ground_truth_model, ...)
+    """
     psf_model = psf_models.get_psf_model(
         metrics_params.ground_truth_model.model_params,
         metrics_params.metrics_hparams,
@@ -66,7 +101,7 @@ class MetricsParamsHandler:
         psf_model: object
             PSF model class instance of the psf model selected for metrics evaluation.
         simPSF: object
-            SimPSFToolkit instance
+            PSFSimulator instance
         test_dataset: dict
             Test dataset dictionary
 
@@ -81,7 +116,7 @@ class MetricsParamsHandler:
 
         rmse, rel_rmse, std_rmse, std_rel_rmse = wf_metrics.compute_poly_metric(
             tf_semiparam_field=psf_model,
-            GT_tf_semiparam_field=ground_truth_psf_model(
+            gt_tf_semiparam_field=create_ground_truth_psf_model(
                 self.metrics_params, dataset["C_poly"]
             ),
             simPSF_np=simPSF,
@@ -111,7 +146,7 @@ class MetricsParamsHandler:
         psf_model: object
             PSF model class instance of the psf model selected for metrics evaluation.
         simPSF: object
-            SimPSFToolkit instance
+            PSFSimulator instance
         test_dataset: dict
             Test dataset dictionary
 
@@ -131,7 +166,7 @@ class MetricsParamsHandler:
             std_rel_rmse_lda,
         ) = wf_metrics.compute_mono_metric(
             tf_semiparam_field=psf_model,
-            GT_tf_semiparam_field=ground_truth_psf_model(
+            gt_tf_semiparam_field=create_ground_truth_psf_model(
                 self.metrics_params, dataset["C_poly"]
             ),
             simPSF_np=simPSF,
@@ -157,7 +192,7 @@ class MetricsParamsHandler:
         psf_model: object
             PSF model class instance of the psf model selected for metrics evaluation.
         simPSF: object
-            SimPSFToolkit instance
+            PSFSimulator instance
         test_dataset: dict
             Test dataset dictionary
 
@@ -176,7 +211,7 @@ class MetricsParamsHandler:
             rel_rmse_std_opd,
         ) = wf_metrics.compute_opd_metrics(
             tf_semiparam_field=psf_model,
-            GT_tf_semiparam_field=ground_truth_psf_model(
+            gt_tf_semiparam_field=create_ground_truth_psf_model(
                 self.metrics_params, dataset["C_poly"]
             ),
             pos=dataset["positions"],
@@ -201,7 +236,7 @@ class MetricsParamsHandler:
         psf_model: object
             PSF model class instance of the psf model selected for metrics evaluation.
         simPSF: object
-            SimPSFToolkit instance
+            PSFSimulator instance
         dataset: dict
             Test dataset dictionary
 
@@ -215,7 +250,7 @@ class MetricsParamsHandler:
 
         shape_results = wf_metrics.compute_shape_metrics(
             tf_semiparam_field=psf_model,
-            GT_tf_semiparam_field=ground_truth_psf_model(
+            gt_tf_semiparam_field=create_ground_truth_psf_model(
                 self.metrics_params, dataset["C_poly"]
             ),
             simPSF_np=simPSF,
@@ -235,8 +270,7 @@ class MetricsParamsHandler:
 def evaluate_model(
     metrics_params,
     trained_model_params,
-    training_data,
-    test_data,
+    data,
     psf_model,
     weights_path,
     metrics_output,
@@ -251,10 +285,8 @@ def evaluate_model(
         Recursive Namespace object containing metrics input parameters
     trained_model_params: Recursive Namespace object
         Recursive Namespace object containing trained model input parameters
-    training_data: object
-        TrainingDataHandler object
-    test_data: object
-        TestDataHandler object
+    data: DataHandler object
+        DataHandler object containing training and test data
     psf_model: object
         PSF model object
     weights_path: str
@@ -277,7 +309,7 @@ def evaluate_model(
 
         ## Prepare models
         # Prepare np input
-        simPSF_np = training_data.simPSF
+        simPSF_np = data.training_data.simPSF
 
         ## Load the model's weights
         try:
@@ -292,13 +324,13 @@ def evaluate_model(
 
         # Polychromatic star reconstructions
         poly_metric = metrics_handler.evaluate_metrics_polychromatic_lowres(
-            psf_model, simPSF_np, test_data.test_dataset
+            psf_model, simPSF_np, data.test_data.dataset
         )
 
         # Monochromatic star reconstructions
         if metrics_params.eval_mono_metric_rmse:
             mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
-                psf_model, simPSF_np, test_data.test_dataset
+                psf_model, simPSF_np, data.test_data.dataset
             )
         else:
             mono_metric = None
@@ -306,7 +338,7 @@ def evaluate_model(
         # OPD metrics
         if metrics_params.eval_opd_metric_rmse:
             opd_metric = metrics_handler.evaluate_metrics_opd(
-                psf_model, simPSF_np, test_data.test_dataset
+                psf_model, simPSF_np, data.test_data.dataset
             )
         else:
             opd_metric = None
@@ -316,7 +348,7 @@ def evaluate_model(
             "Computing polychromatic high-resolution metrics and shape metrics."
         )
         shape_results_dict = metrics_handler.evaluate_metrics_shape(
-            psf_model, simPSF_np, test_data.test_dataset
+            psf_model, simPSF_np, data.test_data.dataset
         )
         # Save metrics
         test_metrics = {
@@ -333,13 +365,13 @@ def evaluate_model(
         logger.info("Computing polychromatic metrics at low resolution.")
 
         train_poly_metric = metrics_handler.evaluate_metrics_polychromatic_lowres(
-            psf_model, simPSF_np, training_data.train_dataset
+            psf_model, simPSF_np, data.training_data.dataset
         )
 
         # Monochromatic star reconstructions turn into a class
         if metrics_params.eval_mono_metric_rmse:
             train_mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
-                psf_model, simPSF_np, training_data.train_dataset
+                psf_model, simPSF_np, data.training_data.dataset
             )
         else:
             train_mono_metric = None
@@ -347,7 +379,7 @@ def evaluate_model(
         # OPD metrics turn into a class
         if metrics_params.eval_opd_metric_rmse:
             train_opd_metric = metrics_handler.evaluate_metrics_opd(
-                psf_model, simPSF_np, training_data.train_dataset
+                psf_model, simPSF_np, data.training_data.dataset
             )
         else:
             train_opd_metric = None
@@ -355,7 +387,7 @@ def evaluate_model(
         # Shape metrics  turn into a class
         if metrics_params.eval_train_shape_sr_metric_rmse:
             train_shape_results_dict = metrics_handler.evaluate_metrics_shape(
-                psf_model, simPSF_np, training_data.train_dataset
+                psf_model, simPSF_np, data.training_data.dataset
             )
         else:
             train_shape_results_dict = None

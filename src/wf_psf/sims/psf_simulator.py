@@ -21,7 +21,7 @@ except:
         print("Problem importing skimage..")
 
 
-class SimPSFToolkit(object):
+class PSFSimulator(object):
     """Simulate PSFs.
 
     In the future the zernike maps could be created with galsim or some other
@@ -155,7 +155,7 @@ class SimPSFToolkit(object):
             self.obscurations = np.ones((pupil_diameter, pupil_diameter))
 
     @staticmethod
-    def _OLD_fft_diffraction_op(wf, pupil_mask, pad_factor=2, match_shapes=True):
+    def _old_fft_diffraction_op(wf, pupil_mask, pad_factor=2, match_shapes=True):
         """Perform a fft-based diffraction.
 
         Parameters
