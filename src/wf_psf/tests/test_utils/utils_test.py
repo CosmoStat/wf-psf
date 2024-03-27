@@ -11,15 +11,14 @@ import pytest
 import tensorflow as tf
 import numpy as np
 from wf_psf.utils.utils import (
-    zernike_generator, 
+    zernike_generator,
     compute_unobscured_zernike_projection,
-    decompose_tf_obscured_opd_basis
+    decompose_tf_obscured_opd_basis,
 )
 from wf_psf.sims.psf_simulator import PSFSimulator
 
 
 def test_unobscured_zernike_projection():
-
     n_zernikes = 20
     wfe_dim = 256
     tol = 1e-1
@@ -64,7 +63,6 @@ def test_unobscured_zernike_projection():
 
 
 def test_tf_decompose_obscured_opd_basis():
-   
     n_zernikes = 20
     wfe_dim = 256
     tol = 1e-5
