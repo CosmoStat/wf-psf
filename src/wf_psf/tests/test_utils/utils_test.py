@@ -11,7 +11,7 @@ import pytest
 import tensorflow as tf
 import numpy as np
 from wf_psf.utils.utils import zernike_generator
-from wf_psf.sims.SimPSFToolkit import SimPSFToolkit
+from wf_psf.sims.psf_simulator import PSFSimulator
 
 
 def test_unobscured_zernike_projection():
@@ -78,7 +78,7 @@ def test_tf_decompose_obscured_opd_basis():
     tf_zernike_cube = tf.convert_to_tensor(np_zernike_cube, dtype=tf.float32)
 
     # Create obscurations
-    obscurations = SimPSFToolkit.generate_pupil_obscurations(N_pix=wfe_dim, N_filter=2)
+    obscurations = PSFSimulator.generate_pupil_obscurations(N_pix=wfe_dim, N_filter=2)
     tf_obscurations = tf.convert_to_tensor(obscurations, dtype=tf.float32)
 
     # Create random zernike coefficient array
