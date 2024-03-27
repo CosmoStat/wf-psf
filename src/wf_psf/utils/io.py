@@ -135,7 +135,6 @@ class FileIOHandler:
             self._log_files,
             logfile,
         )
-
         logging.config.fileConfig(
             os.path.join(self.repodir_path, "config/logging.conf"),
             defaults={"filename": logfile},

@@ -6,7 +6,7 @@ import zernike as zk
 
 try:
     from cv2 import resize, INTER_AREA
-except:
+except ModuleNotFoundError:
     print("Problem importing opencv..")
 import sys
 
@@ -128,7 +128,7 @@ def calc_poly_position_mat(pos, x_lims, y_lims, d_max):
     poly_list = []
 
     for d in range(d_max + 1):
-        row_idx = d * (d + 1) // 2
+        # row_idx = d * (d + 1) // 2
         for p in range(d + 1):
             poly_list.append(scaled_pos_x ** (d - p) * scaled_pos_y**p)
 
@@ -485,14 +485,87 @@ def load_multi_cycle_params_click(args):
     return args
 
 
-def PI_zernikes(tf_z1, tf_z2, norm_factor=None):
-    """Compute internal product between zernikes and OPDs
+def compute_unobscured_zernike_projection(tf_z1, tf_z2, norm_factor=None):
+    """Compute a zernike projection for unobscured wavefronts (OPDs).
 
-    Defined such that Zernikes are orthonormal to each other
+    Compute internal product between zernikes and OPDs.
 
-    First one should compute: norm_factor =  PI_zernikes(tf_zernike,tf_zernike)
-    for futur calls: PI_zernikes(OPD,tf_zernike_k, norm_factor)
+    Defined such that Zernikes are orthonormal to each other.
+
+    First one should compute: norm_factor =  unobscured_zernike_projection(tf_zernike,tf_zernike)
+    for futur calls: unobscured_zernike_projection(OPD,tf_zernike_k, norm_factor)
+
+    If the OPD has obscurations, or is not an unobscured circular aperture,
+    the Zernike polynomials are no longer orthonormal. Therefore, you should consider
+    using the function `tf_decompose_obscured_opd_basis` that takes into account the
+    obscurations in the projection.
     """
     if norm_factor is None:
         norm_factor = 1
     return np.sum((tf.math.multiply(tf_z1, tf_z2)).numpy()) / (norm_factor)
+
+
+def decompose_tf_obscured_opd_basis(
+    tf_opd, tf_obscurations, tf_zk_basis, n_zernike, iters=20
+):
+    """Decompose obscured OPD into a basis using an iterative algorithm.
+
+    Tensorflow implementation.
+
+    Parameters
+    ----------
+    tf_opd : tf.Tensor
+        Input OPD that requires to be decomposed on `tf_zk_basis`. The tensor shape is (opd_dim, opd_dim).
+    tf_obscurations : tf.Tensor
+        Tensor with the obscuration map.  The tensor shape is (opd_dim, opd_dim).
+    tf_zk_basis : tf.Tensor
+        Zernike polynomial maps. The tensor shape is (n_batch, opd_dim, opd_dim)
+    n_zernike : int
+        Number of Zernike polynomials to project on.
+    iters : int
+        Number of iterations of the algorithm.
+
+    Returns
+    -------
+    obsc_coeffs : np.ndarray
+        Array of size `n_zernike` with projected Zernike coefficients
+
+    Raises
+    ------
+    ValueError
+        If `n_zernike` is bigger than tf_zk_basis.shape[0].
+
+    """
+    if n_zernike > tf_zk_basis.shape[0]:
+        raise ValueError(
+            "Number of Zernike polynomials to project (n_zernike) exceeds the available Zernike elements in the provided basis (tf_zk_basis). Please ensure that n_zernike is less than or equal to the number of Zernike elements in tf_zk_basis."
+        )
+    # Clone input OPD
+    input_tf_opd = tf.identity(tf_opd)
+    # Clone obscurations and project
+    input_tf_obscurations = tf.math.real(tf.identity(tf_obscurations))
+    # Compute normalisation factor
+    ngood = tf.math.reduce_sum(input_tf_obscurations, axis=None, keepdims=False).numpy()
+
+    obsc_coeffs = np.zeros(n_zernike)
+    new_coeffs = np.zeros(n_zernike)
+
+    for count in range(iters):
+        for i, b in enumerate(tf_zk_basis):
+            this_coeff = (
+                tf.math.reduce_sum(
+                    tf.math.multiply(input_tf_opd, b), axis=None, keepdims=False
+                ).numpy()
+                / ngood
+            )
+            new_coeffs[i] = this_coeff
+
+        for i, b in enumerate(tf_zk_basis):
+            input_tf_opd = input_tf_opd - tf.math.multiply(
+                new_coeffs[i] * b, input_tf_obscurations
+            )
+
+        obsc_coeffs += new_coeffs
+        new_coeffs = np.zeros(n_zernike)
+
+    return obsc_coeffs

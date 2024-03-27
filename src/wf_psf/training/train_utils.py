@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-from wf_psf.psf_models.tf_psf_field import build_PSF_model
+from wf_psf.psf_models.psf_models import build_PSF_model
 from wf_psf.utils.utils import NoiseEstimator
 import logging
 

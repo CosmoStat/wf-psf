@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from wf_psf.utils.utils import PI_zernikes, zernike_generator
+from wf_psf.utils.utils import zernike_generator
 
 try:
     from cv2 import resize, INTER_AREA
@@ -123,7 +123,6 @@ class PSFSimulator(object):
         self.rand_seed = rand_seed
         self.plot_opt = plot_opt
         self.zernike_maps = zernike_generator(self.max_order, self.pupil_diameter)
-        # self.zernike_maps = zernike_maps
         self.max_wfe_rms = max_wfe_rms  # In [um]
         self.output_dim = output_dim  # In pixels per dimension
         self.verbose = verbose
@@ -155,7 +154,7 @@ class PSFSimulator(object):
             self.obscurations = np.ones((pupil_diameter, pupil_diameter))
 
     @staticmethod
-    def _OLD_fft_diffraction_op(wf, pupil_mask, pad_factor=2, match_shapes=True):
+    def _old_fft_diffraction_op(wf, pupil_mask, pad_factor=2, match_shapes=True):
         """Perform a fft-based diffraction.
 
         Parameters
