@@ -386,7 +386,7 @@ class TFSemiParametricField(tf.keras.Model):
         # Get beta tilde as the proyection of the first n_param_poly_terms (6 for d_max=2) onto the first n_zernikes.
         beta_tilde_inner = np.array(
             [
-                tf_decompose_obscured_opd_basis(
+                decompose_tf_obscured_opd_basis(
                     tf_opd=s_tilde_slice,
                     tf_obscurations=self.obscurations,
                     tf_zk_basis=tf_zernike_cube,

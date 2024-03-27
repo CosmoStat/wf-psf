@@ -485,7 +485,7 @@ def load_multi_cycle_params_click(args):
     return args
 
 
-def unobscured_zernike_projection(tf_z1, tf_z2, norm_factor=None):
+def compute_unobscured_zernike_projection(tf_z1, tf_z2, norm_factor=None):
     """Compute a zernike projection for unobscured wavefronts (OPDs).
 
     Compute internal product between zernikes and OPDs.
@@ -505,7 +505,7 @@ def unobscured_zernike_projection(tf_z1, tf_z2, norm_factor=None):
     return np.sum((tf.math.multiply(tf_z1, tf_z2)).numpy()) / (norm_factor)
 
 
-def tf_decompose_obscured_opd_basis(
+def decompose_tf_obscured_opd_basis(
     tf_opd, tf_obscurations, tf_zk_basis, n_zernike, iters=20
 ):
     """Decompose obscured OPD into a basis using an iterative algorithm.
