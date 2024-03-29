@@ -81,7 +81,7 @@ class TFParametricPSFFieldModel(tf.keras.Model):
         x_lims=[0, 1e3],
         y_lims=[0, 1e3],
         coeff_mat=None,
-        name="TFParametricPSFFieldModel",
+        name="TF_PSF_field_model",
     ):
         super(TFParametricPSFFieldModel, self).__init__()
 
