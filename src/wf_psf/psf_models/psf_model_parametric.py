@@ -81,9 +81,9 @@ class TFParametricPSFFieldModel(tf.keras.Model):
         x_lims=[0, 1e3],
         y_lims=[0, 1e3],
         coeff_mat=None,
-        name="TF_PSF_field_model",
+        name="TFParametricPSFFieldModel",
     ):
-        super(TF_PSF_field_model, self).__init__()
+        super(TFParametricPSFFieldModel, self).__init__()
 
         self.output_Q = output_Q
 
