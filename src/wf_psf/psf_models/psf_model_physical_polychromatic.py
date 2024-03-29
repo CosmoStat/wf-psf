@@ -49,7 +49,7 @@ class TFPhysicalPolychromaticFieldFactory(psfm.PSFModelBaseFactory):
     ids = ("physical_poly",)
 
     def get_model_instance(self, model_params, training_params, data, coeff_mat=None):
-        return TF_physical_polychromatic_field(
+        return TFPhysicalPolychromaticField(
             model_params, training_params, data, coeff_mat
         )
 
