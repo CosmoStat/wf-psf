@@ -30,9 +30,9 @@ logger = logging.getLogger(__name__)
 
 @psfm.register_psfclass
 class TFPhysicalPolychromaticFieldFactory(psfm.PSFModelBaseFactory):
-    """Factory class for the Tensor Flow Physical Polychromatic PSF Field Model.
+    """Factory class for the TensorFlow Physical Polychromatic PSF Field Model.
 
-    This factory class is responsible for instantiating instances of the Tensor Flow Physical Polychromatic PSF Field Model.
+    This factory class is responsible for instantiating instances of the TensorFlow Physical Polychromatic PSF Field Model.
     It is registered with the PSF model factory registry.
 
     Parameters
@@ -43,7 +43,7 @@ class TFPhysicalPolychromaticFieldFactory(psfm.PSFModelBaseFactory):
     Methods
     -------
     get_model_instance(model_params, training_params, data=None, coeff_mat=None)
-        Instantiates an instance of the Tensor Flow Physical Polychromatic Field class with the provided parameters.
+        Instantiates an instance of the TensorFlow Physical Polychromatic Field class with the provided parameters.
     """
 
     ids = ("physical_poly",)
@@ -55,7 +55,7 @@ class TFPhysicalPolychromaticFieldFactory(psfm.PSFModelBaseFactory):
 
 
 class TFPhysicalPolychromaticField(tf.keras.Model):
-    """Tensor Flow Physical Polychromatic PSF Field class.
+    """TensorFlow Physical Polychromatic PSF Field class.
 
     This class represents a polychromatic PSF field model with a physical layer,
     which is part of a larger PSF modeling framework.
