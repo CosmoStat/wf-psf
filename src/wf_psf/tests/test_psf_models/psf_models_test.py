@@ -8,7 +8,11 @@ This module contains unit tests for the wf_psf.psf_models psf_models module.
 """
 
 import pytest
-from wf_psf.psf_models import psf_models
+from wf_psf.psf_models import (
+    psf_models,
+    psf_model_semiparametric,
+    psf_model_physical_polychromatic,
+)
 from wf_psf.utils.io import FileIOHandler
 import tensorflow as tf
 import numpy as np
@@ -22,6 +26,35 @@ def test_get_psf_model_weights_filepath():
     assert (
         ans
         == "src/wf_psf/tests/data/validation/main_random_seed/checkpoint/checkpoint_callback_poly_sample_w_bis1_2k_cycle2"
+    )
+
+
+@psf_models.register_psfclass
+class RegisterPSFFactoryClass(psf_models.PSFModelBaseFactory):
+    ids = ("psf_factory",)
+
+
+def test_register_psffactoryclass():
+    assert psf_models.PSF_FACTORY["psf_factory"] == RegisterPSFFactoryClass
+    assert (
+        psf_models.PSF_FACTORY["poly"] == psf_model_semiparametric.SemiParamFieldFactory
+    )
+    assert (
+        psf_models.PSF_FACTORY["physical_poly"]
+        == psf_model_physical_polychromatic.PhysicalPolychromaticFieldFactory
+    )
+
+
+def test_set_psf_model():
+    psf_class = psf_models.set_psf_model("psf_factory")
+    assert psf_class == RegisterPSFFactoryClass
+
+    psf_class = psf_models.set_psf_model("poly")
+    assert psf_class == psf_model_semiparametric.SemiParamFieldFactory
+
+    psf_class = psf_models.set_psf_model("physical_poly")
+    assert (
+        psf_class == psf_model_physical_polychromatic.PhysicalPolychromaticFieldFactory
     )
 
 
