@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 @psfm.register_psfclass
-class TFPhysicalPolychromaticFieldFactory(psfm.PSFModelBaseFactory):
+class PhysicalPolychromaticFieldFactory(psfm.PSFModelBaseFactory):
     """Factory class for the Tensor Flow Physical Polychromatic PSF Field Model.
 
     This factory class is responsible for instantiating instances of the Tensor Flow Physical Polychromatic PSF Field Model.
@@ -49,7 +49,7 @@ class TFPhysicalPolychromaticFieldFactory(psfm.PSFModelBaseFactory):
     ids = ("physical_poly",)
 
     def get_model_instance(self, model_params, training_params, data, coeff_mat=None):
-        return TF_physical_polychromatic_field(
+        return TFPhysicalPolychromaticField(
             model_params, training_params, data, coeff_mat
         )
 
