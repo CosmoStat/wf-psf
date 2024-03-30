@@ -39,6 +39,24 @@ class PSFModelError(Exception):
         super().__init__(self.message)
 
 
+def register_psfclass(psf_factory_class):
+    """Register PSF Factory Class.
+
+    A function to register a PSF factory class in a dictionary.
+
+    Parameters
+    ----------
+    factory_class: type
+        PSF Factory Class
+
+    """
+    for id in psf_factory_class.ids:
+        PSF_FACTORY[id] = psf_factory_class
+        logger.info(id, PSF_FACTORY)
+
+    return psf_factory_class
+
+
 class PSFModelBaseFactory:
     """Base factory class for PSF models.
 
@@ -82,21 +100,6 @@ class PSFModelBaseFactory:
             An instance of the PSF model.
         """
         pass
-
-
-def register_psfclass(psf_factory_class):
-    """Register PSF Factory Class.
-
-    A function to register a PSF factory class in a dictionary.
-
-    Parameters
-    ----------
-    factory_class: type
-        PSF Factory Class
-
-    """
-    for id in psf_factory_class.ids:
-        PSF_FACTORY[id] = psf_factory_class
 
 
 def set_psf_model(model_name):
@@ -145,8 +148,7 @@ def get_psf_model(*psf_model_params):
     """
 
     model_name = psf_model_params[0].model_name
-    psf_class = set_psf_model(model_name)
-    psf_factory_class = PSF_FACTORY.get(model_name)
+    psf_factory_class = set_psf_model(model_name)
     if psf_factory_class is None:
         raise PSFModelError("PSF model entered is invalid. Check your config settings.")
 
