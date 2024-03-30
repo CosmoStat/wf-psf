@@ -126,7 +126,14 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         self.output_Q = model_params.output_Q
         self.obs_pos = get_obs_positions(data)
         self.l2_param = model_params.param_hparams.l2_param
-
+        # Inputs: Save optimiser history Parametric model features
+        self.save_optim_history_param = (
+            model_params.param_hparams.save_optim_history_param
+        )
+        # Inputs: Save optimiser history NonParameteric model features
+        self.save_optim_history_nonparam = (
+            model_params.nonparam_hparams.save_optim_history_nonparam
+        )
         self._initialize_zernike_parameters(model_params, data)
         self._initialize_layers(model_params, training_params)
 
