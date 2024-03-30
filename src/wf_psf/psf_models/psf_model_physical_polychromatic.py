@@ -225,11 +225,10 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         model_params : RecursiveNamespace
             Object containing parameters for this PSF model class.
 
-        """    
+        """
         # Initialize the zernike to OPD layer
         self.tf_zernike_OPD = TFZernikeOPD(zernike_maps=self.zernike_maps)
-        
-        
+
     def _initialize_batch_polychromatic_layer(self, model_params, training_params):
         """Initialize the batch polychromatic PSF layer.
 
