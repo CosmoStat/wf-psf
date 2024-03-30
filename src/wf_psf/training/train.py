@@ -402,11 +402,11 @@ def train(
         )
 
         # Save optimisation history in the saving dict
-        if psf_model.save_optim_history_param:
+        if hasattr(psf_model, "save_optim_history_param"):
             saving_optim_hist[
                 "param_cycle{}".format(current_cycle)
             ] = hist_param.history
-        if psf_model.save_optim_history_nonparam:
+        if hasattr(psf_model, "save_optim_history_nonparam"):
             saving_optim_hist[
                 "nonparam_cycle{}".format(current_cycle)
             ] = hist_non_param.history
