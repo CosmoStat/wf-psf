@@ -20,7 +20,7 @@ import os
 
 @pytest.fixture
 def mock_training_model_params():
-    return RecursiveNamespace(n_bins_lda=10)  # Replace 10 with the desired value
+    return RecursiveNamespace(n_bins_lda=10) 
 
 
 @pytest.fixture
@@ -82,8 +82,6 @@ def mock_training_config_handler(mocker, mock_training_conf, mock_data_conf):
     # Set attributes of the mock instance as needed
     mock_instance.training_conf = mock_training_conf
     mock_instance.data_conf = mock_data_conf
-    mock_instance.data_conf.training_data = mock_data_conf.training_data
-    mock_instance.data_conf.test_data = mock_data_conf.test_data
     mock_instance.checkpoint_dir = "/mock/checkpoint/dir"
     mock_instance.optimizer_dir = "/mock/optimizer/dir"
     mock_instance.psf_model_dir = "/mock/psf/model/dir"
@@ -245,8 +243,7 @@ def test_run_method_calls_train_with_correct_arguments(
     # Assert that train.train() is called with the correct arguments
     mock_train_function.assert_called_once_with(
         mock_th.training_conf.training,
-        mock_th.data_conf.training_data,
-        mock_th.data_conf.test_data,
+        mock_th.data_conf,
         mock_th.checkpoint_dir,
         mock_th.optimizer_dir,
         mock_th.psf_model_dir,
