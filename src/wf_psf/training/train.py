@@ -16,7 +16,11 @@ from wf_psf.utils.read_config import read_conf
 import os
 import logging
 import wf_psf.utils.io as io
-from wf_psf.psf_models import psf_models, psf_model_semiparametric
+from wf_psf.psf_models import (
+    psf_models,
+    psf_model_semiparametric,
+    psf_model_physical_polychromatic,
+)
 import wf_psf.training.train_utils as train_utils
 import wf_psf.data.training_preprocessing as training_preprocessing
 
@@ -258,8 +262,7 @@ def get_gpu_info():
 
 def train(
     training_params,
-    training_data,
-    test_data,
+    data_conf,
     checkpoint_dir,
     optimizer_dir,
     psf_model_dir,
@@ -292,6 +295,7 @@ def train(
     psf_model = psf_models.get_psf_model(
         training_handler.model_params,
         training_handler.training_hparams,
+        data_conf,
     )
 
     logger.info(f"PSF Model class: `{training_handler.model_name}` initialized...")
@@ -307,15 +311,14 @@ def train(
         current_cycle += 1
 
         # If projected learning is enabled project DD_features.
-        if psf_model.project_dd_features:  # need to change this
+        if hasattr(psf_model, "project_DD_features") and psf_model.project_dd_features:
             if current_cycle > 1:
-                psf_model.project_DD_features(
-                    psf_model.zernike_maps
-                )  # make this a callable function
+                psf_model.project_DD_features()  # make this a callable function
                 logger.info(
                     "Projected non-parametric DD features onto the parametric model."
                 )
-        if psf_model.reset_dd_features:
+
+        if hasattr(psf_model, "reset_dd_features"):
             psf_model.tf_np_poly_opd.init_vars()
             logger.info("DataDriven features were reset to random initialisation.")
 
@@ -347,16 +350,16 @@ def train(
             psf_model,
             # training data
             inputs=[
-                training_data.dataset["positions"],
-                training_data.sed_data,
+                data_conf.training_data.dataset["positions"],
+                data_conf.training_data.sed_data,
             ],
-            outputs=training_data.dataset["noisy_stars"],
+            outputs=data_conf.training_data.dataset["noisy_stars"],
             validation_data=(
                 [
-                    test_data.dataset["positions"],
-                    test_data.sed_data,
+                    data_conf.test_data.dataset["positions"],
+                    data_conf.test_data.sed_data,
                 ],
-                test_data.dataset["stars"],
+                data_conf.test_data.dataset["stars"],
             ),
             batch_size=training_handler.training_hparams.batch_size,
             learning_rate_param=training_handler.learning_rate_params[
