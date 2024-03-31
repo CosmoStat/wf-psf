@@ -11,6 +11,7 @@ various wf_psf packages.
 import pytest
 from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.training.train import TrainingParamsHandler
+from wf_psf.utils.configs_handler import DataConfigHandler
 from wf_psf.psf_models import psf_models
 from wf_psf.data.training_preprocessing import DataHandler
 
@@ -66,7 +67,7 @@ training_config = RecursiveNamespace(
     ),
 )
 
-data_conf = RecursiveNamespace(
+data_conf_object = RecursiveNamespace(
     data=RecursiveNamespace(
         training=RecursiveNamespace(
             data_dir="data",
@@ -124,7 +125,7 @@ def training_params():
 def training_data():
     return DataHandler(
         "training",
-        data_conf.data,
+        data_conf_object.data,
         psf_models.simPSF(training_config.model_params),
         training_config.model_params.n_bins_lda,
     )
@@ -134,7 +135,7 @@ def training_data():
 def test_data():
     return DataHandler(
         "test",
-        data_conf.data,
+        data_conf_object.data,
         psf_models.simPSF(training_config.model_params),
         training_config.model_params.n_bins_lda,
     )
@@ -143,6 +144,21 @@ def test_data():
 @pytest.fixture(scope="module")
 def test_dataset(test_data):
     return test_data.dataset
+
+
+@pytest.fixture(scope="function")
+def data_conf(mocker, training_data, test_data):
+    # Patch the DataConfigHandler.__init__() method
+    mocker.patch(
+        "wf_psf.utils.configs_handler.DataConfigHandler.__init__", return_value=None
+    )
+    mock_data_conf = DataConfigHandler(None, None)
+    # Set attributes of the mock_th
+    mock_data_conf = mocker.Mock()
+    mock_data_conf.training_data = training_data
+    mock_data_conf.test_data = test_data
+
+    return mock_data_conf
 
 
 @pytest.fixture(scope="module")
