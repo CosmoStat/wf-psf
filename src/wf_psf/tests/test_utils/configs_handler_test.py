@@ -20,7 +20,7 @@ import os
 
 @pytest.fixture
 def mock_training_model_params():
-    return RecursiveNamespace(n_bins_lda=10) 
+    return RecursiveNamespace(n_bins_lda=10)
 
 
 @pytest.fixture
