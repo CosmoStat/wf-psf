@@ -16,7 +16,7 @@ from wf_psf.psf_models import psf_models
 from wf_psf.data.training_preprocessing import DataHandler
 
 training_config = RecursiveNamespace(
-    id_name="_sample_w_bis1_2k",
+    id_name="-coherent_euclid_200stars",
     data_config="data_config.yaml",
     metrics_config="metrics_config.yaml",
     model_params=RecursiveNamespace(
@@ -27,7 +27,7 @@ training_config = RecursiveNamespace(
         output_dim=32,
         pupil_diameter=256,
         use_sample_weights=True,
-        interpolation_type="None",
+        interpolation_type=None,
         sed_interp_pts_per_bin=0,
         sed_extrapolate=True,
         sed_interp_kind="linear",
@@ -72,45 +72,10 @@ data_conf_object = RecursiveNamespace(
         training=RecursiveNamespace(
             data_dir="data",
             file="coherent_euclid_dataset/train_Euclid_res_200_TrainStars_id_001.npy",
-            stars=None,
-            positions=None,
-            SEDS=None,
-            zernike_coef=None,
-            C_poly=None,
-            params=RecursiveNamespace(
-                d_max=2,
-                max_order=45,
-                x_lims=[0, 1000.0],
-                y_lims=[0, 1000.0],
-                grid_points=[4, 4],
-                n_bins=20,
-                max_wfe_rms=0.1,
-                oversampling_rate=3.0,
-                output_Q=3.0,
-                output_dim=32,
-                LP_filter_length=2,
-                pupil_diameter=256,
-                euclid_obsc=True,
-                n_stars=200,
             ),
-        ),
         test=RecursiveNamespace(
             data_dir="data",
             file="coherent_euclid_dataset/test_Euclid_res_id_001.npy",
-            stars=None,
-            noisy_stars=None,
-            positions=None,
-            SEDS=None,
-            zernike_coef=None,
-            C_poly=None,
-            parameters=RecursiveNamespace(
-                d_max=2,
-                max_order=45,
-                x_lims=[0, 1000.0],
-                y_lims=[0, 1000.0],
-                grid_points=[4, 4],
-                max_wfe_rms=0.1,
-            ),
         ),
     ),
 )
@@ -153,7 +118,6 @@ def data_conf(mocker, training_data, test_data):
         "wf_psf.utils.configs_handler.DataConfigHandler.__init__", return_value=None
     )
     mock_data_conf = DataConfigHandler(None, None)
-    # Set attributes of the mock_th
     mock_data_conf = mocker.Mock()
     mock_data_conf.training_data = training_data
     mock_data_conf.test_data = test_data
