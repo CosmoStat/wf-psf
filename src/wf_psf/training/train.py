@@ -313,7 +313,9 @@ def train(
         # If projected learning is enabled project DD_features.
         if hasattr(psf_model, "project_DD_features") and psf_model.project_dd_features:
             if current_cycle > 1:
-                psf_model.project_DD_features(psf_model.zernike_maps)  # make this a callable function
+                psf_model.project_DD_features(
+                    psf_model.zernike_maps
+                )  # make this a callable function
                 logger.info(
                     "Projected non-parametric DD features onto the parametric model."
                 )
