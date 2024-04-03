@@ -311,7 +311,7 @@ def train(
         current_cycle += 1
 
         # If projected learning is enabled project DD_features.
-        if hasattr(psf_model, "project_DD_features") and psf_model.project_dd_features:
+        if hasattr(psf_model, "project_dd_features") and psf_model.project_dd_features:
             if current_cycle > 1:
                 psf_model.project_DD_features(
                     psf_model.zernike_maps
@@ -320,7 +320,7 @@ def train(
                     "Projected non-parametric DD features onto the parametric model."
                 )
 
-        if hasattr(psf_model, "reset_dd_features"):
+        if hasattr(psf_model, "reset_dd_features") and psf_model.reset_dd_features:
             psf_model.tf_np_poly_opd.init_vars()
             logger.info("DataDriven features were reset to random initialisation.")
 
