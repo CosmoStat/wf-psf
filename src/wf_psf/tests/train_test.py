@@ -18,7 +18,7 @@ from re import search
 
 cwd = os.getcwd()
 
-validation_dir = "src/wf_psf/tests/data/validation/main_random_seed"
+validation_dir = "src/wf_psf/tests/data/validation/phase_retrieval"
 
 
 @pytest.fixture(scope="module")
