@@ -52,11 +52,29 @@ class DataHandler:
 
     def __init__(self, data_type, data_params, simPSF, n_bins_lambda, init_flag=True):
         self.data_params = data_params.__dict__[data_type]
-        self.dataset = None
         self.simPSF = simPSF
         self.n_bins_lambda = n_bins_lambda
+        self.dataset = None
         self.sed_data = None
         self.initialize(init_flag)
+
+    def initialize(self, init_flag):
+        """Initialize.
+
+        Initialize the DataHandler instance by loading and processing the dataset,
+        if the init_flag is True.
+
+        Parameters
+        ----------
+        init_flag : bool
+            A flag indicating whether to perform initialization steps. If True,
+            the dataset is loaded and processed. If False, initialization steps
+            are skipped.
+
+        """
+        if init_flag:
+            self.load_dataset()
+            self.process_sed_data()
 
     def load_dataset(self):
         """Load dataset.
@@ -94,24 +112,6 @@ class DataHandler:
         ]
         self.sed_data = tf.convert_to_tensor(self.sed_data, dtype=tf.float32)
         self.sed_data = tf.transpose(self.sed_data, perm=[0, 2, 1])
-
-    def initialize(self, init_flag):
-        """Initialize.
-
-        Initialize the DataHandler instance by loading and processing the dataset,
-        if the init_flag is True.
-
-        Parameters
-        ----------
-        init_flag : bool
-            A flag indicating whether to perform initialization steps. If True,
-            the dataset is loaded and processed. If False, initialization steps
-            are skipped.
-
-        """
-        if init_flag:
-            self.load_dataset()
-            self.process_sed_data()
 
 
 def get_obs_positions(data):

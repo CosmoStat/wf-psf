@@ -201,8 +201,7 @@ class TrainingConfigHandler:
 
         train.train(
             self.training_conf.training,
-            self.data_conf.training_data,
-            self.data_conf.test_data,
+            self.data_conf,
             self.checkpoint_dir,
             self.optimizer_dir,
             self.psf_model_dir,

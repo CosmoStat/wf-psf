@@ -18,7 +18,7 @@ import os
 metrics_params = RecursiveNamespace(
     model_save_path="psf_model",
     saved_training_cycle="2",
-    trained_model_path="data/validation/main_random_seed",
+    trained_model_path="data/validation/phase_retrieval",
     trained_model_config="config/training_config.yaml",
     plotting_config=None,
     eval_mono_metric_rmse=True,

@@ -847,7 +847,7 @@ class TFPhysicalLayer(tf.keras.layers.Layer):
         self,
         obs_pos,
         zks_prior,
-        interpolation_type="none",
+        interpolation_type=None,
         interpolation_args=None,
         name="TF_physical_layer",
     ):
@@ -856,11 +856,14 @@ class TFPhysicalLayer(tf.keras.layers.Layer):
         self.zks_prior = zks_prior
 
         if interpolation_args is None:
-            interpolation_args = {"order": 2, "K": 50}
+            self.interpolation_args = {"order": 2, "K": 50}
+
+        # Define the prediction routine by default
+        self.predict = self.call
+
         # Define the prediction routine
-        if interpolation_type == "none":
-            self.predict = self.call
-        elif interpolation_type == "all":
+
+        if interpolation_type == "all":
             self.predict = self.interpolate_all
         elif interpolation_type == "top_K":
             self.predict = self.interpolate_top_K

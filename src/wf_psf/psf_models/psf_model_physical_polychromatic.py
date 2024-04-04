@@ -29,8 +29,9 @@ logger = logging.getLogger(__name__)
 
 
 @psfm.register_psfclass
-class TFPhysicalPolychromaticFieldFactory(psfm.PSFModelBaseFactory):
-    """Factory class for the TensorFlow Physical Polychromatic PSF Field Model.
+
+class PhysicalPolychromaticFieldFactory(psfm.PSFModelBaseFactory):
+    """Factory class for the Tensor Flow Physical Polychromatic PSF Field Model.
 
     This factory class is responsible for instantiating instances of the TensorFlow Physical Polychromatic PSF Field Model.
     It is registered with the PSF model factory registry.
@@ -126,7 +127,14 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         self.output_Q = model_params.output_Q
         self.obs_pos = get_obs_positions(data)
         self.l2_param = model_params.param_hparams.l2_param
-
+        # Inputs: Save optimiser history Parametric model features
+        self.save_optim_history_param = (
+            model_params.param_hparams.save_optim_history_param
+        )
+        # Inputs: Save optimiser history NonParameteric model features
+        self.save_optim_history_nonparam = (
+            model_params.nonparam_hparams.save_optim_history_nonparam
+        )
         self._initialize_zernike_parameters(model_params, data)
         self._initialize_layers(model_params, training_params)
 
@@ -171,6 +179,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         """
         self._initialize_physical_layer(model_params)
         self._initialize_polynomial_Z_field(model_params)
+        self._initialize_Zernike_OPD(model_params)
         self._initialize_batch_polychromatic_layer(model_params, training_params)
         self._initialize_nonparametric_opd_layer(model_params, training_params)
 
@@ -212,6 +221,21 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
             n_zernikes=model_params.param_hparams.n_zernikes,
             d_max=model_params.param_hparams.d_max,
         )
+
+    def _initialize_Zernike_OPD(self, model_params):
+        """Initialize the Zernike OPD field of the PSF model.
+
+        This method initializes the Zernike Optical Path Difference
+        field of the PSF model using parameters specified in the `model_params` object.
+
+        Parameters
+        ----------
+        model_params : RecursiveNamespace
+            Object containing parameters for this PSF model class.
+
+        """
+        # Initialize the zernike to OPD layer
+        self.tf_zernike_OPD = TFZernikeOPD(zernike_maps=self.zernike_maps)
 
     def _initialize_batch_polychromatic_layer(self, model_params, training_params):
         """Initialize the batch polychromatic PSF layer.
@@ -338,12 +362,8 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
             Padded Zernike coefficients for the prior part. Shape [batch, n_zks_total, 1, 1].
         """
         # Calculate the number of Zernikes to pad for parametric and prior parts
-        pad_num_param = tf.cast(
-            self.n_zks_total - tf.shape(zk_param)[1].numpy(), dtype=tf.int32
-        )
-        pad_num_prior = tf.cast(
-            self.n_zks_total - tf.shape(zk_prior)[1].numpy(), dtype=tf.int32
-        )
+        pad_num_param = self.n_zks_total - tf.shape(zk_param)[1]
+        pad_num_prior = self.n_zks_total - tf.shape(zk_prior)[1]
 
         if pad_num_param != 0:
             # Pad the Zernike coefficients for parametric and prior parts
@@ -535,7 +555,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
 
         Returns
         -------
-        zernike_coefficients : Tensor [batch, n_zks_total, 1, 1]
+        zernike_coeffs : Tensor [batch, n_zks_total, 1, 1]
             Predicted Zernike coefficients for the input positions.
 
         Notes
@@ -554,7 +574,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         padded_zernike_params, padded_physical_layer_prediction = self.pad_zernikes(
             zernike_params, physical_layer_prediction
         )
-        zernike_coefficients = tf.math.add(
+        zernike_coeffs = tf.math.add(
             padded_zernike_params, padded_physical_layer_prediction
         )
 

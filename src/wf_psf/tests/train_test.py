@@ -18,7 +18,7 @@ from re import search
 
 cwd = os.getcwd()
 
-validation_dir = "src/wf_psf/tests/data/validation/main_random_seed"
+validation_dir = "src/wf_psf/tests/data/validation/phase_retrieval"
 
 
 @pytest.fixture(scope="module")
@@ -69,8 +69,7 @@ def psf_model_dir():
 @pytest.mark.skipif("GITHUB_ENV" in os.environ, reason="Skipping GPU tests in CI")
 def test_train(
     training_params,
-    training_data,
-    test_data,
+    data_conf,
     checkpoint_dir,
     optimizer_dir,
     psf_model_dir,
@@ -81,8 +80,7 @@ def test_train(
 ):
     train.train(
         training_params,
-        training_data,
-        test_data,
+        data_conf,
         tmp_checkpoint_dir,
         tmp_optimizer_dir,
         tmp_psf_model_dir,
