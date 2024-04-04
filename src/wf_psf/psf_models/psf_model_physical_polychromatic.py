@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 @psfm.register_psfclass
 
 class PhysicalPolychromaticFieldFactory(psfm.PSFModelBaseFactory):
-    """Factory class for the Tensor Flow Physical Polychromatic PSF Field Model.
+    """Factory class for the TensorFlow Physical Polychromatic PSF Field Model.
 
     This factory class is responsible for instantiating instances of the TensorFlow Physical Polychromatic PSF Field Model.
     It is registered with the PSF model factory registry.
