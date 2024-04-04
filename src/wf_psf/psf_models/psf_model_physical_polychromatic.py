@@ -578,7 +578,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
             padded_zernike_params, padded_physical_layer_prediction
         )
 
-        return zernike_coefficients
+        return zernike_coeffs
 
     def call(self, inputs, training=True):
         """Define the PSF (Point Spread Function) field forward model.
