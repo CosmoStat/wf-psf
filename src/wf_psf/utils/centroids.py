@@ -11,13 +11,12 @@ import scipy.signal as scisig
 
 
 def compute_centroid(poly_psf, sigma_init=5.5, n_iter=10):
-    """Compute PSF centroid.
-    """
+    """Compute PSF centroid."""
     ref_centroid_calc = CentroidEstimator(
         poly_psf, sigma_init=sigma_init, n_iter=n_iter
     )
 
-    return ref_centroid_calc.get_centroids() 
+    return ref_centroid_calc.get_centroids()
 
 
 class CentroidEstimator(object):
@@ -50,16 +49,17 @@ class CentroidEstimator(object):
         Default is None.
     """
 
-    def __init__(self, im, sigma_init=7.5, n_iter=5, auto_run=True,
-                 xc=None, yc=None):
+    def __init__(self, im, sigma_init=7.5, n_iter=5, auto_run=True, xc=None, yc=None):
         r"""Initialize class attributes."""
         self.im = im
         self.stamp_size = im.shape
         self.ranges = np.array([np.arange(i) for i in self.stamp_size])
         self.sigma_init = sigma_init
         self.n_iter = n_iter
-        self.xc0, self.yc0 = float(self.stamp_size[0]) / 2, float(
-            self.stamp_size[1]) / 2
+        self.xc0, self.yc0 = (
+            float(self.stamp_size[0]) / 2,
+            float(self.stamp_size[1]) / 2,
+        )
 
         self.window = None
         self.xx = None
@@ -76,10 +76,8 @@ class CentroidEstimator(object):
 
     def UpdateGrid(self):
         r"""Update the grid where the star stamp is defined."""
-        self.xx = np.outer(self.ranges[0] - self.xc,
-                           np.ones(self.stamp_size[1]))
-        self.yy = np.outer(np.ones(self.stamp_size[0]),
-                           self.ranges[1] - self.yc)
+        self.xx = np.outer(self.ranges[0] - self.xc, np.ones(self.stamp_size[1]))
+        self.yy = np.outer(np.ones(self.stamp_size[0]), self.ranges[1] - self.yc)
 
     def EllipticalGaussian(self, e1=0, e2=0):
         r"""Compute an elliptical 2D gaussian with arbitrary centroid."""
@@ -87,7 +85,7 @@ class CentroidEstimator(object):
         gxx = (1 - e1) * self.xx - e2 * self.yy
         gyy = (1 + e1) * self.yy - e2 * self.xx
         # compute elliptical gaussian
-        return np.exp(-(gxx ** 2 + gyy ** 2) / (2 * self.sigma_init ** 2))
+        return np.exp(-(gxx**2 + gyy**2) / (2 * self.sigma_init**2))
 
     def ComputeMoments(self):
         r"""Compute the star moments.
@@ -97,8 +95,11 @@ class CentroidEstimator(object):
         """
         Q0 = np.sum(self.im * self.window)
         Q1 = np.array(
-            [np.sum(np.sum(self.im * self.window, axis=1 - i) * self.ranges[i])
-             for i in range(2)])
+            [
+                np.sum(np.sum(self.im * self.window, axis=1 - i) * self.ranges[i])
+                for i in range(2)
+            ]
+        )
         # Q2 = np.array([np.sum(
         #     self.im*self.window * self.xx**(2-i) * self.yy**i)
         #     for i in range(3)])
@@ -113,10 +114,9 @@ class CentroidEstimator(object):
             # Calculate weighted moments.
             self.ComputeMoments()
         return self.xc, self.yc
-    
+
     def get_centroids(self):
-        r"""Get centroids.
-        """
+        r"""Get centroids."""
         return np.array([self.xc, self.yc])
 
     def return_shifts(self):
@@ -132,18 +132,16 @@ def shift_ker_stack(shifts, upfact, lanc_rad=8):
     r"""Generate shifting kernels and rotated shifting kernels."""
     # lanc_rad = np.ceil(np.max(3*sigmas)).astype(int)
     shap = shifts.shape
-    var_shift_ker_stack = np.zeros(
-        (2 * lanc_rad + 1, 2 * lanc_rad + 1, shap[0]))
-    var_shift_ker_stack_adj = np.zeros(
-        (2 * lanc_rad + 1, 2 * lanc_rad + 1, shap[0]))
+    var_shift_ker_stack = np.zeros((2 * lanc_rad + 1, 2 * lanc_rad + 1, shap[0]))
+    var_shift_ker_stack_adj = np.zeros((2 * lanc_rad + 1, 2 * lanc_rad + 1, shap[0]))
 
     for i in range(0, shap[0]):
         uin = shifts[i, :].reshape((1, 2)) * upfact
         var_shift_ker_stack[:, :, i] = lanczos(uin, n=lanc_rad)
-        var_shift_ker_stack_adj[:, :, i] = np.rot90(
-            var_shift_ker_stack[:, :, i], 2)
+        var_shift_ker_stack_adj[:, :, i] = np.rot90(var_shift_ker_stack[:, :, i], 2)
 
     return var_shift_ker_stack, var_shift_ker_stack_adj
+
 
 def lanczos(U, n=10, n2=None):
     r"""Generate Lanczos kernel for a given shift."""
@@ -165,22 +163,24 @@ def lanczos(U, n=10, n2=None):
             j = 0
             for i in range(0, 2 * n + 1):
                 for j in range(0, 2 * n2 + 1):
-                    H[i, j] = np.sinc(U_in[0, 0] - (i - n)) * np.sinc(
-                        (U_in[0, 0] - (i - n)) / n
-                    ) * np.sinc(U_in[0, 1] - (j - n)) * np.sinc(
-                        (U_in[0, 1] - (j - n)) / n)
+                    H[i, j] = (
+                        np.sinc(U_in[0, 0] - (i - n))
+                        * np.sinc((U_in[0, 0] - (i - n)) / n)
+                        * np.sinc(U_in[0, 1] - (j - n))
+                        * np.sinc((U_in[0, 1] - (j - n)) / n)
+                    )
 
     else:
         H = np.zeros((2 * n + 1,))
         for i in range(0, 2 * n):
-            H[i] = np.sinc(np.pi * (U - (i - n))) * np.sinc(
-                np.pi * (U - (i - n)) / n)
+            H[i] = np.sinc(np.pi * (U - (i - n))) * np.sinc(np.pi * (U - (i - n)) / n)
     return H
+
 
 def degradation_op(X, shift_ker, D):
     r"""Shift and decimate fine-grid image."""
-    return decim(scisig.fftconvolve(X, shift_ker, mode='same'),
-                 D, av_en=0)
+    return decim(scisig.fftconvolve(X, shift_ker, mode="same"), D, av_en=0)
+
 
 def decim(im, d, av_en=1, fft=1):
     r"""Decimate image to lower resolution."""
@@ -189,11 +189,11 @@ def decim(im, d, av_en=1, fft=1):
     if d > 1:
         if av_en == 1:
             siz = d + 1 - (d % 2)
-            mask = np.ones((siz, siz)) / siz ** 2
+            mask = np.ones((siz, siz)) / siz**2
             if fft == 1:
-                im_filt = scisig.fftconvolve(im, mask, mode='same')
+                im_filt = scisig.fftconvolve(im, mask, mode="same")
             else:
-                im_filt = scisig.convolve(im, mask, mode='same')
+                im_filt = scisig.convolve(im, mask, mode="same")
         n1 = int(np.floor(im.shape[0] / d))
         n2 = int(np.floor(im.shape[1] / d))
         im_d = np.zeros((n1, n2))
@@ -205,5 +205,3 @@ def decim(im, d, av_en=1, fft=1):
         return im_filt, im_d
     else:
         return im_d
-
-
