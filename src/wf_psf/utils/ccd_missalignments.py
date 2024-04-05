@@ -290,6 +290,11 @@ class CCDMissalignmentCalculator(object):
         ----------
         pos : np.ndarray
             Focal plane position respecting `self.x_lims` and `self.y_lims`. Shape: (2,)
+
+        Returns
+        -------
+        dz : float
+            The delta in z-axis (perpendicular to the focal plane) in [m].
         """
         self.check_position_wavediff_limits(pos)
         
@@ -301,8 +306,8 @@ class CCDMissalignmentCalculator(object):
             d=self.d_list[ccd_id],
         )
 
-        # Compute the dz with respect to the mean
-        dz = z - self.tiles_z_average
+        # Compute the dz with respect to the mean, and change unit from [um] to [m]
+        dz = (z - self.tiles_z_average) * 1e-6
         
         return dz
 
@@ -313,9 +318,16 @@ class CCDMissalignmentCalculator(object):
         ----------
         pos : np.ndarray
             Focal plane position respecting `self.x_lims` and `self.y_lims`. Shape: (2,)
+
+        Returns
+        -------
+        float
+            Zernike 4 value in wavediff convention corresponding to 
+            the delta z of the given input position `pos`.
         """
 
         dz = self.get_dz_from_position(pos)
 
         return defocus_to_zk4_wavediff(dz, self.tel_focal_length, self.tel_diameter)
+
 
