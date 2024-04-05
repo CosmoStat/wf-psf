@@ -194,7 +194,7 @@ class TrainingConfigHandler:
     def run(self):
         """Run.
 
-        A function to run wave-diff according to the
+        A function to run wavediff according to the
         input configuration.
 
         """
