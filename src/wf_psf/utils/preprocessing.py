@@ -23,6 +23,14 @@ def shift_x_y_to_zk1_2_wavediff(dxy, tel_focal_length=24.5, tel_diameter=1.2):
 
     The same applies to `dy` and `zk2`.
 
+    Parameters
+    ----------
+    dxy : float
+        Centroid shift in [m]. It can be on the x-axis or the y-axis.
+    tel_focal_length : float
+        Telescope focal length in [m].
+    tel_diameter : float
+        Telescope aperture diameter in [m].
     """
     reference_pix_sampling = 12e-6
     zernike_norm_factor = 2.
@@ -35,6 +43,15 @@ def defocus_to_zk4_zemax(dz, tel_focal_length=24.5, tel_diameter=1.2):
     """Compute Zernike 4 value for a given defocus in zemax conventions.
 
     All inputs should be in [m].
+
+    Parameters
+    ----------
+    dz : float
+        Shift in the z-axis, perpendicular to the focal plane. Units in [m].
+    tel_focal_length : float
+        Telescope focal length in [m].
+    tel_diameter : float
+        Telescope aperture diameter in [m].
     """
     # Base calculation 
     zk4 = dz / (8. * (tel_focal_length/tel_diameter)**2)
@@ -55,6 +72,15 @@ def defocus_to_zk4_wavediff(dz, tel_focal_length=24.5, tel_diameter=1.2):
     All inputs should be in [m].
 
     The output zernike coefficient is in [um] units as expected by wavediff.
+
+    Parameters
+    ----------
+    dz : float
+        Shift in the z-axis, perpendicular to the focal plane. Units in [m].
+    tel_focal_length : float
+        Telescope focal length in [m].
+    tel_diameter : float
+        Telescope aperture diameter in [m].
     """
     # Base calculation 
     zk4 = dz / (8. * (tel_focal_length/tel_diameter)**2)
@@ -69,8 +95,5 @@ def defocus_to_zk4_wavediff(dz, tel_focal_length=24.5, tel_diameter=1.2):
     zk4 *= 1e6
 
     return  zk4
-
-
-
 
 
