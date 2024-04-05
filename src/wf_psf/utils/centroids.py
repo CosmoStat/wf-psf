@@ -30,6 +30,7 @@ def get_zk1_2_for_observed_psf(
     obs_psf : np.ndarray
         Observed PSF at Euclid resolution.
     pixel_sampling : float
+        Pixel sampling in [m]
     reference_shifts : list
         Reference shifts for WaveDiff at Euclid nominal conditions, in [pixel]
     sigma_init : float
