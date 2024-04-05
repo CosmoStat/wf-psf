@@ -8,6 +8,56 @@ A module with utils to handle PSF centroids.
 
 import numpy as np
 import scipy.signal as scisig
+from wf_psf.utils.preprocessing import shift_x_y_to_zk1_2_wavediff
+
+
+def get_zk1_2_for_observed_psf(
+    obs_psf,
+    pixel_sampling=12e-6,
+    reference_shifts=[-1 / 3, -1 / 3],
+    sigma_init=5.5,
+    n_iter=10,
+):
+    """Get Zk1 and Zk2 corrections required for an observed PSF.
+
+    The Zk1 and Zk2 should be used with Wavediff so the PSF centroids match.
+
+    Note: The default `reference_shifts` value is for observations at Euclid conditions,
+    i.e., pixel sampling and telescope parameters.
+
+    Parameters
+    ----------
+    obs_psf : np.ndarray
+        Observed PSF at Euclid resolution.
+    pixel_sampling : float
+    reference_shifts : list
+        Reference shifts for WaveDiff at Euclid nominal conditions, in [pixel]
+    sigma_init : float
+        Initial size for the centroid calculator.
+    n_iter : int
+        Iteration number for the centroid calculation.
+
+    Returns
+    -------
+    z1_wavediff, z2_wavediff : tuple
+        Tip and tilt Zernike coefficients in wavediff convention
+    """
+
+    # Build centroid estimator
+    centroid_calc = CentroidEstimator(obs_psf, sigma_init=sigma_init, n_iter=n_iter)
+
+    current_shifts = centroid_calc.return_shifts()  # In [pixel]
+
+    dx = reference_shifts[1] - current_shifts[1]  # In [pixel]
+    dy = reference_shifts[0] - current_shifts[0]  # In [pixel]
+
+    z1_wavediff = shift_x_y_to_zk1_2_wavediff(dx * pixel_sampling)  # Input in [m]
+    z2_wavediff = shift_x_y_to_zk1_2_wavediff(dy * pixel_sampling)  # Input in [m]
+
+    return (
+        z1_wavediff,
+        z2_wavediff,
+    )  # Output in Zernike coefficients in wavediff convention
 
 
 def compute_centroid(poly_psf, sigma_init=5.5, n_iter=10):
