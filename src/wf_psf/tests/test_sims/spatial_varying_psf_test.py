@@ -5,6 +5,7 @@ This module contains unit tests for the wf_psf.sims.spatial_varying_psf module.
 :Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 
 """
+
 import pytest
 import numpy as np
 from wf_psf.sims.spatial_varying_psf import (
