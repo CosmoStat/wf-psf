@@ -148,9 +148,11 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         ----------
         model_params : RecursiveNamespace
             Object containing parametrs for this PSF model class.
+        data : DataConfigHandler
+            Object containing training and test datasets.
 
         """
-        self.zks_prior = get_zernike_prior(data)
+        self.zks_prior = get_zernike_prior(model_params, data)
         self.n_zks_total = max(
             model_params.param_hparams.n_zernikes,
             tf.cast(tf.shape(self.zks_prior)[1], tf.int32),
