@@ -194,6 +194,33 @@ def get_np_stars(data):
 
     return star_catalogue
 
+def get_np_zk_prior(data):
+    """Get the zernike prior from the provided dataset.
+
+    This method concatenates the stars from both the training
+    and test datasets to obtain the full prior.
+
+    Parameters
+    ----------
+    data : DataConfigHandler
+        Object containing training and test datasets.
+
+    Returns
+    -------
+    zernike_prior : np.ndarray
+        Numpy array containing the full prior.
+    """
+    
+    zernike_prior = np.concatenate(
+        (
+            data.training_data.dataset["zernike_prior"],
+            data.test_data.dataset["zernike_prior"],
+        ),
+        axis=0,
+    )
+
+    return zernike_prior
+
 def compute_centroid_correction(data):
     """Compute centroid corrections.
 
@@ -307,13 +334,7 @@ def get_zernike_prior(model_params, data):
     zernike_contribution_list = []
 
     if model_params.use_prior:
-        zernike_contribution_list.append(np.concatenate(
-            (
-                data.training_data.dataset["zernike_prior"],
-                data.test_data.dataset["zernike_prior"],
-            ),
-            axis=0,
-        ))
+        zernike_contribution_list.append(get_np_zk_prior(data))
 
     if model_params.correct_centroids:
         zernike_contribution_list.append(compute_centroid_correction(data))
