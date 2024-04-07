@@ -260,6 +260,36 @@ def get_gpu_info():
     return device_name
 
 
+def preprocess_model_parameters(training_handler):
+    """Check if preprocessing steps are required.
+
+    If we need to include ccd_missalignments or correct centroids the model must be physical layer, and it should be updated if it's not yet `physical_poly`.
+    
+    Parameters
+    ----------
+    training_params: Recursive Namespace object
+        Recursive Namespace object containing the training parameters
+    """
+
+    # Define the use of a prior
+    if training_handler.model_params.model_name != "physical_poly":
+        training_handler.model_params.use_prior = False
+
+        if training_handler.model_params.add_ccd_missalignments or training_handler.model_params.correct_centroids:
+            if training_handler.model_params.model_name == "poly":
+                logger.info(f"Changing PSF model from `poly` to `physical_poly` to handle centroids ({training_handler.model_params.correct_centroids}) and/or CCD missalignments ({training_handler.model_params.add_ccd_missalignments}).")
+                training_handler.model_params.model_name = "physical_poly"
+            else:
+                raise NotImplementedError(
+                    f"Options `correct_centroids` and `add_ccd_missalignments` are only implemented for `poly` and `physical_poly` models. The model selected is `{training_handler.model_params.model_name}`."
+                )
+
+    else:
+        training_handler.model_params.use_prior = True
+
+
+    return training_handler
+
 def train(
     training_params,
     data_conf,
@@ -291,6 +321,8 @@ def train(
     starting_time = time.time()
 
     training_handler = TrainingParamsHandler(training_params)
+
+    training_handler = preprocess_model_parameters(training_handler)
 
     psf_model = psf_models.get_psf_model(
         training_handler.model_params,
