@@ -146,7 +146,7 @@ def get_obs_positions(data):
     return tf.convert_to_tensor(obs_positions, dtype=tf.float32)
 
 
-def get_zernike_prior(data):
+def get_zernike_prior(model_params, data):
     """Get Zernike priors from the provided dataset.
 
     This method concatenates the Zernike priors from both the training
@@ -154,6 +154,8 @@ def get_zernike_prior(data):
 
     Parameters
     ----------
+    model_params : RecursiveNamespace
+        Object containing parametrs for this PSF model class.
     data : DataConfigHandler
         Object containing training and test datasets.
 
@@ -168,6 +170,11 @@ def get_zernike_prior(data):
     from both the training and test datasets along the 0th axis.
 
     """
+
+    # Add new input variable (model_params), 
+    # in order to have the different otions:
+    # 1. prior / 2. centroids / 3. ccd_missalignments
+
     zernike_prior = np.concatenate(
         (
             data.training_data.dataset["zernike_prior"],
