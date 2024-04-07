@@ -298,6 +298,11 @@ def simPSF(model_params):
         SED_extrapolate=model_params.sed_extrapolate,
         SED_interp_kind=model_params.sed_interp_kind,
         SED_sigma=model_params.sed_sigma,
+        pix_sampling=model_params.pix_sampling,
+        tel_diameter=model_params.tel_diameter,
+        tel_focal_length=model_params.tel_focal_length,
+        euclid_obsc=model_params.euclid_obsc,
+        LP_filter_length=model_params.LP_filter_length,
     )
 
     simPSF_np.gen_random_Z_coeffs(max_order=model_params.param_hparams.n_zernikes)
