@@ -221,11 +221,13 @@ def get_np_zk_prior(data):
 
     return zernike_prior
 
-def compute_centroid_correction(data):
+def compute_centroid_correction(model_params, data):
     """Compute centroid corrections.
 
     Parameters
     ----------
+    model_params : RecursiveNamespace
+        Object containing parameters for this PSF model class.
     data : DataConfigHandler
         Object containing training and test datasets.
 
@@ -238,7 +240,7 @@ def compute_centroid_correction(data):
 
     star_catalogue = get_np_stars(data)
 
-    pix_sampling = data.simPSF.pix_sampling * 1e-6  # Change units from [um] to [m]
+    pix_sampling = model_params.pix_sampling * 1e-6  # Change units from [um] to [m]
 
     # Compute required Zernike 1 and Zernike 2
     # The -1 is to contrarest the actual shift
@@ -278,11 +280,10 @@ def compute_ccd_missalignment(model_params, data):
 
     ccd_missalignment_calculator = CCDMissalignmentCalculator(
         tiles_path=model_params.ccd_missalignments_input_path,
-        # tiles_path="/Users/tl255879/Documents/research/Euclid/real_data/CCD_missalignments/tiles.npy",
         x_lims=model_params.x_lims,
         y_lims=model_params.y_lims,
-        tel_focal_length=data.simPSF.tel_focal_length,
-        tel_diameter=data.simPSF.tel_diameter,
+        tel_focal_length=model_params.tel_focal_length,
+        tel_diameter=model_params.tel_diameter,
     )
     # Compute required zernike 4 for each position
     zk4_values = np.array([
@@ -337,7 +338,7 @@ def get_zernike_prior(model_params, data):
         zernike_contribution_list.append(get_np_zk_prior(data))
 
     if model_params.correct_centroids:
-        zernike_contribution_list.append(compute_centroid_correction(data))
+        zernike_contribution_list.append(compute_centroid_correction(model_params, data))
 
     if model_params.add_ccd_missalignments:
         zernike_contribution_list.append(compute_ccd_missalignment(model_params, data))
