@@ -16,7 +16,7 @@ def get_zk1_2_for_observed_psf(
     pixel_sampling=12e-6,
     reference_shifts=[-1 / 3, -1 / 3],
     sigma_init=5.5,
-    n_iter=10,
+    n_iter=20,
 ):
     """Get Zk1 and Zk2 corrections required for an observed PSF.
 
