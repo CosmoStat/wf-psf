@@ -24,6 +24,17 @@ training:
     #Dimension of the OPD/Wavefront space."
     pupil_diameter: 256
 
+    # Correct centroids
+    correct_centroids: True
+
+    # Consider CCD missalignments
+    add_ccd_missalignments: True
+
+    # CCD missalignments input file path
+    # This should be refactored. It might be better to directly look for the `tiles.npy` in 
+    # the `data/assets/` directory in the repository
+    ccd_missalignments_input_path: /Users/tl255879/Documents/research/Euclid/real_data/CCD_missalignments/tiles.npy
+
     #Boolean to define if we use sample weights based on the noise standard deviation estimation
     use_sample_weights: True 
 
@@ -50,6 +61,22 @@ training:
     
     #Limits of the PSF field coordinates for the y axis.
     y_lims: [0.0, 1.0e+3]
+
+    # Pixel sampling in [um]. Default is `12`[um] (Euclid-like).
+    pix_sampling: 12
+
+    # Telescope's main mirror diameter in [m]. Default is `1.2`[m] (Euclid-like).
+    tel_diameter: 1.2
+
+    # Telescope's focal length in [m]. Default is `24.5`[m] (Euclid-like).
+    tel_focal_length: 24.5
+
+    # Wheter to use Euclid-like obscurations.
+    euclid_obsc: True
+
+    # Length of one dimension of the Low-Pass (LP) filter to apply to the
+    # obscurations to avoid the aliasing effect. The filter is a simple top-hat filter.
+    LP_filter_length: 3
     
     # Hyperparameters for Parametric model 
     param_hparams:
