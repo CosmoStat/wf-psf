@@ -307,22 +307,19 @@ def get_zernike_prior(model_params, data):
     zernike_contribution_list = []
 
     if model_params.use_prior:
-        zernike_prior = np.concatenate(
+        zernike_contribution_list.append(np.concatenate(
             (
                 data.training_data.dataset["zernike_prior"],
                 data.test_data.dataset["zernike_prior"],
             ),
             axis=0,
-        )
-        zernike_contribution_list.append(zernike_prior)
+        ))
 
     if model_params.correct_centroids:
-        zernike_centroid_array = compute_centroid_correction(data)
-        zernike_contribution_list.append(zernike_centroid_array)
+        zernike_contribution_list.append(compute_centroid_correction(data))
 
     if model_params.add_ccd_missalignments:
-        zernike_ccd_missalignment_array = compute_ccd_missalignment(model_params, data)
-        zernike_contribution_list.append(zernike_ccd_missalignment_array)
+        zernike_contribution_list.append(compute_ccd_missalignment(model_params, data))
 
     if len(zernike_contribution_list) == 1:
         zernike_contribution = zernike_contribution_list[0]
