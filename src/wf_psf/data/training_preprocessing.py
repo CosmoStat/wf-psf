@@ -6,10 +6,12 @@ A module to load and preprocess training and validation test data.
 
 """
 
+import os
 import numpy as np
 import wf_psf.utils.utils as utils
 import tensorflow as tf
-import os
+from wf_psf.utils.ccd_missalignments import CCDMissalignmentCalculator
+from wf_psf.utils.centroids import get_zk1_2_for_observed_psf
 
 
 class DataHandler:
@@ -114,8 +116,8 @@ class DataHandler:
         self.sed_data = tf.transpose(self.sed_data, perm=[0, 2, 1])
 
 
-def get_obs_positions(data):
-    """Get observed positions from the provided dataset.
+def get_np_obs_positions(data):
+    """Get observed positions in numpy from the provided dataset.
 
     This method concatenates the positions of the stars from both the training
     and test datasets to obtain the observed positions.
@@ -127,15 +129,15 @@ def get_obs_positions(data):
 
     Returns
     -------
-    tf.Tensor
-        Tensor containing the observed positions of the stars.
+    np.ndarray
+        Numpy array containing the observed positions of the stars.
 
     Notes
     -----
     The observed positions are obtained by concatenating the positions of stars
     from both the training and test datasets along the 0th axis.
-
     """
+
     obs_positions = np.concatenate(
         (
             data.training_data.dataset["positions"],
@@ -143,7 +145,134 @@ def get_obs_positions(data):
         ),
         axis=0,
     )
+
+    return obs_positions
+
+def get_obs_positions(data):
+    """Get observed positions from the provided dataset.
+
+    Parameters
+    ----------
+    data : DataConfigHandler
+        Object containing training and test datasets.
+
+    Returns
+    -------
+    tf.Tensor
+        Tensor containing the observed positions of the stars.
+    """
+
+    obs_positions = get_np_obs_positions(data)
+
     return tf.convert_to_tensor(obs_positions, dtype=tf.float32)
+
+
+def get_np_stars(data):
+    """Get the full star catalogue from the provided dataset.
+
+    This method concatenates the stars from both the training
+    and test datasets to obtain the star catalogue.
+
+    Parameters
+    ----------
+    data : DataConfigHandler
+        Object containing training and test datasets.
+
+    Returns
+    -------
+    star_catalogue : np.ndarray
+        Numpy array containing the full star catalogue.
+    """
+    
+    star_catalogue = np.concatenate(
+        (
+            data.training_data.dataset['noisy_stars'].numpy(),
+            data.test_data.dataset['stars'].numpy(),
+        ),
+        axis=0,
+    )
+
+    return star_catalogue
+
+def compute_centroid_correction(data):
+    """Compute centroid corrections.
+
+    Parameters
+    ----------
+    data : DataConfigHandler
+        Object containing training and test datasets.
+
+    Returns
+    -------
+    zernike_centroid_array : np.ndarray
+        Numpy array containing the Zernike contributions to match WaveDiff model 
+        centroid and the observed stars centroid.
+    """
+
+    star_catalogue = get_np_stars(data)
+
+    pix_sampling = data.simPSF.pix_sampling * 1e-6  # Change units from [um] to [m]
+
+    # Compute required Zernike 1 and Zernike 2
+    # The -1 is to contrarest the actual shift
+    zk1_2_array = -1. * np.array([
+        get_zk1_2_for_observed_psf(obs_psf, pixel_sampling=pix_sampling)
+        for obs_psf in star_catalogue
+    ])
+
+    # Zero pad array to get shape (n_stars, n_zernike=3)
+    zernike_centroid_array = np.pad(
+        zk1_2_array,
+        pad_width=[(0,0), (1,0)],
+        mode='constant',
+        constant_values=0
+    )
+
+    return zernike_centroid_array
+    
+
+
+def compute_ccd_missalignment(model_params, data):
+    """Compute CCD missalignment.
+
+    Parameters
+    ----------
+    model_params : RecursiveNamespace
+        Object containing parameters for this PSF model class.
+    data : DataConfigHandler
+        Object containing training and test datasets.
+
+    Returns
+    -------
+    zernike_ccd_missalignment_array : np.ndarray
+        Numpy array containing the Zernike contributions to model the CCD chip missalignments.
+    """
+    obs_positions = get_np_obs_positions(data)
+
+    ccd_missalignment_calculator = CCDMissalignmentCalculator(
+        tiles_path=model_params.ccd_missalignments_input_path,
+        # tiles_path="/Users/tl255879/Documents/research/Euclid/real_data/CCD_missalignments/tiles.npy",
+        x_lims=model_params.x_lims,
+        y_lims=model_params.y_lims,
+        tel_focal_length=data.simPSF.tel_focal_length,
+        tel_diameter=data.simPSF.tel_diameter,
+    )
+    # Compute required zernike 4 for each position
+    zk4_values = np.array([
+        ccd_missalignment_calculator.get_zk4_from_position(single_pos)
+        for single_pos in obs_positions
+    ]).reshape(-1, 1)
+
+    # Zero pad array to get shape (n_stars, n_zernike=4)
+    zernike_ccd_missalignment_array = np.pad(
+        zk4_values,
+        pad_width=[(0,0), (3,0)],
+        mode='constant',
+        constant_values=0
+    )
+
+    return zernike_ccd_missalignment_array
+
 
 
 def get_zernike_prior(model_params, data):
@@ -155,7 +284,7 @@ def get_zernike_prior(model_params, data):
     Parameters
     ----------
     model_params : RecursiveNamespace
-        Object containing parametrs for this PSF model class.
+        Object containing parameters for this PSF model class.
     data : DataConfigHandler
         Object containing training and test datasets.
 
@@ -171,15 +300,51 @@ def get_zernike_prior(model_params, data):
 
     """
 
-    # Add new input variable (model_params), 
-    # in order to have the different otions:
-    # 1. prior / 2. centroids / 3. ccd_missalignments
+    # Get hold of the simPSF parameters.
+    # We need to add them to the config files
 
-    zernike_prior = np.concatenate(
-        (
-            data.training_data.dataset["zernike_prior"],
-            data.test_data.dataset["zernike_prior"],
-        ),
-        axis=0,
-    )
-    return tf.convert_to_tensor(zernike_prior, dtype=tf.float32)
+    # List of zernike contribution
+    zernike_contribution_list = []
+
+    if model_params.use_prior:
+        zernike_prior = np.concatenate(
+            (
+                data.training_data.dataset["zernike_prior"],
+                data.test_data.dataset["zernike_prior"],
+            ),
+            axis=0,
+        )
+        zernike_contribution_list.append(zernike_prior)
+
+    if model_params.correct_centroids:
+        zernike_centroid_array = compute_centroid_correction(data)
+        zernike_contribution_list.append(zernike_centroid_array)
+
+    if model_params.add_ccd_missalignments:
+        zernike_ccd_missalignment_array = compute_ccd_missalignment(model_params, data)
+        zernike_contribution_list.append(zernike_ccd_missalignment_array)
+
+    if len(zernike_contribution_list) == 1:
+        zernike_contribution = zernike_contribution_list[0]
+    else:
+        # Get max zk order
+        max_zk_order = np.max(np.array([
+            zk_contribution.shape[1] for zk_contribution in zernike_contribution_list
+        ]))
+
+        zernike_contribution = np.zeros((zernike_contribution_list[0].shape[0], max_zk_order))
+
+        # Pad arrays to get the same length and add the final contribution
+        for it in range(len(zernike_contribution_list)):
+            current_zk_order = zernike_contribution_list[it].shape[1]
+            current_zernike_contribution = np.pad(
+                zernike_contribution_list[it],
+                pad_width=[(0, 0), (0, int(max_zk_order - current_zk_order))],
+                mode='constant',
+                constant_values=0,
+            )
+
+            zernike_contribution += current_zernike_contribution
+            
+
+    return tf.convert_to_tensor(zernike_contribution, dtype=tf.float32)
