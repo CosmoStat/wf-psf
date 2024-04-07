@@ -148,6 +148,7 @@ def get_np_obs_positions(data):
 
     return obs_positions
 
+
 def get_obs_positions(data):
     """Get observed positions from the provided dataset.
 
@@ -183,16 +184,17 @@ def get_np_stars(data):
     star_catalogue : np.ndarray
         Numpy array containing the full star catalogue.
     """
-    
+
     star_catalogue = np.concatenate(
         (
-            data.training_data.dataset['noisy_stars'].numpy(),
-            data.test_data.dataset['stars'].numpy(),
+            data.training_data.dataset["noisy_stars"].numpy(),
+            data.test_data.dataset["stars"].numpy(),
         ),
         axis=0,
     )
 
     return star_catalogue
+
 
 def get_np_zk_prior(data):
     """Get the zernike prior from the provided dataset.
@@ -210,7 +212,7 @@ def get_np_zk_prior(data):
     zernike_prior : np.ndarray
         Numpy array containing the full prior.
     """
-    
+
     zernike_prior = np.concatenate(
         (
             data.training_data.dataset["zernike_prior"],
@@ -220,6 +222,7 @@ def get_np_zk_prior(data):
     )
 
     return zernike_prior
+
 
 def compute_centroid_correction(model_params, data):
     """Compute centroid corrections.
@@ -234,7 +237,7 @@ def compute_centroid_correction(model_params, data):
     Returns
     -------
     zernike_centroid_array : np.ndarray
-        Numpy array containing the Zernike contributions to match WaveDiff model 
+        Numpy array containing the Zernike contributions to match WaveDiff model
         centroid and the observed stars centroid.
     """
 
@@ -244,21 +247,19 @@ def compute_centroid_correction(model_params, data):
 
     # Compute required Zernike 1 and Zernike 2
     # The -1 is to contrarest the actual shift
-    zk1_2_array = -1. * np.array([
-        get_zk1_2_for_observed_psf(obs_psf, pixel_sampling=pix_sampling)
-        for obs_psf in star_catalogue
-    ])
+    zk1_2_array = -1.0 * np.array(
+        [
+            get_zk1_2_for_observed_psf(obs_psf, pixel_sampling=pix_sampling)
+            for obs_psf in star_catalogue
+        ]
+    )
 
     # Zero pad array to get shape (n_stars, n_zernike=3)
     zernike_centroid_array = np.pad(
-        zk1_2_array,
-        pad_width=[(0,0), (1,0)],
-        mode='constant',
-        constant_values=0
+        zk1_2_array, pad_width=[(0, 0), (1, 0)], mode="constant", constant_values=0
     )
 
     return zernike_centroid_array
-    
 
 
 def compute_ccd_missalignment(model_params, data):
@@ -286,21 +287,19 @@ def compute_ccd_missalignment(model_params, data):
         tel_diameter=model_params.tel_diameter,
     )
     # Compute required zernike 4 for each position
-    zk4_values = np.array([
-        ccd_missalignment_calculator.get_zk4_from_position(single_pos)
-        for single_pos in obs_positions
-    ]).reshape(-1, 1)
+    zk4_values = np.array(
+        [
+            ccd_missalignment_calculator.get_zk4_from_position(single_pos)
+            for single_pos in obs_positions
+        ]
+    ).reshape(-1, 1)
 
     # Zero pad array to get shape (n_stars, n_zernike=4)
     zernike_ccd_missalignment_array = np.pad(
-        zk4_values,
-        pad_width=[(0,0), (3,0)],
-        mode='constant',
-        constant_values=0
+        zk4_values, pad_width=[(0, 0), (3, 0)], mode="constant", constant_values=0
     )
 
     return zernike_ccd_missalignment_array
-
 
 
 def get_zernike_prior(model_params, data):
@@ -338,7 +337,9 @@ def get_zernike_prior(model_params, data):
         zernike_contribution_list.append(get_np_zk_prior(data))
 
     if model_params.correct_centroids:
-        zernike_contribution_list.append(compute_centroid_correction(model_params, data))
+        zernike_contribution_list.append(
+            compute_centroid_correction(model_params, data)
+        )
 
     if model_params.add_ccd_missalignments:
         zernike_contribution_list.append(compute_ccd_missalignment(model_params, data))
@@ -347,11 +348,18 @@ def get_zernike_prior(model_params, data):
         zernike_contribution = zernike_contribution_list[0]
     else:
         # Get max zk order
-        max_zk_order = np.max(np.array([
-            zk_contribution.shape[1] for zk_contribution in zernike_contribution_list
-        ]))
+        max_zk_order = np.max(
+            np.array(
+                [
+                    zk_contribution.shape[1]
+                    for zk_contribution in zernike_contribution_list
+                ]
+            )
+        )
 
-        zernike_contribution = np.zeros((zernike_contribution_list[0].shape[0], max_zk_order))
+        zernike_contribution = np.zeros(
+            (zernike_contribution_list[0].shape[0], max_zk_order)
+        )
 
         # Pad arrays to get the same length and add the final contribution
         for it in range(len(zernike_contribution_list)):
@@ -359,11 +367,10 @@ def get_zernike_prior(model_params, data):
             current_zernike_contribution = np.pad(
                 zernike_contribution_list[it],
                 pad_width=[(0, 0), (0, int(max_zk_order - current_zk_order))],
-                mode='constant',
+                mode="constant",
                 constant_values=0,
             )
 
             zernike_contribution += current_zernike_contribution
-            
 
     return tf.convert_to_tensor(zernike_contribution, dtype=tf.float32)
