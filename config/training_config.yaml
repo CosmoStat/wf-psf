@@ -6,22 +6,22 @@ training:
   # Metrics Config file - Enter file to run metrics evaluation else if empty run train only
   metrics_config:
   model_params:
-    # Model type. Options are: 'mccd', 'graph', 'poly, 'param', 'physical_poly'."
+    # Model type. Options are: 'mccd', 'graph', 'poly, 'param', 'physical_poly'.
     model_name: physical_poly
 
-    #Num of wavelength bins to reconstruct polychromatic objects.
+    # Num of wavelength bins to reconstruct polychromatic objects.
     n_bins_lda: 8 
 
-    #Downsampling rate to match the oversampled model to the specified telescope's sampling.
+    # Downsampling rate to match the oversampled model to the specified telescope's sampling.
     output_Q: 3
   
-    #Oversampling rate used for the OPD/WFE PSF model.
+    # Oversampling rate used for the OPD/WFE PSF model.
     oversampling_rate: 3 
   
-    #Dimension of the pixel PSF postage stamp
+    # Dimension of the pixel PSF postage stamp
     output_dim: 32
       
-    #Dimension of the OPD/Wavefront space."
+    # Dimension of the OPD/Wavefront space.
     pupil_diameter: 256
 
     # Correct centroids
@@ -35,10 +35,10 @@ training:
     # the `data/assets/` directory in the repository
     ccd_missalignments_input_path: /Users/tl255879/Documents/research/Euclid/real_data/CCD_missalignments/tiles.npy
 
-    #Boolean to define if we use sample weights based on the noise standard deviation estimation
+    # Boolean to define if we use sample weights based on the noise standard deviation estimation
     use_sample_weights: True 
 
-    #Interpolation type for the physical poly model. Options are: 'none', 'all', 'top_K', 'independent_Zk'."
+    # Interpolation type for the physical poly model. Options are: 'none', 'all', 'top_K', 'independent_Zk'."
     interpolation_type: None
     
     # Interpolation Arguments for the physical polychromatic model
@@ -86,33 +86,33 @@ training:
       # Parameter for the l2 loss function for the Optical path differences (OPD)/WFE
       l2_param: 0.
     
-      #Zernike polynomial modes to use on the parametric part.
+      # Zernike polynomial modes to use on the parametric part.
       n_zernikes: 15
     
-      #Max polynomial degree of the parametric part.  chg to max_deg_param
+      # Max polynomial degree of the parametric part.  chg to max_deg_param
       d_max: 2  
 
-      #Flag to save optimisation history for parametric model
+      # Flag to save optimisation history for parametric model
       save_optim_history_param: true
 
     # Hyperparameters for non-parametric model
     nonparam_hparams:
-      #Max polynomial degree of the non-parametric part. chg to max_deg_nonparam
+      # Max polynomial degree of the non-parametric part. chg to max_deg_nonparam
       d_max_nonparam: 5 
 
       # Number of graph features
       num_graph_features: 10
       
-      #L1 regularisation parameter for the non-parametric part."
+      # L1 regularisation parameter for the non-parametric part."
       l1_rate: 1.0e-8
 
-      #Flag to enable Projected learning for DD_features to be used with `poly` or `semiparametric` model.
+      # Flag to enable Projected learning for DD_features to be used with `poly` or `semiparametric` model.
       project_dd_features: False
 
-      #Flag to reset DD_features to be used with `poly` or `semiparametric` model
+      # Flag to reset DD_features to be used with `poly` or `semiparametric` model
       reset_dd_features: False
 
-      #Flag to save optimisation history for non-parametric model
+      # Flag to save optimisation history for non-parametric model
       save_optim_history_nonparam: true 
 
   # Training hyperparameters
