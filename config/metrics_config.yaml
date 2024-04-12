@@ -9,17 +9,17 @@ metrics:
   # Name of the Trained Model Config file stored in config sub-directory in the trained_model_path parent directory
   trained_model_config: <enter name of trained model config file>
   #Evaluate the monchromatic RMSE metric.
-  eval_mono_metric_rmse: True
+  eval_mono_metric: True
   #Evaluate the OPD RMSE metric.
-  eval_opd_metric_rmse: True
+  eval_opd_metric: True
   #Evaluate the super-resolution and the shape RMSE metrics for the train dataset.
-  eval_train_shape_sr_metric_rmse: True
+  eval_train_shape_results_dict: True
   # Name of Plotting Config file - Enter name of yaml file to run plot metrics else if empty run metrics evaluation only
   plotting_config: <enter name of plotting_config .yaml file or leave empty>
   ground_truth_model:
     model_params:
-      #Model used as ground truth for the evaluation. Options are: 'poly' for polychromatic and 'physical' [not available].
-      model_name: poly 
+      #Model used as ground truth for the evaluation. Options are: 'ground_truth_poly' for polychromatic and 'ground_truth_physical_poly' for physical layer PSF models.
+      model_name: <ground_truth_poly or ground_truth_physical_poly>
 
       # Evaluation parameters
       #Number of bins used for the ground truth model poly PSF generation
