@@ -835,8 +835,8 @@ class TFPhysicalLayer(tf.keras.layers.Layer):
         Zernike coefficients for each position
     interpolation_type: str
         Type of interpolation to be used.
-        Options are: 'none', 'all', 'top_K', 'independent_Zk'.
-        Default is 'none'.
+        Options are: None, 'all', 'top_K', 'independent_Zk'.
+        Default is None.
     interpolation_args: dict
         Interpolation hyper-parameters. The order of the RBF interpolation,
         and the K elements in the `top_K` interpolation.
