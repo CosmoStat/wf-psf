@@ -23,55 +23,6 @@ import wf_psf.utils.io as io
 logger = logging.getLogger(__name__)
 
 
-def create_ground_truth_psf_model(metrics_params, coeff_matrix):
-    """Create a Ground Truth PSF Model for metrics evaluation.
-
-    This function creates a Ground Truth PSF Model instance specifically designed
-    for metrics evaluation purposes. It uses the provided configuration parameters
-    and coefficient matrix to initialize the model.
-
-    Parameters
-    ----------
-    metrics_params : RecursiveNamespace
-        Object storing the metric configuration parameters, including the model
-        parameters for the Ground Truth PSF Model.
-    coeff_matrix : Tensor or None
-        Coefficient matrix defining the parametric PSF field model. This matrix
-        is used to initialize the polynomial Zernike field of the PSF model.
-
-    Returns
-    -------
-    psf_model : Object
-        Class instance of the Ground Truth SemiParametric PSF model.
-
-    Notes
-    -----
-    The provided coefficient matrix initializes the polynomial Zernike field of
-    the Ground Truth PSF Model. The function also resets the alpha matrix of the
-    non-parametric polychromatic OPD to zeros.
-
-    Example
-    -------
-    metrics_params = load_metrics_params()
-    coeff_matrix = load_coeff_matrix()
-    ground_truth_model = create_ground_truth_psf_model(metrics_params, coeff_matrix)
-
-    # Use the ground_truth_model for metrics evaluation
-    metrics_results = evaluate_metrics(ground_truth_model, ...)
-    """
-    psf_model = psf_models.get_psf_model(
-        metrics_params.ground_truth_model.model_params,
-        metrics_params.metrics_hparams,
-    )
-    psf_model.tf_poly_Z_field.assign_coeff_matrix(coeff_matrix)
-
-    psf_model.tf_np_poly_opd.alpha_mat.assign(
-        np.zeros_like(psf_model.tf_np_poly_opd.alpha_mat)  # type: ignore
-    )
-
-    return psf_model
-
-
 class MetricsParamsHandler:
     """Metrics Parameters Handler.
 
@@ -91,7 +42,7 @@ class MetricsParamsHandler:
         self.metrics_params = metrics_params
         self.trained_model = trained_model
 
-    def evaluate_metrics_polychromatic_lowres(self, psf_model, simPSF, dataset):
+    def evaluate_metrics_polychromatic_lowres(self, psf_model, simPSF, data, dataset):
         """Evaluate Polychromatic PSF Low-Res Metrics.
 
         A function to evaluate metrics for Low-Res Polychromatic PSF.
@@ -104,6 +55,8 @@ class MetricsParamsHandler:
             PSFSimulator instance
         test_dataset: dict
             Test dataset dictionary
+        data:
+        dataset:
 
         Returns
         -------
@@ -116,8 +69,11 @@ class MetricsParamsHandler:
 
         rmse, rel_rmse, std_rmse, std_rel_rmse = wf_metrics.compute_poly_metric(
             tf_semiparam_field=psf_model,
-            gt_tf_semiparam_field=create_ground_truth_psf_model(
-                self.metrics_params, dataset["C_poly"]
+            gt_tf_semiparam_field=psf_models.get_psf_model(
+                self.metrics_params.ground_truth_model.model_params,
+                self.metrics_params.metrics_hparams,
+                data,
+                dataset,
             ),
             simPSF_np=simPSF,
             tf_pos=dataset["positions"],
@@ -136,7 +92,7 @@ class MetricsParamsHandler:
         }
         return poly_metric
 
-    def evaluate_metrics_mono_rmse(self, psf_model, simPSF, dataset):
+    def evaluate_metrics_mono_rmse(self, psf_model, simPSF, data, dataset):
         """Evaluate Monochromatic PSF RMSE Metrics.
 
         A function to evaluate metrics for Monochromatic PSF.
@@ -159,6 +115,7 @@ class MetricsParamsHandler:
         """
         logger.info("Computing monochromatic metrics.")
         lambda_list = np.arange(0.55, 0.9, 0.01)  # 10nm separation
+
         (
             rmse_lda,
             rel_rmse_lda,
@@ -166,8 +123,11 @@ class MetricsParamsHandler:
             std_rel_rmse_lda,
         ) = wf_metrics.compute_mono_metric(
             tf_semiparam_field=psf_model,
-            gt_tf_semiparam_field=create_ground_truth_psf_model(
-                self.metrics_params, dataset["C_poly"]
+            gt_tf_semiparam_field=psf_models.get_psf_model(
+                self.metrics_params.ground_truth_model.model_params,
+                self.metrics_params.metrics_hparams,
+                data,
+                dataset,
             ),
             simPSF_np=simPSF,
             tf_pos=dataset["positions"],
@@ -182,7 +142,7 @@ class MetricsParamsHandler:
         }
         return mono_metric
 
-    def evaluate_metrics_opd(self, psf_model, simPSF, dataset):
+    def evaluate_metrics_opd(self, psf_model, simPSF, data, dataset):
         """Evaluate OPD Metrics.
 
         A function to evaluate metrics for Optical Path Differences.
@@ -204,6 +164,7 @@ class MetricsParamsHandler:
 
         """
         logger.info("Computing OPD metrics.")
+
         (
             rmse_opd,
             rel_rmse_opd,
@@ -211,8 +172,11 @@ class MetricsParamsHandler:
             rel_rmse_std_opd,
         ) = wf_metrics.compute_opd_metrics(
             tf_semiparam_field=psf_model,
-            gt_tf_semiparam_field=create_ground_truth_psf_model(
-                self.metrics_params, dataset["C_poly"]
+            gt_tf_semiparam_field=psf_models.get_psf_model(
+                self.metrics_params.ground_truth_model.model_params,
+                self.metrics_params.metrics_hparams,
+                data,
+                dataset,
             ),
             pos=dataset["positions"],
             batch_size=self.metrics_params.metrics_hparams.batch_size,
@@ -226,7 +190,7 @@ class MetricsParamsHandler:
         }
         return opd_metric
 
-    def evaluate_metrics_shape(self, psf_model, simPSF, dataset):
+    def evaluate_metrics_shape(self, psf_model, simPSF, data, dataset):
         """Evaluate PSF Shape Metrics.
 
         A function to evaluate metrics for PSF shape.
@@ -250,8 +214,11 @@ class MetricsParamsHandler:
 
         shape_results = wf_metrics.compute_shape_metrics(
             tf_semiparam_field=psf_model,
-            gt_tf_semiparam_field=create_ground_truth_psf_model(
-                self.metrics_params, dataset["C_poly"]
+            gt_tf_semiparam_field=psf_models.get_psf_model(
+                self.metrics_params.ground_truth_model.model_params,
+                self.metrics_params.metrics_hparams,
+                data,
+                dataset,
             ),
             simPSF_np=simPSF,
             SEDs=dataset["SEDs"],
@@ -319,94 +286,71 @@ def evaluate_model(
             logger.exception("An error occurred with the weights_path file.")
             exit()
 
-        ## Metric evaluation on the test dataset
-        logger.info("\n***\nMetric evaluation on the test dataset\n***\n")
+        # Define datasets
+        datasets = {"test": data.test_data.dataset, "train": data.training_data.dataset}
 
-        # Polychromatic star reconstructions
-        poly_metric = metrics_handler.evaluate_metrics_polychromatic_lowres(
-            psf_model, simPSF_np, data.test_data.dataset
-        )
+        # Initialise dictionary to store metrics
+        all_metrics = {}
 
-        # Monochromatic star reconstructions
-        if metrics_params.eval_mono_metric_rmse:
-            mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
-                psf_model, simPSF_np, data.test_data.dataset
-            )
-        else:
-            mono_metric = None
-
-        # OPD metrics
-        if metrics_params.eval_opd_metric_rmse:
-            opd_metric = metrics_handler.evaluate_metrics_opd(
-                psf_model, simPSF_np, data.test_data.dataset
-            )
-        else:
-            opd_metric = None
-
-        # Shape metrics
-        logger.info(
-            "Computing polychromatic high-resolution metrics and shape metrics."
-        )
-        shape_results_dict = metrics_handler.evaluate_metrics_shape(
-            psf_model, simPSF_np, data.test_data.dataset
-        )
-        # Save metrics
-        test_metrics = {
-            "poly_metric": poly_metric,
-            "mono_metric": mono_metric,
-            "opd_metric": opd_metric,
-            "shape_results_dict": shape_results_dict,
+        # Define metric names and their corresponding evaluation flags
+        metric_evaluation_flags = {
+            "poly_metric": {
+                "test": True,
+                "train": True,
+            },
+            "mono_metric": {
+                "test": metrics_params.eval_mono_metric,
+                "train": metrics_params.eval_mono_metric,
+            },
+            "opd_metric": {
+                "test": metrics_params.eval_opd_metric,
+                "train": metrics_params.eval_opd_metric,
+            },
+            "shape_results_dict": {
+                "test": True,
+                "train": metrics_params.eval_train_shape_results_dict,
+            },
         }
 
-        ## Metric evaluation on the train dataset
-        logger.info("\n***\nMetric evaluation on the train dataset\n***\n")
-
-        # Polychromatic star reconstructions
-        logger.info("Computing polychromatic metrics at low resolution.")
-
-        train_poly_metric = metrics_handler.evaluate_metrics_polychromatic_lowres(
-            psf_model, simPSF_np, data.training_data.dataset
-        )
-
-        # Monochromatic star reconstructions turn into a class
-        if metrics_params.eval_mono_metric_rmse:
-            train_mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
-                psf_model, simPSF_np, data.training_data.dataset
-            )
-        else:
-            train_mono_metric = None
-
-        # OPD metrics turn into a class
-        if metrics_params.eval_opd_metric_rmse:
-            train_opd_metric = metrics_handler.evaluate_metrics_opd(
-                psf_model, simPSF_np, data.training_data.dataset
-            )
-        else:
-            train_opd_metric = None
-
-        # Shape metrics  turn into a class
-        if metrics_params.eval_train_shape_sr_metric_rmse:
-            train_shape_results_dict = metrics_handler.evaluate_metrics_shape(
-                psf_model, simPSF_np, data.training_data.dataset
-            )
-        else:
-            train_shape_results_dict = None
-
-        # Save metrics into dictionary
-        train_metrics = {
-            "poly_metric": train_poly_metric,
-            "mono_metric": train_mono_metric,
-            "opd_metric": train_opd_metric,
-            "shape_results_dict": train_shape_results_dict,
+        # Define the metric evaluation functions
+        metric_functions = {
+            "poly_metric": metrics_handler.evaluate_metrics_polychromatic_lowres,
+            "mono_metric": metrics_handler.evaluate_metrics_mono_rmse,
+            "opd_metric": metrics_handler.evaluate_metrics_opd,
+            "shape_results_dict": metrics_handler.evaluate_metrics_shape,
         }
 
-        ## Save results
-        metrics = {"test_metrics": test_metrics, "train_metrics": train_metrics}
+        for dataset_type, dataset in datasets.items():
+            ## Metric evaluation
+            logger.info(
+                f"\n***\nMetric evaluation on the {dataset_type} dataset\n***\n"
+            )
+
+            # Create dictionary to store metrics for the current dataset
+            dataset_metrics = {}
+
+            # Evaluate metrics based on evaluation flags
+            for metric_name, metric_function in metric_functions.items():
+                # Check if any attribute in the metrics_params contains the
+                # substring metric_name
+                if metric_evaluation_flags[metric_name][dataset_type]:
+                    dataset_metrics[metric_name] = metric_function(
+                        psf_model,
+                        simPSF_np,
+                        data,
+                        dataset,
+                    )
+                else:
+                    dataset_metrics[metric_name] = None
+
+            # Store dataset metrics in the overall metrics dictionary
+            all_metrics[f"{dataset_type}_metrics"] = dataset_metrics
+
         run_id_name = (
             trained_model_params.model_params.model_name + trained_model_params.id_name
         )
         output_path = metrics_output + "/" + "metrics-" + run_id_name
-        np.save(output_path, metrics, allow_pickle=True)
+        np.save(output_path, all_metrics, allow_pickle=True)
 
         ## Print final time
         final_time = time.time()
@@ -415,7 +359,7 @@ def evaluate_model(
         ## Close log file
         logger.info("\n Good bye..")
 
-        return metrics
+        return all_metrics
     except Exception as e:
         logger.info("Error: %s" % e)
         raise
