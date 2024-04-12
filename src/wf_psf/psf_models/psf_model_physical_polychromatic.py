@@ -307,6 +307,21 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         """
         self.tf_poly_Z_field.assign_coeff_matrix(coeff_mat)
 
+    def set_output_Q(self, output_Q, output_dim=None):
+        """Set the value of the output_Q parameter.
+        Useful for generating/predicting PSFs at a different sampling wrt the
+        observation sampling.
+        """
+        self.output_Q = output_Q
+        if output_dim is not None:
+            self.output_dim = output_dim
+        # Reinitialize the PSF batch poly generator
+        self.tf_batch_poly_PSF = TFBatchPolychromaticPSF(
+            obscurations=self.obscurations,
+            output_Q=self.output_Q,
+            output_dim=self.output_dim,
+        )
+
     def set_zero_nonparam(self):
         """Set the non-parametric part of the OPD (Optical Path Difference) to zero.
 
@@ -366,24 +381,18 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         pad_num_param = self.n_zks_total - tf.shape(zk_param)[1]
         pad_num_prior = self.n_zks_total - tf.shape(zk_prior)[1]
 
-        if pad_num_param != 0:
-            # Pad the Zernike coefficients for parametric and prior parts
-            padding_param = [(0, 0), (0, pad_num_param), (0, 0), (0, 0)]
-            padded_zk_param = tf.pad(zk_param, padding_param)
-        else:
-            padded_zk_param = zk_param
+        # Pad the Zernike coefficients for parametric and prior parts
+        padded_zk_param = tf.cond(
+            tf.not_equal(pad_num_param, 0),
+            lambda: tf.pad(zk_param, [(0, 0), (0, pad_num_param), (0, 0), (0, 0)]),
+            lambda: zk_param,
+        )
 
-        if pad_num_prior != 0:
-            padding_prior = [(0, 0), (0, pad_num_prior), (0, 0), (0, 0)]
-            padded_zk_prior = tf.pad(zk_prior, padding_prior)
-        else:
-            padded_zk_prior = zk_prior
-
-        # Assert that the shapes are correct
-        if padded_zk_param.shape != padded_zk_prior.shape:
-            raise ValueError(
-                f"Shapes of padded tensors {zk_param.shape} and {zk_prior.shape} do not match."
-            )
+        padded_zk_prior = tf.cond(
+            tf.not_equal(pad_num_prior, 0),
+            lambda: tf.pad(zk_prior, [(0, 0), (0, pad_num_prior), (0, 0), (0, 0)]),
+            lambda: zk_prior,
+        )
 
         return padded_zk_param, padded_zk_prior
 
