@@ -12,6 +12,9 @@ import wf_psf.utils.utils as utils
 import tensorflow as tf
 from wf_psf.utils.ccd_missalignments import CCDMissalignmentCalculator
 from wf_psf.utils.centroids import get_zk1_2_for_observed_psf
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class DataHandler:
@@ -84,6 +87,7 @@ class DataHandler:
         Load the dataset based on the specified data type.
 
         """
+
         self.dataset = np.load(
             os.path.join(self.data_params.data_dir, self.data_params.file),
             allow_pickle=True,
@@ -334,14 +338,17 @@ def get_zernike_prior(model_params, data):
     zernike_contribution_list = []
 
     if model_params.use_prior:
+        logger.info("Reading in Zernike prior...")
         zernike_contribution_list.append(get_np_zk_prior(data))
 
     if model_params.correct_centroids:
+        logger.info("Adding scentroid correction...")
         zernike_contribution_list.append(
             compute_centroid_correction(model_params, data)
         )
 
     if model_params.add_ccd_missalignments:
+        logger.info("Adding CCD mis-alignments...")
         zernike_contribution_list.append(compute_ccd_missalignment(model_params, data))
 
     if len(zernike_contribution_list) == 1:
