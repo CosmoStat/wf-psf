@@ -41,7 +41,6 @@ class CCDMissalignmentCalculator(object):
         tel_focal_length=24.5,
         tel_diameter=1.2,
     ):
-
         self.tiles_path = tiles_path
         self.x_lims = x_lims
         self.y_lims = y_lims
@@ -103,10 +102,10 @@ class CCDMissalignmentCalculator(object):
         for it in range(self.tiles_data.shape[2]):
             # Scale positions to wavediff reference
             for jj in range(self.scaled_data.shape[0]):
-                self.scaled_data[jj, 0:2, it] = (
-                    self.scale_position_to_wavediff_reference(
-                        self.scaled_data[jj, 0:2, it]
-                    )
+                self.scaled_data[
+                    jj, 0:2, it
+                ] = self.scale_position_to_wavediff_reference(
+                    self.scaled_data[jj, 0:2, it]
                 )
             # Build polygons point list
             curr_polygon = [
@@ -119,7 +118,6 @@ class CCDMissalignmentCalculator(object):
             self.ccd_polygons.append(mpltPath.Path(curr_polygon))
 
     def initialise_kdtree(self):
-
         flattened_points = np.zeros(
             (int(self.scaled_data.shape[0] * self.scaled_data.shape[2]), 2)
         )
