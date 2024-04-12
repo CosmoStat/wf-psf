@@ -278,6 +278,7 @@ class MetricsConfigHandler:
         return psf_models.get_psf_model(
             self.training_conf.training.model_params,
             self.training_conf.training.training_hparams,
+            self.data_conf,
         )
 
     @property
@@ -414,9 +415,9 @@ class MetricsConfigHandler:
         )
 
         # Update metrics_confs dict with latest result
-        plots_config_handler.metrics_confs[self._file_handler.workdir] = (
-            self.metrics_conf
-        )
+        plots_config_handler.metrics_confs[
+            self._file_handler.workdir
+        ] = self.metrics_conf
 
         # Update metric results dict with latest result
         plots_config_handler.list_of_metrics_dict[self._file_handler.workdir] = [
