@@ -23,12 +23,15 @@ training:
       
     # Dimension of the OPD/Wavefront space.
     pupil_diameter: 256
+    
+    # Flag to use Zernike prior
+    use_prior: True
 
     # Correct centroids
-    correct_centroids: True
+    correct_centroids: False
 
     # Consider CCD missalignments
-    add_ccd_missalignments: True
+    add_ccd_missalignments: False
 
     # CCD missalignments input file path
     # This should be refactored. It might be better to directly look for the `tiles.npy` in 
