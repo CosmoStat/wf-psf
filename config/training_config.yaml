@@ -29,6 +29,8 @@ training:
 
     # Correct centroids
     correct_centroids: False
+    # Sigma of the window function used to compute the centroids. Default Euclid value is 2.5
+    sigma_centroid_window: 2.5
 
     # Consider CCD missalignments
     add_ccd_missalignments: False
