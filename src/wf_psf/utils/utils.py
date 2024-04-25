@@ -58,7 +58,7 @@ def generate_SED_elems_in_tensorflow(
     """Generate SED Elements in TensorFlow Units.
 
     A function to generate the SED elements needed for using the
-    Tensor Flow class: TF_poly_PSF.
+    TensorFlow class: TF_poly_PSF.
 
     Parameters
     ----------
