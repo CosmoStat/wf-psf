@@ -102,10 +102,10 @@ class CCDMissalignmentCalculator(object):
         for it in range(self.tiles_data.shape[2]):
             # Scale positions to wavediff reference
             for jj in range(self.scaled_data.shape[0]):
-                self.scaled_data[
-                    jj, 0:2, it
-                ] = self.scale_position_to_wavediff_reference(
-                    self.scaled_data[jj, 0:2, it]
+                self.scaled_data[jj, 0:2, it] = (
+                    self.scale_position_to_wavediff_reference(
+                        self.scaled_data[jj, 0:2, it]
+                    )
                 )
             # Build polygons point list
             curr_polygon = [

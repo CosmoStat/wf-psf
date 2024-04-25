@@ -623,4 +623,3 @@ def compute_shape_metrics(
         result_dict["stars_rel_pix_rmse"] = stars_rel_pix_rmse
 
     return result_dict
-
