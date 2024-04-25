@@ -55,7 +55,7 @@ def generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
 def generate_SED_elems_in_tensorflow(
     SED, sim_psf_toolkit, n_bins=20, tf_dtype=tf.float64
 ):
-    """Generate SED Elements in Tensor Flow Units.
+    """Generate SED Elements in TensorFlow Units.
 
     A function to generate the SED elements needed for using the
     Tensor Flow class: TF_poly_PSF.
