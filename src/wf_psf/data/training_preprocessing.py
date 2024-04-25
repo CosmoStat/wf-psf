@@ -253,7 +253,11 @@ def compute_centroid_correction(model_params, data):
     # The -1 is to contrarest the actual shift
     zk1_2_array = -1.0 * np.array(
         [
-            get_zk1_2_for_observed_psf(obs_psf, pixel_sampling=pix_sampling)
+            get_zk1_2_for_observed_psf(
+                obs_psf,
+                pixel_sampling=pix_sampling,
+                sigma_init=model_params.sigma_centroid_window,
+            )
             for obs_psf in star_catalogue
         ]
     )
