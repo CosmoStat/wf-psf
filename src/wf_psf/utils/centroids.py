@@ -100,9 +100,12 @@ class CentroidEstimator(object):
         Default is None.
     """
 
-    def __init__(self, im, sigma_init=7.5, n_iter=5, auto_run=True, xc=None, yc=None):
+    def __init__(self, im, mask, sigma_init=7.5, n_iter=5, auto_run=True, xc=None, yc=None):
         r"""Initialize class attributes."""
         self.im = im
+        self.mask = mask
+        if self.mask is not None:
+            self.im = self.im * (1 - self.mask)
         self.stamp_size = im.shape
         self.ranges = np.array([np.arange(i) for i in self.stamp_size])
         self.sigma_init = sigma_init
@@ -144,10 +147,15 @@ class CentroidEstimator(object):
         Compute the star image normalized first order moments with
         the current window function.
         """
-        Q0 = np.sum(self.im * self.window)
+        if self.mask is not None:
+            masked_im_window = self.im * self.window * (self.mask == 0)
+        else:
+            masked_im_window = self.im * self.window
+
+        Q0 = np.sum(masked_im_window)
         Q1 = np.array(
             [
-                np.sum(np.sum(self.im * self.window, axis=1 - i) * self.ranges[i])
+                np.sum(np.sum(masked_im_window, axis=1 - i) * self.ranges[i])
                 for i in range(2)
             ]
         )
