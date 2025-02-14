@@ -77,6 +77,62 @@ class L1ParamScheduler(tf.keras.callbacks.Callback):
         self.model.set_l1_rate(scheduled_l1_rate)
         # tf.keras.backend.set_value(self.model.optimizer.lr, scheduled_lr)
 
+def masked_mse(y_true, y_pred, mask):
+    """Masked Mean Squared Error.
+
+    Parameters
+    ----------
+    y_true: Tensor
+        True values
+    y_pred: Tensor
+        Predicted values
+    mask: Tensor
+        Mask to be applied
+
+    Returns
+    -------
+    Tensor
+        Masked Mean Squared Error
+    """
+    # Calculate the MSE
+    error = tf.square(y_true - y_pred)
+    masked_error = error * mask
+    return tf.reduce_mean(masked_error)
+
+class MaskedMeanSquaredError(tf.keras.losses.Loss):
+    """Masked Mean Squared Error.""" 
+    def __init__(self, name="masked_mean_squared_error", **kwargs):
+        super().__init__(name=name, **kwargs)
+
+    def call(self, y_true, y_pred, sample_weight=None):
+        # if sample_weight is None:
+        #     raise ValueError("Sample weights are required for MaskedMeanSquaredError")
+        
+        # return masked_mse(y_true, y_pred, sample_weight)
+        return masked_mse(y_true[0], y_pred, y_true[1])
+    
+class MaskedMeanSquaredErrorMetric(tf.keras.metrics.Metric):
+    def __init__(self, name="masked_mean_squared_error", **kwargs):
+        super().__init__(name=name, **kwargs)
+        self.total_loss = self.add_weight(name="total_loss", initializer="zeros")
+        self.batch_count = self.add_weight(name="batch_count", initializer="zeros")
+
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        # if sample_weight is None:
+        #     raise ValueError("Sample weights are required for MaskedMeanSquaredErrorMetric")
+        
+        # loss = masked_mse(y_true, y_pred, sample_weight)
+        loss = masked_mse(y_true[0], y_pred, y_true[1])
+        self.total_loss.assign_add(loss)
+        self.batch_count.assign_add(1.0)
+
+    def result(self):
+        return self.total_loss / self.batch_count
+    
+    def reset_state(self):
+        self.total_loss.assign(0.0)
+        self.batch_count.assign(0.0)
+
 
 def l1_schedule_rule(epoch_n: int, l1_rate: float) -> float:
     """
@@ -442,7 +498,9 @@ def general_train_cycle(
     )
 
     # Calculate sample weights
-    sample_weight = calculate_sample_weights(outputs, use_sample_weights)
+    if use_sample_weights and loss.name != 'masked_mean_squared_error':
+         sample_weight = calculate_sample_weights(outputs, use_sample_weights)
+        
 
     # Define the training cycle
     if cycle_def in ("parametric", "complete", "only-parametric"):

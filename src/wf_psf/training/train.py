@@ -356,6 +356,20 @@ def train(
             learning_rate=training_handler.learning_rate_non_params[current_cycle - 1]
         )
         logger.info(f"Starting cycle {current_cycle}..")
+        # Prepare loss & metrics
+        if training_handler.training_hparams.loss == 'mask_mse':
+            logger.info("Using masked MSE loss")
+            loss = train_utils.MaskedMeanSquaredError()
+            metrics = [train_utils.MaskedMeanSquaredErrorMetric()]
+            masks = data_conf.training_data.dataset['masks']
+            outputs= [data_conf.training_data.dataset["noisy_stars"], masks]
+        else:
+            loss = tf.keras.losses.MeanSquaredError()
+            metrics = [tf.keras.metrics.MeanSquaredError()]
+            masks = None
+            outputs=data_conf.training_data.dataset["noisy_stars"]
+
+        logger.info("Starting cycle {}..".format(current_cycle))
         start_cycle = time.time()
 
         # Compute training per cycle
@@ -369,7 +383,7 @@ def train(
                 data_conf.training_data.dataset["positions"],
                 data_conf.training_data.sed_data,
             ],
-            outputs=data_conf.training_data.dataset["noisy_stars"],
+            outputs=outputs,
             validation_data=(
                 [
                     data_conf.test_data.dataset["positions"],
@@ -388,10 +402,10 @@ def train(
             n_epochs_non_param=training_handler.n_epochs_non_params[current_cycle - 1],
             param_optim=param_optim,
             non_param_optim=non_param_optim,
-            param_loss=None,
-            non_param_loss=None,
-            param_metrics=None,
-            non_param_metrics=None,
+            param_loss=loss,
+            non_param_loss=loss,
+            param_metrics=metrics,
+            non_param_metrics=metrics,
             param_callback=None,
             non_param_callback=None,
             general_callback=[model_chkp_callback],
