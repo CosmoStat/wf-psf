@@ -227,7 +227,7 @@ class TrainingParamsHandler:
         """
         return self.multi_cycle_params.learning_rate_non_params
 
-    def _prepare_callbacks(self, checkpoint_dir, current_cycle):
+    def _prepare_callbacks(self, checkpoint_dir, current_cycle, monitor="mean_squared_error"):
         """Prepare Callbacks.
 
         A function to prepare to save the model as a callback.
@@ -251,7 +251,7 @@ class TrainingParamsHandler:
             filepath_chkp_callback(
                 checkpoint_dir, self.model_name, self.id_name, current_cycle
             ),
-            monitor="mean_squared_error",
+            monitor=monitor,
             verbose=1,
             save_best_only=True,
             save_weights_only=True,
@@ -345,7 +345,7 @@ def train(
         # Prepare to save the model as a callback
         # -----------------------------------------------------
         model_chkp_callback = training_handler._prepare_callbacks(
-            checkpoint_dir, current_cycle
+            checkpoint_dir, current_cycle, monitor=monitor
         )
 
         # Prepare the optimizers
