@@ -109,7 +109,7 @@ class MaskedMeanSquaredError(tf.keras.losses.Loss):
         #     raise ValueError("Sample weights are required for MaskedMeanSquaredError")
         
         # return masked_mse(y_true, y_pred, sample_weight)
-        return masked_mse(y_true[0], y_pred, y_true[1])
+        return masked_mse(y_true[:,0], y_pred, y_true[:,1])
     
 class MaskedMeanSquaredErrorMetric(tf.keras.metrics.Metric):
     def __init__(self, name="masked_mean_squared_error", **kwargs):
