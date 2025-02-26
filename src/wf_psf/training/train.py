@@ -362,7 +362,7 @@ def train(
             loss = train_utils.MaskedMeanSquaredError()
             metrics = [train_utils.MaskedMeanSquaredErrorMetric()]
             masks = data_conf.training_data.dataset['masks']
-            outputs= [data_conf.training_data.dataset["noisy_stars"], masks]
+            outputs = tf.concat([data_conf.training_data.dataset["noisy_stars"], masks], axis=2)
         else:
             loss = tf.keras.losses.MeanSquaredError()
             metrics = [tf.keras.metrics.MeanSquaredError()]

@@ -16,6 +16,11 @@ from wf_psf.psf_models.psf_models import build_PSF_model
 from wf_psf.utils.utils import NoiseEstimator
 import logging
 
+# from keras.src import backend
+# import tf.keras.ops.convert_to_tensor as convert_to_tensor
+# from keras.src import tree
+# from keras.src.losses import reduce_weighted_values
+
 logger = logging.getLogger(__name__)
 
 
@@ -104,12 +109,53 @@ class MaskedMeanSquaredError(tf.keras.losses.Loss):
     def __init__(self, name="masked_mean_squared_error", **kwargs):
         super().__init__(name=name, **kwargs)
 
+    # def __call__(self, y_true, y_pred, sample_weight=None):
+    #     in_mask = backend.get_keras_mask(y_pred)
+    #     print('y_true', y_true.shape)
+    #     with ops.name_scope(self.name):
+    #         y_pred = tree.map_structure(
+    #             lambda x: ops.convert_to_tensor(x, dtype=self.dtype), y_pred
+    #         )
+    #         y_true = tree.map_structure(
+    #             lambda x: ops.convert_to_tensor(x, dtype=self.dtype), y_true
+    #         )
+
+    #         losses = self.call(y_true, y_pred)
+    #         out_mask = backend.get_keras_mask(losses)
+
+    #         if in_mask is not None and out_mask is not None:
+    #             print("in+out")
+    #             mask = in_mask & out_mask
+    #         elif in_mask is not None:
+    #             print("in")
+    #             mask = in_mask
+    #         elif out_mask is not None:
+    #             print("out")
+    #             mask = out_mask
+    #         else:
+    #             print("none")
+    #             mask = None
+
+    #         return reduce_weighted_values(
+    #             losses,
+    #             sample_weight=sample_weight,
+    #             mask=mask,
+    #             reduction=self.reduction,
+    #             dtype=self.dtype,
+    #         )
+
     def call(self, y_true, y_pred, sample_weight=None):
         # if sample_weight is None:
         #     raise ValueError("Sample weights are required for MaskedMeanSquaredError")
         
         # return masked_mse(y_true, y_pred, sample_weight)
-        return masked_mse(y_true[:,0], y_pred, y_true[:,1])
+        print("y_true", y_true.shape)
+        print("y_pred", y_pred.shape)
+        y_target = y_true[:,:, :y_true.shape[1]]
+        mask = y_true[:,:, y_true.shape[1]:]
+        print("y_target", y_target.shape)
+        print("mask", mask.shape)
+        return masked_mse(y_target, y_pred, mask)
     
 class MaskedMeanSquaredErrorMetric(tf.keras.metrics.Metric):
     def __init__(self, name="masked_mean_squared_error", **kwargs):
@@ -122,7 +168,9 @@ class MaskedMeanSquaredErrorMetric(tf.keras.metrics.Metric):
         #     raise ValueError("Sample weights are required for MaskedMeanSquaredErrorMetric")
         
         # loss = masked_mse(y_true, y_pred, sample_weight)
-        loss = masked_mse(y_true[:,0], y_pred, y_true[:,1])
+        y_target = y_true[:,:, :y_true.shape[1]]
+        mask = y_true[:,:, y_true.shape[1]:]
+        loss = masked_mse(y_target, y_pred, mask)
         self.total_loss.assign_add(loss)
         self.batch_count.assign_add(1.0)
 
