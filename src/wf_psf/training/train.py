@@ -362,12 +362,14 @@ def train(
             loss = train_utils.MaskedMeanSquaredError()
             metrics = [train_utils.MaskedMeanSquaredErrorMetric()]
             masks = data_conf.training_data.dataset['masks']
-            outputs = tf.concat([data_conf.training_data.dataset["noisy_stars"], masks], axis=2)
+            outputs = tf.stack([data_conf.training_data.dataset["noisy_stars"], masks], axis=-1)
+            output_val = tf.stack([data_conf.test_data.dataset["stars"], data_conf.test_data.dataset['masks']], axis=-1)
         else:
             loss = tf.keras.losses.MeanSquaredError()
             metrics = [tf.keras.metrics.MeanSquaredError()]
             masks = None
             outputs=data_conf.training_data.dataset["noisy_stars"]
+            output_val = data_conf.test_data.dataset["stars"]
 
         logger.info("Starting cycle {}..".format(current_cycle))
         start_cycle = time.time()
@@ -389,7 +391,7 @@ def train(
                     data_conf.test_data.dataset["positions"],
                     data_conf.test_data.sed_data,
                 ],
-                data_conf.test_data.dataset["stars"],
+                output_val,
             ),
             batch_size=training_handler.training_hparams.batch_size,
             learning_rate_param=training_handler.learning_rate_params[

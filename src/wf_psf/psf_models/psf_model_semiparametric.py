@@ -114,6 +114,13 @@ class TFSemiParametricField(tf.keras.Model):
         self.obscurations = psfm.tf_obscurations(self.pupil_diam)
         self.output_dim = model_params.output_dim
 
+        # Inputs: pad predictions (when using masked-mse loss)
+        # if statement to ensure backward compatibility
+        if hasattr(model_params, "pad_output_flag"):
+            self.pad_output_flag = model_params.pad_output_flag
+        else:
+            self.pad_output_flag = False
+
         # Inputs: Loss
         self.l2_param = model_params.param_hparams.l2_param
 
@@ -417,6 +424,24 @@ class TFSemiParametricField(tf.keras.Model):
         s_new = self.tf_np_poly_opd.S_mat - s_mat_projected
         self.assign_S_mat(s_new)
 
+    def pad_preds(self, preds):
+        """Pad the predictions.
+
+        Pad the predictions to match the outputs when the masked-mse loss is used.
+
+        Parameters
+        ----------
+        preds : tf.Tensor
+            Predictions to be padded, shape (batch, output_dim, output_dim)
+
+        Returns
+        -------
+        tf.Tensor
+            Padded predictions, shape (batch, output_dim, output_dim, 2)
+        """
+
+        return tf.stack([preds, tf.zeros_like(preds)], axis=-1)
+    
     def call(self, inputs):
         """Define the PSF field forward model.
 
@@ -444,5 +469,8 @@ class TFSemiParametricField(tf.keras.Model):
         opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
         # Compute the polychromatic PSFs
         poly_psfs = self.tf_batch_poly_PSF([opd_maps, packed_SEDs])
+
+        if self.pad_output_flag:
+            poly_psfs = self.pad_preds(poly_psfs)
 
         return poly_psfs
