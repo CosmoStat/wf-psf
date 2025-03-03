@@ -113,14 +113,7 @@ class TFSemiParametricField(tf.keras.Model):
         self.batch_size = training_params.batch_size
         self.obscurations = psfm.tf_obscurations(self.pupil_diam)
         self.output_dim = model_params.output_dim
-
-        # Inputs: pad predictions (when using masked-mse loss)
-        # if statement to ensure backward compatibility
-        if hasattr(model_params, "pad_output_flag"):
-            self.pad_output_flag = model_params.pad_output_flag
-        else:
-            self.pad_output_flag = False
-
+        
         # Inputs: Loss
         self.l2_param = model_params.param_hparams.l2_param
 
@@ -442,7 +435,7 @@ class TFSemiParametricField(tf.keras.Model):
 
         return tf.stack([preds, tf.zeros_like(preds)], axis=-1)
     
-    def call(self, inputs, training=None):
+    def call(self, inputs):
         """Define the PSF field forward model.
 
         [1] From positions to Zernike coefficients
@@ -469,9 +462,5 @@ class TFSemiParametricField(tf.keras.Model):
         opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
         # Compute the polychromatic PSFs
         poly_psfs = self.tf_batch_poly_PSF([opd_maps, packed_SEDs])
-
-        # print('Training:', training)
-        # if self.pad_output_flag and training:
-        #     poly_psfs = self.pad_preds(poly_psfs)
 
         return poly_psfs

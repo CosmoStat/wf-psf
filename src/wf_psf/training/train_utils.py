@@ -118,8 +118,6 @@ class MaskedMeanSquaredError(tf.keras.losses.Loss):
 
     def call(self, y_true, y_pred, sample_weight=None):
         # Extract the target and the masks from y_true
-        print('y_true', y_true.shape)
-        print('y_pred', y_pred.shape)
         y_target = y_true[..., 0]
         mask = y_true[..., 1]
         return masked_mse(y_target, y_pred, mask)
