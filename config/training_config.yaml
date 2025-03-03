@@ -97,7 +97,8 @@ training:
       # Max polynomial degree of the parametric part.  chg to max_deg_param
       d_max: 2  
 
-      # Flag to save optimisation history for parametric model
+      # Flag to save optimisation history for parametric model; set to False for non-parametric-only
+      # training
       save_optim_history_param: true
 
     # Hyperparameters for non-parametric model
@@ -117,7 +118,9 @@ training:
       # Flag to reset DD_features to be used with `poly` or `semiparametric` model
       reset_dd_features: False
 
-      # Flag to save optimisation history for non-parametric model
+      # Flag to save optimisation history for non-parametric model; set to False for parametric-only training 
+      # if specified in cycle
+      # See cycle_def
       save_optim_history_nonparam: true 
 
   # Training hyperparameters
