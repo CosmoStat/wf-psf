@@ -83,9 +83,6 @@ training:
     # obscurations to avoid the aliasing effect. The filter is a simple top-hat filter.
     LP_filter_length: 3
 
-    # Flag to pad predictions to match output dimensions when using the masked loss.
-    pad_output_flag: True
-
     # Hyperparameters for Parametric model 
     param_hparams:
       # Random seed for Tensor Flow Initialization
