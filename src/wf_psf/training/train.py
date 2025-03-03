@@ -7,22 +7,15 @@ to manage training of the psf model.
 
 """
 
-import sys
 import numpy as np
 import time
 import tensorflow as tf
 import tensorflow_addons as tfa
-from wf_psf.utils.read_config import read_conf
-import os
 import logging
-import wf_psf.utils.io as io
 from wf_psf.psf_models import (
-    psf_models,
-    psf_model_semiparametric,
-    psf_model_physical_polychromatic,
+    psf_models
 )
 import wf_psf.training.train_utils as train_utils
-import wf_psf.data.training_preprocessing as training_preprocessing
 
 logger = logging.getLogger(__name__)
 
@@ -229,7 +222,7 @@ class TrainingParamsHandler:
         """
 
         # -----------------------------------------------------
-        logger.info(f"Preparing Keras model callback...")
+        logger.info("Preparing Keras model callback...")
         return tf.keras.callbacks.ModelCheckpoint(
             filepath_chkp_callback(
                 checkpoint_dir, self.model_name, self.id_name, current_cycle
@@ -327,8 +320,6 @@ def train(
         # Prepare the saving callback
         # Prepare to save the model as a callback
         # -----------------------------------------------------
-        logger.info(f"Preparing Keras model callback...")
-
         model_chkp_callback = training_handler._prepare_callbacks(
             checkpoint_dir, current_cycle
         )
