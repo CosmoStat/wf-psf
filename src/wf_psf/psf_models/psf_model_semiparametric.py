@@ -442,7 +442,7 @@ class TFSemiParametricField(tf.keras.Model):
 
         return tf.stack([preds, tf.zeros_like(preds)], axis=-1)
     
-    def call(self, inputs):
+    def call(self, inputs, training=None):
         """Define the PSF field forward model.
 
         [1] From positions to Zernike coefficients
@@ -470,7 +470,8 @@ class TFSemiParametricField(tf.keras.Model):
         # Compute the polychromatic PSFs
         poly_psfs = self.tf_batch_poly_PSF([opd_maps, packed_SEDs])
 
-        if self.pad_output_flag:
-            poly_psfs = self.pad_preds(poly_psfs)
+        # print('Training:', training)
+        # if self.pad_output_flag and training:
+        #     poly_psfs = self.pad_preds(poly_psfs)
 
         return poly_psfs

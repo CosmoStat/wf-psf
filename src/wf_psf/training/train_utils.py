@@ -98,6 +98,7 @@ def masked_mse(y_true, y_pred, mask):
     # Calculate the MSE
     error = tf.square(y_true - y_pred)
     masked_error = error * mask
+    ###### weight by number of non masked pixels
     return tf.reduce_mean(masked_error)
 
 class MaskedMeanSquaredError(tf.keras.losses.Loss):
@@ -105,13 +106,23 @@ class MaskedMeanSquaredError(tf.keras.losses.Loss):
     def __init__(self, name="masked_mean_squared_error", **kwargs):
         super().__init__(name=name, **kwargs)
 
+    def __call__(self, y_true, y_pred, sample_weight=None):
+        """Overrides __call__() to accept a mask argument."""
+        loss = self.call(y_true, y_pred)  # Calls the overridden call()
+
+        # Apply sample weights if provided
+        if sample_weight is not None:
+            loss *= tf.cast(sample_weight, dtype=loss.dtype)
+
+        return tf.reduce_mean(loss)  # Return final loss
+
     def call(self, y_true, y_pred, sample_weight=None):
         # Extract the target and the masks from y_true
+        print('y_true', y_true.shape)
+        print('y_pred', y_pred.shape)
         y_target = y_true[..., 0]
         mask = y_true[..., 1]
-        # Drop dummy dimension
-        y_pred_data = y_pred[..., 0]
-        return masked_mse(y_target, y_pred_data, mask)
+        return masked_mse(y_target, y_pred, mask)
 
     
 class MaskedMeanSquaredErrorMetric(tf.keras.metrics.Metric):
@@ -124,9 +135,7 @@ class MaskedMeanSquaredErrorMetric(tf.keras.metrics.Metric):
         # Extract the target and the masks from y_true
         y_target = y_true[..., 0]
         mask = y_true[..., 1]
-        # Drop dummy dimension
-        y_pred_data = y_pred[..., 0]
-        loss = masked_mse(y_target, y_pred_data, mask)
+        loss = masked_mse(y_target, y_pred, mask)
         self.total_loss.assign_add(loss)
         self.batch_count.assign_add(1.0)
 
