@@ -10,11 +10,9 @@ of the trained psf model.
 
 import numpy as np
 import tensorflow as tf
-import matplotlib.pyplot as plt
 import galsim as gs
 import wf_psf.utils.utils as utils
 from wf_psf.psf_models.psf_models import build_PSF_model
-from wf_psf.psf_models import tf_psf_field as psf_field
 from wf_psf.sims import psf_simulator as psf_simulator
 import logging
 
@@ -88,13 +86,11 @@ def compute_poly_metric(
     # Model prediction
     preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
-    # gt data preparation
+    # Ground truth data preparation
     if dataset_dict is None or "stars" not in dataset_dict:
-        logger.info("Regenerating gt stars from model.")
-        # Change interpolation parameters for the gt simPSF
-        interp_pts_per_bin = simPSF_np.SED_interp_pts_per_bin
+        logger.info("Regenerating ground truth stars from model.")
+        # Change interpolation parameters for the ground truth simPSF
         simPSF_np.SED_interp_pts_per_bin = 0
-        SED_sigma = simPSF_np.SED_sigma
         simPSF_np.SED_sigma = 0
         # Generate SED data list for gt model
         packed_SED_data = [
@@ -435,17 +431,15 @@ def compute_shape_metrics(
     # PSF model
     predictions = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
-    # gt data preparation
+    # Ground truth data preparation
     if (
         dataset_dict is None
         or "super_res_stars" not in dataset_dict
         or "SR_stars" not in dataset_dict
     ):
-        logger.info("Generating gt super resolved stars from the gt model.")
-        # Change interpolation parameters for the gt simPSF
-        interp_pts_per_bin = simPSF_np.SED_interp_pts_per_bin
+        logger.info("Generating ground truth super resolved stars from the gt model.")
+        # Change interpolation parameters for the ground truth simPSF
         simPSF_np.SED_interp_pts_per_bin = 0
-        SED_sigma = simPSF_np.SED_sigma
         simPSF_np.SED_sigma = 0
         # Generate SED data list for gt model
         packed_SED_data = [
