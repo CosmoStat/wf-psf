@@ -1,6 +1,6 @@
 [project]
 name = "wf_psf"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [
     { "name" = "Tobias Liaudat", "email" = "tobiasliaudat@gmail.com"},
     { "name" = "Jennifer Pollack", "email" = "jennifer.pollack@cea.fr"},
@@ -14,7 +14,7 @@ dependencies = [
     "numpy",
     "scipy",
     "keras",
-    "tensorflow==2.11.0",
+    "tensorflow==2.13.0",
     "tensorflow-addons",
     "tensorflow-estimator",
     "zernike",
