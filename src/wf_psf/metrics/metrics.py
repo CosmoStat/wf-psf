@@ -1,7 +1,7 @@
 """Metrics.
 
 A module which contains the specific functions
-for performing various sets of metrics evaluation 
+for performing various sets of metrics evaluation
 of the trained psf model.
 
 :Author: Tobias Liaudat <tobias.liaudat@cea.fr>

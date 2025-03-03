@@ -1,6 +1,6 @@
 """FIXTURES FOR GENERATING TESTS FOR WF-PSF UTILS PACKAGE: CONFTEST.
 
-This module contains fixtures to use in unit tests for the 
+This module contains fixtures to use in unit tests for the
 wf_psf utils package.
 
 :Author: Jennifer Pollack <jennifer.pollack@cea.fr>

@@ -1,0 +1,86 @@
+[project]
+name = "wf_psf"
+requires-python = "<3.10"
+authors = [
+    { "name" = "Tobias Liaudat", "email" = "tobiasliaudat@gmail.com"},
+    { "name" = "Jennifer Pollack", "email" = "jennifer.pollack@cea.fr"},
+]
+maintainers = [
+    { "name" = "Jennifer Pollack", "email" = "jennifer.pollack@cea.fr" },
+]
+
+description = 'A software framework to perform Differentiable wavefront-based PSF modelling.'
+dependencies = [
+    "numpy",
+    "scipy==1.8.0",
+    "keras==2.9.0",
+    "tensorflow==2.9.1",
+    "tensorflow-addons",
+    "tensorflow-estimator",
+    "zernike",
+    "opencv-python",
+    "pillow",
+    "galsim",
+    "astropy",
+    "matplotlib",
+    "seaborn",
+]
+
+version = "2.0.1"
+
+[project.optional-dependencies]
+docs = [
+    "importlib_metadata",    
+    "myst-parser",
+    "numpydoc",
+    "sphinx",
+    "sphinxcontrib-bibtex",
+    "sphinxawesome-theme",
+    "sphinx-gallery",
+    "sphinxemoji",
+    "sphinx_rtd_theme",
+
+]
+
+lint = [
+    "black",
+]
+
+release = [
+    "build",
+    "twine",
+]
+
+test = [
+  "pytest",
+  "pytest-cases",
+  "pytest-cov",
+  "pytest-emoji",
+  "pytest-raises",
+  "pytest-xdist",
+]
+
+# Install for development
+dev = ["wf_psf[docs,lint,release,test]"]
+
+[project.scripts]
+wavediff = "wf_psf.run:mainMethod"
+
+[tool.black]
+line-length = 88
+
+[tool.pydocstyle]
+convention = "numpy"
+
+
+[tool.pytest.ini_options]
+addopts = [
+    "--verbose",
+    "--emoji",
+    "--cov=wf_psf",
+    "--cov-report=term-missing",
+    "--cov-report=xml",
+    "--junitxml=pytest.xml",
+
+]
+testpaths = ["src/wf_psf"]
