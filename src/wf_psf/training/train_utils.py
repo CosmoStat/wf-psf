@@ -96,10 +96,10 @@ def masked_mse(y_true, y_pred, mask):
         Masked Mean Squared Error
     """
     # Calculate the MSE
-    error = tf.square(y_true - y_pred)
-    masked_error = error * mask
-    ###### weight by number of non masked pixels
-    return tf.reduce_mean(masked_error)
+    error = mask * tf.square(y_true - y_pred)
+    unmasked_pixels = tf.reduce_sum(mask)
+    # Weight by number of non masked pixels
+    return tf.reduce_sum(error) / unmasked_pixels
 
 class MaskedMeanSquaredError(tf.keras.losses.Loss):
     """Masked Mean Squared Error.""" 
