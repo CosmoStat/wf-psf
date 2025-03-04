@@ -84,6 +84,9 @@ class MetricsParamsHandler:
         """
         logger.info("Computing polychromatic metrics at low resolution.")
 
+        # Check if testing predictions should be masked
+        mask = self.trained_model.training_hparams.loss == "mask_mse"
+
         rmse, rel_rmse, std_rmse, std_rel_rmse = wf_metrics.compute_poly_metric(
             tf_semiparam_field=psf_model,
             gt_tf_semiparam_field=psf_models.get_psf_model(
@@ -99,6 +102,7 @@ class MetricsParamsHandler:
             n_bins_gt=self.metrics_params.ground_truth_model.model_params.n_bins_lda,
             batch_size=self.metrics_params.metrics_hparams.batch_size,
             dataset_dict=dataset,
+            mask=mask,
         )
 
         return {

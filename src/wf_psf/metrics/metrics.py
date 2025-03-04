@@ -29,6 +29,7 @@ def compute_poly_metric(
     n_bins_gt=20,
     batch_size=16,
     dataset_dict=None,
+    mask=False,
 ):
     """Calculate metrics for polychromatic reconstructions.
 
@@ -61,6 +62,9 @@ def compute_poly_metric(
         is present, the noiseless stars from the dataset are used to compute the metrics.
         Otherwise, the stars are generated from the gt model.
         Default is `None`.
+    mask: bool
+        If `True`, the predctions are masked to match the target masks. 
+        Default is `False`.
 
     Returns
     -------
@@ -108,8 +112,18 @@ def compute_poly_metric(
         logger.info("Using Ground Truth stars from dataset.")
         gt_preds = dataset_dict["stars"]
 
+    # If the data is masked, mask the predictions
+    if mask:
+        logger.info("Masking the predictions.")
+        masks = dataset_dict["masks"]
+        # Weight the mse by the number of unmasked pixels
+        weights = np.sum(masks, axis=(1, 2))
+        preds = preds * masks
+    else:
+        weights = np.ones(gt_preds.shape[0])
+
     # Calculate residuals
-    residuals = np.sqrt(np.mean((gt_preds - preds) ** 2, axis=(1, 2)))
+    residuals = np.sqrt(np.sum((gt_preds - preds) ** 2, axis=(1, 2)) / weights)
     gt_star_mean = np.sqrt(np.mean((gt_preds) ** 2, axis=(1, 2)))
 
     # RMSE calculations
