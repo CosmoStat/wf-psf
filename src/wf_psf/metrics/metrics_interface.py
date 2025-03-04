@@ -392,7 +392,7 @@ def evaluate_model(
                 "train": metrics_params.eval_opd_metric,
             },
             "shape_results_dict": {
-                "test": True,
+                "test": metrics_params.eval_train_shape_results_dict,
                 "train": metrics_params.eval_train_shape_results_dict,
             },
         }
