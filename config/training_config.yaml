@@ -82,7 +82,7 @@ training:
     # Length of one dimension of the Low-Pass (LP) filter to apply to the
     # obscurations to avoid the aliasing effect. The filter is a simple top-hat filter.
     LP_filter_length: 3
-
+    
     # Hyperparameters for Parametric model 
     param_hparams:
       # Random seed for Tensor Flow Initialization
@@ -126,7 +126,7 @@ training:
   # Training hyperparameters
   training_hparams:
     batch_size: 32
-    
+
     # Loss function to use while training. Options are: 'mask_mse' and 'mse'. Default is 'mse'.
     loss: 'mask_mse'
 
