@@ -166,7 +166,7 @@ def build_PSF_model(model_inst, optimizer=None, loss=None, metrics=None):
 
     # Define optimizer function
     if optimizer is None:
-        optimizer = tf.keras.optimizers.Adam(
+        optimizer = tf.keras.optimizers.legacy.Adam(
             learning_rate=1e-2, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=False
         )
 
