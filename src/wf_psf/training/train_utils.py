@@ -16,7 +16,6 @@ from wf_psf.psf_models.psf_models import build_PSF_model
 from wf_psf.utils.utils import NoiseEstimator
 import logging
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -525,50 +524,8 @@ def general_train_cycle(
     )
 
     # Calculate sample weights
-    if use_sample_weights:
-<<<<<<< HEAD
-         sample_weight = calculate_sample_weights(outputs, use_sample_weights)
+    sample_weight = calculate_sample_weights(outputs, use_sample_weights)
         
-=======
-        # Generate standard deviation estimator
-        img_dim = (outputs.shape[1], outputs.shape[2])
-        win_rad = np.ceil(outputs.shape[1] / 3.33)
-        std_est = NoiseEstimator(img_dim=img_dim, win_rad=win_rad)
-        # Ensure correct acces to y_true
-        if param_loss.name == 'masked_mean_squared_error':
-            images = outputs[..., 0]
-        else:
-            images = outputs
-        # Estimate noise std_dev
-        imgs_std = np.array([std_est.estimate_noise(_im) for _im in images])
-        # Calculate weights
-        variances = imgs_std**2
-
-        # Define sample weight strategy
-        strategy_opt = 1
-
-        if strategy_opt == 0:
-            # Parameters
-            max_w = 2.0
-            min_w = 0.1
-            # Epsilon is to avoid outliers
-            epsilon = np.median(variances) * 0.1
-            w = 1 / (variances + epsilon)
-            scaled_w = (w - np.min(w)) / (np.max(w) - np.min(w))  # Transform to [0,1]
-            scaled_w = scaled_w * (max_w - min_w) + min_w  # Transform to [min_w, max_w]
-            scaled_w = scaled_w + (1 - np.mean(scaled_w))  # Adjust the mean to 1
-            scaled_w[scaled_w < min_w] = min_w
-            # Save the weights
-            sample_weight = scaled_w
-
-        elif strategy_opt == 1:
-            # Use inverse variance for weights
-            # Then scale the values by the median
-            sample_weight = 1 / variances
-            sample_weight /= np.median(sample_weight)
-    else:
-        sample_weight = None
->>>>>>> f61f1d5 (Account for sample weights.)
 
     # Define the training cycle
     if cycle_def in ("parametric", "complete", "only-parametric"):
