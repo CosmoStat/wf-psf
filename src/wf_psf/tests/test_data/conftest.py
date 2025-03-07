@@ -25,6 +25,11 @@ training_config = RecursiveNamespace(
         oversampling_rate=3,
         output_dim=32,
         pupil_diameter=256,
+        use_prior=True,
+        correct_centroids=False,
+        sigma_centroid_window=2.5,
+        add_ccd_missalignments=False,
+        ccd_missalignments_input_path="/Users/tl255879/Documents/research/Euclid/real_data/CCD_missalignments/tiles.npy",
         use_sample_weights=True,
         interpolation_type="None",
         sed_interp_pts_per_bin=0,
@@ -86,3 +91,7 @@ def data_params():
 @pytest.fixture(scope="module", params=[training_config])
 def simPSF():
     return psf_models.simPSF(training_config.model_params)
+
+@pytest.fixture(scope="module", params=[training_config])
+def model_params():
+    return training_config.model_params
