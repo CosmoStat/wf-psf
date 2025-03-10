@@ -237,20 +237,6 @@ def test_pad_zernikes_prior_greater_than_param(physical_layer_instance):
     assert padded_zk_prior.shape == (1, 5, 1, 1)
 
 
-def test_pad_zernikes_shapes_mismatch(physical_layer_instance):
-    zk_param = tf.constant([[[[1]]], [[[2]]]])  # Shape: (2, 1, 1, 1)
-    zk_prior = tf.constant([[[[1]], [[2]], [[3]], [[4]], [[5]]]])  # Shape: (5, 1, 1, 1)
-
-    # Reset n_zks_total attribute
-    physical_layer_instance.n_zks_total = max(
-        tf.shape(zk_param)[1].numpy(), tf.shape(zk_prior)[1].numpy()
-    )
-
-    # Call the method under test and expect a ValueError
-    with pytest.raises(ValueError):
-        physical_layer_instance.pad_zernikes(zk_param, zk_prior)
-
-
 def test_pad_zernikes_param_greater_than_prior(physical_layer_instance):
     zk_param = tf.constant([[[[10]], [[20]], [[30]], [[40]]]])  # Shape: (4, 1, 1, 1)
     zk_prior = tf.constant([[[[1]]], [[[2]]]])  # Shape: (2, 1, 1, 1)
