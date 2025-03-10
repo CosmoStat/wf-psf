@@ -196,7 +196,7 @@ class TFZernikeMonochromaticPSF(tf.Module):
     ):
         super().__init__(name=name)
 
-        self.tf_build_opd_zernike = TFZernikesOPD(zernike_maps)
+        self.tf_build_opd_zernike = TFZernikeOPD(zernike_maps)
         self.tf_build_phase = TFBuildPhase(phase_N, lambda_obs, obscurations)
         self.tf_fft_diffract = TFFftDiffract(output_dim)
 
