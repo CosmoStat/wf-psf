@@ -15,7 +15,7 @@ from wf_psf.psf_models import psf_models
 from wf_psf.data.training_preprocessing import DataHandler
 
 training_config = RecursiveNamespace(
-    id_name="_sample_w_bis1_2k",
+    id_name="-coherent_euclid_200stars",
     data_config="data_config.yaml",
     metrics_config="metrics_config.yaml",
     model_params=RecursiveNamespace(
@@ -31,13 +31,18 @@ training_config = RecursiveNamespace(
         add_ccd_missalignments=False,
         ccd_missalignments_input_path="/Users/tl255879/Documents/research/Euclid/real_data/CCD_missalignments/tiles.npy",
         use_sample_weights=True,
-        interpolation_type="None",
+        interpolation_type=None,
         sed_interp_pts_per_bin=0,
         sed_extrapolate=True,
         sed_interp_kind="linear",
         sed_sigma=0,
         x_lims=[0.0, 1000.0],
         y_lims=[0.0, 1000.0],
+        pix_sampling= 12,
+        tel_diameter = 1.2,
+        tel_focal_length = 24.5,
+        euclid_obsc=True,
+        LP_filter_length=3,
         param_hparams=RecursiveNamespace(
             random_seed=3877572,
             l2_param=0.0,
