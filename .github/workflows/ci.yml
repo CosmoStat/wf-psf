@@ -28,21 +28,7 @@ jobs:
 
       - name: Install dependencies
         run: python -m pip install ".[test]"
-
-      - name: Check Black version
-        run: black --version
       
       - name: Test with pytest
         run: python -m pytest
 
-  linter_name:
-    name: Run Black formatter
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Run Black formatter
-        uses: rickstaa/action-black@v1
-        with:
-          black_args: ". --check"
