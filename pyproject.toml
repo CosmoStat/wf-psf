@@ -11,7 +11,7 @@ maintainers = [
 
 description = 'A software framework to perform Differentiable wavefront-based PSF modelling.'
 dependencies = [
-    "numpy",
+    "numpy>=1.26.4",
     "scipy",
     "keras",
     "tensorflow==2.11.0",
