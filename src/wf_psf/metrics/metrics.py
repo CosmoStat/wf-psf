@@ -63,7 +63,8 @@ def compute_poly_metric(
         Otherwise, the stars are generated from the gt model.
         Default is `None`.
     mask: bool
-        If `True`, the predctions are masked to match the target masks. 
+        If `True`, predictions are masked using the same mask as the target data, ensuring
+        that metric calculations consider only unmasked regions.
         Default is `False`.
 
     Returns
