@@ -110,6 +110,7 @@ def main_metrics(training_params):
 
 @pytest.mark.skipif("GITHUB_ENV" in os.environ, reason="Skipping GPU tests in CI")
 def test_eval_metrics_polychromatic_lowres(
+    data_conf,
     training_params,
     weights_path_basename,
     training_data,
@@ -127,7 +128,7 @@ def test_eval_metrics_polychromatic_lowres(
     psf_model.load_weights(weights_path_basename)
 
     poly_metric = metrics_handler.evaluate_metrics_polychromatic_lowres(
-        psf_model, simPSF_np, test_dataset
+        psf_model, simPSF_np, data_conf, test_dataset, 
     )
 
     tol = 1.0e-7
@@ -158,6 +159,7 @@ def test_eval_metrics_polychromatic_lowres(
 
 @pytest.mark.skipif("GITHUB_ENV" in os.environ, reason="Skipping GPU tests in CI")
 def test_evaluate_metrics_opd(
+    data_conf,
     training_params,
     weights_path_basename,
     training_data,
@@ -175,7 +177,7 @@ def test_evaluate_metrics_opd(
     psf_model.load_weights(weights_path_basename)
 
     opd_metric = metrics_handler.evaluate_metrics_opd(
-        psf_model, simPSF_np, test_dataset
+        psf_model, simPSF_np, data_conf, test_dataset
     )
 
     tol = 1.0e-9
@@ -208,6 +210,7 @@ def test_evaluate_metrics_opd(
 
 @pytest.mark.skipif("GITHUB_ENV" in os.environ, reason="Skipping GPU tests in CI")
 def test_eval_metrics_mono_rmse(
+    data_conf,
     training_params,
     weights_path_basename,
     training_data,
@@ -225,7 +228,7 @@ def test_eval_metrics_mono_rmse(
     psf_model.load_weights(weights_path_basename)
 
     mono_metric = metrics_handler.evaluate_metrics_mono_rmse(
-        psf_model, simPSF_np, test_dataset
+        psf_model, simPSF_np, data_conf, test_dataset
     )
 
     nlambda = len(mono_metric["rmse_lda"])
