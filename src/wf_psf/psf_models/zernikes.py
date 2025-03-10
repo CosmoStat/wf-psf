@@ -8,7 +8,6 @@ A module to make Zernike maps.
 
 import numpy as np
 import zernike as zk
-import tensorflow as tf
 import logging
 
 logger = logging.getLogger(__name__)

@@ -8,18 +8,16 @@ to manage the parameters of the config files
 """
 
 import numpy as np
+import logging
+import os
+import re
+import glob
 from wf_psf.utils.read_config import read_conf
 from wf_psf.data.training_preprocessing import DataHandler
 from wf_psf.training import train
 from wf_psf.psf_models import psf_models
 from wf_psf.metrics.metrics_interface import evaluate_model
 from wf_psf.plotting.plots_interface import plot_metrics
-import logging
-from wf_psf.utils.io import FileIOHandler
-import os
-import re
-import glob
-
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +67,7 @@ def set_run_config(config_name):
     try:
         config_id = [id for id in CONFIG_CLASS.keys() if re.search(id, config_name)][0]
         config_class = CONFIG_CLASS[config_id]
-    except KeyError as e:
+    except KeyError:
         logger.exception("Invalid config name. Check your config settings.")
         exit()
 
@@ -588,7 +586,7 @@ class PlottingConfigHandler:
             ]
 
             return run_ids
-        except:
+        except FileNotFoundError:
             logger.exception("File not found.")
 
     def load_metrics_into_dict(self):

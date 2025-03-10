@@ -147,8 +147,8 @@ class CCDMissalignmentCalculator(object):
             z1 = self.scaled_data[1, 2, it]
             z2 = self.scaled_data[2, 2, it]
 
-            ux, uy, uz = u = [x1 - x0, y1 - y0, z1 - z0]
-            vx, vy, vz = v = [x2 - x0, y2 - y0, z2 - z0]
+            ux, uy, uz = x1 - x0, y1 - y0, z1 - z0
+            vx, vy, vz = x2 - x0, y2 - y0, z2 - z0
 
             normal = np.array(
                 [uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx]

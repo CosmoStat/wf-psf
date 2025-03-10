@@ -9,11 +9,9 @@ to manage the parameters of the psf model.
 
 import numpy as np
 import tensorflow as tf
-from tensorflow.python.keras.engine import data_adapter
 from wf_psf.sims.psf_simulator import PSFSimulator
 from wf_psf.utils.utils import zernike_generator
 import glob
-from sys import exit
 import logging
 
 logger = logging.getLogger(__name__)

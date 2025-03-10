@@ -1,7 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib as mpl
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import logging
 
@@ -685,7 +683,7 @@ class SpatialVaryingPSF(object):
         self.polynomial_coeffs *= scale_factor
 
         # Scale the Z coefficients
-        scaled_Z_estimate = ZernikeHelper.generate_zernike_polynomials(
+        ZernikeHelper.generate_zernike_polynomials(
             xv, yv, self.x_lims, self.y_lims, self.d_max, self.polynomial_coeffs
         )
 

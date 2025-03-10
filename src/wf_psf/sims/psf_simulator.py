@@ -3,21 +3,18 @@ import scipy.signal as spsig
 import scipy.interpolate as sinterp
 import PIL
 import matplotlib.pyplot as plt
-import matplotlib as mpl
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from wf_psf.utils.utils import zernike_generator
 
 try:
     from cv2 import resize, INTER_AREA
-except:
+except ImportError:
     print("Problem importing opencv..")
     try:
         from skimage.transform import downscale_local_mean
-
         print("Falling back to skimage.")
         print("Only integer downsampling allowed with this method.")
-    except:
+    except ImportError:
         print("Problem importing skimage..")
 
 
@@ -218,7 +215,8 @@ class PSFSimulator(object):
                 dsize=(int(output_dim), int(output_dim)),
                 interpolation=INTER_AREA,
             )
-        except:
+        except NameError:
+            print("INTER_AREA constant is not defined. Falling back to default.")
             f_x = int(psf.shape[0] / output_dim)
             f_y = int(psf.shape[1] / output_dim)
             psf = downscale_local_mean(
@@ -524,7 +522,7 @@ class PSFSimulator(object):
         if self.z_coeffs is not None:
             fig = plt.figure(figsize=(12, 6))
             ax1 = fig.add_subplot(111)
-            im1 = ax1.bar(np.arange(len(self.z_coeffs)), np.array(self.z_coeffs))
+            ax1.bar(np.arange(len(self.z_coeffs)), np.array(self.z_coeffs))
             ax1.set_xlabel("Zernike coefficients")
             ax1.set_ylabel("Magnitude")
 

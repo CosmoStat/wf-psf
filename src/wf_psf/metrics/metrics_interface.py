@@ -7,19 +7,12 @@ to manage metrics evaluation of the trained psf model.
 
 """
 
-import sys
 import numpy as np
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 import time
-import tensorflow as tf
-import tensorflow_addons as tfa
-import wf_psf.data.training_preprocessing as training_preprocessing
-from wf_psf.data.training_preprocessing import DataHandler
 from wf_psf.psf_models import psf_models
 from wf_psf.metrics import metrics as wf_metrics
-import os
 import logging
-import wf_psf.utils.io as io
 
 logger = logging.getLogger(__name__)
 
@@ -357,7 +350,7 @@ def evaluate_model(
         ## Load datasets
         # -----------------------------------------------------
         # Get training data
-        logger.info(f"Fetching and preprocessing training and test data...")
+        logger.info("Fetching and preprocessing training and test data...")
 
         # Initialize metrics_handler
         metrics_handler = MetricsParamsHandler(metrics_params, trained_model_params)
@@ -370,8 +363,8 @@ def evaluate_model(
         try:
             logger.info("Loading PSF model weights from {}".format(weights_path))
             psf_model.load_weights(weights_path)
-        except:
-            logger.exception("An error occurred with the weights_path file.")
+        except Exception as e: 
+            logger.exception("An error occurred with the weights_path file: %s", e)
             exit()
 
         # Define datasets

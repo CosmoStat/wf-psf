@@ -10,7 +10,6 @@ read configuration files.
 import yaml
 from yaml.scanner import ScannerError
 from yaml.parser import ParserError
-import pprint
 from types import SimpleNamespace
 import logging
 
@@ -34,9 +33,9 @@ class RecursiveNamespace(SimpleNamespace):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         for key, val in kwargs.items():
-            if type(val) == dict:
+            if isinstance(val,dict):
                 setattr(self, key, RecursiveNamespace(**val))
-            elif type(val) == list:
+            elif isinstance(val,list):
                 setattr(self, key, list(map(self.map_entry, val)))
 
     @staticmethod
@@ -113,7 +112,7 @@ def read_conf(conf_file):
             )
             exit()
 
-        if my_conf == None:
+        if my_conf is None:
             raise TypeError(
                 "Config file {} is empty...Stopping Program.".format(conf_file)
             )

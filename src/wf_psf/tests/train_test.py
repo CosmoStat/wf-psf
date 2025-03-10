@@ -7,10 +7,8 @@ This module contains unit tests for the wf_psf.train module.
 """
 
 import pytest
-from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.training import train
 from wf_psf.psf_models import psf_models
-import tensorflow as tf
 import numpy as np
 import os
 from re import search

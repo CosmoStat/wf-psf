@@ -7,17 +7,13 @@ to manage the parameters of the psf parametric model.
 
 """
 
-import numpy as np
 import tensorflow as tf
-from tensorflow.python.keras.engine import data_adapter
 from wf_psf.psf_models.psf_models import register_psfclass
 from wf_psf.psf_models.tf_layers import (
     TFPolynomialZernikeField,
     TFZernikeOPD,
     TFBatchPolychromaticPSF,
     TFBatchMonochromaticPSF,
-    TFNonParametricPolynomialVariationsOPD,
-    TFPhysicalLayer,
 )
 
 

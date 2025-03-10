@@ -13,9 +13,7 @@ from wf_psf.sims.spatial_varying_psf import (
     CoordinateHelper,
     ZernikeHelper,
     PolynomialMatrixHelper,
-    SpatialVaryingPSF,
 )
-import os
 import logging
 
 
@@ -299,6 +297,8 @@ def test_basic_functionality_initialize_normalized_zernike_matrix():
             [-0.66080324, -0.13430377, -1.87243067, -0.19825475],
         ]
     )
+    # Check if the arrays are almost equal, considering floating-point precision
+    np.testing.assert_array_almost_equal(Z, expected_initialize_normalized_Z, decimal=6)
 
 
 def test_generate_zernike_polynomials():

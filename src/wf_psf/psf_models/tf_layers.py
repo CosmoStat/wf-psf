@@ -1,4 +1,3 @@
-import numpy as np
 import tensorflow as tf
 import tensorflow_addons as tfa
 from wf_psf.psf_models.tf_modules import TFMonochromaticPSF

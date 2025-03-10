@@ -9,7 +9,6 @@ to manage the parameters of the psf semi-parametric model.
 
 import numpy as np
 import tensorflow as tf
-from tensorflow.python.keras.engine import data_adapter
 from wf_psf.psf_models import psf_models as psfm
 from wf_psf.psf_models import tf_layers as tfl
 from wf_psf.utils.utils import decompose_tf_obscured_opd_basis
