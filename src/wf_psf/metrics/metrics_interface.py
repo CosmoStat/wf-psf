@@ -9,6 +9,7 @@ to manage metrics evaluation of the trained psf model.
 
 import sys
 import numpy as np
+from typing import Dict, Any, Optional
 import time
 import tensorflow as tf
 import tensorflow_addons as tfa
@@ -26,7 +27,7 @@ logger = logging.getLogger(__name__)
 class MetricsParamsHandler:
     """Metrics Parameters Handler.
 
-    A class to handle training parameters accessed:
+    A class to handle metrics-related parameters.
 
     Parameters
     ----------
@@ -42,27 +43,50 @@ class MetricsParamsHandler:
         self.metrics_params = metrics_params
         self.trained_model = trained_model
 
-    def evaluate_metrics_polychromatic_lowres(self, psf_model, simPSF, data, dataset):
-        """Evaluate Polychromatic PSF Low-Res Metrics.
+    def evaluate_metrics_polychromatic_lowres(self, 
+                                              psf_model: Any, 
+                                              simPSF: Any, 
+                                              data: Any, 
+                                              dataset: Dict[str, Any]
+                                             ) -> Dict[str, float]:
+        """Evaluate RMSE metrics for low-resolution polychromatic PSF.
 
-        A function to evaluate metrics for Low-Res Polychromatic PSF.
+        This method computes Root Mean Square Error (RMSE) metrics for a 
+        low-resolution polychromatic Point Spread Function (PSF) model.
 
-        Inputs
-        ------
-        psf_model: object
-            PSF model class instance of the psf model selected for metrics evaluation.
-        simPSF: object
-            PSFSimulator instance
-        test_dataset: dict
-            Test dataset dictionary
-        data:
-        dataset:
+        Parameters
+        ----------
+        psf_model : object
+            An instance of the PSF model selected for metrics evaluation.
+        simPSF : object
+            An instance of the PSFSimulator.
+        data : object
+            A DataConfigHandler object containing training and test datasets.
+        dataset : dict
+            Dictionary containing dataset details, including:
+            - ``SEDs`` (Spectral Energy Distributions)
+            - ``positions`` (Star positions)
+            - ``C_poly``  Tensor or None, optional
+                The Zernike coefficient matrix used in generating simulations of the PSF model. This
+                matrix defines the Zernike polynomials up to a given order used to simulate the PSF
+                field. It may be present in some datasets or only required for some classes. 
+                If not present or required, the model will proceed without it.
+
 
         Returns
         -------
-        poly_metric: dict
-            Dictionary containing RMSE, Relative RMSE values, and
-            corresponding Standard Deviation values for Low-Res Polychromatic PSF metrics.
+        dict
+            A dictionary containing the RMSE, relative RMSE, and their 
+            corresponding standard deviation values.
+
+            - ``rmse`` : float
+                Root Mean Square Error (RMSE).
+            - ``rel_rmse`` : float
+                Relative RMSE.
+            - ``std_rmse`` : float
+                Standard deviation of RMSE.
+            - ``std_rel_rmse`` : float
+                Standard deviation of relative RMSE.
 
         """
         logger.info("Computing polychromatic metrics at low resolution.")
@@ -73,7 +97,7 @@ class MetricsParamsHandler:
                 self.metrics_params.ground_truth_model.model_params,
                 self.metrics_params.metrics_hparams,
                 data,
-                dataset,
+                dataset.get("C_poly", None),  # Extract C_poly or default to None
             ),
             simPSF_np=simPSF,
             tf_pos=dataset["positions"],
@@ -84,36 +108,61 @@ class MetricsParamsHandler:
             dataset_dict=dataset,
         )
 
-        poly_metric = {
+        return {
             "rmse": rmse,
             "rel_rmse": rel_rmse,
             "std_rmse": std_rmse,
             "std_rel_rmse": std_rel_rmse,
         }
-        return poly_metric
 
-    def evaluate_metrics_mono_rmse(self, psf_model, simPSF, data, dataset):
-        """Evaluate Monochromatic PSF RMSE Metrics.
 
-        A function to evaluate metrics for Monochromatic PSF.
+    def evaluate_metrics_mono_rmse(self, 
+                                   psf_model: Any, 
+                                   simPSF: Any, 
+                                   data: Any, 
+                                   dataset: Dict[str, Any]
+                                  ) -> Dict[str, float]:
+        """Evaluate RMSE metrics for Monochromatic PSF.
 
-        Inputs
-        ------
-        psf_model: object
-            PSF model class instance of the psf model selected for metrics evaluation.
-        simPSF: object
-            PSFSimulator instance
-        test_dataset: dict
-            Test dataset dictionary
+        This method computes Root Mean Square Error (RMSE) metrics for a 
+        monochromatic Point Spread Function (PSF) model across a range of 
+        wavelengths.
+
+        Parameters
+        ----------
+        psf_model : object
+            An instance of the PSF model selected for metrics evaluation.
+        simPSF : object
+            An instance of the PSFSimulator.
+        data : object
+            A DataConfigHandler object containing training and test datasets.
+        dataset : dict
+            Dictionary containing dataset details, including:
+            - ``positions`` (Star positions)
+            - ``C_poly``  (Tensor or None, optional)
+                The Zernike coefficient matrix used in generating simulations of the PSF model. This
+                matrix defines the Zernike polynomials up to a given order used to simulate the PSF
+                field. It may be present in some datasets or only required for some classes. 
+                If not present or required, the model will proceed without it.
 
         Returns
         -------
-        mono_metric: dict
-            Dictionary containing RMSE, Relative RMSE values, and
-            corresponding Standard Deviation values for Monochromatic PSF metrics.
+        dict
+            A dictionary containing RMSE, relative RMSE, and their corresponding 
+            standard deviation values computed over a wavelength range.
 
+            - ``rmse_lda`` : float
+                Root Mean Square Error (RMSE) over wavelengths.
+            - ``rel_rmse_lda`` : float
+                Relative RMSE over wavelengths.
+            - ``std_rmse_lda`` : float
+                Standard deviation of RMSE over wavelengths.
+            - ``std_rel_rmse_lda`` : float
+                Standard deviation of relative RMSE over wavelengths.
         """
         logger.info("Computing monochromatic metrics.")
+
+        # Define the wavelength range (550nm to 900nm with 10nm intervals)
         lambda_list = np.arange(0.55, 0.9, 0.01)  # 10nm separation
 
         (
@@ -127,40 +176,63 @@ class MetricsParamsHandler:
                 self.metrics_params.ground_truth_model.model_params,
                 self.metrics_params.metrics_hparams,
                 data,
-                dataset,
+                dataset.get("C_poly", None),
             ),
             simPSF_np=simPSF,
             tf_pos=dataset["positions"],
             lambda_list=lambda_list,
         )
 
-        mono_metric = {
+        return {
             "rmse_lda": rmse_lda,
             "rel_rmse_lda": rel_rmse_lda,
             "std_rmse_lda": std_rmse_lda,
             "std_rel_rmse_lda": std_rel_rmse_lda,
         }
-        return mono_metric
+   
 
-    def evaluate_metrics_opd(self, psf_model, simPSF, data, dataset):
-        """Evaluate OPD Metrics.
+    def evaluate_metrics_opd(self, 
+                             psf_model: Any, 
+                             simPSF: Any, 
+                             data: Any, 
+                             dataset: Dict[str, Any]
+                            ) -> Dict[str, float]:
+        """Evaluate Optical Path Difference (OPD) metrics.
+                
+        This method computes Root Mean Square Error (RMSE) and relative RMSE 
+        for Optical Path Differences (OPD), along with their standard deviations.
 
-        A function to evaluate metrics for Optical Path Differences.
-
-        Inputs
-        ------
+        Parameters
+        ----------
         psf_model: object
-            PSF model class instance of the psf model selected for metrics evaluation.
+            An instance of the PSF model selected for metrics evaluation.
         simPSF: object
-            PSFSimulator instance
-        test_dataset: dict
-            Test dataset dictionary
+            An instance of the PSFSimulator.
+        data : object
+            A DataConfigHandler object containing training and test datasets.
+        dataset : dict
+            Dictionary containing dataset details, including:
+            - ``positions`` (Star positions)
+            - ``C_poly`` (Tensor or None, optional)
+                The Zernike coefficient matrix used in generating simulations of the PSF model. This
+                matrix defines the Zernike polynomials up to a given order used to simulate the PSF
+                field. It may be present in some datasets or only required for some classes. 
+                If not present or required, the model will proceed without it.
 
         Returns
         -------
-        opd_metric: dict
-            Dictionary containing RMSE, Relative RMSE values, and
-            corresponding Standard Deviation values for OPD metrics.
+        dict
+            A dictionary containing RMSE, relative RMSE, and their corresponding 
+            standard deviation values for OPD metrics.
+
+            - ``rmse_opd`` : float
+                Root Mean Square Error (RMSE) for OPD.
+            - ``rel_rmse_opd`` : float
+                Relative RMSE for OPD.
+            - ``rmse_std_opd`` : float
+                Standard deviation of RMSE for OPD.
+            - ``rel_rmse_std_opd`` : float
+                Standard deviation of relative RMSE for OPD.
 
         """
         logger.info("Computing OPD metrics.")
@@ -176,35 +248,51 @@ class MetricsParamsHandler:
                 self.metrics_params.ground_truth_model.model_params,
                 self.metrics_params.metrics_hparams,
                 data,
-                dataset,
+                dataset.get("C_poly", None),  # Extract C_poly if available
             ),
             pos=dataset["positions"],
             batch_size=self.metrics_params.metrics_hparams.batch_size,
         )
 
-        opd_metric = {
+        return {
             "rmse_opd": rmse_opd,
             "rel_rmse_opd": rel_rmse_opd,
             "rmse_std_opd": rmse_std_opd,
             "rel_rmse_std_opd": rel_rmse_std_opd,
         }
-        return opd_metric
 
-    def evaluate_metrics_shape(self, psf_model, simPSF, data, dataset):
+
+    def evaluate_metrics_shape(self, 
+                               psf_model: Any, 
+                               simPSF: Any, 
+                               data: Any, 
+                               dataset: Dict[str, Any]
+                              ) -> Dict[str, float]:
         """Evaluate PSF Shape Metrics.
 
-        A function to evaluate metrics for PSF shape.
+        Computes shape-related metrics for the PSF model, including RMSE, 
+        relative RMSE, and their standard deviations.
 
-        Inputs
-        ------
-        psf_model: object
-            PSF model class instance of the psf model selected for metrics evaluation.
-        simPSF: object
-            PSFSimulator instance
-        dataset: dict
-            Test dataset dictionary
+        Parameters
+        ----------
+        psf_model : object
+            Instance of the PSF model selected for evaluation.
+        simPSF : object
+            Instance of the PSFSimulator.
+        data : object
+            A DataConfigHandler object containing training and test datasets.
+        dataset : dict
+            Dictionary containing dataset details, including:
+            - ``SEDs`` (Spectral Energy Distributions)
+            - ``positions`` (Star positions)
+            - ``C_poly`` (Tensor or None, optional)
+                The Zernike coefficient matrix used in generating simulations of the PSF model. This
+                matrix defines the Zernike polynomials up to a given order used to simulate the PSF
+                field. It may be present in some datasets or only required for some classes. 
+                If not present or required, the model will proceed without it.
 
         Returns
+        -------
         shape_results: dict
             Dictionary containing RMSE, Relative RMSE values, and
             corresponding Standard Deviation values for PSF Shape metrics.
@@ -218,7 +306,7 @@ class MetricsParamsHandler:
                 self.metrics_params.ground_truth_model.model_params,
                 self.metrics_params.metrics_hparams,
                 data,
-                dataset,
+                dataset.get("C_poly", None),
             ),
             simPSF_np=simPSF,
             SEDs=dataset["SEDs"],
