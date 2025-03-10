@@ -59,7 +59,7 @@ class SemiParamFieldFactory(psfm.PSFModelBaseFactory):
         data : object or None, optional
             Data used for training the PSF model.
         coeff_mat : object or None, optional
-            Coefficient matrix defining the parametric PSF field model.
+            Zernike coefficient matrix for the parametric PSF field model.
 
         Returns
         -------
@@ -81,7 +81,7 @@ class TFSemiParametricField(tf.keras.Model):
     training_params: Recursive Namespace
         Recursive Namespace object containing training hyperparameters for this PSF model class
     coeff_mat: Tensor or None
-        Initialization of the coefficient matrix defining the parametric psf field model
+        Zernike coefficient matrix for the parametric PSF field model
 
     """
 
