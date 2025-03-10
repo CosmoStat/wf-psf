@@ -30,17 +30,17 @@ class GroundTruthSemiParamFieldFactory(psfm.PSFModelBaseFactory):
 
     Methods
     -------
-    get_model_instance(model_params, training_params, data=None, coeff_mat=None)
+    get_model_instance(model_params, training_params, data, dataset, coeff_mat=None)
         Instantiates an instance of the TensorFlow SemiParametric `poly` Field class with the provided parameters.
     """
 
     ids = ("ground_truth_poly",)
 
     def get_model_instance(
-        self, model_params, training_params, data, dataset, coeff_mat=None
+        self, model_params, training_params, data, coeff_mat=None
     ):
         return TFGroundTruthSemiParametricField(
-            model_params, training_params, dataset, coeff_mat
+            model_params, training_params, coeff_mat
         )
 
 
@@ -58,19 +58,61 @@ class GroundTruthPhysicalFieldFactory(psfm.PSFModelBaseFactory):
 
     Methods
     -------
-    get_model_instance(model_params, training_params, data=None, coeff_mat=None)
+    get_model_instance(model_params, training_params, data, dataset, coeff_mat=None)
         Instantiates an instance of the TensorFlow Physical Polychromatic Field class with the provided parameters.
     """
 
     ids = ("ground_truth_physical_poly",)
 
     def get_model_instance(
-        self, model_params, training_params, data, dataset, coeff_mat=None
+        self, model_params, training_params, data, coeff_mat
     ):
         return TFGroundTruthPhysicalField(
             model_params, training_params, data, coeff_mat
         )
 
+class TFGroundTruthSemiParametricField(TFSemiParametricField):
+    """A TensorFlow-based Ground Truth Semi-Parametric PSF Field Model.
+
+    This class represents a ground truth semi-parametric PSF (Point Spread Function)
+    field model implemented using TensorFlow. The model generates a ground truth PSF 
+    field based on the provided Zernike coefficient matrix. If the coefficient matrix 
+    (`coeff_mat`) is provided, it will be used to produce the ground truth PSF model, 
+    which serves as the reference for the previously simulated PSF fields. If no 
+    coefficient matrix is provided, the model proceeds without it.
+
+
+    Parameters
+    ----------
+    model_params : RecursiveNamespace
+        A RecursiveNamespace object containing parameters for configuring the PSF model.
+    training_params : RecursiveNamespace
+        A RecursiveNamespace object containing training hyperparameters for the PSF model.
+    coeff_mat : Tensor or None
+        The Zernike coefficient matrix used in generating simulations of the PSF model. This
+        matrix defines the Zernike polynomials up to a given order used to simulate the PSF 
+        field. It is only used by this model if present to produce the ground truth PSF model. 
+        If not provided, the model will proceed without it.
+
+    Attributes
+    ----------
+    GT_tf_semiparam_field : TFSemiParametricField
+        An instance of the TensorFlow-based Semi-Parametric PSF Field Model used for
+        generating ground truth PSF fields.
+
+    Methods
+    -------
+    __init__(model_params, training_params, data, coeff_mat)
+        Initializes the TFGroundTruthSemiParametricField instance.
+    """
+
+    def __init__(self, model_params, training_params, coeff_mat):
+        super().__init__(model_params, training_params, coeff_mat)
+
+        # For the Ground truth model
+        #self.tf_poly_Z_field.assign_coeff_matrix(dataset["C_poly"])
+        self.set_zero_nonparam()
+        
 
 def get_ground_truth_zernike(data):
     """Get Ground Truth Zernikes from the provided dataset.
@@ -103,48 +145,7 @@ def get_ground_truth_zernike(data):
         axis=0,
     )
     return tf.convert_to_tensor(zernike_ground_truth, dtype=tf.float32)
-
-
-class TFGroundTruthSemiParametricField(TFSemiParametricField):
-    """A TensorFlow-based Ground Truth Semi-Parametric PSF Field Model.
-
-    This class represents a ground truth semi-parametric PSF (Point Spread Function)
-    field model implemented using TensorFlow. The model is designed to generate
-    ground truth PSF fields based on provided parameters and coefficient matrices.
-
-    Parameters
-    ----------
-    model_params : RecursiveNamespace
-        A RecursiveNamespace object containing parameters for configuring the PSF model.
-    training_params : RecursiveNamespace
-        A RecursiveNamespace object containing training hyperparameters for the PSF model.
-    dataset : dict or None
-        A dictionary containing dataset [test, training] required for model initialization, including the
-        coefficient matrix ('C_poly') for the semi-parametric PSF field.
-    coeff_mat : Tensor or None, optional
-        The coefficient matrix defining the semi-parametric PSF field model. This matrix
-        specifies the coefficients for the Zernike polynomials used in the PSF field.
-        If None, the model will be initialized without a coefficient matrix.
-
-    Attributes
-    ----------
-    GT_tf_semiparam_field : TFSemiParametricField
-        An instance of the TensorFlow-based Semi-Parametric PSF Field Model used for
-        generating ground truth PSF fields.
-
-    Methods
-    -------
-    __init__(model_params, training_params, data, coeff_mat)
-        Initializes the TFGroundTruthSemiParametricField instance.
-    """
-
-    def __init__(self, model_params, training_params, dataset, coeff_mat=None):
-        super().__init__(model_params, training_params, coeff_mat)
-
-        # For the Ground truth model
-        self.tf_poly_Z_field.assign_coeff_matrix(dataset["C_poly"])
-        self.set_zero_nonparam()
-
+    
 
 class TFGroundTruthPhysicalField(tf.keras.Model):
     """Ground Truth PSF field forward model with a physical layer.
