@@ -11,10 +11,8 @@ import pytest
 from wf_psf.utils import configs_handler
 from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.utils.io import FileIOHandler
-from pytest_mock import mocker
 from wf_psf.utils.configs_handler import TrainingConfigHandler, DataConfigHandler
 from wf_psf.data.training_preprocessing import DataHandler
-from wf_psf.training.train import train
 import os
 
 
@@ -42,7 +40,7 @@ def mock_data_read_conf(mocker):
 
 
 @pytest.fixture
-def mock_training_conf():
+def mock_training_conf(mocker):
     return RecursiveNamespace(
         training=RecursiveNamespace(
             id_name="_test_",

@@ -1,5 +1,4 @@
 import pytest
-import os
 import numpy as np
 import tensorflow as tf
 from wf_psf.utils.read_config import RecursiveNamespace
@@ -8,7 +7,6 @@ from wf_psf.data.training_preprocessing import (
     get_obs_positions,
     get_zernike_prior,
 )
-from wf_psf.psf_models import psf_models
 
 
 def test_initialize_load_dataset(data_params, simPSF):

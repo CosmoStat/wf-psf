@@ -180,7 +180,7 @@ def physical_layer_instance(mocker, mock_model_params, mock_data, zks_prior):
     )
 
     # Create a mock for the TFPhysicalLayer class
-    mock_physical_layer_class = mocker.patch(
+    mocker.patch(
         "wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalLayer"
     )
 

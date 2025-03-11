@@ -7,16 +7,12 @@ This module contains unit tests for the wf_psf.psf_models psf_models module.
 
 """
 
-import pytest
 from wf_psf.psf_models import (
     psf_models,
     psf_model_semiparametric,
     psf_model_physical_polychromatic,
 )
-from wf_psf.utils.io import FileIOHandler
 import tensorflow as tf
-import numpy as np
-import os
 
 
 def test_get_psf_model_weights_filepath():

@@ -4,10 +4,8 @@ This module contains unit tests for the wf_psf.utils utils module.
 
 :Author: Tobias Liaudat <tobias.liaudat@cea.fr>
 
-
 """
 
-import pytest
 import tensorflow as tf
 import numpy as np
 from wf_psf.utils.utils import (
