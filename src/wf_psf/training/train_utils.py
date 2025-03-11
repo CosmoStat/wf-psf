@@ -1,5 +1,17 @@
+"""
+Training utilities for the PSF model.
+
+This module contains helper functions and utilities related to the training 
+process for the PSF model. These functions help with managing training cycles, 
+callbacks, and related operations.
+
+Author: Tobias Liaudat <tobias.liaudat@cea.fr>
+"""
+
+
 import numpy as np
 import tensorflow as tf
+from typing import Optional, Callable
 from wf_psf.psf_models.psf_models import build_PSF_model
 from wf_psf.utils.utils import NoiseEstimator
 import logging
@@ -8,22 +20,55 @@ logger = logging.getLogger(__name__)
 
 
 class L1ParamScheduler(tf.keras.callbacks.Callback):
-    """L1 rate scheduler which sets the L1 rate according to schedule.
+    """L1 rate scheduler that adjusts the L1 rate during training according to a specified schedule.
+
+    This callback modifies the L1 regularization rate at each epoch based on the given scheduling function. 
+    The function takes the epoch index and the current L1 rate as inputs, and it outputs the updated L1 rate.
 
     Parameters
     ----------
-      l1_schedule_rule: function
-        a function that takes an epoch index
-        (integer, indexed from 0) and current l1_rate
-          as inputs and returns a new l1_rate as output (float).
+    l1_schedule_rule: function
+        A function that defines how to update the L1 rate. The function should take two arguments:
+        - `epoch` (int): The current epoch index, starting from 0.
+        - `current_l1_rate` (float): The L1 rate at the current epoch.
+        
+        The function should return a new L1 rate (float) to be applied at the next epoch.
+
+    Example
+    -------
+    def schedule_fn(epoch, current_l1_rate):
+        # Example schedule function
+        return current_l1_rate * 0.95  # Decaying the rate by 5% every epoch
+
+    l1_scheduler = L1ParamScheduler(l1_schedule_rule=schedule_fn)
     """
 
     def __init__(self, l1_schedule_rule):
-        super(L1ParamScheduler, self).__init__()
-        breakpoint()
+        """
+        Initialize the L1ParamScheduler.
+
+        Parameters
+        ----------
+        l1_schedule_rule : function
+            A function that defines how to update the L1 rate at each epoch. See class docstring for details.
+        """
+        super().__init__()
         self.l1_schedule_rule = l1_schedule_rule
 
     def on_epoch_begin(self, epoch, logs=None):
+        """
+        Execute callback function at the beginning of each epoch to adjust the L1 rate.
+
+        This function gets the current L1 rate from the model's optimizer, computes the new scheduled
+        L1 rate using the `l1_schedule_rule` function, and sets it back to the model's optimizer.
+
+        Parameters
+        ----------
+        epoch: int
+            The current epoch index, starting from 0.
+        logs: dict, optional
+            A dictionary containing logs for the current epoch (default is None).
+        """
         # Get the current learning rate from model's optimizer.
         l1_rate = float(tf.keras.backend.get_value(self.model.l1_rate))
         # Call schedule function to get the scheduled learning rate.
@@ -33,13 +78,282 @@ class L1ParamScheduler(tf.keras.callbacks.Callback):
         # tf.keras.backend.set_value(self.model.optimizer.lr, scheduled_lr)
 
 
-def l1_schedule_rule(epoch_n, l1_rate):
+def l1_schedule_rule(epoch_n: int, l1_rate: float) -> float:
+    """
+    Schedules the L1 rate based on the epoch number.
+
+    If the current epoch is a multiple of 10 (except for the first epoch), 
+    the L1 rate is halved. Otherwise, the L1 rate remains unchanged.
+
+    Parameters
+    ----------
+    epoch_n: int
+        The current epoch number, where the epoch index starts from 0.
+    l1_rate: float
+        The current L1 regularization rate.
+
+    Returns
+    -------
+    float
+        The updated L1 rate for the given epoch.
+        
+    Example
+    -------
+    For `epoch_n = 10` and `l1_rate = 0.01`, the function returns `0.005`.
+    """
     if epoch_n != 0 and epoch_n % 10 == 0:
         scheduled_l1_rate = l1_rate / 2
-        logger.info("\nEpoch %05d: L1 rate is %0.4e." % (epoch_n, scheduled_l1_rate))
+        logger.info(f"Epoch {epoch_n:05d}: L1 rate is {scheduled_l1_rate:0.4e}.")
         return scheduled_l1_rate
+    return l1_rate
+
+def configure_optimizer_and_loss(
+    learning_rate: float,
+    optimizer: Optional[Callable] = None,
+    loss: Optional[Callable] = None,
+    metrics: Optional[list[Callable]] = None,
+    is_parametric: bool = True
+) -> tuple[Callable, Callable, list[Callable]]:
+    """
+    Configure and return the optimizer, loss function, and metrics for model training.
+
+    This function configures the optimizer, loss function, and metrics for either the parametric 
+    or non-parametric model components. If no optimizer, loss, or metrics are provided, 
+    default values are used.
+
+    Parameters
+    ----------
+    learning_rate: float
+        The learning rate to be used by the optimizer.
+    
+    optimizer: callable, optional
+        A function or object used to initialize the optimizer (e.g., `tf.keras.optimizers.Adam`).
+        If None, the default Adam optimizer with the specified learning rate is used.
+    
+    loss: callable, optional
+        The loss function to be used during training (e.g., `tf.keras.losses.MeanSquaredError`).
+        If None, the default Mean Squared Error loss is used.
+    
+    metrics: list of callable, optional
+        A list of metric functions to evaluate during training (e.g., `tf.keras.metrics.MeanSquaredError`).
+        If None, the default metric `MeanSquaredError` is used.
+
+    is_parametric: bool, optional
+        Flag to indicate whether the configuration is for the parametric part of the model.
+        Default is True, indicating that this configuration is for the parametric component.
+
+    Returns
+    -------
+    optimizer: callable
+        The optimizer function or object configured for training.
+    
+    loss: callable
+        The loss function configured for training.
+    
+    metrics: list of callable
+        The list of metrics to be used for evaluating the model.
+    """
+    if loss is None:
+        loss = tf.keras.losses.MeanSquaredError()
+    
+    if optimizer is None:
+        optimizer = tf.keras.optimizers.Adam(
+            learning_rate=learning_rate,
+            beta_1=0.9,
+            beta_2=0.999,
+            epsilon=1e-07,
+            amsgrad=False,
+        )
+
+    if metrics is None:
+        metrics = [tf.keras.metrics.MeanSquaredError()]
+
+    return optimizer, loss, metrics
+
+def calculate_sample_weights(outputs: np.ndarray, use_sample_weights: bool, strategy_opt: int = 1) -> np.ndarray or None:
+    """
+    Calculate sample weights based on image noise standard deviation and a selected weight strategy.
+
+    Parameters
+    ----------
+    outputs: np.ndarray
+        A 3D array of shape (batch_size, height, width) representing images, where the first dimension is the batch size 
+        and the next two dimensions are the image height and width.
+    use_sample_weights: bool
+        Flag indicating whether to compute sample weights. If True, sample weights will be computed based on the image noise.
+    strategy_opt: int, optional
+        The strategy for sample weight computation. Default is 1. The options are:
+        - 0: Normalize the weights to a specific range, with the mean adjusted to 1.
+        - 1: Use inverse variance for weights, scaled by the median variance.
+
+    Returns
+    -------
+    np.ndarray or None
+        An array of sample weights, or None if `use_sample_weights` is False.
+
+    Notes
+    -----
+    The function computes sample weights by estimating the standard deviation of noise in each image, 
+    calculating variances, and scaling the weights accordingly. The strategy for scaling the 
+    weights can be customized using the `strategy_opt` parameter.
+
+    Strategy options:
+    - 0: Uses a more complex weight scaling where the weights are normalized to a range between [min_w, max_w],
+      and the mean of the weights is adjusted to 1.
+    - 1: Uses inverse variance for the weights, with scaling by the median.
+    """
+    if use_sample_weights:
+        img_dim = (outputs.shape[1], outputs.shape[2])
+        win_rad = np.ceil(outputs.shape[1] / 3.33)
+        std_est = NoiseEstimator(img_dim=img_dim, win_rad=win_rad)
+        
+        # Estimate noise standard deviation
+        imgs_std = np.array([std_est.estimate_noise(_im) for _im in outputs])
+        variances = imgs_std ** 2
+
+        # Default to strategy 1
+        if strategy_opt == 0:
+            # Parameters for strategy 0
+            max_w, min_w = 2.0, 0.1
+            epsilon = np.median(variances) * 0.1  # To avoid outliers
+            w = 1 / (variances + epsilon)
+            scaled_w = (w - np.min(w)) / (np.max(w) - np.min(w))  # Normalize to [0, 1]
+            scaled_w = scaled_w * (max_w - min_w) + min_w  # Scale to [min_w, max_w]
+            scaled_w = scaled_w + (1 - np.mean(scaled_w))  # Adjust mean to 1
+            scaled_w[scaled_w < min_w] = min_w  # Clip at min_w
+            sample_weight = scaled_w
+
+        elif strategy_opt == 1:
+            # Use inverse variance for weights and scale by median
+            sample_weight = 1 / variances
+            sample_weight /= np.median(sample_weight)
+
+        else:
+            raise ValueError(f"Unsupported strategy_opt: {strategy_opt}")
+
     else:
-        return l1_rate
+        sample_weight = None
+
+    return sample_weight
+
+def train_cycle_part(
+    tf_semiparam_field: tf.keras.Model,
+    inputs: tf.Tensor,
+    outputs: tf.Tensor,
+    batch_size: int,
+    epochs: int,
+    optimizer: tf.keras.optimizers.Optimizer,
+    loss: Callable,
+    metrics: list[Callable],
+    validation_data: Optional[tuple[tf.Tensor, tf.Tensor]] = None,
+    callbacks: Optional[list[Callable]] = None,
+    sample_weight: Optional[tf.Tensor] = None,
+    verbose: int = 1,
+    first_run: bool = False,
+    cycle_part: str = "parametric"
+) -> tf.keras.Model:
+    """
+    Train either the parametric or non-parametric parts of a model using the specified parameters.
+
+    Parameters
+    ----------
+    tf_semiparam_field: tf.keras.Model
+        The TensorFlow model to be trained (e.g., parametric or non-parametric).
+    inputs: tf.Tensor
+        Input data for training the model. Expected to be a tensor with the shape of the input batch.
+    outputs: tf.Tensor
+        Target output data for training the model. Expected to match the shape of `inputs`.
+    batch_size: int
+        The number of samples per batch during training.
+    epochs: int
+        The number of epochs to train the model.
+    optimizer: tf.keras.optimizers.Optimizer
+        The optimizer used for training the model (e.g., Adam, SGD).
+    loss: Callable
+        The loss function used for training the model. Typically a callable like `tf.keras.losses.MeanSquaredError()`.
+    metrics: list of Callable
+        List of metrics to monitor during training. Each element should be a callable metric (e.g., accuracy, precision).
+    validation_data: tuple of (tf.Tensor, tf.Tensor), optional
+        Tuple of input and output tensors to evaluate the model during training. Default is None.
+    callbacks: list of Callable, optional
+        List of callbacks to apply during training, such as `tf.keras.callbacks.EarlyStopping`. Default is None.
+    sample_weight: tf.Tensor, optional
+        Weights for the samples during training. Default is None.
+    verbose: int, optional
+        Verbosity mode (0, 1, or 2). Default is 1.
+    first_run: bool, optional
+        Flag indicating if this is the first run (affects how the model is built). Default is False.
+    cycle_part: str, optional
+        Specifies which part of the model to train ("parametric" or "non-parametric"). Default is "parametric".
+
+    Returns
+    -------
+    tf.keras.Model
+        The trained TensorFlow model after completing the specified number of epochs.
+    
+    Notes
+    -----
+    This function trains the model based on the provided `cycle_part`. If `cycle_part` is set to
+    "parametric", the function assumes the model is being trained in a parametric setting, while
+    "non-parametric" indicates the training of a non-parametric part. The model is built using the 
+    `build_PSF_model` function before fitting.
+
+    Examples
+    --------
+    model = train_cycle_part(
+        tf_semiparam_field=model, 
+        inputs=train_inputs, 
+        outputs=train_outputs, 
+        batch_size=32, 
+        epochs=10, 
+        optimizer=tf.keras.optimizers.Adam(), 
+        loss=tf.keras.losses.MeanSquaredError(), 
+        metrics=[tf.keras.metrics.MeanAbsoluteError()],
+        validation_data=(val_inputs, val_outputs),
+        callbacks=[tf.keras.callbacks.EarlyStopping(patience=3)],
+        sample_weight=None, 
+        verbose=1
+    )
+    """
+    logger.info(f"Starting {cycle_part} update..")
+
+    tf_semiparam_field = build_PSF_model(
+        tf_semiparam_field, optimizer=optimizer, loss=loss, metrics=metrics
+    )
+
+    return tf_semiparam_field.fit(
+        x=inputs,
+        y=outputs,
+        batch_size=batch_size,
+        epochs=epochs,
+        validation_data=validation_data,
+        callbacks=callbacks,
+        sample_weight=sample_weight,
+        verbose=verbose,
+    )
+
+def get_callbacks(callback1, callback2):
+    """
+    Helper function to combine two callback lists into one.
+    If both are None, returns None.
+    If one is None, returns the other.
+    Otherwise, combines both lists.
+    
+    Parameters
+    ----------
+    callback1: list of tf.keras.callbacks.Callback or None
+        The first callback list (e.g., parametric or non-parametric).
+    callback2: list of tf.keras.callbacks.Callback or None
+        The second callback list (e.g., general callback).
+
+    Returns
+    -------
+    list of tf.keras.callbacks.Callback or None
+        The combined list of callbacks or None.
+    """
+    if callback1 is None and callback2 is None:
+        return None
+    return (callback1 or []) + (callback2 or [])
 
 
 def general_train_cycle(
@@ -66,169 +380,96 @@ def general_train_cycle(
     use_sample_weights=False,
     verbose=1,
 ):
-    """Function to do a BCD iteration on the model.
+    """
+    Perform a Bi-Cycle Descent (BCD) training iteration on a semi-parametric model.
 
-    Define the model optimisation.
+    The function alternates between optimizing the parametric and non-parametric parts of the model
+    across specified training cycles. Each part of the model can be trained individually or together 
+    depending on the `cycle_def` parameter.
 
-    For the parametric part we are using:
-    ``learning_rate_param = 1e-2``, ``n_epochs_param = 20``.
-    For the non-parametric part we are using:
-    ``learning_rate_non_param = 1.0``, ``n_epochs_non_param = 100``.
+    For the parametric part:
+    - Default learning rate: `learning_rate_param = 1e-2`
+    - Default epochs: `n_epochs_param = 20`
+    
+    For the non-parametric part:
+    - Default learning rate: `learning_rate_non_param = 1.0`
+    - Default epochs: `n_epochs_non_param = 100`
 
     Parameters
     ----------
     tf_semiparam_field: tf.keras.Model
-        The model to be trained.
+        The semi-parametric PSF model to be trained.
     inputs: Tensor or list of tensors
-        Inputs used for Model.fit()
+        Input data for training (`Model.fit()`).
     outputs: Tensor
-        Outputs used for Model.fit()
+        Output data for training (`Model.fit()`).
     validation_data: Tuple
-        Validation test data used for Model.fit().
-        Tuple of input, output validation data
+        Validation data used for model evaluation during training.
+        (input_data, output_data).
     batch_size: int
-        Batch size for the training.
+        The batch size for the training.
     learning_rate_param: float
-        Learning rate for the parametric part
+        Learning rate for the parametric part of the PSF model.
     learning_rate_non_param: float
-        Learning rate for the non-parametric part
+        Learning rate for the non-parametric part of the PSF model.
     n_epochs_param: int
-        Number of epochs for the parametric part
+        Number of epochs to train the parametric part.
     n_epochs_non_param: int
-        Number of epochs for the non-parametric part
-    param_optim: Tensorflow optimizer
-        Optimizer for the parametric part.
-        Optional, default is the Adam optimizer
-    non_param_optim: Tensorflow optimizer
-        Optimizer for the non-parametric part.
-        Optional, default is the Adam optimizer
-    param_loss: Tensorflow loss
-        Loss function for the parametric part.
-        Optional, default is the MeanSquaredError() loss
-    non_param_loss: Tensorflow loss
-        Loss function for the non-parametric part.
-        Optional, default is the MeanSquaredError() loss
-    param_metrics: Tensorflow metrics
-        Metrics for the parametric part.
-        Optional, default is the MeanSquaredError() metric
-    non_param_metrics: Tensorflow metrics
-        Metrics for the non-parametric part.
-        Optional, default is the MeanSquaredError() metric
-    param_callback: Tensorflow callback
-        Callback for the parametric part only.
-        Optional, default is no callback
-    non_param_callback: Tensorflow callback
-        Callback for the non-parametric part only.
-        Optional, default is no callback
-    general_callback: Tensorflow callback
-        Callback shared for both the parametric and non-parametric parts.
-        Optional, default is no callback
-    first_run: bool
-        If True, it is the first iteration of the model training.
-        The Non-parametric part is not considered in the first parametric training.
-    cycle_def: string
-        Train cycle definition. It can be: `parametric`, `non-parametric`, `complete`.
-        Default is `complete`.
-    use_sample_weights: bool
-        If True, the sample weights are used for the training.
-        The sample weights are computed as the inverse noise estimated variance
-    verbose: int
-        Verbosity mode used for the training procedure.
-        If a log of the training is being saved, `verbose=2` is recommended.
+        Number of epochs to train the non-parametric part.
+    param_optim: tf.keras.optimizers.Optimizer, optional
+        Optimizer for the parametric part. Defaults to Adam if not provided.
+    non_param_optim: tf.keras.optimizers.Optimizer, optional
+        Optimizer for the non-parametric part. Defaults to Adam if not provided.
+    param_loss: tf.keras.losses.Loss, optional
+        Loss function for the parametric part. Defaults to the MeanSquaredError().
+    non_param_loss: tf.keras.losses.Loss, optional
+        Loss function for the non-parametric part. Defaults to MeanSquaredError().
+    param_metrics: list of tf.keras.metrics.Metric, optional
+        List of metrics for the parametric part. Defaults to MeanSquaredError().
+    non_param_metrics: list of tf.keras.metrics.Metric, optional
+        List of metrics for the non-parametric part. Defaults to MeanSquaredError().
+    param_callback: list of tf.keras.callbacks.Callback, optional
+        Callback for the parametric part only. Defaults to no callback.
+    non_param_callback: list of tf.keras.callbacks.Callback, optional
+        Callback for the non-parametric part only. Defaults to no callback.
+    general_callback: list of tf.keras.callbacks.Callback, optional
+        Callback shared between both the parametric and non-parametric parts. Defaults to no callback.
+    first_run: bool, optional
+        If True, the first iteration of training is assumed, and the non-parametric part 
+        is not considered during the parametric training. Default is False.
+    cycle_def: str, optional
+        Defines the training cycle: `parametric`, `non-parametric`, or `complete` 
+        (both parametric and non-parametric). Default is `complete`.
+    use_sample_weights: bool, optional
+        If True, sample weights are used in training. Sample weights are computed 
+        based on estimated noise variance. Default is False.
+    verbose: int, optional
+        Verbosity mode. `0` = silent, `1` = progress bar, `2` = one line per epoch.
+        Default is 1.
 
     Returns
     -------
     tf_semiparam_field: tf.keras.Model
-        Trained Tensorflow model.
-    hist_param: Tensorflow's History object
-        History of the parametric training.
-    hist_non_param: Tensorflow's History object
-        History of the non-parametric training.
+        The trained semi-parametric model.
+    hist_param: tf.keras.callbacks.History
+        History object for the parametric training.
+    hist_non_param: tf.keras.callbacks.History
+        History object for the non-parametric training.
 
     """
     # Initialize return variables
-    hist_param = None
-    hist_non_param = None
+    hist_param, hist_non_param = None, None
 
-    # Parametric train
-
-    # Define Loss
-    if param_loss is None:
-        loss = tf.keras.losses.MeanSquaredError()
-    else:
-        loss = param_loss
-
-    # Define optimisers
-    if param_optim is None:
-        optimizer = tf.keras.optimizers.Adam(
-            learning_rate=learning_rate_param,
-            beta_1=0.9,
-            beta_2=0.999,
-            epsilon=1e-07,
-            amsgrad=False,
-        )
-    else:
-        optimizer = param_optim
-
-    # Define metrics
-    if param_metrics is None:
-        metrics = [tf.keras.metrics.MeanSquaredError()]
-    else:
-        metrics = param_metrics
-
-    # Define callbacks
-    if param_callback is None and general_callback is None:
-        callbacks = None
-    else:
-        if general_callback is None:
-            callbacks = param_callback
-        elif param_callback is None:
-            callbacks = general_callback
-        else:
-            callbacks = general_callback + param_callback
+    # Parametric  part
+    optimizer, loss, metrics = configure_optimizer_and_loss(
+        learning_rate_param, param_optim, param_loss, param_metrics
+    )
 
     # Calculate sample weights
-    if use_sample_weights:
-        # Generate standard deviation estimator
-        img_dim = (outputs.shape[1], outputs.shape[2])
-        win_rad = np.ceil(outputs.shape[1] / 3.33)
-        std_est = NoiseEstimator(img_dim=img_dim, win_rad=win_rad)
-        # Estimate noise std_dev
-        imgs_std = np.array([std_est.estimate_noise(_im) for _im in outputs])
-        # Calculate weights
-        variances = imgs_std**2
-
-        # Define sample weight strategy
-        strategy_opt = 1
-
-        if strategy_opt == 0:
-            # Parameters
-            max_w = 2.0
-            min_w = 0.1
-            # Epsilon is to avoid outliers
-            epsilon = np.median(variances) * 0.1
-            w = 1 / (variances + epsilon)
-            scaled_w = (w - np.min(w)) / (np.max(w) - np.min(w))  # Transform to [0,1]
-            scaled_w = scaled_w * (max_w - min_w) + min_w  # Transform to [min_w, max_w]
-            scaled_w = scaled_w + (1 - np.mean(scaled_w))  # Adjust the mean to 1
-            scaled_w[scaled_w < min_w] = min_w
-            # Save the weights
-            sample_weight = scaled_w
-
-        elif strategy_opt == 1:
-            # Use inverse variance for weights
-            # Then scale the values by the median
-            sample_weight = 1 / variances
-            sample_weight /= np.median(sample_weight)
-    else:
-        sample_weight = None
+    sample_weight = calculate_sample_weights(outputs, use_sample_weights)
 
     # Define the training cycle
-    if (
-        cycle_def == "parametric"
-        or cycle_def == "complete"
-        or cycle_def == "only-parametric"
-    ):
+    if cycle_def in ("parametric", "complete", "only-parametric"):
         # If it is the first run
         if first_run:
             # Set the non-parametric model to zero
@@ -237,38 +478,36 @@ def general_train_cycle(
         if cycle_def == "only-parametric":
             # Set the non-parametric part to zero
             tf_semiparam_field.set_zero_nonparam()
+        
+        # Define callbacks for parametric part
+        # If both are None, set callbacks to None
+        callbacks = get_callbacks(param_callback, general_callback)
 
         # Set the trainable layer
         tf_semiparam_field.set_trainable_layers(param_bool=True, nonparam_bool=False)
-
-        # Compile the model for the first optimisation
-        tf_semiparam_field = build_PSF_model(
-            tf_semiparam_field,
+        hist_param = train_cycle_part(
+            tf_semiparam_field=tf_semiparam_field,
+            inputs=inputs,
+            outputs=outputs,
+            batch_size=batch_size,
+            epochs=n_epochs_param,
             optimizer=optimizer,
             loss=loss,
             metrics=metrics,
-        )
-        # Train the parametric part
-        logger.info("Starting parametric update..")
-        hist_param = tf_semiparam_field.fit(
-            x=inputs,
-            y=outputs,
-            batch_size=batch_size,
-            epochs=n_epochs_param,
             validation_data=validation_data,
             callbacks=callbacks,
             sample_weight=sample_weight,
             verbose=verbose,
+            first_run=first_run,
+            cycle_part="parametric"
         )
+       
+    # Non-parametric part
+    optimizer, loss, metrics = configure_optimizer_and_loss(
+        learning_rate_non_param, non_param_optim, non_param_loss, non_param_metrics, is_parametric=False
+    )
 
-    ## Non parametric train
-    # Define the training cycle
-    if (
-        cycle_def == "non-parametric"
-        or cycle_def == "complete"
-        or cycle_def == "only-non-parametric"
-    ):
-        # If it is the first run
+    if cycle_def in ("non-parametric", "complete", "only-non-parametric"):
         if first_run:
             # Set the non-parametric model to non-zero
             # With alpha to zero its already enough
@@ -278,171 +517,26 @@ def general_train_cycle(
             coeff_mat = tf_semiparam_field.get_coeff_matrix()
             tf_semiparam_field.assign_coeff_matrix(tf.zeros_like(coeff_mat))
 
-        # Set the non parametric layer to non trainable
+        # Define callbacks for non-parametric part
+        # If both are None, set callbacks to None
+        callbacks = get_callbacks(non_param_callback, general_callback)
+        
         tf_semiparam_field.set_trainable_layers(param_bool=False, nonparam_bool=True)
-
-        # Define Loss
-        if non_param_loss is None:
-            loss = tf.keras.losses.MeanSquaredError()
-        else:
-            loss = non_param_loss
-
-        # Define optimiser
-        if non_param_optim is None:
-            optimizer = tf.keras.optimizers.Adam(
-                learning_rate=learning_rate_non_param,
-                beta_1=0.9,
-                beta_2=0.999,
-                epsilon=1e-07,
-                amsgrad=False,
-            )
-        else:
-            optimizer = non_param_optim
-
-        # Define metric
-        if non_param_metrics is None:
-            metrics = [tf.keras.metrics.MeanSquaredError()]
-        else:
-            metrics = non_param_metrics
-
-        # Define callbacks
-        if non_param_callback is None and general_callback is None:
-            callbacks = None
-        else:
-            if general_callback is None:
-                callbacks = non_param_callback
-            elif non_param_callback is None:
-                callbacks = general_callback
-            else:
-                callbacks = general_callback + non_param_callback
-
-        # Compile the model again for the second optimisation
-        tf_semiparam_field = build_PSF_model(
-            tf_semiparam_field,
+        hist_non_param = train_cycle_part(
+            tf_semiparam_field=tf_semiparam_field,
+            inputs=inputs,
+            outputs=outputs,
+            batch_size=batch_size,
+            epochs=n_epochs_non_param,
             optimizer=optimizer,
             loss=loss,
             metrics=metrics,
-        )
-        # Train the nonparametric part
-        logger.info("Starting non-parametric update..")
-        hist_non_param = tf_semiparam_field.fit(
-            x=inputs,
-            y=outputs,
-            batch_size=batch_size,
-            epochs=n_epochs_non_param,
             validation_data=validation_data,
             callbacks=callbacks,
             sample_weight=sample_weight,
             verbose=verbose,
+            first_run=first_run,
+            cycle_part="non-parametric"
         )
 
     return tf_semiparam_field, hist_param, hist_non_param
-
-
-def param_train_cycle(
-    tf_semiparam_field,
-    inputs,
-    outputs,
-    validation_data,
-    batch_size,
-    learning_rate,
-    n_epochs,
-    param_optim=None,
-    param_loss=None,
-    param_metrics=None,
-    param_callback=None,
-    general_callback=None,
-    use_sample_weights=False,
-    verbose=1,
-):
-    """Training cycle for parametric model."""
-    # Define Loss
-    if param_loss is None:
-        loss = tf.keras.losses.MeanSquaredError()
-    else:
-        loss = param_loss
-
-    # Define optimiser
-    if param_optim is None:
-        optimizer = tf.keras.optimizers.Adam(
-            learning_rate=learning_rate,
-            beta_1=0.9,
-            beta_2=0.999,
-            epsilon=1e-07,
-            amsgrad=False,
-        )
-    else:
-        optimizer = param_optim
-
-    # Define metrics
-    if param_metrics is None:
-        metrics = [tf.keras.metrics.MeanSquaredError()]
-    else:
-        metrics = param_metrics
-
-    # Define callbacks
-    if param_callback is None and general_callback is None:
-        callbacks = None
-    else:
-        if general_callback is None:
-            callbacks = param_callback
-        elif param_callback is None:
-            callbacks = general_callback
-        else:
-            callbacks = general_callback + param_callback
-
-        # Calculate sample weights
-    if use_sample_weights:
-        # Generate standard deviation estimator
-        img_dim = (outputs.shape[1], outputs.shape[2])
-        win_rad = np.ceil(outputs.shape[1] / 3.33)
-        std_est = NoiseEstimator(img_dim=img_dim, win_rad=win_rad)
-        # Estimate noise std_dev
-        imgs_std = np.array([std_est.estimate_noise(_im) for _im in outputs])
-        # Calculate weights
-        variances = imgs_std**2
-
-        strategy_opt = 1
-
-        if strategy_opt == 0:
-            # Parameters
-            max_w = 2.0
-            min_w = 0.1
-            # Epsilon is to avoid outliers
-            epsilon = np.median(variances) * 0.1
-            w = 1 / (variances + epsilon)
-            scaled_w = (w - np.min(w)) / (np.max(w) - np.min(w))  # Transform to [0,1]
-            scaled_w = scaled_w * (max_w - min_w) + min_w  # Transform to [min_w, max_w]
-            scaled_w = scaled_w + (1 - np.mean(scaled_w))  # Adjust the mean to 1
-            scaled_w[scaled_w < min_w] = min_w
-            # Save the weights
-            sample_weight = scaled_w
-
-        elif strategy_opt == 1:
-            # Use inverse variance for weights
-            # Then scale the values by the median
-            sample_weight = 1 / variances
-            sample_weight /= np.median(sample_weight)
-
-    else:
-        sample_weight = None
-
-    # Compile the model for the first optimisation
-    tf_semiparam_field = build_PSF_model(
-        tf_semiparam_field, optimizer=optimizer, loss=loss, metrics=metrics
-    )
-
-    # Train the parametric part
-    logger.info("Starting parametric update..")
-    hist_param = tf_semiparam_field.fit(
-        x=inputs,
-        y=outputs,
-        batch_size=batch_size,
-        epochs=n_epochs,
-        validation_data=validation_data,
-        callbacks=callbacks,
-        sample_weight=sample_weight,
-        verbose=verbose,
-    )
-
-    return tf_semiparam_field, hist_param
