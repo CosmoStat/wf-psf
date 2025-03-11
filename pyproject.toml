@@ -13,7 +13,6 @@ description = 'A software framework to perform Differentiable wavefront-based PS
 dependencies = [
     "numpy>=1.26.4,<2.0",
     "scipy",
-    "keras",
     "tensorflow==2.11.0",
     "tensorflow-addons",
     "tensorflow-estimator",
@@ -43,7 +42,7 @@ docs = [
 ]
 
 lint = [
-    "black",
+    "ruff",
 ]
 
 release = [
@@ -52,7 +51,7 @@ release = [
 ]
 
 test = [
-  "pytest>=7.0.0,<8.1",
+  "pytest",
   "pytest-mock",
   "pytest-cov",
   "pytest-emoji",
@@ -66,11 +65,23 @@ dev = ["wf_psf[docs,lint,release,test]"]
 [project.scripts]
 wavediff = "wf_psf.run:mainMethod"
 
-[tool.black]
+[tool.ruff]
 line-length = 88
+indent-width = 4
 
-[tool.pydocstyle]
+# Enable more rules: Pyupgrade (`UP`) and Pydocstyle (`D`)
+[tool.ruff.lint]
+extend-select = ["UP", "D"]
+
+# Use numpy-style docstrings
+[tool.ruff.lint.pydocstyle]
 convention = "numpy"
+
+# Enable Ruff's built-in formatter
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
 
 
 [tool.pytest.ini_options]
