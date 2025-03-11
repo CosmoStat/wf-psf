@@ -21,17 +21,41 @@ logger = logging.getLogger(__name__)
 
 
 def setup_training():
-    """Setup Training.
+    """Set up Training.
 
     A function to setup training.
 
 
     """
     device_name = get_gpu_info()
-    logger.info("Found GPU at: {}".format(device_name))
+    logger.info(f"Found GPU at: {device_name}")
 
 
-def filepath_chkp_callback(checkpoint_dir, model_name, id_name, current_cycle):
+def filepath_chkp_callback(
+    checkpoint_dir: str, 
+    model_name: str, 
+    id_name: str, 
+    current_cycle: int
+) -> str:
+    """
+    Generate a file path for a checkpoint callback.
+
+    Parameters
+    ----------
+    checkpoint_dir : str
+        The directory where the checkpoint will be saved.
+    model_name : str
+        The name of the model.
+    id_name : str
+        The unique identifier for the model instance.
+    current_cycle : int
+        The current cycle number.
+
+    Returns
+    -------
+    str
+        A string representing the full file path for the checkpoint callback.
+    """
     return (
         checkpoint_dir
         + "/checkpoint_callback_"
@@ -40,6 +64,7 @@ def filepath_chkp_callback(checkpoint_dir, model_name, id_name, current_cycle):
         + "_cycle"
         + str(current_cycle)
     )
+
 
 
 class TrainingParamsHandler:
@@ -220,7 +245,6 @@ class TrainingParamsHandler:
                 Class to save the Keras model or model weights at some frequency
 
         """
-
         # -----------------------------------------------------
         logger.info("Preparing Keras model callback...")
         return tf.keras.callbacks.ModelCheckpoint(
@@ -331,7 +355,7 @@ def train(
         non_param_optim = tfa.optimizers.RectifiedAdam(
             learning_rate=training_handler.learning_rate_non_params[current_cycle - 1]
         )
-        logger.info("Starting cycle {}..".format(current_cycle))
+        logger.info(f"Starting cycle {current_cycle}..")
         start_cycle = time.time()
 
         # Compute training per cycle
@@ -390,7 +414,7 @@ def train(
 
         end_cycle = time.time()
         logger.info(
-            "Cycle{} elapsed time: {}".format(current_cycle, end_cycle - start_cycle)
+            f"Cycle{current_cycle} elapsed time: {end_cycle - start_cycle}"
         )
 
         # Save optimisation history in the saving dict
@@ -398,7 +422,7 @@ def train(
             hasattr(psf_model, "save_optim_history_param")
             and psf_model.save_optim_history_param
         ):
-            saving_optim_hist["param_cycle{}".format(current_cycle)] = (
+            saving_optim_hist[f"param_cycle{current_cycle}"] = (
                 hist_param.history
             )
 
@@ -406,7 +430,7 @@ def train(
             hasattr(psf_model, "save_optim_history_nonparam")
             and psf_model.save_optim_history_nonparam
         ):
-            saving_optim_hist["nonparam_cycle{}".format(current_cycle)] = (
+            saving_optim_hist[f"nonparam_cycle{current_cycle}"] = (
                 hist_non_param.history
             )
 
