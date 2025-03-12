@@ -209,7 +209,7 @@ def calculate_sample_weights(outputs: np.ndarray, use_sample_weights: bool) -> n
     return sample_weight
 
 def train_cycle_part(
-    tf_semiparam_field: tf.keras.Model,
+    psf_model: tf.keras.Model,
     inputs: tf.Tensor,
     outputs: tf.Tensor,
     batch_size: int,
@@ -225,12 +225,13 @@ def train_cycle_part(
     cycle_part: str = "parametric"
 ) -> tf.keras.Model:
     """
-    Train either the parametric or non-parametric parts of a model using the specified parameters.
+    Train either the parametric or non-parametric part of the PSF model using the specified parameters. This function trains a single component of the model (either parametric or non-parametric) based on the provided configuration.
 
     Parameters
     ----------
-    tf_semiparam_field: tf.keras.Model
-        The TensorFlow model to be trained (e.g., parametric or non-parametric).
+    psf_model: tf.keras.Model
+        A TensorFlow model representing the PSF (Point Spread Function), which consists of either a parametric or a non-parametric component.
+
     inputs: tf.Tensor
         Input data for training the model. Expected to be a tensor with the shape of the input batch.
     outputs: tf.Tensor
@@ -273,7 +274,7 @@ def train_cycle_part(
     Examples
     --------
     model = train_cycle_part(
-        tf_semiparam_field=model, 
+        psf_model=model, 
         inputs=train_inputs, 
         outputs=train_outputs, 
         batch_size=32, 
@@ -289,11 +290,11 @@ def train_cycle_part(
     """
     logger.info(f"Starting {cycle_part} update..")
 
-    tf_semiparam_field = build_PSF_model(
-        tf_semiparam_field, optimizer=optimizer, loss=loss, metrics=metrics
+    psf_model = build_PSF_model(
+        psf_model, optimizer=optimizer, loss=loss, metrics=metrics
     )
 
-    return tf_semiparam_field.fit(
+    return psf_model.fit(
         x=inputs,
         y=outputs,
         batch_size=batch_size,
@@ -329,7 +330,7 @@ def get_callbacks(callback1, callback2):
 
 
 def general_train_cycle(
-    tf_semiparam_field,
+    psf_model,
     inputs,
     outputs,
     validation_data,
@@ -355,7 +356,7 @@ def general_train_cycle(
     """
     Perform a Bi-Cycle Descent (BCD) training iteration on a semi-parametric model.
 
-    The function alternates between optimizing the parametric and non-parametric parts of the model
+    The function alternates between optimizing the parametric and/or non-parametric parts of the model
     across specified training cycles. Each part of the model can be trained individually or together 
     depending on the `cycle_def` parameter.
 
@@ -369,8 +370,9 @@ def general_train_cycle(
 
     Parameters
     ----------
-    tf_semiparam_field: tf.keras.Model
-        The semi-parametric PSF model to be trained.
+    psf_model: tf.keras.Model
+        A TensorFlow model representing the PSF (Point Spread Function), which may consist of both parametric and non-parametric components, or an individual component. These components are partitioned for training, with each part addressing different aspects of the PSF.
+
     inputs: Tensor or list of tensors
         Input data for training (`Model.fit()`).
     outputs: Tensor
@@ -410,8 +412,8 @@ def general_train_cycle(
         If True, the first iteration of training is assumed, and the non-parametric part 
         is not considered during the parametric training. Default is False.
     cycle_def: str, optional
-        Defines the training cycle: `parametric`, `non-parametric`, or `complete` 
-        (both parametric and non-parametric). Default is `complete`.
+        Defines the training cycle: `parametric`, `non-parametric`, `complete`, `only-parametric`, or `only-non-parametric`.
+        The `complete` cycle trains both parts, while the others train only the specified part (both parametric and non-parametric). Default is `complete`.
     use_sample_weights: bool, optional
         If True, sample weights are used in training. Sample weights are computed 
         based on estimated noise variance. Default is False.
@@ -421,8 +423,8 @@ def general_train_cycle(
 
     Returns
     -------
-    tf_semiparam_field: tf.keras.Model
-        The trained semi-parametric model.
+    psf_model: tf.keras.Model
+        The trained PSF model.
     hist_param: tf.keras.callbacks.History
         History object for the parametric training.
     hist_non_param: tf.keras.callbacks.History
@@ -446,19 +448,19 @@ def general_train_cycle(
         if first_run:
             # Set the non-parametric model to zero
             # With alpha to zero its already enough
-            tf_semiparam_field.set_zero_nonparam()
+            psf_model.set_zero_nonparam()
         if cycle_def == "only-parametric":
             # Set the non-parametric part to zero
-            tf_semiparam_field.set_zero_nonparam()
+            psf_model.set_zero_nonparam()
         
         # Define callbacks for parametric part
         # If both are None, set callbacks to None
         callbacks = get_callbacks(param_callback, general_callback)
 
         # Set the trainable layer
-        tf_semiparam_field.set_trainable_layers(param_bool=True, nonparam_bool=False)
+        psf_model.set_trainable_layers(param_bool=True, nonparam_bool=False)
         hist_param = train_cycle_part(
-            tf_semiparam_field=tf_semiparam_field,
+            psf_model=psf_model,
             inputs=inputs,
             outputs=outputs,
             batch_size=batch_size,
@@ -483,19 +485,19 @@ def general_train_cycle(
         if first_run:
             # Set the non-parametric model to non-zero
             # With alpha to zero its already enough
-            tf_semiparam_field.set_nonzero_nonparam()
+            psf_model.set_nonzero_nonparam()
         if cycle_def == "only-non-parametric":
             # Set the parametric layer to zero
-            coeff_mat = tf_semiparam_field.get_coeff_matrix()
-            tf_semiparam_field.assign_coeff_matrix(tf.zeros_like(coeff_mat))
+            coeff_mat = psf_model.get_coeff_matrix()
+            psf_model.assign_coeff_matrix(tf.zeros_like(coeff_mat))
 
         # Define callbacks for non-parametric part
         # If both are None, set callbacks to None
         callbacks = get_callbacks(non_param_callback, general_callback)
         
-        tf_semiparam_field.set_trainable_layers(param_bool=False, nonparam_bool=True)
+        psf_model.set_trainable_layers(param_bool=False, nonparam_bool=True)
         hist_non_param = train_cycle_part(
-            tf_semiparam_field=tf_semiparam_field,
+            psf_model=psf_model,
             inputs=inputs,
             outputs=outputs,
             batch_size=batch_size,
@@ -511,4 +513,4 @@ def general_train_cycle(
             cycle_part="non-parametric"
         )
 
-    return tf_semiparam_field, hist_param, hist_non_param
+    return psf_model, hist_param, hist_non_param

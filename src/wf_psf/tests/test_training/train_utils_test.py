@@ -142,7 +142,7 @@ def test_train_cycle_part(mock_test_setup, sample_weight):
 
     # Call the function (mocking the model's `fit` method)
     result = train_utils.train_cycle_part(
-        tf_semiparam_field=mock_model,
+        psf_model=mock_model,
         inputs=inputs,
         outputs=outputs,
         batch_size=batch_size,
@@ -191,7 +191,7 @@ def test_general_train_cycle_handles_cycle_def(mock_test_setup, cycle_def, param
 
     # Call the function
     train_utils.general_train_cycle(
-        tf_semiparam_field=mock_model,
+        psf_model=mock_model,
         inputs=inputs,
         outputs=outputs,
         validation_data=validation_data,
@@ -275,7 +275,7 @@ def test_general_train_cycle_with_callbacks(
         mock_train_cycle_part.return_value = (mock_model, MagicMock())
 
         # Call function under test
-        tf_semiparam_field, hist_param, hist_non_param = train_utils.general_train_cycle(
+        psf_model, hist_param, hist_non_param = train_utils.general_train_cycle(
             mock_model,
             mock_test_setup["inputs"],
             mock_test_setup["outputs"],
@@ -310,7 +310,7 @@ def test_general_train_cycle_with_callbacks(
                 mock_get_callbacks.assert_any_call(*call)
 
         # Assertions based on cycle_def
-        assert tf_semiparam_field is not None
+        assert psf_model is not None
         if cycle_def in ("complete", "parametric"):
             assert hist_param is not None
         if cycle_def in ("complete", "non-parametric"):
