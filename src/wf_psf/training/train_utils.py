@@ -103,7 +103,7 @@ def masked_mse(y_true, y_pred, mask, sample_weight=None):
         error *= tf.reshape(sample_weight, (-1, 1, 1))
     unmasked_pixels = tf.reduce_sum(mask, axis=[1, 2]) # (batch,)
     # Weight by number of non masked pixels
-    return tf.reduce_sum(error / tf.reshape(unmasked_pixels, (-1, 1, 1)))
+    return tf.reduce_mean(error / tf.reshape(unmasked_pixels, (-1, 1, 1)))
 
 class MaskedMeanSquaredError(tf.keras.losses.Loss):
     """Masked Mean Squared Error.""" 
