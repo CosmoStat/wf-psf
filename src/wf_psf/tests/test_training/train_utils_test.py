@@ -53,6 +53,44 @@ def mock_test_setup(mock_model, mock_data):
         "verbose": 1
     }
 
+def test_configure_optimizer_and_loss_default_configuration():
+    learning_rate = 0.01
+    optimizer, loss, metrics = train_utils.configure_optimizer_and_loss(learning_rate)
+    
+    assert isinstance(optimizer, tf.keras.optimizers.Adam)
+    assert optimizer.learning_rate.numpy() == pytest.approx(learning_rate)
+    assert isinstance(loss, tf.keras.losses.MeanSquaredError)
+    assert len(metrics) == 1 and isinstance(metrics[0], tf.keras.metrics.MeanSquaredError)
+
+def test_configure_optimizer_and_loss_custom_optimizer():
+    custom_optimizer = tf.keras.optimizers.SGD(learning_rate=0.02)
+    learning_rate = 0.01  # Should be ignored since custom optimizer is used
+    optimizer, _, _ = train_utils.configure_optimizer_and_loss(learning_rate, optimizer=custom_optimizer)
+    
+    assert isinstance(optimizer, tf.keras.optimizers.SGD)
+    assert optimizer.learning_rate.numpy() == pytest.approx(0.02)  # Ensure it uses the custom learning rate
+
+def test_configure_optimizer_and_loss_custom_loss():
+    custom_loss = tf.keras.losses.MeanAbsoluteError()
+    _, loss, _ = train_utils.configure_optimizer_and_loss(0.01, loss=custom_loss)
+    
+    assert isinstance(loss, tf.keras.losses.MeanAbsoluteError)
+
+def test_configure_optimizer_and_loss_custom_metrics():
+    custom_metrics = [tf.keras.metrics.MeanAbsoluteError(), tf.keras.metrics.RootMeanSquaredError()]
+    _, _, metrics = train_utils.configure_optimizer_and_loss(0.01, metrics=custom_metrics)
+    
+    assert len(metrics) == 2
+    assert isinstance(metrics[0], tf.keras.metrics.MeanAbsoluteError)
+    assert isinstance(metrics[1], tf.keras.metrics.RootMeanSquaredError)
+
+def test_learning_rate_affects_default_optimizer():
+    learning_rate = 0.005
+    optimizer, _, _ = train_utils.configure_optimizer_and_loss(learning_rate)
+    
+    assert isinstance(optimizer, tf.keras.optimizers.Adam)
+    assert optimizer.learning_rate.numpy() == pytest.approx(learning_rate)
+
 @pytest.mark.parametrize("use_sample_weights, expected_output", [
     (False, None),
     (True, np.ndarray),  # When enabled, it should return an array
