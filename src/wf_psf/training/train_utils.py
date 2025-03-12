@@ -170,9 +170,12 @@ def configure_optimizer_and_loss(
 
     return optimizer, loss, metrics
 
-def calculate_sample_weights(outputs: np.ndarray, use_sample_weights: bool, strategy_opt: int = 1) -> np.ndarray or None:
+def calculate_sample_weights(outputs: np.ndarray, use_sample_weights: bool) -> np.ndarray or None:
     """
-    Calculate sample weights based on image noise standard deviation and a selected weight strategy.
+    Calculate sample weights based on image noise standard deviation.
+
+    The function computes sample weights by estimating the noise standard deviation for each image, calculating the inverse variance, 
+    and then normalizing the weights by dividing by the median.
 
     Parameters
     ----------
@@ -181,26 +184,11 @@ def calculate_sample_weights(outputs: np.ndarray, use_sample_weights: bool, stra
         and the next two dimensions are the image height and width.
     use_sample_weights: bool
         Flag indicating whether to compute sample weights. If True, sample weights will be computed based on the image noise.
-    strategy_opt: int, optional
-        The strategy for sample weight computation. Default is 1. The options are:
-        - 0: Normalize the weights to a specific range, with the mean adjusted to 1.
-        - 1: Use inverse variance for weights, scaled by the median variance.
 
     Returns
     -------
     np.ndarray or None
         An array of sample weights, or None if `use_sample_weights` is False.
-
-    Notes
-    -----
-    The function computes sample weights by estimating the standard deviation of noise in each image, 
-    calculating variances, and scaling the weights accordingly. The strategy for scaling the 
-    weights can be customized using the `strategy_opt` parameter.
-
-    Strategy options:
-    - 0: Uses a more complex weight scaling where the weights are normalized to a range between [min_w, max_w],
-      and the mean of the weights is adjusted to 1.
-    - 1: Uses inverse variance for the weights, with scaling by the median.
     """
     if use_sample_weights:
         img_dim = (outputs.shape[1], outputs.shape[2])
@@ -210,26 +198,10 @@ def calculate_sample_weights(outputs: np.ndarray, use_sample_weights: bool, stra
         # Estimate noise standard deviation
         imgs_std = np.array([std_est.estimate_noise(_im) for _im in outputs])
         variances = imgs_std ** 2
-
-        # Default to strategy 1
-        if strategy_opt == 0:
-            # Parameters for strategy 0
-            max_w, min_w = 2.0, 0.1
-            epsilon = np.median(variances) * 0.1  # To avoid outliers
-            w = 1 / (variances + epsilon)
-            scaled_w = (w - np.min(w)) / (np.max(w) - np.min(w))  # Normalize to [0, 1]
-            scaled_w = scaled_w * (max_w - min_w) + min_w  # Scale to [min_w, max_w]
-            scaled_w = scaled_w + (1 - np.mean(scaled_w))  # Adjust mean to 1
-            scaled_w[scaled_w < min_w] = min_w  # Clip at min_w
-            sample_weight = scaled_w
-
-        elif strategy_opt == 1:
-            # Use inverse variance for weights and scale by median
-            sample_weight = 1 / variances
-            sample_weight /= np.median(sample_weight)
-
-        else:
-            raise ValueError(f"Unsupported strategy_opt: {strategy_opt}")
+  
+        # Use inverse variance for weights and scale by median
+        sample_weight = 1 / variances
+        sample_weight /= np.median(sample_weight)
 
     else:
         sample_weight = None
