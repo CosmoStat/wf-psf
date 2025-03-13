@@ -111,8 +111,8 @@ class CCDMisalignmentCalculator:
         self.tiles_z_average = np.mean(self.tiles_z_lims)
     
 
-    def _initialise_polygons(self):
-        """Initialise polygons to look for CCD IDs"""
+    def _initialize_polygons(self):
+        """Initialize polygons to look for CCD IDs"""
 
         # Build polygon list corresponding to each CCD
         self.ccd_polygons = []
@@ -137,7 +137,7 @@ class CCDMisalignmentCalculator:
             # Build and add polygons to list
             self.ccd_polygons.append(mpltPath.Path(curr_polygon))
 
-    def _initialise_kdtree(self):
+    def _initialize_kdtree(self):
         flattened_points = np.zeros(
             (int(self.scaled_data.shape[0] * self.scaled_data.shape[2]), 2)
         )
