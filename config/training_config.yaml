@@ -27,18 +27,18 @@ training:
     # Flag to use Zernike prior
     use_prior: True
 
-    # Correct centroids
+    # Flag to perform centroid error correction
     correct_centroids: False
     # Sigma of the window function used to compute the centroids. Default Euclid value is 2.5
     sigma_centroid_window: 2.5
 
-    # Consider CCD missalignments
-    add_ccd_missalignments: False
+    # Flag to perform CCD misalignment error correction
+    add_ccd_misalignments: False
 
-    # CCD missalignments input file path
+    # CCD misalignments input file path
     # This should be refactored. It might be better to directly look for the `tiles.npy` in 
     # the `data/assets/` directory in the repository
-    ccd_missalignments_input_path: /Users/tl255879/Documents/research/Euclid/real_data/CCD_missalignments/tiles.npy
+    ccd_misalignments_input_path: /Users/tl255879/Documents/research/Euclid/real_data/CCD_missalignments/tiles.npy
 
     # Boolean to define if we use sample weights based on the noise standard deviation estimation
     use_sample_weights: True 
