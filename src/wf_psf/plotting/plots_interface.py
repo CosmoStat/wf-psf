@@ -314,7 +314,7 @@ class MonochromaticMetricsPlotHandler:
             metrics_id = []
 
             for k, v in self.metrics.items():
-                if self.metrics_confs[k].metrics.eval_mono_metric_rmse:
+                if self.metrics_confs[k].metrics.eval_mono_metric:
                     for metrics_data in v:
                         run_id = list(metrics_data.keys())[0]
                         metrics_id.append(run_id + "-" + k)
