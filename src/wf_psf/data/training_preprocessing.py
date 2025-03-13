@@ -351,9 +351,9 @@ def get_zernike_prior(model_params, data):
             compute_centroid_correction(model_params, data)
         )
 
-    if model_params.add_ccd_missalignments:
+    if model_params.add_ccd_misalignments:
         logger.info("Adding CCD mis-alignments to Zernike contribution list...")
-        zernike_contribution_list.append(compute_ccd_missalignment(model_params, data))
+        zernike_contribution_list.append(compute_ccd_misalignment(model_params, data))
 
     if len(zernike_contribution_list) == 1:
         zernike_contribution = zernike_contribution_list[0]
