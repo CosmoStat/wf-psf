@@ -74,7 +74,4 @@ def test_generate_zernike_maps_3d():
     expected_shape = (n_zernikes, pupil_diam, pupil_diam)
     assert (
         zernike_maps.shape == expected_shape
-    )  # Check if the shape of the tensor matches the expected shape
-
-    # Check if all values in the tensor are within the expected range (e.g., between 0 and 1)
-    # assert tf.reduce_all(tf.logical_and(zernike_maps >= 0, zernike_maps <= 1))  #Fails
+    ) 

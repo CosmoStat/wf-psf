@@ -10,7 +10,7 @@ import os
 import numpy as np
 import wf_psf.utils.utils as utils
 import tensorflow as tf
-from wf_psf.utils.ccd_missalignments import CCDMissalignmentCalculator
+from wf_psf.utils.ccd_misalignments import CCDMisalignmentCalculator
 from wf_psf.utils.centroids import get_zk1_2_for_observed_psf
 import logging
 
@@ -270,8 +270,8 @@ def compute_centroid_correction(model_params, data):
     return zernike_centroid_array
 
 
-def compute_ccd_missalignment(model_params, data):
-    """Compute CCD missalignment.
+def compute_ccd_misalignment(model_params, data):
+    """Compute CCD misalignment.
 
     Parameters
     ----------
@@ -282,13 +282,13 @@ def compute_ccd_missalignment(model_params, data):
 
     Returns
     -------
-    zernike_ccd_missalignment_array : np.ndarray
-        Numpy array containing the Zernike contributions to model the CCD chip missalignments.
+    zernike_ccd_misalignment_array : np.ndarray
+        Numpy array containing the Zernike contributions to model the CCD chip misalignments.
     """
     obs_positions = get_np_obs_positions(data)
 
-    ccd_missalignment_calculator = CCDMissalignmentCalculator(
-        tiles_path=model_params.ccd_missalignments_input_path,
+    ccd_misalignment_calculator = CCDMisalignmentCalculator(
+        tiles_path=model_params.ccd_misalignments_input_path,
         x_lims=model_params.x_lims,
         y_lims=model_params.y_lims,
         tel_focal_length=model_params.tel_focal_length,
@@ -297,17 +297,17 @@ def compute_ccd_missalignment(model_params, data):
     # Compute required zernike 4 for each position
     zk4_values = np.array(
         [
-            ccd_missalignment_calculator.get_zk4_from_position(single_pos)
+            ccd_misalignment_calculator.get_zk4_from_position(single_pos)
             for single_pos in obs_positions
         ]
     ).reshape(-1, 1)
 
     # Zero pad array to get shape (n_stars, n_zernike=4)
-    zernike_ccd_missalignment_array = np.pad(
+    zernike_ccd_misalignment_array = np.pad(
         zk4_values, pad_width=[(0, 0), (3, 0)], mode="constant", constant_values=0
     )
 
-    return zernike_ccd_missalignment_array
+    return zernike_ccd_misalignment_array
 
 
 def get_zernike_prior(model_params, data):
@@ -342,17 +342,17 @@ def get_zernike_prior(model_params, data):
     zernike_contribution_list = []
 
     if model_params.use_prior:
-        logger.info("Reading in Zernike prior...")
+        logger.info("Reading in Zernike prior into Zernike contribution list...")
         zernike_contribution_list.append(get_np_zk_prior(data))
 
     if model_params.correct_centroids:
-        logger.info("Adding scentroid correction...")
+        logger.info("Adding centroid correction to Zernike contribution list...")
         zernike_contribution_list.append(
             compute_centroid_correction(model_params, data)
         )
 
     if model_params.add_ccd_missalignments:
-        logger.info("Adding CCD mis-alignments...")
+        logger.info("Adding CCD mis-alignments to Zernike contribution list...")
         zernike_contribution_list.append(compute_ccd_missalignment(model_params, data))
 
     if len(zernike_contribution_list) == 1:

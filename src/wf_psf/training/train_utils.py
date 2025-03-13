@@ -305,11 +305,12 @@ def train_cycle_part(
         verbose=verbose,
     )
 
+
 def get_callbacks(callback1, callback2):
     """
-    Helper function to combine two callback lists into one.
-    If both are None, returns None.
-    If one is None, returns the other.
+    Combine two callback lists into one.
+
+    If both are None, returns None. If one is None, returns the other.
     Otherwise, combines both lists.
     
     Parameters
@@ -326,6 +327,7 @@ def get_callbacks(callback1, callback2):
     """
     if callback1 is None and callback2 is None:
         return None
+
     return (callback1 or []) + (callback2 or [])
 
 

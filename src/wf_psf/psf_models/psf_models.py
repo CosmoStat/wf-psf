@@ -83,14 +83,14 @@ class PSFModelBaseFactory:
 
         Parameters
         ----------
-        model_params: object
-            Parameters for configuring the PSF model.
-        training_params: object
-            Parameters for training the PSF model.
-        data: object or None, optional
-            Data used for training the PSF model.
-        coeff_matrix: object or None, optional
-            Coefficient matrix defining the PSF model.
+        model_params: Recursive Namespace
+            A Recursive Namespace object containing parameters for this PSF model class.
+        training_params: Recursive Namespace
+            A Recursive Namespace object containing training hyperparameters for this PSF model class.
+        data: DataConfigHandler
+            A DataConfigHandler object that provides access to training and test datasets, as well as prior knowledge like Zernike coefficients.
+        coeff_mat: Tensor or None, optional
+            Coefficient matrix defining the parametric PSF field model.
 
         Returns
         -------
@@ -117,7 +117,6 @@ def set_psf_model(model_name):
         Name of PSF model class
 
     """
-
     try:
         psf_factory_class = PSF_FACTORY[model_name]
     except KeyError as e:
@@ -144,7 +143,6 @@ def get_psf_model(*psf_model_params):
 
 
     """
-
     model_name = psf_model_params[0].model_name
     psf_factory_class = set_psf_model(model_name)
     if psf_factory_class is None:
@@ -274,18 +272,21 @@ def tf_obscurations(pupil_diam, N_filter=2):
 
 
 def simPSF(model_params):
-    """Simulated PSF model.
+    """Instantiate and configure a Simulated PSF model.
 
-    A function to instantiate a
-    simulated PSF model object.
+    This function creates a `PSFSimulator` instance with the given model parameters, generates random Zernike coefficients, normalizes them, and produces a monochromatic PSF.
 
-    Features
-    --------
-    model_params: Recursive Namespace object
-        Recursive Namespace object storing model parameters
+    Parameters
+    ----------
+    model_params: Recursive Namespace
+        A recursive namespace object storing model parameters
+
+    Returns
+    -------
+    PSFSimulator
+        A configured `PSFSimulator` instance with the specified model parameters.
 
     """
-
     simPSF_np = PSFSimulator(
         max_order=model_params.param_hparams.n_zernikes,
         pupil_diameter=model_params.pupil_diameter,

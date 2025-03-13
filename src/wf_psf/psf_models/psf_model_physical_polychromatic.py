@@ -6,7 +6,7 @@ to manage the parameters of the psf physical polychromatic model.
 :Authors: Tobias Liaudat <tobias.liaudat@cea.fr> and Jennifer Pollack <jennifer.pollack@cea.fr>
 
 """
-
+from typing import Optional
 import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
 from wf_psf.psf_models import psf_models as psfm
@@ -29,8 +29,7 @@ logger = logging.getLogger(__name__)
 class PhysicalPolychromaticFieldFactory(psfm.PSFModelBaseFactory):
     """Factory class for the TensorFlow Physical Polychromatic PSF Field Model.
 
-    This factory class is responsible for instantiating instances of the TensorFlow Physical Polychromatic PSF Field Model.
-    It is registered with the PSF model factory registry.
+    This factory class is responsible for instantiating instances of the TensorFlow Physical Polychromatic PSF Field Model. It is registered with the PSF model factory registry.
 
     Parameters
     ----------
@@ -42,10 +41,29 @@ class PhysicalPolychromaticFieldFactory(psfm.PSFModelBaseFactory):
     get_model_instance(model_params, training_params, data=None, coeff_mat=None)
         Instantiates an instance of the TensorFlow Physical Polychromatic Field class with the provided parameters.
     """
-
     ids = ("physical_poly",)
 
     def get_model_instance(self, model_params, training_params, data, coeff_mat=None):
+        """Create an instance of the TensorFlow Physical Polychromatic Field model.
+
+        This method instantiates a `TFPhysicalPolychromaticField` object with the given model and training parameters, and data containing prior information like Zernike coefficients. Optionally, a coefficient matrix can be provided.
+
+        Parameters
+        ----------
+        model_params: Recursive Namespace
+            A Recursive Namespace object containing parameters for this PSF model class.
+        training_params: Recursive Namespace
+            A Recursive Namespace object containing training hyperparameters for this PSF model class.
+        data: DataConfigHandler
+            A DataConfigHandler object that provides access to training and test datasets, as well as prior knowledge like Zernike coefficients.
+        coeff_mat: Tensor or None, optional
+            Coefficient matrix defining the parametric PSF field model.
+
+        Returns
+        -------
+        TFPhysicalPolychromaticField
+            An instance of the TensorFlow Physical Polychromatic Field model.
+        """
         return TFPhysicalPolychromaticField(
             model_params, training_params, data, coeff_mat
         )
@@ -54,44 +72,29 @@ class PhysicalPolychromaticFieldFactory(psfm.PSFModelBaseFactory):
 class TFPhysicalPolychromaticField(tf.keras.Model):
     """TensorFlow Physical Polychromatic PSF Field class.
 
-    This class represents a polychromatic PSF field model with a physical layer,
-    which is part of a larger PSF modeling framework.
+    This class represents a polychromatic PSF field model with a physical layer.
+    It incorporates parametric and non-parametric modeling approaches to accurately reconstruct the point spread function (PSF) across multiple wavelengths.
 
-    Parameters
-    ----------
-    ids : tuple
-        A tuple storing the string attribute of the PSF model class
-    model_params : Recursive Namespace
-        A Recursive Namespace object containing parameters for this PSF model class
-    training_params : Recursive Namespace
-        A Recursive Namespace object containing training hyperparameters for this PSF model class
-    data : DataConfigHandler object
-        A DataConfigHandler object containing training and tests datasets
-    coeff_mat : Tensor or None
-        Initialization of the coefficient matrix defining the parametric psf field model
+    The model provides functionalities for:
+    - Initializing model parameters and defining the physical PSF layer.
+    - Performing forward passes and computing wavefront transformations.
+    - Handling Zernike parameterization and coefficient matrices.
+    - Evaluating model performance and saving optimization history.
 
-    Returns
-    -------
-    PSF model instance
-        An instance of the Physical Polychromatic PSF Field Model.
-
+    See individual method docstrings for more details.
     """
-
-    ids = ("physical_poly",)
-
     def __init__(self, model_params, training_params, data, coeff_mat=None):
         """Initialize the TFPhysicalPolychromaticField instance.
 
         Parameters
         ----------
-        model_params : RecursiveNamespace
-            Object containing parameters for this PSF model class.
-        training_params : RecursiveNamespace
-            Object containing training hyperparameters for this PSF model class.
-        data : DataConfigHandler
-            Object containing training and test datasets and zernike prior.
-
-        coeff_mat : Tensor or None
+        model_params: Recursive Namespace
+            A Recursive Namespace object containing parameters for this PSF model class.
+        training_params: Recursive Namespace
+            A Recursive Namespace object containing training hyperparameters for this PSF model class.
+        data: DataConfigHandler
+            A DataConfigHandler object that provides access to training and test datasets, as well as prior knowledge like Zernike coefficients.
+        coeff_mat: Tensor or None, optional
             Coefficient matrix defining the parametric PSF field model.
 
         Returns
@@ -105,20 +108,33 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         )
 
     def _initialize_parameters_and_layers(
-        self, model_params, training_params, data, coeff_mat=None
+        self, model_params: RecursiveNamespace, 
+        training_params: RecursiveNamespace, 
+        data: DataConfigHandler, 
+        coeff_mat: Optional[tf.Tensor] = None
     ):
         """Initialize Parameters of the PSF model.
 
+        This method sets up the PSF model parameters, observational positions, 
+        Zernike coefficients, and components required for the automatically 
+        differentiable optical forward model.
+
         Parameters
         ----------
-        model_params : RecursiveNamespace
-            Object containing parameters for this PSF model class.
-        training_params : RecursiveNamespace
-            Object containing training hyperparameters for this PSF model class.
-        data : DataConfigHandler
-            Object containing training and test datasets.
-        coeff_mat : Tensor or None
-            Coefficient matrix defining the parametric PSF field model.
+        model_params: Recursive Namespace
+            A Recursive Namespace object containing parameters for this PSF model class.
+        training_params: Recursive Namespace
+            A Recursive Namespace object containing training hyperparameters for this PSF model class.
+        data: DataConfigHandler object
+            A DataConfigHandler object providing access to training and tests datasets, as well as prior knowledge like Zernike coefficients.
+        coeff_mat: Tensor or None, optional
+            Initialization of the coefficient matrix defining the parametric psf field model.
+
+        Notes
+        -----
+        - Initializes Zernike parameters based on dataset priors.
+        - Configures the PSF model layers according to `model_params`.
+        - If `coeff_mat` is provided, the model coefficients are updated accordingly.
         """
         self.output_Q = model_params.output_Q
         self.obs_pos = get_obs_positions(data)
@@ -143,11 +159,10 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
 
         Parameters
         ----------
-        model_params : RecursiveNamespace
-            Object containing parametrs for this PSF model class.
-        data : DataConfigHandler
-            Object containing training and test datasets.
-
+        model_params: Recursive Namespace
+            A Recursive Namespace object containing parameters for this PSF model class.
+        data: DataConfigHandler object
+            A DataConfigHandler object providing access to training and tests datasets, as well as prior knowledge like Zernike coefficients.
         """
         self.zks_prior = get_zernike_prior(model_params, data)
         self.n_zks_total = max(
@@ -161,18 +176,16 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
     def _initialize_layers(self, model_params, training_params):
         """Initialize the layers of the PSF model.
 
-        This method initializes the layers of the PSF model, including the physical
-        layer, polynomial Zernike field, batch polychromatic layer, and non-parametric
-        OPD layer.
+        This method initializes the layers of the PSF model, including the physical layer, polynomial Zernike field, batch polychromatic layer, and non-parametric OPD layer.
 
         Parameters
         ----------
-        model_params : RecursiveNamespace
-            Object containing parameters for this PSF model class.
-        training_params : RecursiveNamespace
-            Object containing training hyperparameters for this PSF model class.
-        coeff_mat : Tensor or None
-            Initialization of the coefficient matrix defining the parametric PSF field model.
+        model_params: Recursive Namespace
+            A Recursive Namespace object containing parameters for this PSF model class.
+        training_params: Recursive Namespace
+            A Recursive Namespace object containing training hyperparameters for this PSF model class.
+        coeff_mat: Tensor or None, optional
+            Initialization of the coefficient matrix defining the parametric psf field model.
 
         """
         self._initialize_physical_layer(model_params)
@@ -189,9 +202,8 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
 
         Parameters
         ----------
-        model_params : RecursiveNamespace
-            Object containing parameters for this PSF model class.
-
+        model_params: Recursive Namespace
+            A Recursive Namespace object containing parameters for this PSF model class.
         """
         self.tf_physical_layer = TFPhysicalLayer(
             self.obs_pos,
@@ -208,8 +220,8 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
 
         Parameters
         ----------
-        model_params : RecursiveNamespace
-            Object containing parameters for this PSF model class.
+        model_params: Recursive Namespace
+            A Recursive Namespace object containing parameters for this PSF model class.
 
         """
         self.tf_poly_Z_field = TFPolynomialZernikeField(
@@ -228,8 +240,8 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
 
         Parameters
         ----------
-        model_params : RecursiveNamespace
-            Object containing parameters for this PSF model class.
+        model_params: Recursive Namespace
+            A Recursive Namespace object containing parameters for this PSF model class.
 
         """
         # Initialize the zernike to OPD layer
@@ -243,10 +255,10 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
 
         Parameters
         ----------
-        model_params : RecursiveNamespace
-            Object containing parameters for this PSF model class.
-        training_params : RecursiveNamespace
-            Object containing training hyperparameters for this PSF model class.
+        model_params: Recursive Namespace
+            A Recursive Namespace object containing parameters for this PSF model class.
+        training_params: Recursive Namespace
+            A Recursive Namespace object containing training hyperparameters for this PSF model class.
 
 
         """
@@ -268,10 +280,10 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
 
         Parameters
         ----------
-        model_params : RecursiveNamespace
-            Object containing parameters for this PSF model class.
-        training_params : RecursiveNamespace
-            Object containing training hyperparameters for this PSF model class.
+        model_params: Recursive Namespace
+            A Recursive Namespace object containing parameters for this PSF model class.
+        training_params: Recursive Namespace
+            A Recursive Namespace object containing training hyperparameters for this PSF model class.
 
         """
         # self.d_max_nonparam = model_params.nonparam_hparams.d_max_nonparam
@@ -288,26 +300,49 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         """Get coefficient matrix."""
         return self.tf_poly_Z_field.get_coeff_matrix()
 
-    def assign_coeff_matrix(self, coeff_mat):
-        """Assigns the coefficient matrix defining the parametric PSF field model.
+    def assign_coeff_matrix(self, coeff_mat: Optional[tf.Tensor]) -> None:
+        """Assign a coefficient matrix to the parametric PSF field model.
 
-        This method assigns the coefficient matrix to the parametric PSF field model,
-        allowing for customization and modification of the PSF field.
+        This method updates the coefficient matrix used by the parametric PSF field model, 
+        allowing for customization or modification of the model's parameters. 
+        If `coeff_mat` is `None`, the model will revert to using its default coefficient matrix.
 
         Parameters
         ----------
-        coeff_mat : Tensor or None
-            The coefficient matrix defining the parametric PSF field model.
-            If None, the default coefficient matrix will be used.
+        coeff_mat : Optional[tf.Tensor]
+            A TensorFlow tensor representing the coefficient matrix for the PSF field model.
+            If `None`, the model will use the default coefficient matrix.
 
-
+        Returns
+        -------
+        None
         """
         self.tf_poly_Z_field.assign_coeff_matrix(coeff_mat)
 
-    def set_output_Q(self, output_Q, output_dim=None):
-        """Set the value of the output_Q parameter.
-        Useful for generating/predicting PSFs at a different sampling wrt the
-        observation sampling.
+    def set_output_Q(self, output_Q: float, output_dim: Optional[int] = None) -> None:
+        """Set the output sampling rate (output_Q) for PSF generation.
+
+        This method updates the `output_Q` parameter, which defines the 
+        resampling factor for generating PSFs at different resolutions 
+        relative to the telescope's native sampling. It also allows optionally 
+        updating `output_dim`, which sets the output resolution of the PSF model.
+
+        If `output_dim` is provided, the PSF model's output resolution is updated.
+        The method then reinitializes the batch polychromatic PSF generator 
+        to reflect the updated parameters.
+
+        Parameters
+        ----------
+        output_Q : float
+            The resampling factor that determines the output PSF resolution 
+            relative to the telescope's native sampling.
+        output_dim : Optional[int], default=None
+            The new output dimension for the PSF model. If `None`, the output 
+            dimension remains unchanged.
+
+        Returns
+        -------
+        None
         """
         self.output_Q = output_Q
         if output_dim is not None:
@@ -346,7 +381,6 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         ----------
         param_bool: bool
             Boolean flag for parametric model layers
-
         nonparam_bool: bool
             Boolean flag for non-parametric model layers
 
@@ -463,7 +497,6 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
             Batch of monochromatic PSFs.
 
         """
-
         # Initialise the monochromatic PSF batch calculator
         tf_batch_mono_psf = TFBatchMonochromaticPSF(
             obscurations=self.obscurations,

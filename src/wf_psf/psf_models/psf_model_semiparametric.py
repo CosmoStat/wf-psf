@@ -51,18 +51,18 @@ class SemiParamFieldFactory(psfm.PSFModelBaseFactory):
 
         Parameters
         ----------
-        model_params : object
-            Parameters for configuring the PSF model.
-        training_params : object
+        model_params: Recursive Namespace
+            Recursive Namespace object containing parameters for this PSF model class.
+        training_params: Recursive Namespace
             Parameters for training the PSF model.
         data : object or None, optional
             Data used for training the PSF model.
-        coeff_mat : object or None, optional
+        coeff_mat : Tensor or None, optional
             Zernike coefficient matrix for the parametric PSF field model.
 
         Returns
         -------
-        PSF model instance
+        TFSemiParametricField
             An instance of the SemiParametric PSF Field Model.
         """
         return TFSemiParametricField(model_params, training_params, coeff_mat)
@@ -76,11 +76,11 @@ class TFSemiParametricField(tf.keras.Model):
     Parameters
     ----------
     model_params: Recursive Namespace
-        Recursive Namespace object containing parameters for this PSF model class
+        Recursive Namespace object containing parameters for this PSF model class.
     training_params: Recursive Namespace
-        Recursive Namespace object containing training hyperparameters for this PSF model class
+        Recursive Namespace object containing training hyperparameters for this PSF model class.
     coeff_mat: Tensor or None
-        Zernike coefficient matrix for the parametric PSF field model
+        Zernike coefficient matrix for the parametric PSF field model.
 
     """
 
