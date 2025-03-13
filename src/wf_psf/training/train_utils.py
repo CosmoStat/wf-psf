@@ -101,9 +101,9 @@ def masked_mse(y_true, y_pred, mask, sample_weight=None):
     # Apply sample weights if provided
     if sample_weight is not None:
         error *= tf.reshape(sample_weight, (-1, 1, 1))
-    unmasked_pixels = tf.reduce_sum(mask, axis=[1, 2]) # (batch,)
-    # Weight by number of non masked pixels
-    return tf.reduce_mean(error / tf.reshape(unmasked_pixels, (-1, 1, 1)))
+    unmasked_pixels = tf.reduce_sum(mask, axis=[1, 2])  # (batch,)
+    # Weight by number of non masked pixels and by batch size
+    return tf.reduce_sum(error / tf.reshape(unmasked_pixels, (-1, 1, 1))) / tf.cast(tf.shape(y_true)[0], y_true.dtype)
 
 class MaskedMeanSquaredError(tf.keras.losses.Loss):
     """Masked Mean Squared Error.""" 
