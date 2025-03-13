@@ -121,11 +121,11 @@ def compute_poly_metric(
         weights = np.sum(masks, axis=(1, 2))
         preds = preds * masks
     else:
-        weights = np.ones(gt_preds.shape[0])
+        weights = np.ones(gt_preds.shape[0]) * gt_preds.shape[1] * gt_preds.shape[2]
 
     # Calculate residuals
     residuals = np.sqrt(np.sum((gt_preds - preds) ** 2, axis=(1, 2)) / weights)
-    gt_star_mean = np.sqrt(np.mean((gt_preds) ** 2, axis=(1, 2)))
+    gt_star_mean = np.sqrt(np.sum((gt_preds) ** 2, axis=(1, 2))/ weights)
 
     # RMSE calculations
     rmse = np.mean(residuals)
