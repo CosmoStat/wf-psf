@@ -26,10 +26,10 @@ class CCDMisalignmentCalculator:
     ----------
     tiles_path : str
         Path to the stored tiles data file.
-    x_lims : list[float] | np.ndarray, optional
+    x_lims : Union[list[float], np.ndarray] = [0, 1e3], optional
         x-coordinate limits in the WaveDiff coordinate system (focal plane). Shape: (2,).
         Defaults to [0, 1e3].
-    y_lims : list[float] | np.ndarray, optional
+    y_lims : Union[list[float], np.ndarray] = [0, 1e3], optional
         y-coordinate limits in the WaveDiff coordinate system (focal plane). Shape: (2,).
         Defaults to [0, 1e3].
     tel_focal_length : float, optional
@@ -65,8 +65,8 @@ class CCDMisalignmentCalculator:
     def __init__(
         self,
         tiles_path: str,
-        x_lims: list[float] | np.ndarray = [0, 1e3],
-        y_lims: list[float] | np.ndarray = [0, 1e3],
+        x_lims: Union[list[float], np.ndarray] = [0, 1e3],
+        y_lims: Union[list[float], np.ndarray] = [0, 1e3],
         tel_focal_length: float = 24.5,
         tel_diameter: float = 1.2,
     ) -> None:
