@@ -12,9 +12,7 @@ import time
 import tensorflow as tf
 import tensorflow_addons as tfa
 import logging
-from wf_psf.psf_models import (
-    psf_models
-)
+from wf_psf.psf_models import psf_models
 import wf_psf.training.train_utils as train_utils
 
 logger = logging.getLogger(__name__)
@@ -438,17 +436,17 @@ def train(
             hasattr(psf_model, "save_optim_history_param")
             and psf_model.save_optim_history_param
         ):
-            saving_optim_hist[f"param_cycle{current_cycle}"] = (
-                hist_param.history
-            )
+            saving_optim_hist[
+                "param_cycle{}".format(current_cycle)
+            ] = hist_param.history
 
         if (
             hasattr(psf_model, "save_optim_history_nonparam")
             and psf_model.save_optim_history_nonparam
         ):
-            saving_optim_hist[f"nonparam_cycle{current_cycle}"] = (
-                hist_non_param.history
-            )
+            saving_optim_hist[
+                "nonparam_cycle{}".format(current_cycle)
+            ] = hist_non_param.history
 
     # Save last cycle if no cycles were saved
     if not training_handler.multi_cycle_params.save_all_cycles:

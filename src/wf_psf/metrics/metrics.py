@@ -125,7 +125,7 @@ def compute_poly_metric(
 
     # Calculate residuals
     residuals = np.sqrt(np.sum((gt_preds - preds) ** 2, axis=(1, 2)) / weights)
-    gt_star_mean = np.sqrt(np.sum((gt_preds) ** 2, axis=(1, 2))/ weights)
+    gt_star_mean = np.sqrt(np.sum((gt_preds) ** 2, axis=(1, 2)) / weights)
 
     # RMSE calculations
     rmse = np.mean(residuals)
