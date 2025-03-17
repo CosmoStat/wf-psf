@@ -342,6 +342,11 @@ def train(
         # Prepare the saving callback
         # Prepare to save the model as a callback
         # -----------------------------------------------------
+        if training_handler.training_hparams.loss == "mask_mse":
+            monitor = "loss"
+        else:
+            monitor = "mean_squared_error"
+
         model_chkp_callback = training_handler._prepare_callbacks(
             checkpoint_dir, current_cycle, monitor=monitor
         )
