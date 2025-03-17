@@ -275,8 +275,8 @@ def calculate_sample_weights(outputs: np.ndarray, use_sample_weights: bool, loss
                      for _im, _win in zip(images, masked_windows)
                  ]
              )
-         else:
-             # Estimate noise standard deviation
+        else:
+            # Estimate noise standard deviation
             imgs_std = np.array([std_est.estimate_noise(_im) for _im in outputs])
         
         # Calculate variances
@@ -526,7 +526,7 @@ def general_train_cycle(
     )
 
     # Calculate sample weights
-    sample_weight = calculate_sample_weights(outputs, use_sample_weights)
+    sample_weight = calculate_sample_weights(outputs, use_sample_weights, loss)
 
     # Define the training cycle
     if cycle_def in ("parametric", "complete", "only-parametric"):
