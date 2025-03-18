@@ -125,14 +125,17 @@ training:
 
   # Training hyperparameters
   training_hparams:
+    # Number of training samples processed per batch. Affects memory usage and convergence speed.
     batch_size: 32
 
-    # Loss function to use while training. Options are: 'mask_mse' and 'mse'. Default is 'mse'.
+    # Loss function used during training. 
+    # Options: 'mask_mse' (masked mean squared error) and 'mse' (mean squared error).
+    # Default: 'mse'. Choose 'mask_mse' if you need to ignore certain pixels in the loss computation.
     loss: 'mask_mse'
 
     multi_cycle_params:
      
-      # Total amount of cycles to perform.  
+      # Number of training cycles to perform. Each cycle may use different learning rates or number of epochs.
       total_cycles: 2
          
       # Train cycle definition. It can be: 'parametric', 'non-parametric', 'complete', 'only-non-parametric' and 'only-parametric'."
