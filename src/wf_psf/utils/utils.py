@@ -273,6 +273,7 @@ class NoiseEstimator:
 
         for _x in range(self.img_dim[0]):
             for _y in range(self.img_dim[1]):
+                # If pixel is within the exclusion radius, set it to False
                 if np.sqrt((_x - mid_x) ** 2 + (_y - mid_y) ** 2) <= self.win_rad:
                     self.window[_x, _y] = False
 
@@ -294,7 +295,7 @@ class NoiseEstimator:
         """
         return 1.4826 * np.median(np.abs(x - np.median(x)))
 
-    def estimate_noise(self, image: np.ndarray, window=Optional[np.ndarray] = None) -> float:
+    def estimate_noise(self, image: np.ndarray, window: Optional[np.ndarray] = None) -> float:
         """
         Estimates the noise level of an image using the MAD estimator.
 
