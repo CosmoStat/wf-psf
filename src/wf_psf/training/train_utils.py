@@ -77,32 +77,45 @@ class L1ParamScheduler(tf.keras.callbacks.Callback):
         self.model.set_l1_rate(scheduled_l1_rate)
         # tf.keras.backend.set_value(self.model.optimizer.lr, scheduled_lr)
 
-def masked_mse(y_true, y_pred, mask, sample_weight=None):
-    """Masked Mean Squared Error.
+def masked_mse(
+    y_true: tf.Tensor,
+    y_pred: tf.Tensor,
+    mask: tf.Tensor,
+    sample_weight: Optional[tf.Tensor] = None
+    ) -> tf.Tensor:
+    """Compute the mean squared error over the masked regions.
 
     Parameters
     ----------
-    y_true: Tensor
-        True values
-    y_pred: Tensor
-        Predicted values
-    mask: Tensor
-        Mask to be applied
-    sample_weight: Tensor
-        Sample weights
+    y_true : tf.Tensor
+        True values with shape (batch, height, width).
+    y_pred : tf.Tensor
+        Predicted values with shape (batch, height, width).
+    mask : tf.Tensor
+        A mask to apply, which **can contain float values in [0,1]**. 
+        - `0` means the pixel is ignored.
+        - `1` means the pixel is fully considered.
+        - Values in `(0,1]` act as weights for partial consideration.
+    sample_weight : tf.Tensor, optional
+        Sample weights for each image in the batch, with shape (batch,).
+        If provided, it is broadcasted over the spatial dimensions.
 
     Returns
     -------
-    Tensor
-        Masked Mean Squared Error
+    tf.Tensor
+        The mean squared error computed over the masked regions.
     """
-    # Calculate the masked squared error
+    # Compute the squared error and apply the mask
     error = mask * tf.square(y_true - y_pred) # (batch, height, width)
+
     # Apply sample weights if provided
     if sample_weight is not None:
         error *= tf.reshape(sample_weight, (-1, 1, 1))
-    unmasked_pixels = tf.reduce_sum(mask, axis=[1, 2])  # (batch,)
-    # Weight by number of non masked pixels and by batch size
+
+    # Sum over spatial dimensions to compute the mask weight
+    mask_sum = tf.reduce_sum(mask, axis=[1, 2])  # (batch,)
+
+    # Compute the weighted mean squared error
     return tf.reduce_sum(error / tf.reshape(unmasked_pixels, (-1, 1, 1))) / tf.cast(
         tf.shape(y_true)[0], y_true.dtype
     )
