@@ -9,11 +9,76 @@ This module contains unit tests for the wf_psf.utils utils module.
 import tensorflow as tf
 import numpy as np
 from wf_psf.utils.utils import (
+    NoiseEstimator,
     zernike_generator,
     compute_unobscured_zernike_projection,
     decompose_tf_obscured_opd_basis,
 )
 from wf_psf.sims.psf_simulator import PSFSimulator
+
+def test_initialization():
+    """Test if NoiseEstimator initializes correctly."""
+    img_dim = (50, 50)
+    win_rad = 10
+    estimator = NoiseEstimator(img_dim, win_rad)
+
+    assert estimator.img_dim == img_dim
+    assert estimator.win_rad == win_rad
+    assert isinstance(estimator.window, np.ndarray)
+    assert estimator.window.shape == img_dim
+
+def test_window_mask():
+    """Test if the exclusion window is correctly applied."""
+    img_dim = (50, 50)
+    win_rad = 10
+    estimator = NoiseEstimator(img_dim, win_rad)
+
+    mid_x, mid_y = img_dim[0] / 2, img_dim[1] / 2
+
+    for x in range(img_dim[0]):
+        for y in range(img_dim[1]):
+            inside_radius = np.sqrt((x - mid_x) ** 2 + (y - mid_y) ** 2) <= win_rad
+            assert estimator.window[x, y] == (not inside_radius)
+
+def test_sigma_mad():
+    """Test the MAD-based standard deviation estimation."""
+    data = np.array([1, 1, 2, 2, 3, 3, 4, 4, 100])  # Outlier should not heavily influence MAD
+    expected_sigma = 1.4826 * np.median(np.abs(data - np.median(data)))
+
+    assert np.isclose(NoiseEstimator.sigma_mad(data), expected_sigma, atol=1e-4)
+
+def test_estimate_noise_without_window():
+    """Test noise estimation using the default exclusion window."""
+    img_dim = (50, 50)
+    win_rad = 5
+    estimator = NoiseEstimator(img_dim, win_rad)
+
+    # Create a synthetic noisy image (Gaussian noise with mean=0, std=10)
+    np.random.seed(42)
+    image = np.random.normal(0, 10, img_dim)
+
+    noise_estimation = estimator.estimate_noise(image)
+    
+    # The estimated noise should be close to 10 (the true std)
+    assert np.isclose(noise_estimation, 10, atol=2)
+
+def test_estimate_noise_with_custom_window():
+    """Test noise estimation with a custom mask."""
+    img_dim = (50, 50)
+    estimator = NoiseEstimator(img_dim, win_rad=5)
+
+    # Create synthetic noise with std=5
+    np.random.seed(42)
+    image = np.random.normal(0, 5, img_dim)
+
+    # Custom window excluding top-left corner
+    custom_window = np.ones(img_dim, dtype=bool)
+    custom_window[:10, :10] = False  # Mask out top-left 10x10 pixels
+
+    noise_estimation = estimator.estimate_noise(image, window=custom_window)
+
+    # Since we are still sampling from the same noise distribution, estimate should be near 5
+    assert np.isclose(noise_estimation, 5, atol=1)
 
 
 def test_unobscured_zernike_projection():
