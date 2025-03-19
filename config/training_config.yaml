@@ -33,6 +33,7 @@ training:
     sigma_centroid_window: 2.5
 
     # Rotate obscuration mask model in degrees. It should be multiple of 90.
+    # The rotation will be counterclockwise.
     obscuration_rot_angle: 0
 
     # Flag to perform CCD misalignment error correction
