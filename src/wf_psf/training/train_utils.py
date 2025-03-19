@@ -280,15 +280,15 @@ def calculate_sample_weights(outputs: np.ndarray, use_sample_weights: bool, loss
         
         if loss == "masked_mean_squared_error":
             logger.info("Estimating noise standard deviation for masked images..")
-             images = outputs[..., 0]
-             masks = np.array(outputs[..., 1], dtype=bool)
-             masked_windows = std_est.window * masks
-             imgs_std = np.array(
-                 [
-                     std_est.estimate_noise(_im, _win)
-                     for _im, _win in zip(images, masked_windows)
-                 ]
-             )
+            images = outputs[..., 0]
+            masks = np.array(outputs[..., 1], dtype=bool)
+            masked_windows = std_est.window * masks
+            imgs_std = np.array(
+                [
+                    std_est.estimate_noise(_im, _win)
+                    for _im, _win in zip(images, masked_windows)
+                ]
+            )
         else:
             logger.info("Estimating noise standard deviation for images..")
             # Estimate noise standard deviation
