@@ -241,7 +241,7 @@ class PSFSimulator(object):
         N_filter: int
             Length of the low-pass filter [pixels]
         rot_angle: int
-            Rotation angle in degrees to apply to the obscuration pattern. It only supports 90 degree rotations.
+            Rotation angle in degrees to apply to the obscuration pattern. It only supports 90 degree rotations. The rotation will be counterclockwise.
 
         """
         # Telescope parameters
