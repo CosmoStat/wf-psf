@@ -374,7 +374,7 @@ def train(
             outputs=data_conf.training_data.dataset["noisy_stars"]
             output_val = data_conf.test_data.dataset["stars"]
 
-        logger.info("Starting cycle {}..".format(current_cycle))
+        logger.info(f"Starting cycle {current_cycle}..")
         start_cycle = time.time()
 
         # Compute training per cycle
@@ -442,7 +442,7 @@ def train(
             and psf_model.save_optim_history_param
         ):
             saving_optim_hist[
-                "param_cycle{}".format(current_cycle)
+                f"param_cycle{current_cycle}"
             ] = hist_param.history
 
         if (
@@ -450,7 +450,7 @@ def train(
             and psf_model.save_optim_history_nonparam
         ):
             saving_optim_hist[
-                "nonparam_cycle{}".format(current_cycle)
+                f"nonparam_cycle{current_cycle}"
             ] = hist_non_param.history
 
     # Save last cycle if no cycles were saved
