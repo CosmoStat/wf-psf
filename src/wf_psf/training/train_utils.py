@@ -116,7 +116,7 @@ def masked_mse(
     mask_sum = tf.reduce_sum(mask, axis=[1, 2])  # (batch,)
 
     # Compute the weighted mean squared error
-    return tf.reduce_sum(error / tf.reshape(unmasked_pixels, (-1, 1, 1))) / tf.cast(
+    return tf.reduce_sum(error / tf.reshape(mask_sum, (-1, 1, 1))) / tf.cast(
         tf.shape(y_true)[0], y_true.dtype
     )
 
@@ -279,6 +279,7 @@ def calculate_sample_weights(outputs: np.ndarray, use_sample_weights: bool, loss
         std_est = NoiseEstimator(img_dim=img_dim, win_rad=win_rad)
         
         if loss == "masked_mean_squared_error":
+            logger.info("Estimating noise standard deviation for masked images..")
              images = outputs[..., 0]
              masks = np.array(outputs[..., 1], dtype=bool)
              masked_windows = std_est.window * masks
@@ -289,6 +290,7 @@ def calculate_sample_weights(outputs: np.ndarray, use_sample_weights: bool, loss
                  ]
              )
         else:
+            logger.info("Estimating noise standard deviation for images..")
             # Estimate noise standard deviation
             imgs_std = np.array([std_est.estimate_noise(_im) for _im in outputs])
         
