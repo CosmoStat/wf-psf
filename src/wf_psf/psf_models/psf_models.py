@@ -259,7 +259,7 @@ def tf_obscurations(pupil_diam, N_filter=2, rot_angle=0):
     N_filters: int
         Number of filters
     rot_angle: int
-        Rotation angle in degrees to apply to the obscuration pattern. It only supports 90 degree rotations.
+        Rotation angle in degrees to apply to the obscuration pattern. It only supports 90 degree rotations. The rotation will be counterclockwise.
 
     Returns
     -------
