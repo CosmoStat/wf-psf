@@ -87,6 +87,7 @@ class MetricsParamsHandler:
         # Check if testing predictions should be masked
         mask = self.trained_model.training_hparams.loss == "mask_mse"
 
+        # Compute metrics
         rmse, rel_rmse, std_rmse, std_rel_rmse = wf_metrics.compute_poly_metric(
             tf_semiparam_field=psf_model,
             gt_tf_semiparam_field=psf_models.get_psf_model(
@@ -327,9 +328,11 @@ def evaluate_model(
     weights_path,
     metrics_output,
 ):
-    r"""Evaluate the trained model.
+    """Evaluate the trained model on both training and test datasets by computing various metrics.
+    
+    The metrics to evaluate are determined by the configuration in `metrics_params` and `metric_evaluation_flags`.
+    Metrics are computed for both the training and test datasets, and results are stored in a dictionary.
 
-    For parameters check the training script click help.
 
     Inputs
     ------
