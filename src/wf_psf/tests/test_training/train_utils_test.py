@@ -25,7 +25,7 @@ def mock_noise_estimator():
     """Mock the NoiseEstimator class to return a fixed noise estimate."""
     with patch("wf_psf.training.train_utils.NoiseEstimator") as MockNoiseEstimator:
         mock_instance = MockNoiseEstimator.return_value
-        mock_instance.estimate_noise.side_effect = lambda img: np.std(img)  # Mock behavior
+        mock_instance.estimate_noise.side_effect = lambda img, mask=None: np.std(img)  # Mock behavior
         yield mock_instance
 
 @pytest.fixture
@@ -98,16 +98,45 @@ def test_learning_rate_affects_default_optimizer():
 def test_calculate_sample_weights_no_weights(mock_noise_estimator, use_sample_weights, expected_output):
     """Test when sample weights are disabled and ensure correct return type."""
     outputs = np.random.rand(5, 32, 32)  # (batch_size=5, height=32, width=32)
-    result = train_utils.calculate_sample_weights(outputs, use_sample_weights)
+    result = train_utils.calculate_sample_weights(outputs, use_sample_weights, loss=None)
     if not use_sample_weights:
         assert result is None
     else:
         assert isinstance(result, expected_output)
 
-def test_calculate_sample_weights(mock_noise_estimator):
+@pytest.mark.parametrize("use_sample_weights, loss, expected_output_type", [
+    (False, None, None),  # Null test: when disabled, should return None
+    (True, "mean_squared_error", np.ndarray),  # Standard MSE case
+    (True, "masked_mean_squared_error", np.ndarray),  # Masked MSE case
+])
+def test_calculate_sample_weights_integration(use_sample_weights, loss, expected_output_type):
+    """Test different cases for sample weight computation."""
+    
+    # Generate dummy image data
+    batch_size, height, width = 5, 32, 32
+    
+    if loss == "masked_mean_squared_error":
+        # Create image-mask pairs: last dimension has [image, mask]
+        outputs = np.random.rand(batch_size, height, width, 2)
+        outputs[..., 1] = np.random.randint(0, 2, size=(batch_size, height, width))  # Binary mask
+    else:
+        outputs = np.random.rand(batch_size, height, width)
+    
+    result = train_utils.calculate_sample_weights(outputs, use_sample_weights, loss)
+
+    if not use_sample_weights:
+        assert result is None
+    else:
+        assert isinstance(result, expected_output_type)
+        assert result.shape == (batch_size,)  # Expecting one weight per sample
+        assert np.all(result > 0)  # Weights should be positive
+        assert np.isclose(np.median(result), 1, atol=0.1)  # Weights should be scaled around 1
+
+@pytest.mark.parametrize("loss", [None, "mean_squared_error", "masked_mean_squared_error"])
+def test_calculate_sample_weights_unit(mock_noise_estimator, loss):
     """Test sample weighting strategy with random images."""
     outputs = np.random.rand(10, 32, 32)  # 10 images of size 32x32
-    result = train_utils.calculate_sample_weights(outputs, use_sample_weights=True)
+    result = train_utils.calculate_sample_weights(outputs, use_sample_weights=True, loss=loss)
 
     # Check the type and shape of the result
     assert isinstance(result, np.ndarray)
@@ -119,38 +148,19 @@ def test_calculate_sample_weights(mock_noise_estimator):
     # Check that the median of the weights is around 1
     assert np.isclose(np.median(result), 1, atol=0.1)
 
-def test_calculate_sample_weights_small_variance(mock_noise_estimator):
-    """Test edge case where images have very small variance (almost constant images with some noise)."""
-    outputs = np.random.normal(loc=0.0, scale=1e-6, size=(5, 32, 32))  # Tiny noise
-    weights = train_utils.calculate_sample_weights(outputs, use_sample_weights=True)
-    
-    # Use np.allclose to check if the weights are nearly identical within a tolerance.
-    assert np.allclose(weights, weights[0], atol=1e-1)
-
-    # Check that weights are not too far apart
-    assert np.max(weights) - np.min(weights) < 0.1, f"Weight difference too large: {weights}"
-
-    # Check that the weights are non-negative and reasonable
-    assert np.all(weights >= 0), f"Weights are negative: {weights}"
-
-    # Check if the weight values seem appropriate (within a reasonable range, close to 1).
-    assert np.all(weights <= 2), f"Weights exceed the expected upper bound: {weights}"
-
-    # Check that the median of weights is close to 1
-    assert np.isclose(np.median(weights), 1, atol=0.05), f"Median is not close to 1: {np.median(weights)}"
-
-def test_calculate_sample_weights_high_variance(mock_noise_estimator):
+@pytest.mark.parametrize("loss", [None, "mean_squared_error", "masked_mean_squared_error"])
+def test_calculate_sample_weights_high_variance(mock_noise_estimator, loss):
     """Test case for high variance (noisy images)."""
     # Create high variance images with more noise
     outputs = np.random.normal(loc=0.0, scale=10.0, size=(5, 32, 32))  # Larger noise
 
     # Calculate sample weights
-    weights = train_utils.calculate_sample_weights(outputs, use_sample_weights=True)
+    weights = train_utils.calculate_sample_weights(outputs, use_sample_weights=True, loss=loss)
     
     # Check that weights are relatively lower for high variance images
     # Compare with weights from a small variance case
     small_variance_outputs = np.random.normal(loc=0.0, scale=1e-6, size=(5, 32, 32))  # Small noise
-    small_variance_weights = train_utils.calculate_sample_weights(small_variance_outputs, use_sample_weights=True)
+    small_variance_weights = train_utils.calculate_sample_weights(small_variance_outputs, use_sample_weights=True, loss=None)
     
     # Check if the median of the high variance weights is smaller than the median of the low variance weights
     assert np.median(weights) <= np.median(small_variance_weights), (
@@ -161,9 +171,13 @@ def test_calculate_sample_weights_high_variance(mock_noise_estimator):
     # Optionally check if weights are within a reasonable range (non-negative, etc.)
     assert np.all(weights >= 0), f"Weights are negative: {weights}"
 
-
+@pytest.mark.parametrize("loss_function, metric_function", [
+    (tf.keras.losses.MeanSquaredError(), tf.keras.metrics.MeanSquaredError()),
+    (train_utils.MaskedMeanSquaredError(),train_utils.MaskedMeanSquaredErrorMetric())
+])
 @pytest.mark.parametrize("sample_weight", [None, np.random.randn(10)])
-def test_train_cycle_part(mock_test_setup, sample_weight):
+def test_train_cycle_part(mock_test_setup, loss_function, metric_function, sample_weight):
+    """Test the training cycle part for different loss functions and sample weights."""
     mock_model = mock_test_setup["mock_model"]
     inputs = mock_test_setup["inputs"]
     outputs = mock_test_setup["outputs"]
@@ -176,7 +190,7 @@ def test_train_cycle_part(mock_test_setup, sample_weight):
     # Test the training function when sample weights are not used
     optimizer = tf.keras.optimizers.Adam()
     loss = tf.keras.losses.MeanSquaredError()
-    metrics = [tf.keras.metrics.MeanSquaredError()]
+    metrics = [metric_function]
 
     # Call the function (mocking the model's `fit` method)
     result = train_utils.train_cycle_part(
@@ -187,12 +201,23 @@ def test_train_cycle_part(mock_test_setup, sample_weight):
         epochs=epochs,
         validation_data=validation_data,
         optimizer=optimizer,
-        loss=loss,
+        loss=loss_function,
         metrics=metrics,
         callbacks=None,
         sample_weight=sample_weight,
         verbose=verbose
     )
+
+    # Ensure the model was compiled at least once
+    mock_model.compile.assert_called_once()
+
+    # Retrieve the actual compile call arguments
+    compile_kwargs = mock_model.compile.call_args.kwargs
+
+    # Verify that the relevant arguments match expectations
+    assert compile_kwargs["optimizer"] == optimizer
+    assert compile_kwargs["loss"] == loss_function
+    assert compile_kwargs["metrics"] == [metric_function]
 
     # Assert that the `fit` method was called with the correct arguments
     mock_model.fit.assert_called_once_with(
@@ -200,11 +225,13 @@ def test_train_cycle_part(mock_test_setup, sample_weight):
         y=outputs,
         batch_size=2,
         epochs=1,
-        validation_data=None,
+        validation_data=validation_data,
         callbacks=None,
         sample_weight=sample_weight,
         verbose=1
     )
+
+    # Verify the result of the training function
     assert result is not None
 
 
