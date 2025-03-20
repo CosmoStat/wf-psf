@@ -129,8 +129,8 @@ training:
     batch_size: 32
 
     # Loss function used during training. 
-    # Options: 'mask_mse' (masked mean squared error) and 'mse' (mean squared error).
-    # Default: 'mse'. Choose 'mask_mse' if you need to ignore certain pixels in the loss computation.
+    # Options: 'mask_mse' (Masked Mean Squared Error) and 'mse' (Mean Squared Error).
+    # Default: 'mask_mse'. Choose 'mse' if the dataset does not include a mask.
     loss: 'mask_mse'
 
     multi_cycle_params:
