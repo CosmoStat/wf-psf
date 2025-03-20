@@ -61,6 +61,7 @@ training_config = RecursiveNamespace(
         ),
     ),
     training_hparams=RecursiveNamespace(
+        loss="mse",
         n_epochs_params=[2, 2],
         n_epochs_non_params=[2, 2],
         batch_size=32,

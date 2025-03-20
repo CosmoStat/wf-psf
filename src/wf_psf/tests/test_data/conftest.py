@@ -61,6 +61,7 @@ training_config = RecursiveNamespace(
         n_epochs_params=[2, 2],
         n_epochs_non_params=[2, 2],
         batch_size=32,
+        loss="mse",
         multi_cycle_params=RecursiveNamespace(
             total_cycles=2,
             cycle_def="complete",
