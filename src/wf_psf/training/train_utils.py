@@ -282,11 +282,10 @@ def calculate_sample_weights(outputs: np.ndarray, use_sample_weights: bool, loss
             logger.info("Estimating noise standard deviation for masked images..")
             images = outputs[..., 0]
             masks = np.array(outputs[..., 1], dtype=bool)
-            masked_windows = std_est.window * masks
             imgs_std = np.array(
                 [
                     std_est.estimate_noise(_im, _win)
-                    for _im, _win in zip(images, masked_windows)
+                    for _im, _win in zip(images, masks)
                 ]
             )
         else:
@@ -300,8 +299,6 @@ def calculate_sample_weights(outputs: np.ndarray, use_sample_weights: bool, loss
         # Use inverse variance for weights and scale by median
         sample_weight = 1 / variances
         sample_weight /= np.median(sample_weight)
-
-
     else:
         sample_weight = None
 

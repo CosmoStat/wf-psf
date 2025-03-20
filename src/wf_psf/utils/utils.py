@@ -277,6 +277,25 @@ class NoiseEstimator:
                 if np.sqrt((_x - mid_x) ** 2 + (_y - mid_y) ** 2) <= self.win_rad:
                     self.window[_x, _y] = False
 
+    def apply_mask(self, mask: np.ndarray = None) -> np.ndarray:
+        """
+        Apply a given mask to the exclusion window.
+
+        Parameters
+        ----------
+        mask : np.ndarray, optional
+            A boolean mask to apply to the exclusion window. If None, the exclusion 
+            window is returned without any modification.
+
+        Returns
+        -------
+        np.ndarray
+            The resulting boolean array after applying the mask to the exclusion window.
+        """
+        if mask is None:
+            return self.window  # Return just the window if no mask is provided
+        return self.window & mask  # Otherwise, apply the mask as usual
+
     @staticmethod
     def sigma_mad(x):
         """
@@ -295,7 +314,7 @@ class NoiseEstimator:
         """
         return 1.4826 * np.median(np.abs(x - np.median(x)))
 
-    def estimate_noise(self, image: np.ndarray, window: Optional[np.ndarray] = None) -> float:
+    def estimate_noise(self, image: np.ndarray, mask: np.ndarray = None) -> float:
         """
         Estimates the noise level of an image using the MAD estimator.
 
@@ -303,18 +322,19 @@ class NoiseEstimator:
         ----------
         image : np.ndarray
             The input image for noise estimation.
-        window : np.ndarray, optional
-            A boolean mask specifying which pixels to include in the estimation.
-            If None, the default exclusion window is used.
+        mask : np.ndarray, optional
+            A boolean mask specifying which pixels to include in the noise estimation.
+            If None, the default exclusion window is used. The mask should have the same shape as `image`.
 
         Returns
         -------
         float
-            Estimated noise standard deviation.
+            The estimated noise standard deviation (MAD of the image pixels within the window or mask).
         """
-        if window is not None:
-            return self.sigma_mad(image[window])
+        if mask is not None:
+            return self.sigma_mad(image[self.apply_mask(mask)])
         
+        # Use the default window if no mask is provided
         return self.sigma_mad(image[self.window])
 
 class ZernikeInterpolation(object):
