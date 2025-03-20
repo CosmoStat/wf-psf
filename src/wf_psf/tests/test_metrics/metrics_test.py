@@ -12,6 +12,9 @@ from wf_psf.metrics.metrics_interface import MetricsParamsHandler
 import numpy as np
 import os
 
+cwd = os.getcwd()
+
+# Mock the metrics parameters (Recursive Namespace object)
 metrics_params = RecursiveNamespace(
     model_save_path="psf_model",
     saved_training_cycle="2",
@@ -20,10 +23,11 @@ metrics_params = RecursiveNamespace(
     plotting_config=None,
     eval_mono_metric_rmse=True,
     eval_opd_metric_rmse=True,
-    eval_train_shape_sr_metric_rmse=True,
+    eval_train_shape_results_dict=True,
+    eval_test_shape_results_dict=True,     
     ground_truth_model=RecursiveNamespace(
         model_params=RecursiveNamespace(
-            model_name="poly",
+            model_name="ground_truth_poly",
             dataset_type="C_poly",
             sed_interp_pts_per_bin=0,
             sed_extrapolate=True,
@@ -63,8 +67,6 @@ metrics_params = RecursiveNamespace(
         output_dim=64,
     ),
 )
-
-cwd = os.getcwd()
 
 psf_model_path = os.path.join(
     cwd,
