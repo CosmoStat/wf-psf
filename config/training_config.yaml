@@ -35,7 +35,7 @@ training:
     # Rotation angle (in degrees) for the obscuration mask.  
     # Must be a multiple of 90 (0, 90, 180, 270, etc.).  
     # Rotation is counterclockwise. 
-    obscuration_rot_angle: 0
+    obscuration_rotation_angle: 0
 
     # Flag to perform CCD misalignment error correction
     add_ccd_misalignments: False
