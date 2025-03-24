@@ -228,7 +228,7 @@ class PSFSimulator(object):
         return psf
 
     @staticmethod
-    def generate_pupil_obscurations(N_pix=1024, N_filter=3, rot_angle=0):
+    def generate_pupil_obscurations(N_pix=1024, N_filter=3, rotation_angle=0):
         """Generate Euclid like pupil obscurations.
 
         Simple procedure considering only the 2D plane.
@@ -240,8 +240,10 @@ class PSFSimulator(object):
             Total number of pixels
         N_filter: int
             Length of the low-pass filter [pixels]
-        rot_angle: int
-            Rotation angle in degrees to apply to the obscuration pattern. It only supports 90 degree rotations. The rotation will be counterclockwise.
+        rotation_angle: int
+            Rotation angle in degrees for the obscuration pattern.
+            Only multiples of 90 (0, 90, 180, 270, etc.) are supported.
+            Rotation is counterclockwise.
 
         """
         # Telescope parameters
@@ -343,7 +345,7 @@ class PSFSimulator(object):
 
         # Only supporting 90 degree rotations.
         # Compute the 90 degree mulitple rotation to apply
-        k = int((rot_angle // 90) % 4)
+        k = int((rotation_angle // 90) % 4)
         pupil_plane = np.rot90(pupil_plane, k=k)
 
         return pupil_plane
