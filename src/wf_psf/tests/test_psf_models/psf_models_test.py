@@ -80,16 +80,16 @@ def test_tf_obscurations():
     # Define standard input parameters
     pupil_diam = 128
     N_filter = 3
-    rot_angle = 90
+    rotation_angle = 90
 
     # Call the function to generate rotated obscurations
     rotated_obscurations = psf_models.tf_obscurations(
-        pupil_diam=pupil_diam, N_filter=N_filter, rot_angle=rot_angle
+        pupil_diam=pupil_diam, N_filter=N_filter, rotation_angle=rotation_angle
     )
 
     # Generate non-rotated obscurations
     non_rotated_obscurations = psf_models.tf_obscurations(
-        pupil_diam=pupil_diam, N_filter=N_filter, rot_angle=0
+        pupil_diam=pupil_diam, N_filter=N_filter, rotation_angle=0
     )
 
     # Assertions to verify properties of the returned tensor
@@ -104,7 +104,7 @@ def test_tf_obscurations():
     expected_shape = (pupil_diam, pupil_diam)
     assert rotated_obscurations.shape == expected_shape
 
-    k = int((rot_angle // 90) % 4)
+    k = int((rotation_angle // 90) % 4)
     manually_rotated_obscurations = np.rot90(non_rotated_obscurations.numpy(), k=k)
 
     # Check if the rotated obscurations are equal to manually rotated obscurations
