@@ -32,8 +32,9 @@ training:
     # Sigma of the window function used to compute the centroids. Default Euclid value is 2.5
     sigma_centroid_window: 2.5
 
-    # Rotate obscuration mask model in degrees. It should be multiple of 90.
-    # The rotation will be counterclockwise.
+    # Rotation angle (in degrees) for the obscuration mask.  
+    # Must be a multiple of 90 (0, 90, 180, 270, etc.).  
+    # Rotation is counterclockwise. 
     obscuration_rot_angle: 0
 
     # Flag to perform CCD misalignment error correction
