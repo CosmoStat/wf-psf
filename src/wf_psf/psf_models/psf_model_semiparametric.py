@@ -114,7 +114,7 @@ class TFSemiParametricField(tf.keras.Model):
         self.obscurations = psfm.tf_obscurations(
             pupil_diam=model_params.pupil_diameter,
             N_filter=model_params.LP_filter_length,
-            rot_angle=model_params.obscuration_rot_angle,
+            rotation_angle=model_params.obscuration_rotation_angle,
         )
         self.output_dim = model_params.output_dim
 
