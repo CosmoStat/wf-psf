@@ -19,7 +19,10 @@ metrics:
   eval_opd_metric: True
   
   #Evaluate the super-resolution and the shape RMSE metrics for the train dataset.
-  eval_train_shape_results_dict: True
+  eval_train_shape_results_dict: False
+
+  #Evaluate the super-resolution and the shape RMSE metrics for the test dataset.
+  eval_test_shape_results_dict: False
   
   # Name of Plotting Config file - Enter name of yaml file to run plot metrics else if empty run metrics evaluation only
   plotting_config: <enter name of plotting_config .yaml file or leave empty>

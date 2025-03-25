@@ -29,6 +29,7 @@ def compute_poly_metric(
     n_bins_gt=20,
     batch_size=16,
     dataset_dict=None,
+    mask=False,
 ):
     """Calculate metrics for polychromatic reconstructions.
 
@@ -61,6 +62,10 @@ def compute_poly_metric(
         is present, the noiseless stars from the dataset are used to compute the metrics.
         Otherwise, the stars are generated from the gt model.
         Default is `None`.
+    mask: bool
+        If `True`, predictions are masked using the same mask as the target data, ensuring
+        that metric calculations consider only unmasked regions.
+        Default is `False`.
 
     Returns
     -------
@@ -88,7 +93,7 @@ def compute_poly_metric(
 
     # Ground truth data preparation
     if dataset_dict is None or "stars" not in dataset_dict:
-        logger.info("Regenerating ground truth stars from model.")
+        logger.info("No precomputed ground truth stars found. Regenerating from the ground truth model using configured interpolation settings.")
         # Change interpolation parameters for the ground truth simPSF
         simPSF_np.SED_interp_pts_per_bin = 0
         simPSF_np.SED_sigma = 0
@@ -105,12 +110,22 @@ def compute_poly_metric(
         gt_preds = gt_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
     else:
-        logger.info("Using Ground Truth stars from dataset.")
+        logger.info("Using precomputed ground truth stars from dataset_dict['stars'].")
         gt_preds = dataset_dict["stars"]
 
+    # If the data is masked, mask the predictions
+    if mask:
+        logger.info("Applying masks to predictions. Only unmasked regions will be considered for metric calculations.")
+        masks = dataset_dict["masks"]
+        # Weight the mse by the number of unmasked pixels
+        weights = np.sum(masks, axis=(1, 2))
+        preds = preds * masks
+    else:
+        weights = np.ones(gt_preds.shape[0]) * gt_preds.shape[1] * gt_preds.shape[2]
+
     # Calculate residuals
-    residuals = np.sqrt(np.mean((gt_preds - preds) ** 2, axis=(1, 2)))
-    gt_star_mean = np.sqrt(np.mean((gt_preds) ** 2, axis=(1, 2)))
+    residuals = np.sqrt(np.sum((gt_preds - preds) ** 2, axis=(1, 2)) / weights)
+    gt_star_mean = np.sqrt(np.sum((gt_preds) ** 2, axis=(1, 2)) / weights)
 
     # RMSE calculations
     rmse = np.mean(residuals)
@@ -437,7 +452,7 @@ def compute_shape_metrics(
         or "super_res_stars" not in dataset_dict
         or "SR_stars" not in dataset_dict
     ):
-        logger.info("Generating ground truth super resolved stars from the gt model.")
+        logger.info("No pre-computed super-resolved ground truth stars found.  Regenerating ground truth super resolved stars from the ground-truth model using configured interpolation settings.")
         # Change interpolation parameters for the ground truth simPSF
         simPSF_np.SED_interp_pts_per_bin = 0
         simPSF_np.SED_sigma = 0
@@ -458,7 +473,7 @@ def compute_shape_metrics(
         )
 
     else:
-        logger.info("Using super resolved stars from dataset.")
+        logger.info("Using precomputed super-resolved ground truth stars from dataset.")
         if "super_res_stars" in dataset_dict:
             gt_predictions = dataset_dict["super_res_stars"]
         elif "SR_stars" in dataset_dict:

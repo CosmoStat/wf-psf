@@ -77,6 +77,87 @@ class L1ParamScheduler(tf.keras.callbacks.Callback):
         self.model.set_l1_rate(scheduled_l1_rate)
         # tf.keras.backend.set_value(self.model.optimizer.lr, scheduled_lr)
 
+def masked_mse(
+    y_true: tf.Tensor,
+    y_pred: tf.Tensor,
+    mask: tf.Tensor,
+    sample_weight: Optional[tf.Tensor] = None
+    ) -> tf.Tensor:
+    """Compute the mean squared error over the masked regions.
+
+    Parameters
+    ----------
+    y_true : tf.Tensor
+        True values with shape (batch, height, width).
+    y_pred : tf.Tensor
+        Predicted values with shape (batch, height, width).
+    mask : tf.Tensor
+        A mask to apply, which **can contain float values in [0,1]**. 
+        - `0` means the pixel is ignored.
+        - `1` means the pixel is fully considered.
+        - Values in `(0,1]` act as weights for partial consideration.
+    sample_weight : tf.Tensor, optional
+        Sample weights for each image in the batch, with shape (batch,).
+        If provided, it is broadcasted over the spatial dimensions.
+
+    Returns
+    -------
+    tf.Tensor
+        The mean squared error computed over the masked regions.
+    """
+    # Compute the squared error and apply the mask
+    error = mask * tf.square(y_true - y_pred) # (batch, height, width)
+
+    # Apply sample weights if provided
+    if sample_weight is not None:
+        error *= tf.reshape(sample_weight, (-1, 1, 1))
+
+    # Sum over spatial dimensions to compute the mask weight
+    mask_sum = tf.reduce_sum(mask, axis=[1, 2])  # (batch,)
+
+    # Compute the weighted mean squared error
+    return tf.reduce_sum(error / tf.reshape(mask_sum, (-1, 1, 1))) / tf.cast(
+        tf.shape(y_true)[0], y_true.dtype
+    )
+
+class MaskedMeanSquaredError(tf.keras.losses.Loss):
+    """Masked Mean Squared Error.""" 
+    def __init__(self, name="masked_mean_squared_error", **kwargs):
+        super().__init__(name=name, **kwargs)
+
+    def __call__(self, y_true, y_pred, sample_weight=None):
+        """Overrides __call__() to allow y_true and y_pred to have different shapes."""
+        return self.call(y_true, y_pred, sample_weight)
+
+    def call(self, y_true, y_pred, sample_weight=None):
+        """Calculates the loss."""
+        # Extract the target and the masks from y_true
+        y_target = y_true[..., 0]
+        mask = y_true[..., 1]
+        return masked_mse(y_target, y_pred, mask, sample_weight)
+
+    
+class MaskedMeanSquaredErrorMetric(tf.keras.metrics.Metric):
+    def __init__(self, name="masked_mean_squared_error", **kwargs):
+        super().__init__(name=name, **kwargs)
+        self.total_loss = self.add_weight(name="total_loss", initializer="zeros")
+        self.batch_count = self.add_weight(name="batch_count", initializer="zeros")
+
+    def update_state(self, y_true, y_pred, sample_weight=None):
+        # Extract the target and the masks from y_true
+        y_target = y_true[..., 0]
+        mask = y_true[..., 1]
+        loss = masked_mse(y_target, y_pred, mask, sample_weight)
+        self.total_loss.assign_add(loss)
+        self.batch_count.assign_add(1.0)
+
+    def result(self):
+        return self.total_loss / self.batch_count
+    
+    def reset_state(self):
+        self.total_loss.assign(0.0)
+        self.batch_count.assign(0.0)
+
 
 def l1_schedule_rule(epoch_n: int, l1_rate: float) -> float:
     """
@@ -170,7 +251,7 @@ def configure_optimizer_and_loss(
 
     return optimizer, loss, metrics
 
-def calculate_sample_weights(outputs: np.ndarray, use_sample_weights: bool) -> np.ndarray or None:
+def calculate_sample_weights(outputs: np.ndarray, use_sample_weights: bool, loss: str) -> np.ndarray or None:
     """
     Calculate sample weights based on image noise standard deviation.
 
@@ -184,6 +265,8 @@ def calculate_sample_weights(outputs: np.ndarray, use_sample_weights: bool) -> n
         and the next two dimensions are the image height and width.
     use_sample_weights: bool
         Flag indicating whether to compute sample weights. If True, sample weights will be computed based on the image noise.
+    loss: str
+        The loss function used for training. If the loss is "masked_mean_squared_error", the function will calculate the noise standard deviation for masked images.
 
     Returns
     -------
@@ -195,14 +278,27 @@ def calculate_sample_weights(outputs: np.ndarray, use_sample_weights: bool) -> n
         win_rad = np.ceil(outputs.shape[1] / 3.33)
         std_est = NoiseEstimator(img_dim=img_dim, win_rad=win_rad)
         
-        # Estimate noise standard deviation
-        imgs_std = np.array([std_est.estimate_noise(_im) for _im in outputs])
+        if loss == "masked_mean_squared_error":
+            logger.info("Estimating noise standard deviation for masked images..")
+            images = outputs[..., 0]
+            masks = np.array(outputs[..., 1], dtype=bool)
+            imgs_std = np.array(
+                [
+                    std_est.estimate_noise(_im, _win)
+                    for _im, _win in zip(images, masks)
+                ]
+            )
+        else:
+            logger.info("Estimating noise standard deviation for images..")
+            # Estimate noise standard deviation
+            imgs_std = np.array([std_est.estimate_noise(_im) for _im in outputs])
+        
+        # Calculate variances
         variances = imgs_std ** 2
-  
+    
         # Use inverse variance for weights and scale by median
         sample_weight = 1 / variances
         sample_weight /= np.median(sample_weight)
-
     else:
         sample_weight = None
 
@@ -442,7 +538,7 @@ def general_train_cycle(
     )
 
     # Calculate sample weights
-    sample_weight = calculate_sample_weights(outputs, use_sample_weights)
+    sample_weight = calculate_sample_weights(outputs, use_sample_weights, loss)
 
     # Define the training cycle
     if cycle_def in ("parametric", "complete", "only-parametric"):
