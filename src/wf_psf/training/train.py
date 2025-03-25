@@ -12,9 +12,7 @@ import time
 import tensorflow as tf
 import tensorflow_addons as tfa
 import logging
-from wf_psf.psf_models import (
-    psf_models
-)
+from wf_psf.psf_models import psf_models
 import wf_psf.training.train_utils as train_utils
 
 logger = logging.getLogger(__name__)
@@ -227,7 +225,7 @@ class TrainingParamsHandler:
         """
         return self.multi_cycle_params.learning_rate_non_params
 
-    def _prepare_callbacks(self, checkpoint_dir, current_cycle):
+    def _prepare_callbacks(self, checkpoint_dir, current_cycle, monitor="mean_squared_error"):
         """Prepare Callbacks.
 
         A function to prepare to save the model as a callback.
@@ -251,7 +249,7 @@ class TrainingParamsHandler:
             filepath_chkp_callback(
                 checkpoint_dir, self.model_name, self.id_name, current_cycle
             ),
-            monitor="mean_squared_error",
+            monitor=monitor,
             verbose=1,
             save_best_only=True,
             save_weights_only=True,
@@ -344,8 +342,13 @@ def train(
         # Prepare the saving callback
         # Prepare to save the model as a callback
         # -----------------------------------------------------
+        if training_handler.training_hparams.loss == "mask_mse":
+            monitor = "loss"
+        else:
+            monitor = "mean_squared_error"
+
         model_chkp_callback = training_handler._prepare_callbacks(
-            checkpoint_dir, current_cycle
+            checkpoint_dir, current_cycle, monitor=monitor
         )
 
         # Prepare the optimizers
@@ -355,6 +358,22 @@ def train(
         non_param_optim = tfa.optimizers.RectifiedAdam(
             learning_rate=training_handler.learning_rate_non_params[current_cycle - 1]
         )
+        logger.info(f"Starting cycle {current_cycle}..")
+        # Prepare loss & metrics
+        if training_handler.training_hparams.loss == 'mask_mse':
+            logger.info("Using masked MSE loss")
+            loss = train_utils.MaskedMeanSquaredError()
+            metrics = [train_utils.MaskedMeanSquaredErrorMetric()]
+            masks = data_conf.training_data.dataset['masks']
+            outputs = tf.stack([data_conf.training_data.dataset["noisy_stars"], masks], axis=-1)
+            output_val = tf.stack([data_conf.test_data.dataset["stars"], data_conf.test_data.dataset['masks']], axis=-1)
+        else:
+            loss = tf.keras.losses.MeanSquaredError()
+            metrics = [tf.keras.metrics.MeanSquaredError()]
+            masks = None
+            outputs=data_conf.training_data.dataset["noisy_stars"]
+            output_val = data_conf.test_data.dataset["stars"]
+
         logger.info(f"Starting cycle {current_cycle}..")
         start_cycle = time.time()
 
@@ -369,13 +388,13 @@ def train(
                 data_conf.training_data.dataset["positions"],
                 data_conf.training_data.sed_data,
             ],
-            outputs=data_conf.training_data.dataset["noisy_stars"],
+            outputs=outputs,
             validation_data=(
                 [
                     data_conf.test_data.dataset["positions"],
                     data_conf.test_data.sed_data,
                 ],
-                data_conf.test_data.dataset["stars"],
+                output_val,
             ),
             batch_size=training_handler.training_hparams.batch_size,
             learning_rate_param=training_handler.learning_rate_params[
@@ -388,10 +407,10 @@ def train(
             n_epochs_non_param=training_handler.n_epochs_non_params[current_cycle - 1],
             param_optim=param_optim,
             non_param_optim=non_param_optim,
-            param_loss=None,
-            non_param_loss=None,
-            param_metrics=None,
-            non_param_metrics=None,
+            param_loss=loss,
+            non_param_loss=loss,
+            param_metrics=metrics,
+            non_param_metrics=metrics,
             param_callback=None,
             non_param_callback=None,
             general_callback=[model_chkp_callback],
@@ -422,17 +441,17 @@ def train(
             hasattr(psf_model, "save_optim_history_param")
             and psf_model.save_optim_history_param
         ):
-            saving_optim_hist[f"param_cycle{current_cycle}"] = (
-                hist_param.history
-            )
+            saving_optim_hist[
+                f"param_cycle{current_cycle}"
+            ] = hist_param.history
 
         if (
             hasattr(psf_model, "save_optim_history_nonparam")
             and psf_model.save_optim_history_nonparam
         ):
-            saving_optim_hist[f"nonparam_cycle{current_cycle}"] = (
-                hist_non_param.history
-            )
+            saving_optim_hist[
+                f"nonparam_cycle{current_cycle}"
+            ] = hist_non_param.history
 
     # Save last cycle if no cycles were saved
     if not training_handler.multi_cycle_params.save_all_cycles:

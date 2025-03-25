@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Optional, Tuple
 import tensorflow as tf
 import tensorflow_addons as tfa
 import PIL
@@ -231,31 +232,40 @@ def add_noise(image, desired_SNR):
     return noisy_image
 
 
-class NoiseEstimator(object):
-    """Noise estimator.
+class NoiseEstimator:
+    """
+    A class for estimating noise levels in an image.
 
     Parameters
     ----------
-    img_dim: tuple of int
-        Image size
-    win_rad: int
-        window radius in pixels
-
+    img_dim : tuple of int
+        The dimensions of the image as (height, width).
+    win_rad : int
+        The radius of the exclusion window (in pixels).
     """
 
-    def __init__(self, img_dim, win_rad):
-        self.img_dim = img_dim
-        self.win_rad = win_rad
-        self.window = None
 
-        self._init_window()
+    def __init__(self, img_dim: Tuple[int, int], win_rad: int) -> None:
+        """
+        Initializes the NoiseEstimator instance.
+
+        Parameters
+        ----------
+        img_dim : tuple of int
+            The dimensions of the image as (height, width).
+        win_rad : int
+            The radius of the exclusion window (in pixels).
+        """
+        self.img_dim: Tuple[int, int] = img_dim
+        self.win_rad: int = win_rad
+
+        self._init_window() # Initialize self.window
 
     def _init_window(self):
-        # Calculate window function for estimating the noise
-        # We couldn't use Galsim to estimate the moments, so we chose to work
-        # with the real center of the image (25.5,25.5)
-        # instead of using the real centroid. Also, we use 13 instead of
-        # 5 * obs_sigma, so that we are sure to cut all the flux from the star
+        """
+        Initializes a boolean mask defining an exclusion window.
+        Pixels within the specified radius from the image center are excluded.
+        """
         self.window = np.ones(self.img_dim, dtype=bool)
 
         mid_x = self.img_dim[0] / 2
@@ -263,22 +273,69 @@ class NoiseEstimator(object):
 
         for _x in range(self.img_dim[0]):
             for _y in range(self.img_dim[1]):
+                # If pixel is within the exclusion radius, set it to False
                 if np.sqrt((_x - mid_x) ** 2 + (_y - mid_y) ** 2) <= self.win_rad:
                     self.window[_x, _y] = False
 
+    def apply_mask(self, mask: np.ndarray = None) -> np.ndarray:
+        """
+        Apply a given mask to the exclusion window.
+
+        Parameters
+        ----------
+        mask : np.ndarray, optional
+            A boolean mask to apply to the exclusion window. If None, the exclusion 
+            window is returned without any modification.
+
+        Returns
+        -------
+        np.ndarray
+            The resulting boolean array after applying the mask to the exclusion window.
+        """
+        if mask is None:
+            return self.window  # Return just the window if no mask is provided
+        return self.window & mask  # Otherwise, apply the mask as usual
+
     @staticmethod
     def sigma_mad(x):
-        r"""Compute an estimation of the standard deviation
-        of a Gaussian distribution using the robust
-        MAD (Median Absolute Deviation) estimator."""
+        """
+        Computes a robust estimation of the standard deviation of a Gaussian distribution
+        using the Median Absolute Deviation (MAD) estimator.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            Input array from which to compute the noise estimate.
+
+        Returns
+        -------
+        float
+            Estimated standard deviation of the noise.
+        """
         return 1.4826 * np.median(np.abs(x - np.median(x)))
 
-    def estimate_noise(self, image):
-        r"""Estimate the noise level of the image."""
+    def estimate_noise(self, image: np.ndarray, mask: np.ndarray = None) -> float:
+        """
+        Estimates the noise level of an image using the MAD estimator.
 
-        # Calculate noise std dev
+        Parameters
+        ----------
+        image : np.ndarray
+            The input image for noise estimation.
+        mask : np.ndarray, optional
+            A boolean mask specifying which pixels to include in the noise estimation.
+            If None, the default exclusion window is used. The mask should have the same shape as `image`.
+
+        Returns
+        -------
+        float
+            The estimated noise standard deviation (MAD of the image pixels within the window or mask).
+        """
+        if mask is not None:
+            return self.sigma_mad(image[self.apply_mask(mask)])
+        
+        # Use the default window if no mask is provided
         return self.sigma_mad(image[self.window])
-
 
 class ZernikeInterpolation(object):
     """Interpolate zernikes

@@ -84,6 +84,10 @@ class MetricsParamsHandler:
         """
         logger.info("Computing polychromatic metrics at low resolution.")
 
+        # Check if testing predictions should be masked
+        mask = self.trained_model.training_hparams.loss == "mask_mse"
+
+        # Compute metrics
         rmse, rel_rmse, std_rmse, std_rel_rmse = wf_metrics.compute_poly_metric(
             tf_semiparam_field=psf_model,
             gt_tf_semiparam_field=psf_models.get_psf_model(
@@ -99,6 +103,7 @@ class MetricsParamsHandler:
             n_bins_gt=self.metrics_params.ground_truth_model.model_params.n_bins_lda,
             batch_size=self.metrics_params.metrics_hparams.batch_size,
             dataset_dict=dataset,
+            mask=mask,
         )
 
         return {
@@ -323,9 +328,11 @@ def evaluate_model(
     weights_path,
     metrics_output,
 ):
-    r"""Evaluate the trained model.
+    """Evaluate the trained model on both training and test datasets by computing various metrics.
+    
+    The metrics to evaluate are determined by the configuration in `metrics_params` and `metric_evaluation_flags`.
+    Metrics are computed for both the training and test datasets, and results are stored in a dictionary.
 
-    For parameters check the training script click help.
 
     Inputs
     ------
@@ -388,7 +395,7 @@ def evaluate_model(
                 "train": metrics_params.eval_opd_metric,
             },
             "shape_results_dict": {
-                "test": True,
+                "test": metrics_params.eval_test_shape_results_dict,
                 "train": metrics_params.eval_train_shape_results_dict,
             },
         }
