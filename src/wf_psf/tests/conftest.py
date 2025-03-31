@@ -29,6 +29,7 @@ training_config = RecursiveNamespace(
         use_prior=True,
         correct_centroids=False,
         sigma_centroid_window=2.5,
+        obscuration_rotation_angle=0,
         add_ccd_misalignments=False,
         ccd_misalignments_input_path="/Users/tl255879/Documents/research/Euclid/real_data/CCD_missalignments/tiles.npy",
         use_sample_weights=True,
@@ -62,8 +63,6 @@ training_config = RecursiveNamespace(
     ),
     training_hparams=RecursiveNamespace(
         loss="mse",
-        n_epochs_params=[2, 2],
-        n_epochs_non_params=[2, 2],
         batch_size=32,
         multi_cycle_params=RecursiveNamespace(
             total_cycles=2,
