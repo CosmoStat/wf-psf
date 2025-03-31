@@ -5,6 +5,7 @@ A module with classes for the Ground-Truth TensorFlow-based PSF field models.
 :Authors: Tobias Liaudat <tobiasliaudat@gmail.com> and Jennifer Pollack <jennifer.pollack@cea.fr>
 
 """
+
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
@@ -43,9 +44,7 @@ class GroundTruthSemiParamFieldFactory(psfm.PSFModelBaseFactory):
 
     ids = ("ground_truth_poly",)
 
-    def get_model_instance(
-        self, model_params, training_params, data, coeff_mat=None
-    ):
+    def get_model_instance(self, model_params, training_params, data, coeff_mat=None):
         """Get Model Instance.
 
         This method creates an instance of the TensorFlow Ground Truth SemiParametric PSF Field Model using the provided parameters.
@@ -93,9 +92,7 @@ class GroundTruthPhysicalFieldFactory(psfm.PSFModelBaseFactory):
 
     ids = ("ground_truth_physical_poly",)
 
-    def get_model_instance(
-        self, model_params, training_params, data, coeff_mat
-    ):
+    def get_model_instance(self, model_params, training_params, data, coeff_mat):
         """Get Model Instance.
 
         This method creates an instance of the TensorFlow Ground Truth SemiParametric PSF Field Model using the provided parameters.
@@ -121,14 +118,15 @@ class GroundTruthPhysicalFieldFactory(psfm.PSFModelBaseFactory):
             model_params, training_params, data, coeff_mat
         )
 
+
 class TFGroundTruthSemiParametricField(TFSemiParametricField):
     """A TensorFlow-based Ground Truth Semi-Parametric PSF Field Model.
 
     This class represents a ground truth semi-parametric PSF (Point Spread Function)
-    field model implemented using TensorFlow. The model generates a ground truth PSF 
-    field based on the provided Zernike coefficient matrix. If the coefficient matrix 
-    (`coeff_mat`) is provided, it will be used to produce the ground truth PSF model, 
-    which serves as the reference for the previously simulated PSF fields. If no 
+    field model implemented using TensorFlow. The model generates a ground truth PSF
+    field based on the provided Zernike coefficient matrix. If the coefficient matrix
+    (`coeff_mat`) is provided, it will be used to produce the ground truth PSF model,
+    which serves as the reference for the previously simulated PSF fields. If no
     coefficient matrix is provided, the model proceeds without it.
 
     Parameters
@@ -139,8 +137,8 @@ class TFGroundTruthSemiParametricField(TFSemiParametricField):
         A RecursiveNamespace object containing training hyperparameters for the PSF model.
     coeff_mat : Tensor or None
         The Zernike coefficient matrix used in generating simulations of the PSF model. This
-        matrix defines the Zernike polynomials up to a given order used to simulate the PSF 
-        field. It is only used by this model if present to produce the ground truth PSF model. 
+        matrix defines the Zernike polynomials up to a given order used to simulate the PSF
+        field. It is only used by this model if present to produce the ground truth PSF model.
         If not provided, the model will proceed without it.
 
     Attributes
@@ -160,7 +158,7 @@ class TFGroundTruthSemiParametricField(TFSemiParametricField):
 
         # For the Ground truth model
         self.set_zero_nonparam()
-        
+
 
 def get_ground_truth_zernike(data):
     """Get Ground Truth Zernikes from the provided dataset.
@@ -193,7 +191,7 @@ def get_ground_truth_zernike(data):
         axis=0,
     )
     return tf.convert_to_tensor(zernike_ground_truth, dtype=tf.float32)
-    
+
 
 class TFGroundTruthPhysicalField(tf.keras.Model):
     """Ground Truth PSF field forward model with a physical layer.
@@ -245,7 +243,11 @@ class TFGroundTruthPhysicalField(tf.keras.Model):
 
         # Inputs: TF_batch_poly_PSF
         self.batch_size = training_params.batch_size
-        self.obscurations = psfm.tf_obscurations(model_params.pupil_diameter)
+        self.obscurations = psfm.tf_obscurations(
+            pupil_diam=model_params.pupil_diameter,
+            N_filter=model_params.LP_filter_length,
+            rot_angle=model_params.obscuration_rot_angle,
+        )
         self.output_dim = model_params.output_dim
 
         # Initialize the physical layer
@@ -274,7 +276,7 @@ class TFGroundTruthPhysicalField(tf.keras.Model):
         Parameters
         ----------
         output_Q : float
-            The output sampling rate factor, which determines the resolution of the PSFs to be generated.     
+            The output sampling rate factor, which determines the resolution of the PSFs to be generated.
         output_dim : int, optional
             The output dimension of the generated PSFs. If not provided, the existing dimension will be used.
 
@@ -285,7 +287,7 @@ class TFGroundTruthPhysicalField(tf.keras.Model):
 
         Notes
         -----
-        After setting the `output_Q` and optionally the `output_dim`, the PSF batch polynomial generator 
+        After setting the `output_Q` and optionally the `output_dim`, the PSF batch polynomial generator
         is reinitialized with the new parameters.
         """
         self.output_Q = output_Q
@@ -300,7 +302,7 @@ class TFGroundTruthPhysicalField(tf.keras.Model):
         )
 
     def predict_step(self, data: tuple, evaluate_step: bool = False) -> tf.Tensor:
-        """"Apply custom prediction (inference) step for the PSF model.
+        """ "Apply custom prediction (inference) step for the PSF model.
 
         This method applies a specialized interpolation required by the physical layer, distinct from the training process. It processes the input data, computes the Zernike coefficients, propagates them to obtain the Optical Path Difference (OPD), and generates the corresponding polychromatic PSFs.
 
@@ -344,11 +346,13 @@ class TFGroundTruthPhysicalField(tf.keras.Model):
 
         return poly_psfs
 
-    def predict_mono_psfs(self, input_positions: tf.Tensor, lambda_obs: float, phase_N: int):
+    def predict_mono_psfs(
+        self, input_positions: tf.Tensor, lambda_obs: float, phase_N: int
+    ):
         """Predict a batch of monochromatic PSFs at the specified positions.
 
-        This method calculates the monochromatic Point Spread Functions (PSFs) for 
-        a given set of input positions, using the observed wavelength and wavefront 
+        This method calculates the monochromatic Point Spread Functions (PSFs) for
+        a given set of input positions, using the observed wavelength and wavefront
         dimension. The PSFs are computed using a parametric model and a physical layer.
 
         Parameters
@@ -374,7 +378,7 @@ class TFGroundTruthPhysicalField(tf.keras.Model):
         Notes
         -----
         The method uses the `TFBatchMonochromaticPSF` class to handle the computation of
-        monochromatic PSFs. The `set_lambda_phaseN` method is called to set the observed 
+        monochromatic PSFs. The `set_lambda_phaseN` method is called to set the observed
         wavelength and wavefront dimension before the PSFs are computed.
         """
         # Initialise the monochromatic PSF batch calculator
@@ -383,7 +387,7 @@ class TFGroundTruthPhysicalField(tf.keras.Model):
             output_Q=self.output_Q,
             output_dim=self.output_dim,
         )
-        
+
         # Set the observed wavelength and wavefront dimension
         tf_batch_mono_psf.set_lambda_phaseN(phase_N, lambda_obs)
 
@@ -480,7 +484,7 @@ class TFGroundTruthPhysicalField(tf.keras.Model):
 
         # Propagate to obtain the OPD
         opd_maps = self.tf_zernike_OPD(zks_coeffs)
-        
+
         # Compute the polychromatic PSFs
         poly_psfs = self.tf_batch_poly_PSF([opd_maps, packed_SEDs])
 

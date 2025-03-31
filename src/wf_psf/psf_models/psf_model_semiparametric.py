@@ -111,7 +111,11 @@ class TFSemiParametricField(tf.keras.Model):
 
         # Inputs: TF_batch_poly_PSF
         self.batch_size = training_params.batch_size
-        self.obscurations = psfm.tf_obscurations(self.pupil_diam)
+        self.obscurations = psfm.tf_obscurations(
+            pupil_diam=model_params.pupil_diameter,
+            N_filter=model_params.LP_filter_length,
+            rotation_angle=model_params.obscuration_rotation_angle,
+        )
         self.output_dim = model_params.output_dim
 
         # Inputs: Loss

@@ -247,7 +247,7 @@ def generate_zernike_maps_3d(n_zernikes, pupil_diam):
     return tf.convert_to_tensor(np_zernike_cube, dtype=tf.float32)
 
 
-def tf_obscurations(pupil_diam, N_filter=2):
+def tf_obscurations(pupil_diam, N_filter=2, rotation_angle=0):
     """Tensor Flow Obscurations.
 
     A function to generate obscurations as a tensor.
@@ -258,6 +258,8 @@ def tf_obscurations(pupil_diam, N_filter=2):
         Size of the pupil diameter
     N_filters: int
         Number of filters
+    rotation_angle: int
+        Rotation angle in degrees to apply to the obscuration pattern. It only supports 90 degree rotations. The rotation will be counterclockwise.
 
     Returns
     -------
@@ -265,8 +267,8 @@ def tf_obscurations(pupil_diam, N_filter=2):
         TensorFlow EagerTensor type
 
     """
-    obscurations = PSFSimulator.generate_pupil_obscurations(
-        N_pix=pupil_diam, N_filter=N_filter
+    obscurations = PSFSimulator.generate_euclid_pupil_obscurations(
+        N_pix=pupil_diam, N_filter=N_filter, rotation_angle=rotation_angle
     )
     return tf.convert_to_tensor(obscurations, dtype=tf.complex64)
 

@@ -25,12 +25,17 @@ training:
     pupil_diameter: 256
     
     # Flag to use Zernike prior
-    use_prior: True
+    use_prior: False
 
     # Flag to perform centroid error correction
-    correct_centroids: False
+    correct_centroids: True
     # Sigma of the window function used to compute the centroids. Default Euclid value is 2.5
     sigma_centroid_window: 2.5
+
+    # Rotation angle (in degrees) for the obscuration mask.  
+    # Must be a multiple of 90 (0, 90, 180, 270, etc.).  
+    # Rotation is counterclockwise. 
+    obscuration_rotation_angle: 0
 
     # Flag to perform CCD misalignment error correction
     add_ccd_misalignments: False

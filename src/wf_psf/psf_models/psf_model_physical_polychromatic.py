@@ -6,6 +6,7 @@ to manage the parameters of the psf physical polychromatic model.
 :Authors: Tobias Liaudat <tobias.liaudat@cea.fr> and Jennifer Pollack <jennifer.pollack@cea.fr>
 
 """
+
 from typing import Optional
 import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
@@ -14,7 +15,6 @@ from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.utils.configs_handler import DataConfigHandler
 from wf_psf.data.training_preprocessing import get_obs_positions, get_zernike_prior
 from wf_psf.psf_models.tf_layers import (
-
     TFPolynomialZernikeField,
     TFZernikeOPD,
     TFBatchPolychromaticPSF,
@@ -44,6 +44,7 @@ class PhysicalPolychromaticFieldFactory(psfm.PSFModelBaseFactory):
     get_model_instance(model_params, training_params, data=None, coeff_mat=None)
         Instantiates an instance of the TensorFlow Physical Polychromatic Field class with the provided parameters.
     """
+
     ids = ("physical_poly",)
 
     def get_model_instance(self, model_params, training_params, data, coeff_mat=None):
@@ -86,6 +87,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
 
     See individual method docstrings for more details.
     """
+
     def __init__(self, model_params, training_params, data, coeff_mat=None):
         """Initialize the TFPhysicalPolychromaticField instance.
 
@@ -111,15 +113,16 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         )
 
     def _initialize_parameters_and_layers(
-        self, model_params: RecursiveNamespace, 
-        training_params: RecursiveNamespace, 
-        data: DataConfigHandler, 
-        coeff_mat: Optional[tf.Tensor] = None
+        self,
+        model_params: RecursiveNamespace,
+        training_params: RecursiveNamespace,
+        data: DataConfigHandler,
+        coeff_mat: Optional[tf.Tensor] = None,
     ):
         """Initialize Parameters of the PSF model.
 
-        This method sets up the PSF model parameters, observational positions, 
-        Zernike coefficients, and components required for the automatically 
+        This method sets up the PSF model parameters, observational positions,
+        Zernike coefficients, and components required for the automatically
         differentiable optical forward model.
 
         Parameters
@@ -266,7 +269,11 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
 
         """
         self.batch_size = training_params.batch_size
-        self.obscurations = psfm.tf_obscurations(model_params.pupil_diameter)
+        self.obscurations = psfm.tf_obscurations(
+            pupil_diam=model_params.pupil_diameter,
+            N_filter=model_params.LP_filter_length,
+            rotation_angle=model_params.obscuration_rotation_angle,
+        )
         self.output_dim = model_params.output_dim
 
         self.tf_batch_poly_PSF = TFBatchPolychromaticPSF(
@@ -306,8 +313,8 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
     def assign_coeff_matrix(self, coeff_mat: Optional[tf.Tensor]) -> None:
         """Assign a coefficient matrix to the parametric PSF field model.
 
-        This method updates the coefficient matrix used by the parametric PSF field model, 
-        allowing for customization or modification of the model's parameters. 
+        This method updates the coefficient matrix used by the parametric PSF field model,
+        allowing for customization or modification of the model's parameters.
         If `coeff_mat` is `None`, the model will revert to using its default coefficient matrix.
 
         Parameters
@@ -325,22 +332,22 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
     def set_output_Q(self, output_Q: float, output_dim: Optional[int] = None) -> None:
         """Set the output sampling rate (output_Q) for PSF generation.
 
-        This method updates the `output_Q` parameter, which defines the 
-        resampling factor for generating PSFs at different resolutions 
-        relative to the telescope's native sampling. It also allows optionally 
+        This method updates the `output_Q` parameter, which defines the
+        resampling factor for generating PSFs at different resolutions
+        relative to the telescope's native sampling. It also allows optionally
         updating `output_dim`, which sets the output resolution of the PSF model.
 
         If `output_dim` is provided, the PSF model's output resolution is updated.
-        The method then reinitializes the batch polychromatic PSF generator 
+        The method then reinitializes the batch polychromatic PSF generator
         to reflect the updated parameters.
 
         Parameters
         ----------
         output_Q : float
-            The resampling factor that determines the output PSF resolution 
+            The resampling factor that determines the output PSF resolution
             relative to the telescope's native sampling.
         output_dim : Optional[int], default=None
-            The new output dimension for the PSF model. If `None`, the output 
+            The new output dimension for the PSF model. If `None`, the output
             dimension remains unchanged.
 
         Returns

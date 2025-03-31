@@ -12,6 +12,7 @@ except ImportError:
     print("Problem importing opencv..")
     try:
         from skimage.transform import downscale_local_mean
+
         print("Falling back to skimage.")
         print("Only integer downsampling allowed with this method.")
     except ImportError:
@@ -26,10 +27,6 @@ class PSFSimulator(object):
 
     Parameters
     ----------
-    Remove zernike_maps
-    XXXzernike_maps: list of np.ndarray
-       Each element of the list should contain a Zernike map of the order
-        (OSA/ANSI index convention) corresponding to the position in the list.
     max_order: int
         Maximum Zernike polynomial order. Default is `45`.
     max_wfe_rms: float
@@ -87,7 +84,6 @@ class PSFSimulator(object):
 
     def __init__(
         self,
-        #   zernike_maps,
         max_order=45,
         max_wfe_rms=0.1,
         output_dim=64,
@@ -144,7 +140,7 @@ class PSFSimulator(object):
 
         # Generate obscurations
         if euclid_obsc:
-            self.obscurations = self.generate_pupil_obscurations(
+            self.obscurations = self.generate_euclid_pupil_obscurations(
                 N_pix=pupil_diameter, N_filter=LP_filter_length
             )
         else:
@@ -227,11 +223,12 @@ class PSFSimulator(object):
         return psf
 
     @staticmethod
-    def generate_pupil_obscurations(N_pix=1024, N_filter=3):
+    def generate_euclid_pupil_obscurations(N_pix=1024, N_filter=3, rotation_angle=0):
         """Generate Euclid like pupil obscurations.
 
-        Simple procedure considering only the 2D plane.
-        No 3D projections wrt the angle of the FoV is done.
+        This method simulates the 2D pupil obscurations for the Euclid telescope,
+        considering the aperture stop, mirror obscurations, and spider arms. It does 
+        not account for any 3D projections or the angle of the Field of View (FoV).
 
         Parameters
         ----------
@@ -239,6 +236,10 @@ class PSFSimulator(object):
             Total number of pixels
         N_filter: int
             Length of the low-pass filter [pixels]
+        rotation_angle: int
+            Rotation angle in degrees for the obscuration pattern.
+            Only multiples of 90 (0, 90, 180, 270, etc.) are supported.
+            Rotation is counterclockwise.
 
         """
         # Telescope parameters
@@ -337,6 +338,11 @@ class PSFSimulator(object):
         )
 
         pupil_plane /= np.sum(top_hat_filter)
+
+        # Only supporting 90 degree rotations.
+        # Compute the 90 degree mulitple rotation to apply
+        k = int((rotation_angle // 90) % 4)
+        pupil_plane = np.rot90(pupil_plane, k=k)
 
         return pupil_plane
 

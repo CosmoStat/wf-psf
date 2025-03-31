@@ -180,7 +180,7 @@ def test_tf_decompose_obscured_opd_basis():
     tf_zernike_cube = tf.convert_to_tensor(np_zernike_cube, dtype=tf.float32)
 
     # Create obscurations
-    obscurations = PSFSimulator.generate_pupil_obscurations(N_pix=wfe_dim, N_filter=2)
+    obscurations = PSFSimulator.generate_euclid_pupil_obscurations(N_pix=wfe_dim, N_filter=2)
     tf_obscurations = tf.convert_to_tensor(obscurations, dtype=tf.float32)
 
     # Create random zernike coefficient array
