@@ -140,7 +140,7 @@ class PSFSimulator(object):
 
         # Generate obscurations
         if euclid_obsc:
-            self.obscurations = self.generate_pupil_obscurations(
+            self.obscurations = self.generate_euclid_pupil_obscurations(
                 N_pix=pupil_diameter, N_filter=LP_filter_length
             )
         else:
@@ -223,7 +223,7 @@ class PSFSimulator(object):
         return psf
 
     @staticmethod
-    def generate_pupil_obscurations(N_pix=1024, N_filter=3, rotation_angle=0):
+    def generate_euclid_pupil_obscurations(N_pix=1024, N_filter=3, rotation_angle=0):
         """Generate Euclid like pupil obscurations.
 
         This method simulates the 2D pupil obscurations for the Euclid telescope,

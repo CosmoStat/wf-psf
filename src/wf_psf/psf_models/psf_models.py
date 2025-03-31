@@ -267,7 +267,7 @@ def tf_obscurations(pupil_diam, N_filter=2, rotation_angle=0):
         TensorFlow EagerTensor type
 
     """
-    obscurations = PSFSimulator.generate_pupil_obscurations(
+    obscurations = PSFSimulator.generate_euclid_pupil_obscurations(
         N_pix=pupil_diam, N_filter=N_filter, rotation_angle=rotation_angle
     )
     return tf.convert_to_tensor(obscurations, dtype=tf.complex64)
