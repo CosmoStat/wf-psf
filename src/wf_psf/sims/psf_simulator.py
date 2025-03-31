@@ -27,10 +27,6 @@ class PSFSimulator(object):
 
     Parameters
     ----------
-    Remove zernike_maps
-    XXXzernike_maps: list of np.ndarray
-       Each element of the list should contain a Zernike map of the order
-        (OSA/ANSI index convention) corresponding to the position in the list.
     max_order: int
         Maximum Zernike polynomial order. Default is `45`.
     max_wfe_rms: float
@@ -88,7 +84,6 @@ class PSFSimulator(object):
 
     def __init__(
         self,
-        #   zernike_maps,
         max_order=45,
         max_wfe_rms=0.1,
         output_dim=64,
@@ -231,8 +226,9 @@ class PSFSimulator(object):
     def generate_pupil_obscurations(N_pix=1024, N_filter=3, rotation_angle=0):
         """Generate Euclid like pupil obscurations.
 
-        Simple procedure considering only the 2D plane.
-        No 3D projections wrt the angle of the FoV is done.
+        This method simulates the 2D pupil obscurations for the Euclid telescope,
+        considering the aperture stop, mirror obscurations, and spider arms. It does 
+        not account for any 3D projections or the angle of the Field of View (FoV).
 
         Parameters
         ----------
