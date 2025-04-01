@@ -42,7 +42,7 @@ def generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
     SED:
     sim_psf_toolkit:
         An instance of the PSFSimulator class with the correct
-    initialization values.
+        initialization values.
     n_bins: int
         Number of wavelength bins
     """
@@ -66,7 +66,7 @@ def generate_SED_elems_in_tensorflow(
     SED:
     sim_psf_toolkit:
         An instance of the PSFSimulator class with the correct
-    initialization values.
+        initialization values.
     n_bins: int
         Number of wavelength bins
     tf_dtype: tf.
