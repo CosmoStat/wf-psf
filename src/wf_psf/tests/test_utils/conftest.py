@@ -15,12 +15,6 @@ from wf_psf.utils.io import FileIOHandler
 
 cwd = os.getcwd()
 
-training_config = RecursiveNamespace(
-    id_name="_sample_w_bis1_2k",
-    data_config="data_config.yaml",
-    metrics_config="metrics_config.yaml",
-)
-
 
 @pytest.fixture(scope="class")
 def path_to_repo_dir():
