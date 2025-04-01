@@ -3,6 +3,10 @@ training:
   id_name: _no_sfe_id-11
   # Name of Data Config file
   data_config: data_config.yaml 
+  # If true, load dataset from file when initializing DataHandler.
+  # Passed through DataConfigHandler but only affects DataHandler.
+  # Set to false to delay dataset loading and manually load later.
+  load_data_on_init: True
   # Metrics Config file - Enter file to run metrics evaluation else if empty run train only
   metrics_config:
   model_params:
