@@ -45,6 +45,7 @@ def mock_training_conf(mocker):
         training=RecursiveNamespace(
             id_name="_test_",
             data_config="data_config.yaml",
+            load_data_on_init=True,
             metrics_config=None,
             model_params=RecursiveNamespace(
                 model_name="poly",
@@ -138,8 +139,9 @@ def test_data_config_handler_init(
         "wf_psf.psf_models.psf_models.simPSF", return_value=mock_simPSF_instance
     )
 
-    # Patch the initialize and load_dataset methods inside DataHandler
-    mocker.patch.object(DataHandler, "initialize")
+    # Patch the load_dataset and process_sed_data methods inside DataHandler
+    mocker.patch.object(DataHandler, "load_dataset")
+    mocker.patch.object(DataHandler, "process_sed_data")
 
     # Create DataConfigHandler instance
     data_config_handler = DataConfigHandler(
@@ -205,6 +207,7 @@ def test_training_config_handler_init(mocker, mock_training_conf, mock_file_hand
             training_config_handler.training_conf.training.data_config,
         ),
         training_config_handler.training_conf.training.model_params,
+        training_config_handler.training_conf.training.load_data_on_init,
     )
     assert training_config_handler.data_conf == mock_data_conf.return_value
 
