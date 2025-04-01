@@ -122,7 +122,7 @@ class DataConfigHandler:
 
     """
 
-    def __init__(self, data_conf, training_model_params):
+    def __init__(self, data_conf, training_model_params, load_data=True):
         try:
             self.data_conf = read_conf(data_conf)
         except FileNotFoundError as e:
@@ -134,16 +134,18 @@ class DataConfigHandler:
 
         self.simPSF = psf_models.simPSF(training_model_params)
         self.training_data = DataHandler(
-            "training",
-            self.data_conf.data,
-            self.simPSF,
-            training_model_params.n_bins_lda,
+            dataset_type="training",
+            data_params=self.data_conf.data,
+            simPSF=self.simPSF,
+            n_bins_lambda=training_model_params.n_bins_lda,
+            load_data=load_data,
         )
         self.test_data = DataHandler(
-            "test",
-            self.data_conf.data,
-            self.simPSF,
-            training_model_params.n_bins_lda,
+            dataset_type="test",
+            data_params=self.data_conf.data,
+            simPSF=self.simPSF,
+            n_bins_lambda=training_model_params.n_bins_lda,
+            load_data=load_data,
         )
 
 
@@ -175,6 +177,7 @@ class TrainingConfigHandler:
                 file_handler.config_path, self.training_conf.training.data_config
             ),
             self.training_conf.training.model_params,
+            self.training_conf.training.load_data_on_init,
         )
         self.file_handler.copy_conffile_to_output_dir(
             self.training_conf.training.data_config
