@@ -13,6 +13,7 @@ from wf_psf.utils.preprocessing import shift_x_y_to_zk1_2_wavediff
 
 def get_zk1_2_for_observed_psf(
     obs_psf,
+    mask, 
     pixel_sampling=12e-6,
     reference_shifts=[-1 / 3, -1 / 3],
     sigma_init=2.5,
@@ -29,6 +30,11 @@ def get_zk1_2_for_observed_psf(
     ----------
     obs_psf : np.ndarray
         Observed PSF at Euclid resolution.
+    mask : numpy.ndarray
+        A mask to apply, which **can contain float values in [0,1]**. 
+        - `0` means the pixel is ignored.
+        - `1` means the pixel is fully considered.
+        - Values in `(0,1]` act as weights for partial consideration.
     pixel_sampling : float
         Pixel sampling in [m]
     reference_shifts : list
@@ -45,7 +51,7 @@ def get_zk1_2_for_observed_psf(
     """
 
     # Build centroid estimator
-    centroid_calc = CentroidEstimator(obs_psf, sigma_init=sigma_init, n_iter=n_iter)
+    centroid_calc = CentroidEstimator(obs_psf, mask=None, sigma_init=sigma_init, n_iter=n_iter)
 
     current_shifts = centroid_calc.return_shifts()  # In [pixel]
 
@@ -61,7 +67,7 @@ def get_zk1_2_for_observed_psf(
     )  # Output in Zernike coefficients in wavediff convention
 
 
-def compute_centroid(poly_psf, sigma_init=5.5, n_iter=10):
+def compute_centroid(poly_psf, mask=None, sigma_init=5.5, n_iter=10):
     """Compute PSF centroid."""
     ref_centroid_calc = CentroidEstimator(
         poly_psf, sigma_init=sigma_init, n_iter=n_iter
@@ -80,27 +86,32 @@ class CentroidEstimator(object):
 
     Parameters
     ----------
-    im: numpy.ndarray
+    im : numpy.ndarray
         Star image stamp.
-    sigma_init: float
+    mask : numpy.ndarray
+        A mask to apply, which **can contain float values in [0,1]**. 
+        - `0` means the pixel is ignored.
+        - `1` means the pixel is fully considered.
+        - Values in `(0,1]` act as weights for partial consideration.
+    sigma_init : float
         Estimated shape of the star in sigma.
         Default is 7.5.
-    n_iter: int
+    n_iter : int
         Max iteration number for the iterative estimation procedure.
         Default is 5.
-    auto_run: bool
+    auto_run : bool
         Auto run the intra-pixel shif calculation in the initialization
         of the class.
         Default is True.
-    xc: float
+    xc : float
         First guess of the ``x`` component of the star centroid. (optional)
         Default is None.
-    yc: float
+    yc : float
         First guess of the ``y`` component of the star centroid. (optional)
         Default is None.
     """
 
-    def __init__(self, im, mask, sigma_init=7.5, n_iter=5, auto_run=True, xc=None, yc=None):
+    def __init__(self, im, mask=None, sigma_init=7.5, n_iter=5, auto_run=True, xc=None, yc=None):
         r"""Initialize class attributes."""
         self.im = im
         self.mask = mask
