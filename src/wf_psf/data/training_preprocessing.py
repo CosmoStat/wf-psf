@@ -58,6 +58,8 @@ class DataHandler:
 
     def __init__(self, dataset_type, data_params, simPSF, n_bins_lambda, load_data=True):
         """
+        Initialize the dataset handler for PSF simulation.
+
         Parameters
         ----------
         dataset_type: str
@@ -151,7 +153,6 @@ def get_np_obs_positions(data):
     The observed positions are obtained by concatenating the positions of stars
     from both the training and test datasets along the 0th axis.
     """
-
     obs_positions = np.concatenate(
         (
             data.training_data.dataset["positions"],
@@ -176,7 +177,6 @@ def get_obs_positions(data):
     tf.Tensor
         Tensor containing the observed positions of the stars.
     """
-
     obs_positions = get_np_obs_positions(data)
 
     return tf.convert_to_tensor(obs_positions, dtype=tf.float32)
@@ -212,7 +212,6 @@ def extract_star_data(data, train_key: str, test_key: str) -> np.ndarray:
     - If the dataset contains TensorFlow tensors, they will be converted to NumPy arrays.
     - Ensure that eager execution is enabled when calling this function.
     """
-
     # Ensure the requested keys exist in both training and test datasets
     missing_keys = [
         key for key, dataset in [(train_key, data.training_data.dataset), (test_key, data.test_data.dataset)]
@@ -252,7 +251,6 @@ def get_np_zernike_prior(data):
     zernike_prior : np.ndarray
         Numpy array containing the full prior.
     """
-
     zernike_prior = np.concatenate(
         (
             data.training_data.dataset["zernike_prior"],
@@ -287,22 +285,28 @@ def compute_centroid_correction(model_params, data) -> np.ndarray:
         observed stars. The array contains the computed Zernike contributions, 
         with zero padding applied to the first column to ensure a consistent shape.
     """
-
     star_postage_stamps = extract_star_data(data=data, train_key="noisy_stars", test_key="stars")
 
     # Get star mask catalogue only if "masks" exist in both training and test datasets
     star_masks = (
     extract_star_data(data=data, train_key="masks", test_key="masks")
-    if data.training_data.dataset.get("masks") and data.test_data.dataset.get("masks")
-        else None
+    if (
+        data.training_data.dataset.get("masks") is not None 
+        and data.test_data.dataset.get("masks") is not None
+        and tf.size(data.training_data.dataset["masks"]) > 0  
+        and tf.size(data.test_data.dataset["masks"]) > 0 
+    )
+    else None
     )
 
     pix_sampling = model_params.pix_sampling * 1e-6  # Change units from [um] to [m]
 
+    # Ensure star_masks is properly handled
+    star_masks = star_masks if star_masks is not None else [None] * len(star_postage_stamps)
+
     # Compute required Zernike 1 and Zernike 2
-    # The -1 is to contrarest the actual shift
     zk1_2_array = -1.0 * compute_zernike_tip_tilt(
-    star_postage_stamps, star_masks or [None]*len(star_postage_stamps), pixel_sampling, model_params.reference_shifts
+        star_postage_stamps, star_masks, pix_sampling, model_params.reference_shifts
     )
 
     # Zero pad array to get shape (n_stars, n_zernike=3)
@@ -377,7 +381,6 @@ def get_zernike_prior(model_params, data):
     from both the training and test datasets along the 0th axis.
 
     """
-
     # Get hold of the simPSF parameters.
     # We need to add them to the config files
 
