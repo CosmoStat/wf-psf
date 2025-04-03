@@ -287,7 +287,7 @@ def test_compute_centroid_correction_with_masks(mock_data):
     model_params = RecursiveNamespace(
         pix_sampling=12e-6,  # Example pixel sampling in meters
         correct_centroids=True,
-        reference_shifts=[-1/3, -1/3]
+        reference_shifts=["-1/3", "-1/3"]
     )
 
     # Mock the internal function calls:
@@ -320,7 +320,7 @@ def test_compute_centroid_correction_without_masks(mock_data):
     model_params = RecursiveNamespace(
         pix_sampling=12e-6,  # Example pixel sampling in meters
         correct_centroids=True,
-        reference_shifts=[-1/3, -1/3]
+        reference_shifts=["-1/3", "-1/3"]
     )
     
     # Mock internal function calls
