@@ -2,123 +2,179 @@
 
 A module with utils to handle PSF centroids.
 
-:Author: Tobias Liaudat <tobias.liaudat@cea.fr>
+:Author: Tobias Liaudat <tobias.liaudat@cea.fr> and Jennifer Pollack <jennifer.pollack@cea.fr>
 
 """
 
 import numpy as np
 import scipy.signal as scisig
 from wf_psf.utils.preprocessing import shift_x_y_to_zk1_2_wavediff
+from typing import Optional
 
 
-def get_zk1_2_for_observed_psf(
-    obs_psf,
-    mask, 
-    pixel_sampling=12e-6,
-    reference_shifts=[-1 / 3, -1 / 3],
-    sigma_init=2.5,
-    n_iter=20,
-):
-    """Get Zk1 and Zk2 corrections required for an observed PSF.
+def compute_zernike_tip_tilt(
+    star_images: np.ndarray,
+    star_masks: Optional[np.ndarray] = None,
+    pixel_sampling: float = 12e-6,
+    reference_shifts: list[float] = [-1 / 3, -1 / 3],
+    sigma_init: float = 2.5,
+    n_iter: int = 20,
+) -> np.ndarray:
+    """
+    Compute Zernike tip-tilt corrections for a batch of PSF images.
 
-    The Zk1 and Zk2 should be used with Wavediff so the PSF centroids match.
-
-    Note: The default `reference_shifts` value is for observations at Euclid conditions,
-    i.e., pixel sampling and telescope parameters.
+    This function estimates the centroid shifts of multiple PSFs and computes 
+    the corresponding Zernike tip-tilt corrections to align them with a reference.
 
     Parameters
     ----------
-    obs_psf : np.ndarray
-        Observed PSF at Euclid resolution.
-    mask : numpy.ndarray
-        A mask to apply, which **can contain float values in [0,1]**. 
-        - `0` means the pixel is ignored.
-        - `1` means the pixel is fully considered.
-        - Values in `(0,1]` act as weights for partial consideration.
-    pixel_sampling : float
-        Pixel sampling in [m]
-    reference_shifts : list
-        Reference shifts for WaveDiff at Euclid nominal conditions, in [pixel]
-    sigma_init : float
-        Initial size for the centroid calculator.
-    n_iter : int
-        Iteration number for the centroid calculation.
+    star_images : np.ndarray
+        A batch of PSF images (3D array of shape `(num_images, height, width)`).
+    star_masks : np.ndarray, optional
+        A batch of masks (same shape as `star_postage_stamps`). Each mask can have:
+        - `0` to ignore the pixel.
+        - `1` to fully consider the pixel.
+        - Values in `(0,1]` as weights for partial consideration.
+        Defaults to None.
+    pixel_sampling : float, optional
+        The pixel size in meters. Defaults to `12e-6 m` (12 microns).
+    reference_shifts : list[float], optional
+        The target centroid shifts in pixels, specified as `[dy, dx]`.  
+        Defaults to `[-1/3, -1/3]` (nominal Euclid conditions).
+    sigma_init : float, optional
+        Initial standard deviation for centroid estimation. Default is `2.5`.
+    n_iter : int, optional
+        Number of iterations for centroid refinement. Default is `20`.
 
     Returns
     -------
-    z1_wavediff, z2_wavediff : tuple
-        Tip and tilt Zernike coefficients in wavediff convention
+    np.ndarray
+        An array of shape `(num_images, 2)`, where:
+        - Column 0 contains `Zk1` (tip) values.
+        - Column 1 contains `Zk2` (tilt) values.
+    
+    Notes
+    -----
+    - This function processes all images at once using vectorized operations.
+    - The Zernike coefficients are computed in the WaveDiff convention.
     """
 
-    # Build centroid estimator
-    centroid_calc = CentroidEstimator(obs_psf, mask=None, sigma_init=sigma_init, n_iter=n_iter)
+    # Vectorize the centroid computation
+    centroid_estimator = CentroidEstimator(
+                            im=star_images,
+                            mask=star_masks, 
+                            sigma_init=sigma_init,
+                            n_iter=n_iter
+                            )
+    shifts = centroid_estimator.get_intra_pixel_shifts()
 
-    current_shifts = centroid_calc.return_shifts()  # In [pixel]
+    # Compute the Zernike corrections for all shifts at once
+    reference_shifts = np.array(reference_shifts)
+    displacements = (reference_shifts - shifts) # 
+    
+    # Ensure the correct axis order for displacements (x-axis, then y-axis)
+    displacements_swapped = displacements[:, [1, 0]] # Adjust axis order if necessary
 
-    dx = reference_shifts[1] - current_shifts[1]  # In [pixel]
-    dy = reference_shifts[0] - current_shifts[0]  # In [pixel]
-
-    z1_wavediff = shift_x_y_to_zk1_2_wavediff(dx * pixel_sampling)  # Input in [m]
-    z2_wavediff = shift_x_y_to_zk1_2_wavediff(dy * pixel_sampling)  # Input in [m]
-
-    return (
-        z1_wavediff,
-        z2_wavediff,
-    )  # Output in Zernike coefficients in wavediff convention
-
-
-def compute_centroid(poly_psf, mask=None, sigma_init=5.5, n_iter=10):
-    """Compute PSF centroid."""
-    ref_centroid_calc = CentroidEstimator(
-        poly_psf, sigma_init=sigma_init, n_iter=n_iter
-    )
-
-    return ref_centroid_calc.get_centroids()
+    # Call shift_x_y_to_zk1_2_wavediff directly on the vector of displacements
+    zk1_2_array = shift_x_y_to_zk1_2_wavediff(displacements_swapped.flatten() * pixel_sampling )  # vectorized call
+    
+    # Reshape the result back to the original shape of displacements
+    zk1_2_array = zk1_2_array.reshape(displacements.shape)
+  
+    return zk1_2_array
 
 
-class CentroidEstimator(object):
-    r"""Estimate intra-pixel shifts.
 
-    It calculates the centroid of the image and compare it with the stamp
-    centroid and returns the proper shift.
-    The star centroid is calculated following an iterative procedure where a
-    matched elliptical gaussian is used to calculate the moments.
+class CentroidEstimator:
+    """
+    Calculate centroids and estimate intra-pixel shifts for a batch of star images.
+
+    This class estimates the centroid of each star in a batch of images using an 
+    iterative process that fits an elliptical Gaussian model to the star images. 
+    The estimated centroids are returned along with the intra-pixel shifts, which 
+    represent the difference between the estimated centroid and the center of the 
+    image grid (or pixel grid).
+
+    The process is vectorized, allowing multiple star images to be processed in 
+    parallel, which significantly improves performance when working with large batches.
 
     Parameters
     ----------
     im : numpy.ndarray
-        Star image stamp.
-    mask : numpy.ndarray
-        A mask to apply, which **can contain float values in [0,1]**. 
-        - `0` means the pixel is ignored.
-        - `1` means the pixel is fully considered.
-        - Values in `(0,1]` act as weights for partial consideration.
-    sigma_init : float
-        Estimated shape of the star in sigma.
-        Default is 7.5.
-    n_iter : int
-        Max iteration number for the iterative estimation procedure.
+        A 3D numpy array of star image stamps. The shape of the array should be 
+        (n_images, height, width), where n_images is the number of stars, and 
+        height and width are the dimensions of each star's image.
+    
+    mask : numpy.ndarray, optional
+        A 3D numpy array of the same shape as `im`, representing the mask for each star image. 
+        A mask value of `1` means the corresponding pixel is fully considered, 
+        a value of `0` means the pixel is ignored, and values between `0` and `1` 
+        act as weights for partial consideration. If not provided, no mask is applied.
+
+    sigma_init : float, optional
+        The initial guess for the standard deviation (sigma) of the elliptical Gaussian 
+        that models the star. Default is 7.5.
+
+    n_iter : int, optional
+        The number of iterations for the iterative centroid estimation procedure. 
         Default is 5.
-    auto_run : bool
-        Auto run the intra-pixel shif calculation in the initialization
-        of the class.
-        Default is True.
-    xc : float
-        First guess of the ``x`` component of the star centroid. (optional)
-        Default is None.
-    yc : float
-        First guess of the ``y`` component of the star centroid. (optional)
-        Default is None.
+
+    auto_run : bool, optional
+        If True, the centroid estimation procedure will be automatically run upon 
+        initialization. Default is True.
+
+    xc : float, optional
+        The initial guess for the x-component of the centroid. If None, it is set 
+        to the center of the image. Default is None.
+
+    yc : float, optional
+        The initial guess for the y-component of the centroid. If None, it is set 
+        to the center of the image. Default is None.
+
+    Attributes
+    ----------
+    xc : numpy.ndarray
+        The x-components of the estimated centroids for each image. Shape is (n_images,).
+    
+    yc : numpy.ndarray
+        The y-components of the estimated centroids for each image. Shape is (n_images,).
+
+    Methods
+    -------
+    update_grid()
+        Updates the grid of pixel positions based on the current centroid estimates.
+
+    elliptical_gaussian(e1=0, e2=0)
+        Computes an elliptical 2D Gaussian with the specified shear parameters.
+    
+    compute_moments()
+        Computes the first-order moments of the star images and updates the centroid estimates.
+    
+    estimate()
+        Runs the iterative centroid estimation procedure for all images.
+
+    get_centroids()
+        Returns the estimated centroids for all images as a 2D numpy array.
+
+    get_intra_pixel_shifts()
+        Gets the intra-pixel shifts for all images as a list of x and y displacements.
+
+    Notes
+    -----
+    The iterative centroid estimation procedure fits an elliptical Gaussian to each
+    star image and computes the centroid by calculating the weighted moments. The
+    `estimate()` method performs the centroid calculation for a batch of images using 
+    the iterative approach defined by the `n_iter` parameter. This class is designed 
+    to be efficient and scalable when processing large batches of star images.
     """
 
     def __init__(self, im, mask=None, sigma_init=7.5, n_iter=5, auto_run=True, xc=None, yc=None):
-        r"""Initialize class attributes."""
+        """Initialize class attributes."""
         self.im = im
         self.mask = mask
         if self.mask is not None:
             self.im = self.im * (1 - self.mask)
-        self.stamp_size = im.shape
-        self.ranges = np.array([np.arange(i) for i in self.stamp_size])
+        self.stamp_size = im.shape[1:]
         self.sigma_init = sigma_init
         self.n_iter = n_iter
         self.xc0, self.yc0 = (
@@ -126,74 +182,82 @@ class CentroidEstimator(object):
             float(self.stamp_size[1]) / 2,
         )
 
-        self.window = None
-        self.xx = None
-        self.yy = None
+        self.xc = np.full((self.im.shape[0],), self.xc0)
+        self.yc = np.full((self.im.shape[0],), self.yc0)
 
-        if xc is None or yc is None:
-            self.xc = self.xc0
-            self.yc = self.yc0
-        else:
-            self.xc = xc
-            self.yc = yc
         if auto_run:
             self.estimate()
+            
 
-    def UpdateGrid(self):
-        r"""Update the grid where the star stamp is defined."""
-        self.xx = np.outer(self.ranges[0] - self.xc, np.ones(self.stamp_size[1]))
-        self.yy = np.outer(np.ones(self.stamp_size[0]), self.ranges[1] - self.yc)
+    def update_grid(self):
+        """Vectorized update of the grid coordinates for multiple star stamps."""
+        num_images, Nx, Ny = self.im.shape  # Extract dimensions
 
-    def EllipticalGaussian(self, e1=0, e2=0):
-        r"""Compute an elliptical 2D gaussian with arbitrary centroid."""
-        # Shear it
+        x_range = np.arange(Nx)
+        y_range = np.arange(Ny)
+
+        # Correct subtraction without mixing axes
+        self.xx = (x_range - self.xc[:, None])
+        self.yy = (y_range - self.yc[:, None])
+        
+        # Now, expand to the correct shape (num_images, Nx, Ny)
+        # Add the extra dimension for the number of stars
+        self.xx = self.xx[:, :, None]  # Shape: (num_images, Nx, 1)
+        self.yy = self.yy[:, None, :]  # Shape: (num_images, 1, Ny)
+
+        self.xx = np.broadcast_to(self.xx, (num_images, Nx, Ny))
+        self.yy = np.broadcast_to(self.yy, (num_images, Nx, Ny))
+
+    def elliptical_gaussian(self, e1=0, e2=0):
+        """Compute an elliptical 2D Gaussian with arbitrary centroid."""
+        # Shear the grid coordinates
         gxx = (1 - e1) * self.xx - e2 * self.yy
         gyy = (1 + e1) * self.yy - e2 * self.xx
-        # compute elliptical gaussian
+        
+        # Compute elliptical Gaussian
         return np.exp(-(gxx**2 + gyy**2) / (2 * self.sigma_init**2))
 
-    def ComputeMoments(self):
-        r"""Compute the star moments.
-
-        Compute the star image normalized first order moments with
-        the current window function.
-        """
+    def compute_moments(self):
+        """Compute the moments for multiple PSFs at once."""
+        
         if self.mask is not None:
             masked_im_window = self.im * self.window * (self.mask == 0)
         else:
             masked_im_window = self.im * self.window
 
-        Q0 = np.sum(masked_im_window)
+        Q0 = np.sum(masked_im_window, axis=(1, 2))  # Sum over images and their pixels
         Q1 = np.array(
             [
-                np.sum(np.sum(masked_im_window, axis=1 - i) * self.ranges[i])
+                np.sum(np.sum(masked_im_window, axis=2 - i) * np.arange(self.stamp_size[i]), axis=1)
                 for i in range(2)
             ]
         )
-        # Q2 = np.array([np.sum(
-        #     self.im*self.window * self.xx**(2-i) * self.yy**i)
-        #     for i in range(3)])
         self.xc = Q1[0] / Q0
         self.yc = Q1[1] / Q0
 
     def estimate(self):
-        r"""Estimate the star image centroid iteratively."""
+        """Estimate centroids for all images."""
         for _ in range(self.n_iter):
-            self.UpdateGrid()
-            self.window = self.EllipticalGaussian()
+            self.update_grid()
+            self.window = self.elliptical_gaussian()
             # Calculate weighted moments.
-            self.ComputeMoments()
+            self.compute_moments()
         return self.xc, self.yc
 
     def get_centroids(self):
-        r"""Get centroids."""
+        """Return centroids for all images."""
         return np.array([self.xc, self.yc])
 
-    def return_shifts(self):
-        r"""Return intra-pixel shifts.
+    def get_intra_pixel_shifts(self):
+        """Get intra-pixel shifts for all images.
+        
+        Intra-pixel shifts are the differences between the estimated centroid and the center of the image stamp (or pixel grid). These shifts are calculated for all images in the batch.
 
-        Intra-pixel shifts are the difference between
-        the estimated centroid and the center of the stamp (or pixel grid).
+        Returns
+        -------
+        list of float
+            A list containing the intra-pixel shifts for the x and y axes 
+            for each image.
         """
         return [self.xc - self.xc0, self.yc - self.yc0]
 
