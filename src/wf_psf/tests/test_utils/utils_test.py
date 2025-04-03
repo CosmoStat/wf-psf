@@ -2,7 +2,7 @@
 
 This module contains unit tests for the wf_psf.utils utils module.
 
-:Author: Tobias Liaudat <tobias.liaudat@cea.fr>
+:Author: Tobias Liaudat <tobias.liaudat@cea.fr> and Jennifer Pollack <jennifer.pollack@cea.fr>
 
 """
 
