@@ -15,6 +15,7 @@ from wf_psf.psf_models import psf_models
 training_config = RecursiveNamespace(
     id_name="-coherent_euclid_200stars",
     data_config="data_config.yaml",
+    load_data_on_init=True,
     metrics_config="metrics_config.yaml",
     model_params=RecursiveNamespace(
         model_name="poly",
