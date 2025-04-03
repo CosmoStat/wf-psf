@@ -6,7 +6,8 @@ from wf_psf.data.training_preprocessing import (
     DataHandler,
     get_obs_positions,
     get_zernike_prior,
-    extract_star_data
+    extract_star_data,
+    compute_centroid_correction,
 )
 import logging
 from unittest.mock import patch
@@ -167,8 +168,6 @@ def test_load_train_dataset_missing_noisy_stars(tmp_path, data_params, simPSF):
         data_handler.load_dataset()
         mock_warning.assert_called_with("Missing 'noisy_stars' in train dataset.")
 
-
-
 def test_load_test_dataset_missing_stars(tmp_path, data_params, simPSF):
     """Test that a warning is raised if 'stars' is missing in test data."""
     data_dir = tmp_path / "data"
@@ -281,3 +280,70 @@ def test_extract_star_data_tensor_conversion(mock_data):
     
     assert isinstance(result, np.ndarray), "The result should be a NumPy array"
     assert result.dtype == np.float32, "The NumPy array should have dtype float32"
+
+def test_compute_centroid_correction_with_masks(mock_data):
+    """Test compute_centroid_correction function with masks present."""
+    # Given that compute_centroid_correction expects a model_params and data object
+    model_params = RecursiveNamespace(
+        pix_sampling=12e-6,  # Example pixel sampling in meters
+        correct_centroids=True,
+        reference_shifts=[-1/3, -1/3]
+    )
+
+    # Mock the internal function calls:
+    with patch('wf_psf.data.training_preprocessing.extract_star_data') as mock_extract_star_data, \
+         patch('wf_psf.data.training_preprocessing.compute_zernike_tip_tilt') as mock_compute_zernike_tip_tilt:
+        
+        # Mock the return values of extract_star_data and compute_zernike_tip_tilt
+        mock_extract_star_data.side_effect = lambda data, train_key, test_key: (
+            np.array([[1, 2], [3, 4]]) if train_key == 'noisy_stars' else np.array([[5, 6], [7, 8]])
+        )
+        mock_compute_zernike_tip_tilt.return_value = np.array([[0.1, 0.2], [0.3, 0.4]])
+
+        # Call the function under test
+        result = compute_centroid_correction(model_params, mock_data)
+        
+        # Ensure the result has the correct shape
+        assert result.shape == (2, 3)  # Should be (n_stars, 3 Zernike components)
+        
+        assert np.allclose(result[0, :], np.array([0, -0.1, -0.2]))  # First star Zernike coefficients
+        assert np.allclose(result[1, :], np.array([0, -0.3, -0.4]))  # Second star Zernike coefficients
+
+
+def test_compute_centroid_correction_without_masks(mock_data):
+    """Test compute_centroid_correction function when no masks are provided."""
+    # Remove masks from mock_data
+    mock_data.test_data.dataset["masks"] = None
+    mock_data.training_data.dataset["masks"] = None
+    
+    # Define model parameters
+    model_params = RecursiveNamespace(
+        pix_sampling=12e-6,  # Example pixel sampling in meters
+        correct_centroids=True,
+        reference_shifts=[-1/3, -1/3]
+    )
+    
+    # Mock internal function calls
+    with patch('wf_psf.data.training_preprocessing.extract_star_data') as mock_extract_star_data, \
+         patch('wf_psf.data.training_preprocessing.compute_zernike_tip_tilt') as mock_compute_zernike_tip_tilt:
+        
+        # Mock extract_star_data to return synthetic star postage stamps
+        mock_extract_star_data.side_effect = lambda data, train_key, test_key: (
+            np.array([[1, 2], [3, 4]]) if train_key == 'noisy_stars' else np.array([[5, 6], [7, 8]])
+        )
+        
+        # Mock compute_zernike_tip_tilt assuming no masks
+        mock_compute_zernike_tip_tilt.return_value = np.array([[0.1, 0.2], [0.3, 0.4]])
+        
+        # Call function under test
+        result = compute_centroid_correction(model_params, mock_data)
+
+        # Validate result shape
+        assert result.shape == (2, 3)  # (n_stars, 3 Zernike components)
+
+        # Validate expected values (adjust based on behavior)
+        expected_result = np.array([
+            [0, -0.1, -0.2],  # First star
+            [0, -0.3, -0.4]   # Second star
+        ])
+        assert np.allclose(result, expected_result)
