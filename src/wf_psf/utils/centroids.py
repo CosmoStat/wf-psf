@@ -263,11 +263,10 @@ class CentroidEstimator:
 
         Returns
         -------
-        list of float
-            A list containing the intra-pixel shifts for the x and y axes 
-            for each image.
+        np.array
+            A 2D array of shape (num_of_images, 2), where each row corresponds to the x and y shifts for each image.
         """
-        shifts = np.array([self.xc - self.xc0, self.yc - self.yc0])  # This should have shape (2, batch_size)
+        shifts = np.array([self.xc - self.xc0, self.yc - self.yc0]) 
     
         return shifts
 
