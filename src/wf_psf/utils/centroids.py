@@ -71,9 +71,12 @@ def compute_zernike_tip_tilt(
     # Ensure reference_shifts is a NumPy array (if it's not already)
     reference_shifts = np.array(reference_shifts)
 
+    # Reshape to ensure it's a column vector (1, 2)
+    reference_shifts = reference_shifts[None,:]
+  
     # Broadcast reference_shifts to match the shape of shifts
-    reference_shifts = np.broadcast_to(reference_shifts[:, None], shifts.shape)  # Shape will be (2, 2400)
-
+    reference_shifts = np.broadcast_to(reference_shifts, shifts.shape)  
+    
     # Compute displacements
     displacements = (reference_shifts - shifts) # 
     
@@ -264,7 +267,9 @@ class CentroidEstimator:
             A list containing the intra-pixel shifts for the x and y axes 
             for each image.
         """
-        return [self.xc - self.xc0, self.yc - self.yc0]
+        shifts = np.array([self.xc - self.xc0, self.yc - self.yc0])  # This should have shape (2, batch_size)
+    
+        return shifts
 
 
 def shift_ker_stack(shifts, upfact, lanc_rad=8):
