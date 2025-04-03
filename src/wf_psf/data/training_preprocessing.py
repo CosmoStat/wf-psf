@@ -305,7 +305,7 @@ def compute_centroid_correction(model_params, data) -> np.ndarray:
     # Ensure star_masks is properly handled
     star_masks = star_masks if star_masks is not None else [None] * len(star_postage_stamps)
 
-    reference_shifts = [float(value) for value in model_params.reference_shifts]
+    reference_shifts = [float(Fraction(value)) for value in model_params.reference_shifts]
 
     # Compute required Zernike 1 and Zernike 2
     zk1_2_array = -1.0 * compute_zernike_tip_tilt(
