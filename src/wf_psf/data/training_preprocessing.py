@@ -12,6 +12,7 @@ import wf_psf.utils.utils as utils
 import tensorflow as tf
 from wf_psf.utils.ccd_misalignments import CCDMisalignmentCalculator
 from wf_psf.utils.centroids import compute_zernike_tip_tilt
+from fractions import Fraction
 import logging
 
 logger = logging.getLogger(__name__)
@@ -304,9 +305,11 @@ def compute_centroid_correction(model_params, data) -> np.ndarray:
     # Ensure star_masks is properly handled
     star_masks = star_masks if star_masks is not None else [None] * len(star_postage_stamps)
 
+    reference_shifts = [float(value) for value in model_params.reference_shifts]
+
     # Compute required Zernike 1 and Zernike 2
     zk1_2_array = -1.0 * compute_zernike_tip_tilt(
-        star_postage_stamps, star_masks, pix_sampling, model_params.reference_shifts
+        star_postage_stamps, star_masks, pix_sampling, reference_shifts
     )
 
     # Zero pad array to get shape (n_stars, n_zernike=3)
