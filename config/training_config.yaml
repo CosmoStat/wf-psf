@@ -33,8 +33,12 @@ training:
 
     # Flag to perform centroid error correction
     correct_centroids: True
+
     # Sigma of the window function used to compute the centroids. Default Euclid value is 2.5
     sigma_centroid_window: 2.5
+
+    # Pixel Reference Shifts
+    reference_shifts = [-1/3, -1/3]
 
     # Rotation angle (in degrees) for the obscuration mask.  
     # Must be a multiple of 90 (0, 90, 180, 270, etc.).  
