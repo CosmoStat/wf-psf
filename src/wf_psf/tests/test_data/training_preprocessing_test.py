@@ -347,3 +347,20 @@ def test_compute_centroid_correction_without_masks(mock_data):
             [0, -0.3, -0.4]   # Second star
         ])
         assert np.allclose(result, expected_result)
+
+def test_reference_shifts_broadcasting():
+    reference_shifts = [-1/3, -1/3]  # Example reference_shifts
+    shifts = np.random.rand(2, 2400)  # Example shifts array
+
+    # Ensure reference_shifts is a NumPy array (if it's not already)
+    reference_shifts = np.array(reference_shifts)
+
+    # Broadcast reference_shifts to match the shape of shifts
+    reference_shifts = np.broadcast_to(reference_shifts[:, None], shifts.shape)  # Shape will be (2, 2400)
+
+    # Ensure shapes are compatible for subtraction
+    displacements = reference_shifts - shifts
+
+    # Test the result
+    assert displacements.shape == shifts.shape, "Shapes do not match"
+    assert np.all(displacements.shape == (2, 2400)), "Broadcasting failed"
