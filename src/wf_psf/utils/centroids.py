@@ -16,7 +16,7 @@ def compute_zernike_tip_tilt(
     star_images: np.ndarray,
     star_masks: Optional[np.ndarray] = None,
     pixel_sampling: float = 12e-6,
-    reference_shifts: list[float] = [-1 / 3, -1 / 3],
+    reference_shifts: list[float] = [-1/3, -1/3],
     sigma_init: float = 2.5,
     n_iter: int = 20,
 ) -> np.ndarray:
