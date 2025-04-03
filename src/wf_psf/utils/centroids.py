@@ -68,8 +68,13 @@ def compute_zernike_tip_tilt(
                             )
     shifts = centroid_estimator.get_intra_pixel_shifts()
 
-    # Compute the Zernike corrections for all shifts at once
+    # Ensure reference_shifts is a NumPy array (if it's not already)
     reference_shifts = np.array(reference_shifts)
+
+    # Broadcast reference_shifts to match the shape of shifts
+    reference_shifts = np.broadcast_to(reference_shifts[:, None], shifts.shape)  # Shape will be (2, 2400)
+
+    # Compute displacements
     displacements = (reference_shifts - shifts) # 
     
     # Ensure the correct axis order for displacements (x-axis, then y-axis)
