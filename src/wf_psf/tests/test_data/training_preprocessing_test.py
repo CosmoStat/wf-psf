@@ -304,7 +304,7 @@ def test_compute_centroid_correction_with_masks(mock_data):
         result = compute_centroid_correction(model_params, mock_data)
         
         # Ensure the result has the correct shape
-        assert result.shape == (2, 3)  # Should be (n_stars, 3 Zernike components)
+        assert result.shape == (4, 3)  # Should be (n_stars, 3 Zernike components)
         
         assert np.allclose(result[0, :], np.array([0, -0.1, -0.2]))  # First star Zernike coefficients
         assert np.allclose(result[1, :], np.array([0, -0.3, -0.4]))  # Second star Zernike coefficients
@@ -339,12 +339,14 @@ def test_compute_centroid_correction_without_masks(mock_data):
         result = compute_centroid_correction(model_params, mock_data)
 
         # Validate result shape
-        assert result.shape == (2, 3)  # (n_stars, 3 Zernike components)
+        assert result.shape == (4, 3)  # (n_stars, 3 Zernike components)
 
         # Validate expected values (adjust based on behavior)
         expected_result = np.array([
-            [0, -0.1, -0.2],  # First star
-            [0, -0.3, -0.4]   # Second star
+            [0, -0.1, -0.2],  # From training data
+            [0, -0.3, -0.4],
+            [0, -0.1, -0.2],  # From test data (reused mocked return)
+            [0, -0.3, -0.4]
         ])
         assert np.allclose(result, expected_result)
 
