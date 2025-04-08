@@ -17,11 +17,6 @@ import os
 
 
 @pytest.fixture
-def mock_training_model_params():
-    return RecursiveNamespace(n_bins_lda=10)
-
-
-@pytest.fixture
 def mock_data_read_conf(mocker):
     return mocker.patch(
         "wf_psf.utils.configs_handler.read_conf",
@@ -49,6 +44,7 @@ def mock_training_conf(mocker):
             metrics_config=None,
             model_params=RecursiveNamespace(
                 model_name="poly",
+                n_bins_lda=10,
                 param_hparams=RecursiveNamespace(
                     random_seed=3877572,
                 ),
@@ -56,7 +52,7 @@ def mock_training_conf(mocker):
                     d_max_nonparam=5,
                 ),
             ),
-            training_hparams=RecursiveNamespace(n_epochs_params=[2, 2]),
+            training_hparams=RecursiveNamespace(batch_size=32),
         ),
     )
 
@@ -71,21 +67,6 @@ def mock_data_conf(mocker):
     data_conf.test_data = "value2"
 
     return data_conf
-
-
-@pytest.fixture
-def mock_training_config_handler(mocker, mock_training_conf, mock_data_conf):
-    # Create a mock instance of TrainingConfigHandler
-    mock_instance = mocker.Mock(spec=TrainingConfigHandler)
-
-    # Set attributes of the mock instance as needed
-    mock_instance.training_conf = mock_training_conf
-    mock_instance.data_conf = mock_data_conf
-    mock_instance.checkpoint_dir = "/mock/checkpoint/dir"
-    mock_instance.optimizer_dir = "/mock/optimizer/dir"
-    mock_instance.psf_model_dir = "/mock/psf/model/dir"
-
-    return mock_instance
 
 
 @configs_handler.register_configclass
@@ -128,7 +109,7 @@ def test_get_run_config(path_to_repo_dir, path_to_tmp_output_dir, path_to_config
 
 
 def test_data_config_handler_init(
-    mock_training_model_params, mock_data_read_conf, mocker
+    mock_training_conf, mock_data_read_conf, mocker
 ):
     # Mock read_conf function
     mock_data_read_conf()
@@ -145,7 +126,9 @@ def test_data_config_handler_init(
 
     # Create DataConfigHandler instance
     data_config_handler = DataConfigHandler(
-        "/path/to/data_config.yaml", mock_training_model_params
+        "/path/to/data_config.yaml", 
+        mock_training_conf.training.model_params,
+        mock_training_conf.training.training_hparams.batch_size,
     )
 
     # Check that attributes are set correctly
@@ -153,12 +136,13 @@ def test_data_config_handler_init(
     assert isinstance(data_config_handler.simPSF, object)
     assert (
         data_config_handler.training_data.n_bins_lambda
-        == mock_training_model_params.n_bins_lda
+        == mock_training_conf.training.model_params.n_bins_lda
     )
     assert (
         data_config_handler.test_data.n_bins_lambda
-        == mock_training_model_params.n_bins_lda
+        == mock_training_conf.training.model_params.n_bins_lda
     )
+    assert (data_config_handler.batch_size == mock_training_conf.training.training_hparams.batch_size)  # Default value
 
 
 def test_training_config_handler_init(mocker, mock_training_conf, mock_file_handler):
@@ -207,6 +191,7 @@ def test_training_config_handler_init(mocker, mock_training_conf, mock_file_hand
             training_config_handler.training_conf.training.data_config,
         ),
         training_config_handler.training_conf.training.model_params,
+        training_config_handler.training_conf.training.training_hparams.batch_size,
         training_config_handler.training_conf.training.load_data_on_init,
     )
     assert training_config_handler.data_conf == mock_data_conf.return_value

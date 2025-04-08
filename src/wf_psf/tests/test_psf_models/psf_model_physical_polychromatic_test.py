@@ -35,6 +35,7 @@ def mock_data(mocker):
     mock_instance.training_data.dataset = {"positions": np.array([[1, 2], [3, 4]])}
     mock_instance.test_data = mocker.Mock()
     mock_instance.test_data.dataset = {"positions": np.array([[5, 6], [7, 8]])}
+    mock_instance.batch_size = 32
     return mock_instance
 
 
