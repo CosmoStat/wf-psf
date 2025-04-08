@@ -93,9 +93,9 @@ def masked_mse(
         Predicted values with shape (batch, height, width).
     mask : tf.Tensor
         A mask to apply, which **can contain float values in [0,1]**. 
-        - `0` means the pixel is ignored.
-        - `1` means the pixel is fully considered.
-        - Values in `(0,1]` act as weights for partial consideration.
+        - `0` means to include the pixel. 
+        - `1` means to ignore the pixel.
+        - Values in `(0,1)` act as weights for partial consideration.
     sample_weight : tf.Tensor, optional
         Sample weights for each image in the batch, with shape (batch,).
         If provided, it is broadcasted over the spatial dimensions.
@@ -106,14 +106,14 @@ def masked_mse(
         The mean squared error computed over the masked regions.
     """
     # Compute the squared error and apply the mask
-    error = mask * tf.square(y_true - y_pred) # (batch, height, width)
+    error = (1 - mask) * tf.square(y_true - y_pred) # (batch, height, width)
 
     # Apply sample weights if provided
     if sample_weight is not None:
         error *= tf.reshape(sample_weight, (-1, 1, 1))
 
     # Sum over spatial dimensions to compute the mask weight
-    mask_sum = tf.reduce_sum(mask, axis=[1, 2])  # (batch,)
+    mask_sum = tf.reduce_sum((1 - mask), axis=[1, 2])  # (batch,)
 
     # Compute the weighted mean squared error
     return tf.reduce_sum(error / tf.reshape(mask_sum, (-1, 1, 1))) / tf.cast(
@@ -121,29 +121,141 @@ def masked_mse(
     )
 
 class MaskedMeanSquaredError(tf.keras.losses.Loss):
-    """Masked Mean Squared Error.""" 
-    def __init__(self, name="masked_mean_squared_error", **kwargs):
+    """
+    Computes the masked mean squared error (MSE) loss between predictions and targets.
+
+    This loss function assumes that `y_true` has two components in the last axis:
+    - `y_true[..., 0]`: the target values.
+    - `y_true[..., 1]`: a mask in [0, 1] where:
+        - `1` means the pixel is included in the loss.
+        - `0` means the pixel is ignored.
+        - Values in (0,1) are treated as weights for partial contribution.
+    """
+
+    def __init__(self, name: str ="masked_mean_squared_error", **kwargs):
+        """
+        Initialize the masked mean squared error loss.
+
+        Parameters
+        ----------
+        name : str, optional
+            Name of the loss function. Default is "masked_mean_squared_error".
+        **kwargs : dict
+            Additional keyword arguments passed to `tf.keras.losses.Loss`.
+        """
         super().__init__(name=name, **kwargs)
 
-    def __call__(self, y_true, y_pred, sample_weight=None):
-        """Overrides __call__() to allow y_true and y_pred to have different shapes."""
+    def __call__(
+        self, 
+        y_true: tf.Tensor,
+        y_pred: tf.Tensor,
+        sample_weight: Optional[tf.Tensor]=None
+        ) -> tf.Tensor:
+        """
+        Invoke the loss computation with support for different shapes of inputs.
+
+        Parameters
+        ----------
+        y_true : tf.Tensor
+            A tensor of shape (batch, height, width, 2), where the last channel
+            contains the true values and the mask.
+        y_pred : tf.Tensor
+            A tensor of shape (batch, height, width), containing the predicted values.
+        sample_weight : tf.Tensor, optional
+            Optional per-sample weighting tensor of shape (batch,).
+
+        Returns
+        -------
+        tf.Tensor
+            Scalar tensor representing the final masked MSE loss.
+        """
         return self.call(y_true, y_pred, sample_weight)
 
-    def call(self, y_true, y_pred, sample_weight=None):
-        """Calculates the loss."""
+    def call(
+        self,
+        y_true: tf.Tensor,
+        y_pred: tf.Tensor,
+        sample_weight: Optional[tf.Tensor]=None
+        ) -> tf.Tensor:
+        """
+        Compute the masked mean squared error loss.
+
+        Parameters
+        ----------
+        y_true : tf.Tensor
+            Tensor of shape (batch, height, width, 2) containing the ground truth
+            values and the mask.
+        y_pred : tf.Tensor
+            Tensor of shape (batch, height, width) containing the predicted values.
+        sample_weight : tf.Tensor, optional
+            Optional sample weights of shape (batch,). Broadcast over spatial dims.
+
+        Returns
+        -------
+        tf.Tensor
+            Scalar tensor representing the mean squared error over masked pixels.
+        """
         # Extract the target and the masks from y_true
         y_target = y_true[..., 0]
         mask = y_true[..., 1]
         return masked_mse(y_target, y_pred, mask, sample_weight)
-
     
 class MaskedMeanSquaredErrorMetric(tf.keras.metrics.Metric):
-    def __init__(self, name="masked_mean_squared_error", **kwargs):
+    """
+    A custom metric class for computing the masked mean squared error (MSE).
+    
+    This metric computes the mean squared error over the masked regions of the 
+    true values and predictions. A mask is applied such that a mask value of 
+    `1` excludes the pixel and `0` includes the pixel in the error computation.
+    The metric is updated after every batch and returns the average masked MSE 
+    after processing the dataset.
+    """
+
+    def __init__(
+        self, 
+        name: str="masked_mean_squared_error", 
+        **kwargs
+        ) -> tf.Tensor:
+        """
+        Initialize the MaskedMeanSquaredErrorMetric.
+
+        Parameters
+        ----------
+        name : str, optional
+            The name of the metric instance. Defaults to "masked_mean_squared_error".
+        **kwargs : additional keyword arguments
+            Additional arguments passed to the parent class initializer.
+        """
         super().__init__(name=name, **kwargs)
         self.total_loss = self.add_weight(name="total_loss", initializer="zeros")
         self.batch_count = self.add_weight(name="batch_count", initializer="zeros")
 
-    def update_state(self, y_true, y_pred, sample_weight=None):
+    def update_state(
+            self, 
+            y_true: tf.Tensor, 
+            y_pred: tf.Tensor, 
+            sample_weight: Optional[tf.Tensor]=None
+        ) -> None:
+        """
+        Update the state of the metric with the true values, predictions, and optional sample weights.
+   
+        This method calculates the masked MSE loss for the given batch and accumulates the total loss and batch count.
+
+        Parameters
+        ----------
+        y_true : tf.Tensor
+            True values with shape `(batch_size, height, width, channels)`, 
+            where the last dimension contains both the target values and the mask.
+        y_pred : tf.Tensor
+            Predicted values with shape `(batch_size, height, width, channels)`.
+        sample_weight : tf.Tensor, optional
+            Sample weights for each instance in the batch, with shape `(batch_size,)`. 
+            If not provided, all instances are treated equally.
+
+        Returns
+        -------
+        None
+        """
         # Extract the target and the masks from y_true
         y_target = y_true[..., 0]
         mask = y_true[..., 1]
@@ -151,17 +263,35 @@ class MaskedMeanSquaredErrorMetric(tf.keras.metrics.Metric):
         self.total_loss.assign_add(loss)
         self.batch_count.assign_add(1.0)
 
-    def result(self):
+    def result(self) -> tf.Tensor:
+        """
+        Compute and return the current masked MSE value, averaged over all batches.
+        
+        Returns
+        -------
+        tf.Tensor
+            The current masked MSE value (average loss per batch).
+        """
         return self.total_loss / self.batch_count
     
-    def reset_state(self):
+    def reset_state(self) -> None:
+        """
+        Reset the state of the metric, clearing the accumulated total loss and batch count.
+        
+        This method is typically called at the start of a new evaluation or after 
+        a new epoch.
+
+        Returns
+        -------
+        None
+        """
         self.total_loss.assign(0.0)
         self.batch_count.assign(0.0)
 
 
 def l1_schedule_rule(epoch_n: int, l1_rate: float) -> float:
     """
-    Schedules the L1 rate based on the epoch number.
+    Schedule the L1 rate based on the epoch number.
 
     If the current epoch is a multiple of 10 (except for the first epoch), 
     the L1 rate is halved. Otherwise, the L1 rate remains unchanged.
@@ -330,28 +460,40 @@ def train_cycle_part(
 
     inputs: tf.Tensor
         Input data for training the model. Expected to be a tensor with the shape of the input batch.
+
     outputs: tf.Tensor
         Target output data for training the model. Expected to match the shape of `inputs`.
+
     batch_size: int
         The number of samples per batch during training.
+
     epochs: int
         The number of epochs to train the model.
+
     optimizer: tf.keras.optimizers.Optimizer
         The optimizer used for training the model (e.g., Adam, SGD).
+
     loss: Callable
         The loss function used for training the model. Typically a callable like `tf.keras.losses.MeanSquaredError()`.
+
     metrics: list of Callable
         List of metrics to monitor during training. Each element should be a callable metric (e.g., accuracy, precision).
+
     validation_data: tuple of (tf.Tensor, tf.Tensor), optional
         Tuple of input and output tensors to evaluate the model during training. Default is None.
+
     callbacks: list of Callable, optional
         List of callbacks to apply during training, such as `tf.keras.callbacks.EarlyStopping`. Default is None.
+
     sample_weight: tf.Tensor, optional
         Weights for the samples during training. Default is None.
+
     verbose: int, optional
         Verbosity mode (0, 1, or 2). Default is 1.
+
     first_run: bool, optional
         Flag indicating if this is the first run (affects how the model is built). Default is False.
+
     cycle_part: str, optional
         Specifies which part of the model to train ("parametric" or "non-parametric"). Default is "parametric".
 
@@ -413,6 +555,7 @@ def get_callbacks(callback1, callback2):
     ----------
     callback1: list of tf.keras.callbacks.Callback or None
         The first callback list (e.g., parametric or non-parametric).
+
     callback2: list of tf.keras.callbacks.Callback or None
         The second callback list (e.g., general callback).
 
@@ -473,48 +616,68 @@ def general_train_cycle(
 
     inputs: Tensor or list of tensors
         Input data for training (`Model.fit()`).
+
     outputs: Tensor
         Output data for training (`Model.fit()`).
+
     validation_data: Tuple
         Validation data used for model evaluation during training.
         (input_data, output_data).
+
     batch_size: int
         The batch size for the training.
+        
     learning_rate_param: float
         Learning rate for the parametric part of the PSF model.
+
     learning_rate_non_param: float
         Learning rate for the non-parametric part of the PSF model.
+
     n_epochs_param: int
         Number of epochs to train the parametric part.
+
     n_epochs_non_param: int
         Number of epochs to train the non-parametric part.
+
     param_optim: tf.keras.optimizers.Optimizer, optional
         Optimizer for the parametric part. Defaults to Adam if not provided.
+
     non_param_optim: tf.keras.optimizers.Optimizer, optional
         Optimizer for the non-parametric part. Defaults to Adam if not provided.
+
     param_loss: tf.keras.losses.Loss, optional
         Loss function for the parametric part. Defaults to the MeanSquaredError().
+
     non_param_loss: tf.keras.losses.Loss, optional
         Loss function for the non-parametric part. Defaults to MeanSquaredError().
+
     param_metrics: list of tf.keras.metrics.Metric, optional
         List of metrics for the parametric part. Defaults to MeanSquaredError().
+
     non_param_metrics: list of tf.keras.metrics.Metric, optional
         List of metrics for the non-parametric part. Defaults to MeanSquaredError().
+
     param_callback: list of tf.keras.callbacks.Callback, optional
         Callback for the parametric part only. Defaults to no callback.
+
     non_param_callback: list of tf.keras.callbacks.Callback, optional
         Callback for the non-parametric part only. Defaults to no callback.
+
     general_callback: list of tf.keras.callbacks.Callback, optional
         Callback shared between both the parametric and non-parametric parts. Defaults to no callback.
+
     first_run: bool, optional
         If True, the first iteration of training is assumed, and the non-parametric part 
         is not considered during the parametric training. Default is False.
+
     cycle_def: str, optional
         Defines the training cycle: `parametric`, `non-parametric`, `complete`, `only-parametric`, or `only-non-parametric`.
         The `complete` cycle trains both parts, while the others train only the specified part (both parametric and non-parametric). Default is `complete`.
+
     use_sample_weights: bool, optional
         If True, sample weights are used in training. Sample weights are computed 
         based on estimated noise variance. Default is False.
+
     verbose: int, optional
         Verbosity mode. `0` = silent, `1` = progress bar, `2` = one line per epoch.
         Default is 1.
@@ -523,8 +686,10 @@ def general_train_cycle(
     -------
     psf_model: tf.keras.Model
         The trained PSF model.
+
     hist_param: tf.keras.callbacks.History
         History object for the parametric training.
+
     hist_non_param: tf.keras.callbacks.History
         History object for the non-parametric training.
 
@@ -594,6 +759,7 @@ def general_train_cycle(
         callbacks = get_callbacks(non_param_callback, general_callback)
         
         psf_model.set_trainable_layers(param_bool=False, nonparam_bool=True)
+
         hist_non_param = train_cycle_part(
             psf_model=psf_model,
             inputs=inputs,
