@@ -57,21 +57,21 @@ class DataHandler:
         during initialization. If False, data loading is deferred until explicitly called.
     """
 
-    def __init__(self, dataset_type, data_params, simPSF, n_bins_lambda, load_data=True):
+    def __init__(self, dataset_type, data_params, simPSF, n_bins_lambda, load_data: bool=True):
         """
         Initialize the dataset handler for PSF simulation.
 
         Parameters
         ----------
-        dataset_type: str
+        dataset_type : str
             A string indicating the type of data ("train" or "test").
-        data_params: Recursive Namespace object
+        data_params : Recursive Namespace object
             A Recursive Namespace object containing parameters for both 'train' and 'test' datasets.
-        simPSF: PSFSimulator
+        simPSF : PSFSimulator
             An instance of the PSFSimulator class for simulating a PSF.
-        n_bins_lambda: int
+        n_bins_lambda : int
             The number of bins in wavelength.
-        load_data: bool, optional
+        load_data : bool, optional
             A flag to control whether data should be loaded and processed during initialization.
             If True, data is loaded and processed during initialization; if False, data loading
             is deferred until explicitly called.
@@ -263,21 +263,24 @@ def get_np_zernike_prior(data):
     return zernike_prior
 
 
-def compute_centroid_correction(model_params, data) -> np.ndarray:
+def compute_centroid_correction(model_params, data, batch_size: int=1) -> np.ndarray:
     """Compute centroid corrections using Zernike polynomials.
 
     This function calculates the Zernike contributions required to match the centroid
-    of the WaveDiff PSF model to the observed star centroids.
-
+    of the WaveDiff PSF model to the observed star centroids, processing in batches.
 
     Parameters
     ----------
     model_params : RecursiveNamespace
-        An object containing parameters for the PSF model, including pixel sampling
-        and initial centroid window parameters.
+        An object containing parameters for the PSF model, including pixel sampling and initial centroid window parameters.
+
     data : DataConfigHandler
         An object containing training and test datasets, including observed PSFs
         and optional star masks.
+
+    batch_size : int, optional
+        The batch size to use when processing the stars. Default is 16.
+
 
     Returns
     -------
@@ -287,7 +290,7 @@ def compute_centroid_correction(model_params, data) -> np.ndarray:
         with zero padding applied to the first column to ensure a consistent shape.
     """
     star_postage_stamps = extract_star_data(data=data, train_key="noisy_stars", test_key="stars")
-
+    
     # Get star mask catalogue only if "masks" exist in both training and test datasets
     star_masks = (
     extract_star_data(data=data, train_key="masks", test_key="masks")
@@ -307,17 +310,24 @@ def compute_centroid_correction(model_params, data) -> np.ndarray:
 
     reference_shifts = [float(Fraction(value)) for value in model_params.reference_shifts]
 
-    # Compute required Zernike 1 and Zernike 2
-    zk1_2_array = -1.0 * compute_zernike_tip_tilt(
-        star_postage_stamps, star_masks, pix_sampling, reference_shifts
-    )
+    n_stars = len(star_postage_stamps)
+    zernike_centroid_array = []
 
-    # Zero pad array to get shape (n_stars, n_zernike=3)
-    zernike_centroid_array = np.pad(
-        zk1_2_array, pad_width=[(0, 0), (1, 0)], mode="constant", constant_values=0
-    )
+    # Batch process the stars
+    for i in range(0, n_stars, batch_size):
+        batch_postage_stamps = star_postage_stamps[i:i + batch_size]
+        batch_masks = star_masks[i:i + batch_size]
 
-    return zernike_centroid_array
+        # Compute Zernike 1 and Zernike 2 for the batch
+        zk1_2_batch = -1.0 * compute_zernike_tip_tilt(
+            batch_postage_stamps, batch_masks, pix_sampling, reference_shifts
+        )
+
+        # Zero pad array for each batch and append
+        zernike_centroid_array.append(np.pad(zk1_2_batch, pad_width=[(0, 0), (1, 0)], mode="constant", constant_values=0))
+
+    # Combine all batches into a single array
+    return np.concatenate(zernike_centroid_array, axis=0)
 
 
 def compute_ccd_misalignment(model_params, data):
@@ -360,7 +370,7 @@ def compute_ccd_misalignment(model_params, data):
     return zernike_ccd_misalignment_array
 
 
-def get_zernike_prior(model_params, data):
+def get_zernike_prior(model_params, data, batch_size: int=16):
     """Get Zernike priors from the provided dataset.
 
     This method concatenates the Zernike priors from both the training
@@ -372,6 +382,8 @@ def get_zernike_prior(model_params, data):
         Object containing parameters for this PSF model class.
     data : DataConfigHandler
         Object containing training and test datasets.
+    batch_size : int, optional
+        The batch size to use when processing the stars. Default is 16.
 
     Returns
     -------
@@ -384,9 +396,6 @@ def get_zernike_prior(model_params, data):
     from both the training and test datasets along the 0th axis.
 
     """
-    # Get hold of the simPSF parameters.
-    # We need to add them to the config files
-
     # List of zernike contribution
     zernike_contribution_list = []
 
@@ -397,7 +406,7 @@ def get_zernike_prior(model_params, data):
     if model_params.correct_centroids:
         logger.info("Adding centroid correction to Zernike contribution list...")
         zernike_contribution_list.append(
-            compute_centroid_correction(model_params, data)
+            compute_centroid_correction(model_params, data, batch_size)
         )
 
     if model_params.add_ccd_misalignments:
