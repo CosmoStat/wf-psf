@@ -58,7 +58,6 @@ def compute_zernike_tip_tilt(
     - This function processes all images at once using vectorized operations.
     - The Zernike coefficients are computed in the WaveDiff convention.
     """
-
     # Vectorize the centroid computation
     centroid_estimator = CentroidEstimator(
                             im=star_images,
@@ -115,9 +114,9 @@ class CentroidEstimator:
     
     mask : numpy.ndarray, optional
         A 3D numpy array of the same shape as `im`, representing the mask for each star image. 
-        A mask value of `1` means the corresponding pixel is fully considered, 
-        a value of `0` means the pixel is ignored, and values between `0` and `1` 
-        act as weights for partial consideration. If not provided, no mask is applied.
+        A mask value of `0` indicates that the pixel is fully considered (unmasked), while a value of `1` means the pixel is completely ignored (masked).  
+        Values between `0` and `1` act as weights, allowing partial consideration of the pixel.  
+        If not provided, no mask is applied. 
 
     sigma_init : float, optional
         The initial guess for the standard deviation (sigma) of the elliptical Gaussian 
@@ -227,7 +226,6 @@ class CentroidEstimator:
 
     def compute_moments(self):
         """Compute the moments for multiple PSFs at once."""
-        
         if self.mask is not None:
             masked_im_window = self.im * self.window * (self.mask == 0)
         else:
