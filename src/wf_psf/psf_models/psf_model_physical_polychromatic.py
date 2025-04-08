@@ -170,7 +170,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         data: DataConfigHandler object
             A DataConfigHandler object providing access to training and tests datasets, as well as prior knowledge like Zernike coefficients.
         """
-        self.zks_prior = get_zernike_prior(model_params, data)
+        self.zks_prior = get_zernike_prior(model_params, data, data.batch_size)
         self.n_zks_total = max(
             model_params.param_hparams.n_zernikes,
             tf.cast(tf.shape(self.zks_prior)[1], tf.int32),

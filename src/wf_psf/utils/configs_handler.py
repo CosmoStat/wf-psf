@@ -115,14 +115,16 @@ class DataConfigHandler:
 
     Parameters
     ----------
-    data_conf: str
+    data_conf : str
         Path of the data configuration file
-    training_model_params: Recursive Namespace object
+    training_model_params : Recursive Namespace object
         Recursive Namespace object containing the training model parameters
+    batch_size : int
+       Training hyperparameter used for batched pre-processing of data.  
 
     """
 
-    def __init__(self, data_conf, training_model_params, load_data=True):
+    def __init__(self, data_conf, training_model_params, batch_size, load_data=True):
         try:
             self.data_conf = read_conf(data_conf)
         except FileNotFoundError as e:
@@ -147,6 +149,7 @@ class DataConfigHandler:
             n_bins_lambda=training_model_params.n_bins_lda,
             load_data=load_data,
         )
+        self.batch_size = batch_size
 
 
 @register_configclass
@@ -177,6 +180,7 @@ class TrainingConfigHandler:
                 file_handler.config_path, self.training_conf.training.data_config
             ),
             self.training_conf.training.model_params,
+            self.training_conf.training.training_hparams.batch_size,
             self.training_conf.training.load_data_on_init,
         )
         self.file_handler.copy_conffile_to_output_dir(
