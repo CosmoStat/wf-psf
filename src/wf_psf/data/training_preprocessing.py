@@ -306,7 +306,7 @@ def compute_centroid_correction(model_params, data, batch_size: int=1) -> np.nda
     pix_sampling = model_params.pix_sampling * 1e-6  # Change units from [um] to [m]
 
     # Ensure star_masks is properly handled
-    star_masks = star_masks if star_masks is not None else [None] * len(star_postage_stamps)
+    star_masks = star_masks if star_masks is not None else None
 
     reference_shifts = [float(Fraction(value)) for value in model_params.reference_shifts]
 
@@ -316,7 +316,7 @@ def compute_centroid_correction(model_params, data, batch_size: int=1) -> np.nda
     # Batch process the stars
     for i in range(0, n_stars, batch_size):
         batch_postage_stamps = star_postage_stamps[i:i + batch_size]
-        batch_masks = star_masks[i:i + batch_size]
+        batch_masks = star_masks[i:i + batch_size] if star_masks is not None else None
 
         # Compute Zernike 1 and Zernike 2 for the batch
         zk1_2_batch = -1.0 * compute_zernike_tip_tilt(
