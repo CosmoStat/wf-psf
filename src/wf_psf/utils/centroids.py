@@ -65,6 +65,7 @@ def compute_zernike_tip_tilt(
                             sigma_init=sigma_init,
                             n_iter=n_iter
                             )
+
     shifts = centroid_estimator.get_intra_pixel_shifts()
 
     # Ensure reference_shifts is a NumPy array (if it's not already)
@@ -264,7 +265,7 @@ class CentroidEstimator:
         np.array
             A 2D array of shape (num_of_images, 2), where each row corresponds to the x and y shifts for each image.
         """
-        shifts = np.array([self.xc - self.xc0, self.yc - self.yc0]) 
+        shifts = np.stack([self.xc - self.xc0, self.yc - self.yc0], axis=-1) 
     
         return shifts
 
