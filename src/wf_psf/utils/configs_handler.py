@@ -124,7 +124,7 @@ class DataConfigHandler:
 
     """
 
-    def __init__(self, data_conf, training_model_params, batch_size, load_data=True):
+    def __init__(self, data_conf, training_model_params, batch_size=16, load_data=True):
         try:
             self.data_conf = read_conf(data_conf)
         except FileNotFoundError as e:
