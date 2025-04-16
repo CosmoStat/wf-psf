@@ -116,7 +116,7 @@ def compute_poly_metric(
     # If the data is masked, mask the predictions
     if mask:
         logger.info("Applying masks to predictions. Only unmasked regions will be considered for metric calculations.")
-        masks = dataset_dict["masks"]
+        masks = 1-dataset_dict["masks"]
         # Weight the mse by the number of unmasked pixels
         weights = np.sum(masks, axis=(1, 2))
         preds = preds * masks
