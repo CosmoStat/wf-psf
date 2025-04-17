@@ -50,6 +50,7 @@ metrics:
 
       #Boolean to define if we use sample weights based on the noise standard deviation estimation
       use_sample_weights: True 
+
       # Flag to use Zernike prior
       use_prior: False
 
