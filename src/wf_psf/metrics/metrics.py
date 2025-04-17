@@ -116,10 +116,21 @@ def compute_poly_metric(
     # If the data is masked, mask the predictions
     if mask:
         logger.info("Applying masks to predictions. Only unmasked regions will be considered for metric calculations.")
+      
         masks = 1-dataset_dict["masks"]
+
+        # Ensure masks as float dtype
+        masks = masks.astype(preds.dtype)
+
         # Weight the mse by the number of unmasked pixels
         weights = np.sum(masks, axis=(1, 2))
+        
+        # Avoid divide by zero
+        weights = np.maximum(weights, 1e-7)
+
+        # Mask the predictions and ground truth/observations
         preds = preds * masks
+        gt_preds = gt_preds * masks
     else:
         weights = np.ones(gt_preds.shape[0]) * gt_preds.shape[1] * gt_preds.shape[2]
 
