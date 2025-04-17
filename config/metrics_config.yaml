@@ -50,7 +50,31 @@ metrics:
 
       #Boolean to define if we use sample weights based on the noise standard deviation estimation
       use_sample_weights: True 
+      # Flag to use Zernike prior
+      use_prior: False
 
+      # Correct centroids
+      correct_centroids: False
+
+      # Sigma of the window function used to compute the centroids. Default Euclid value is 2.5
+      sigma_centroid_window: 2.5
+
+      # Default reference_shifts value for observations at Euclid conditions, i.e., pixel sampling and telescope parameters.
+      reference_shifts: [-1/3, -1/3]
+
+      # Rotation angle (in degrees) for the obscuration mask.
+      # Must be a multiple of 90 (0, 90, 180, 270, etc.).
+      # Rotation is counterclockwise.
+      obscuration_rotation_angle: 0
+
+      # Consider CCD missalignments
+      add_ccd_misalignments: False
+
+      # CCD missalignments input file path
+      # This should be refactored. It might be better to directly look for the `tiles.npy` in
+      # the `data/assets/` directory in the repository
+      ccd_misalignments_input_path:
+      
       #Interpolation type for the physical poly model. Options are: 'none', 'all', 'top_K', 'independent_Zk'."
       interpolation_type: None
 
