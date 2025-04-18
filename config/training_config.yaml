@@ -56,6 +56,15 @@ training:
     # Boolean to define if we use sample weights based on the noise standard deviation estimation
     use_sample_weights: True 
 
+    # Sample weight generalised sigmoid function
+    sample_weights_sigmoid:
+      # Boolean to define if we apply the sigmoid function to the sample weights
+      apply_sigmoid: False
+      # Maximum value of the sigmoid function and consequently the maximum value of the sample weights
+      sigmoid_max_val: 5.0
+      # Power of the sigmoid function. The higher the value the steeper the sigmoid function. In the limit
+      sigmoid_power_k: 1.0
+
     # Interpolation type for the physical poly model. Options are: 'none', 'all', 'top_K', 'independent_Zk'."
     interpolation_type: None
     
