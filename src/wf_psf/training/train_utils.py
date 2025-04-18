@@ -410,7 +410,7 @@ def calculate_sample_weights(
         win_rad = np.ceil(outputs.shape[1] / 3.33)
         std_est = NoiseEstimator(img_dim=img_dim, win_rad=win_rad)
 
-        if loss == "masked_mean_squared_error":
+        if loss.name == "masked_mean_squared_error":
             logger.info("Estimating noise standard deviation for masked images..")
             images = outputs[..., 0]
             masks = np.array(1 - outputs[..., 1], dtype=bool)
