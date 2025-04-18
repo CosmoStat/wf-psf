@@ -30,10 +30,7 @@ def setup_training():
 
 
 def filepath_chkp_callback(
-    checkpoint_dir: str, 
-    model_name: str, 
-    id_name: str, 
-    current_cycle: int
+    checkpoint_dir: str, model_name: str, id_name: str, current_cycle: int
 ) -> str:
     """
     Generate a file path for a checkpoint callback.
@@ -62,7 +59,6 @@ def filepath_chkp_callback(
         + "_cycle"
         + str(current_cycle)
     )
-
 
 
 class TrainingParamsHandler:
@@ -225,7 +221,9 @@ class TrainingParamsHandler:
         """
         return self.multi_cycle_params.learning_rate_non_params
 
-    def _prepare_callbacks(self, checkpoint_dir, current_cycle, monitor="mean_squared_error"):
+    def _prepare_callbacks(
+        self, checkpoint_dir, current_cycle, monitor="mean_squared_error"
+    ):
         """Prepare Callbacks.
 
         A function to prepare to save the model as a callback.
@@ -360,18 +358,26 @@ def train(
         )
         logger.info(f"Starting cycle {current_cycle}..")
         # Prepare loss & metrics
-        if training_handler.training_hparams.loss == 'mask_mse':
+        if training_handler.training_hparams.loss == "mask_mse":
             logger.info("Using masked MSE loss")
             loss = train_utils.MaskedMeanSquaredError()
             metrics = [train_utils.MaskedMeanSquaredErrorMetric()]
-            masks = data_conf.training_data.dataset['masks']
-            outputs = tf.stack([data_conf.training_data.dataset["noisy_stars"], masks], axis=-1)
-            output_val = tf.stack([data_conf.test_data.dataset["stars"], data_conf.test_data.dataset['masks']], axis=-1)
+            masks = data_conf.training_data.dataset["masks"]
+            outputs = tf.stack(
+                [data_conf.training_data.dataset["noisy_stars"], masks], axis=-1
+            )
+            output_val = tf.stack(
+                [
+                    data_conf.test_data.dataset["stars"],
+                    data_conf.test_data.dataset["masks"],
+                ],
+                axis=-1,
+            )
         else:
             loss = tf.keras.losses.MeanSquaredError()
             metrics = [tf.keras.metrics.MeanSquaredError()]
             masks = None
-            outputs=data_conf.training_data.dataset["noisy_stars"]
+            outputs = data_conf.training_data.dataset["noisy_stars"]
             output_val = data_conf.test_data.dataset["stars"]
 
         logger.info(f"Starting cycle {current_cycle}..")
@@ -417,6 +423,9 @@ def train(
             first_run=True if current_cycle == 1 else False,
             cycle_def=training_handler.multi_cycle_params.cycle_def,
             use_sample_weights=training_handler.model_params.use_sample_weights,
+            apply_sigmoid=training_handler.model_params.sample_weights_sigmoid.apply_sigmoid,
+            sigmoid_max_val=training_handler.model_params.sample_weights_sigmoid.sigmoid_max_val,
+            sigmoid_power_k=training_handler.model_params.sample_weights_sigmoid.sigmoid_power_k,
             verbose=2,
         )
 
@@ -432,26 +441,20 @@ def train(
             )
 
         end_cycle = time.time()
-        logger.info(
-            f"Cycle{current_cycle} elapsed time: {end_cycle - start_cycle}"
-        )
+        logger.info(f"Cycle{current_cycle} elapsed time: {end_cycle - start_cycle}")
 
         # Save optimisation history in the saving dict
         if (
             hasattr(psf_model, "save_optim_history_param")
             and psf_model.save_optim_history_param
         ):
-            saving_optim_hist[
-                f"param_cycle{current_cycle}"
-            ] = hist_param.history
+            saving_optim_hist[f"param_cycle{current_cycle}"] = hist_param.history
 
         if (
             hasattr(psf_model, "save_optim_history_nonparam")
             and psf_model.save_optim_history_nonparam
         ):
-            saving_optim_hist[
-                f"nonparam_cycle{current_cycle}"
-            ] = hist_non_param.history
+            saving_optim_hist[f"nonparam_cycle{current_cycle}"] = hist_non_param.history
 
     # Save last cycle if no cycles were saved
     if not training_handler.multi_cycle_params.save_all_cycles:
