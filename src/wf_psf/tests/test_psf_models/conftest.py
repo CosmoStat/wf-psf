@@ -32,6 +32,11 @@ training_config = RecursiveNamespace(
         add_ccd_misalignments=False,
         ccd_misalignments_input_path=None,
         use_sample_weights=True,
+        sample_weights_sigmoid=RecursiveNamespace(
+            apply_sigmoid=True,
+            sigmoid_max_val=5.0,
+            sigmoid_power_k=1.0,
+        ),
         interpolation_type=None,
         interpolation_args=None,
         sed_interp_pts_per_bin=0,
@@ -63,7 +68,7 @@ training_config = RecursiveNamespace(
     ),
     training_hparams=RecursiveNamespace(
         batch_size=32,
-        loss='mse',
+        loss="mse",
         multi_cycle_params=RecursiveNamespace(
             total_cycles=2,
             cycle_def="complete",
