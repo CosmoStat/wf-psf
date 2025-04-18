@@ -24,7 +24,7 @@ metrics_params = RecursiveNamespace(
     eval_mono_metric_rmse=True,
     eval_opd_metric_rmse=True,
     eval_train_shape_results_dict=True,
-    eval_test_shape_results_dict=True,     
+    eval_test_shape_results_dict=True,
     ground_truth_model=RecursiveNamespace(
         model_params=RecursiveNamespace(
             model_name="ground_truth_poly",
@@ -39,6 +39,11 @@ metrics_params = RecursiveNamespace(
             output_dim=32,
             pupil_diameter=256,
             use_sample_weights=True,
+            sample_weights_sigmoid=RecursiveNamespace(
+                apply_sigmoid=True,
+                sigmoid_max_val=5.0,
+                sigmoid_power_k=1.0,
+            ),
             interpolation_type="None",
             x_lims=[0.0, 1000.0],
             y_lims=[0.0, 1000.0],
@@ -127,7 +132,10 @@ def test_eval_metrics_polychromatic_lowres(
     psf_model.load_weights(weights_path_basename)
 
     poly_metric = metrics_handler.evaluate_metrics_polychromatic_lowres(
-        psf_model, simPSF_np, data_conf, test_dataset, 
+        psf_model,
+        simPSF_np,
+        data_conf,
+        test_dataset,
     )
 
     tol = 1.0e-7
