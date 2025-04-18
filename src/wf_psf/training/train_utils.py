@@ -385,7 +385,7 @@ def calculate_sample_weights(
     outputs: np.ndarray,
     use_sample_weights: bool,
     loss: Union[str, Callable, None],
-    apply_sigmoid: bool = True,
+    apply_sigmoid: bool = False,
     sigmoid_max_val: float = 5.0,
     sigmoid_power_k: float = 1.0,
 ) -> Optional[np.ndarray]:
