@@ -10,7 +10,7 @@ Author: Tobias Liaudat <tobias.liaudat@cea.fr>
 
 import numpy as np
 import tensorflow as tf
-from typing import Optional, Callable
+from typing import Optional, Callable, Union
 from wf_psf.psf_models.psf_models import build_PSF_model
 from wf_psf.utils.utils import NoiseEstimator
 import logging
@@ -382,7 +382,9 @@ def configure_optimizer_and_loss(
 
 
 def calculate_sample_weights(
-    outputs: np.ndarray, use_sample_weights: bool, loss: str
+    outputs: np.ndarray,
+    use_sample_weights: bool,
+    loss: Union[str, Callable, None],
 ) -> Optional[np.ndarray]:
     """
     Calculate sample weights based on image noise standard deviation.
@@ -397,8 +399,8 @@ def calculate_sample_weights(
         and the next two dimensions are the image height and width.
     use_sample_weights: bool
         Flag indicating whether to compute sample weights. If True, sample weights will be computed based on the image noise.
-    loss: str
-        The loss function used for training. If the loss is "masked_mean_squared_error", the function will calculate the noise standard deviation for masked images.
+    loss: str, callable, optional
+        The loss function used for training. If the loss name is "masked_mean_squared_error", the function will calculate the noise standard deviation for masked images.
 
     Returns
     -------
@@ -410,7 +412,10 @@ def calculate_sample_weights(
         win_rad = np.ceil(outputs.shape[1] / 3.33)
         std_est = NoiseEstimator(img_dim=img_dim, win_rad=win_rad)
 
-        if loss.name == "masked_mean_squared_error":
+        if loss is not None and (
+            (isinstance(loss, str) and loss == "masked_mean_squared_error")
+            or (hasattr(loss, "name") and loss.name == "masked_mean_squared_error")
+        ):
             logger.info("Estimating noise standard deviation for masked images..")
             images = outputs[..., 0]
             masks = np.array(1 - outputs[..., 1], dtype=bool)
