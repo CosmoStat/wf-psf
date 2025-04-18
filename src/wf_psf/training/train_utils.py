@@ -12,7 +12,7 @@ import numpy as np
 import tensorflow as tf
 from typing import Optional, Callable, Union
 from wf_psf.psf_models.psf_models import build_PSF_model
-from wf_psf.utils.utils import NoiseEstimator
+from wf_psf.utils.utils import NoiseEstimator, generalised_sigmoid
 import logging
 
 logger = logging.getLogger(__name__)
@@ -385,6 +385,9 @@ def calculate_sample_weights(
     outputs: np.ndarray,
     use_sample_weights: bool,
     loss: Union[str, Callable, None],
+    apply_sigmoid: bool = True,
+    sigmoid_max_val: float = 5.0,
+    sigmoid_power_k: float = 1.0,
 ) -> Optional[np.ndarray]:
     """
     Calculate sample weights based on image noise standard deviation.
@@ -401,6 +404,14 @@ def calculate_sample_weights(
         Flag indicating whether to compute sample weights. If True, sample weights will be computed based on the image noise.
     loss: str, callable, optional
         The loss function used for training. If the loss name is "masked_mean_squared_error", the function will calculate the noise standard deviation for masked images.
+    apply_sigmoid: bool, optional
+        Flag indicating whether to apply a generalized sigmoid function to the sample weights. Default is True.
+    sigmoid_max_val: float, optional
+        The maximum value for the sigmoid function. Default is 5.0.
+    sigmoid_power_k: float, optional
+        The power parameter for the sigmoid function. Default is 1.0.
+        This parameter controls the steepness of the sigmoid curve.
+        Higher values make the curve steeper.
 
     Returns
     -------
@@ -433,6 +444,13 @@ def calculate_sample_weights(
         # Use inverse variance for weights and scale by median
         sample_weight = 1 / variances
         sample_weight /= np.median(sample_weight)
+
+        # Apply a generalized sigmoid function to the sample weights
+        if apply_sigmoid:
+            sample_weight = generalised_sigmoid(
+                sample_weight, max_val=sigmoid_max_val, power_k=sigmoid_power_k
+            )
+
     else:
         sample_weight = None
 
@@ -597,6 +615,9 @@ def general_train_cycle(
     first_run=False,
     cycle_def="complete",
     use_sample_weights=False,
+    apply_sigmoid=True,
+    sigmoid_max_val=5.0,
+    sigmoid_power_k=1.0,
     verbose=1,
 ):
     """
@@ -683,6 +704,17 @@ def general_train_cycle(
         If True, sample weights are used in training. Sample weights are computed
         based on estimated noise variance. Default is False.
 
+    apply_sigmoid: bool, optional
+        If True, a generalized sigmoid function is applied to the sample weights.
+        Default is True.
+
+    sigmoid_max_val: float, optional
+        The maximum value for the sigmoid function. Default is `5.0`.
+
+    sigmoid_power_k: float, optional
+        The power parameter for the sigmoid function. Default is `1.0`.
+        This parameter controls the steepness of the sigmoid curve.
+
     verbose: int, optional
         Verbosity mode. `0` = silent, `1` = progress bar, `2` = one line per epoch.
         Default is 1.
@@ -708,7 +740,14 @@ def general_train_cycle(
     )
 
     # Calculate sample weights
-    sample_weight = calculate_sample_weights(outputs, use_sample_weights, loss)
+    sample_weight = calculate_sample_weights(
+        outputs,
+        use_sample_weights,
+        loss,
+        apply_sigmoid,
+        sigmoid_max_val,
+        sigmoid_power_k,
+    )
 
     # Define the training cycle
     if cycle_def in ("parametric", "complete", "only-parametric"):
