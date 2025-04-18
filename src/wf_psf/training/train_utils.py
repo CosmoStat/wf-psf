@@ -1,13 +1,12 @@
 """
 Training utilities for the PSF model.
 
-This module contains helper functions and utilities related to the training 
-process for the PSF model. These functions help with managing training cycles, 
+This module contains helper functions and utilities related to the training
+process for the PSF model. These functions help with managing training cycles,
 callbacks, and related operations.
 
 Author: Tobias Liaudat <tobias.liaudat@cea.fr>
 """
-
 
 import numpy as np
 import tensorflow as tf
@@ -22,7 +21,7 @@ logger = logging.getLogger(__name__)
 class L1ParamScheduler(tf.keras.callbacks.Callback):
     """L1 rate scheduler that adjusts the L1 rate during training according to a specified schedule.
 
-    This callback modifies the L1 regularization rate at each epoch based on the given scheduling function. 
+    This callback modifies the L1 regularization rate at each epoch based on the given scheduling function.
     The function takes the epoch index and the current L1 rate as inputs, and it outputs the updated L1 rate.
 
     Parameters
@@ -31,7 +30,7 @@ class L1ParamScheduler(tf.keras.callbacks.Callback):
         A function that defines how to update the L1 rate. The function should take two arguments:
         - `epoch` (int): The current epoch index, starting from 0.
         - `current_l1_rate` (float): The L1 rate at the current epoch.
-        
+
         The function should return a new L1 rate (float) to be applied at the next epoch.
 
     Example
@@ -77,12 +76,13 @@ class L1ParamScheduler(tf.keras.callbacks.Callback):
         self.model.set_l1_rate(scheduled_l1_rate)
         # tf.keras.backend.set_value(self.model.optimizer.lr, scheduled_lr)
 
+
 def masked_mse(
     y_true: tf.Tensor,
     y_pred: tf.Tensor,
     mask: tf.Tensor,
-    sample_weight: Optional[tf.Tensor] = None
-    ) -> tf.Tensor:
+    sample_weight: Optional[tf.Tensor] = None,
+) -> tf.Tensor:
     """Compute the mean squared error over the masked regions.
 
     Parameters
@@ -92,8 +92,8 @@ def masked_mse(
     y_pred : tf.Tensor
         Predicted values with shape (batch, height, width).
     mask : tf.Tensor
-        A mask to apply, which **can contain float values in [0,1]**. 
-        - `0` means to include the pixel. 
+        A mask to apply, which **can contain float values in [0,1]**.
+        - `0` means to include the pixel.
         - `1` means to ignore the pixel.
         - Values in `(0,1)` act as weights for partial consideration.
     sample_weight : tf.Tensor, optional
@@ -106,7 +106,7 @@ def masked_mse(
         The mean squared error computed over the masked regions.
     """
     # Compute the squared error and apply the mask
-    error = (1 - mask) * tf.square(y_true - y_pred) # (batch, height, width)
+    error = (1 - mask) * tf.square(y_true - y_pred)  # (batch, height, width)
 
     # Apply sample weights if provided
     if sample_weight is not None:
@@ -120,6 +120,7 @@ def masked_mse(
         tf.shape(y_true)[0], y_true.dtype
     )
 
+
 class MaskedMeanSquaredError(tf.keras.losses.Loss):
     """
     Computes the masked mean squared error (MSE) loss between predictions and targets.
@@ -132,7 +133,7 @@ class MaskedMeanSquaredError(tf.keras.losses.Loss):
         - Values in (0,1) are treated as weights for partial contribution.
     """
 
-    def __init__(self, name: str ="masked_mean_squared_error", **kwargs):
+    def __init__(self, name: str = "masked_mean_squared_error", **kwargs):
         """
         Initialize the masked mean squared error loss.
 
@@ -146,11 +147,11 @@ class MaskedMeanSquaredError(tf.keras.losses.Loss):
         super().__init__(name=name, **kwargs)
 
     def __call__(
-        self, 
+        self,
         y_true: tf.Tensor,
         y_pred: tf.Tensor,
-        sample_weight: Optional[tf.Tensor]=None
-        ) -> tf.Tensor:
+        sample_weight: Optional[tf.Tensor] = None,
+    ) -> tf.Tensor:
         """
         Invoke the loss computation with support for different shapes of inputs.
 
@@ -175,8 +176,8 @@ class MaskedMeanSquaredError(tf.keras.losses.Loss):
         self,
         y_true: tf.Tensor,
         y_pred: tf.Tensor,
-        sample_weight: Optional[tf.Tensor]=None
-        ) -> tf.Tensor:
+        sample_weight: Optional[tf.Tensor] = None,
+    ) -> tf.Tensor:
         """
         Compute the masked mean squared error loss.
 
@@ -199,23 +200,20 @@ class MaskedMeanSquaredError(tf.keras.losses.Loss):
         y_target = y_true[..., 0]
         mask = y_true[..., 1]
         return masked_mse(y_target, y_pred, mask, sample_weight)
-    
+
+
 class MaskedMeanSquaredErrorMetric(tf.keras.metrics.Metric):
     """
     A custom metric class for computing the masked mean squared error (MSE).
-    
-    This metric computes the mean squared error over the masked regions of the 
-    true values and predictions. A mask is applied such that a mask value of 
+
+    This metric computes the mean squared error over the masked regions of the
+    true values and predictions. A mask is applied such that a mask value of
     `1` excludes the pixel and `0` includes the pixel in the error computation.
-    The metric is updated after every batch and returns the average masked MSE 
+    The metric is updated after every batch and returns the average masked MSE
     after processing the dataset.
     """
 
-    def __init__(
-        self, 
-        name: str="masked_mean_squared_error", 
-        **kwargs
-        ) -> tf.Tensor:
+    def __init__(self, name: str = "masked_mean_squared_error", **kwargs) -> tf.Tensor:
         """
         Initialize the MaskedMeanSquaredErrorMetric.
 
@@ -231,25 +229,25 @@ class MaskedMeanSquaredErrorMetric(tf.keras.metrics.Metric):
         self.batch_count = self.add_weight(name="batch_count", initializer="zeros")
 
     def update_state(
-            self, 
-            y_true: tf.Tensor, 
-            y_pred: tf.Tensor, 
-            sample_weight: Optional[tf.Tensor]=None
-        ) -> None:
+        self,
+        y_true: tf.Tensor,
+        y_pred: tf.Tensor,
+        sample_weight: Optional[tf.Tensor] = None,
+    ) -> None:
         """
         Update the state of the metric with the true values, predictions, and optional sample weights.
-   
+
         This method calculates the masked MSE loss for the given batch and accumulates the total loss and batch count.
 
         Parameters
         ----------
         y_true : tf.Tensor
-            True values with shape `(batch_size, height, width, channels)`, 
+            True values with shape `(batch_size, height, width, channels)`,
             where the last dimension contains both the target values and the mask.
         y_pred : tf.Tensor
             Predicted values with shape `(batch_size, height, width, channels)`.
         sample_weight : tf.Tensor, optional
-            Sample weights for each instance in the batch, with shape `(batch_size,)`. 
+            Sample weights for each instance in the batch, with shape `(batch_size,)`.
             If not provided, all instances are treated equally.
 
         Returns
@@ -266,19 +264,19 @@ class MaskedMeanSquaredErrorMetric(tf.keras.metrics.Metric):
     def result(self) -> tf.Tensor:
         """
         Compute and return the current masked MSE value, averaged over all batches.
-        
+
         Returns
         -------
         tf.Tensor
             The current masked MSE value (average loss per batch).
         """
         return self.total_loss / self.batch_count
-    
+
     def reset_state(self) -> None:
         """
         Reset the state of the metric, clearing the accumulated total loss and batch count.
-        
-        This method is typically called at the start of a new evaluation or after 
+
+        This method is typically called at the start of a new evaluation or after
         a new epoch.
 
         Returns
@@ -293,7 +291,7 @@ def l1_schedule_rule(epoch_n: int, l1_rate: float) -> float:
     """
     Schedule the L1 rate based on the epoch number.
 
-    If the current epoch is a multiple of 10 (except for the first epoch), 
+    If the current epoch is a multiple of 10 (except for the first epoch),
     the L1 rate is halved. Otherwise, the L1 rate remains unchanged.
 
     Parameters
@@ -307,7 +305,7 @@ def l1_schedule_rule(epoch_n: int, l1_rate: float) -> float:
     -------
     float
         The updated L1 rate for the given epoch.
-        
+
     Example
     -------
     For `epoch_n = 10` and `l1_rate = 0.01`, the function returns `0.005`.
@@ -318,33 +316,34 @@ def l1_schedule_rule(epoch_n: int, l1_rate: float) -> float:
         return scheduled_l1_rate
     return l1_rate
 
+
 def configure_optimizer_and_loss(
     learning_rate: float,
     optimizer: Optional[Callable] = None,
     loss: Optional[Callable] = None,
     metrics: Optional[list[Callable]] = None,
-    is_parametric: bool = True
+    is_parametric: bool = True,
 ) -> tuple[Callable, Callable, list[Callable]]:
     """
     Configure and return the optimizer, loss function, and metrics for model training.
 
-    This function configures the optimizer, loss function, and metrics for either the parametric 
-    or non-parametric model components. If no optimizer, loss, or metrics are provided, 
+    This function configures the optimizer, loss function, and metrics for either the parametric
+    or non-parametric model components. If no optimizer, loss, or metrics are provided,
     default values are used.
 
     Parameters
     ----------
     learning_rate: float
         The learning rate to be used by the optimizer.
-    
+
     optimizer: callable, optional
         A function or object used to initialize the optimizer (e.g., `tf.keras.optimizers.Adam`).
         If None, the default Adam optimizer with the specified learning rate is used.
-    
+
     loss: callable, optional
         The loss function to be used during training (e.g., `tf.keras.losses.MeanSquaredError`).
         If None, the default Mean Squared Error loss is used.
-    
+
     metrics: list of callable, optional
         A list of metric functions to evaluate during training (e.g., `tf.keras.metrics.MeanSquaredError`).
         If None, the default metric `MeanSquaredError` is used.
@@ -357,16 +356,16 @@ def configure_optimizer_and_loss(
     -------
     optimizer: callable
         The optimizer function or object configured for training.
-    
+
     loss: callable
         The loss function configured for training.
-    
+
     metrics: list of callable
         The list of metrics to be used for evaluating the model.
     """
     if loss is None:
         loss = tf.keras.losses.MeanSquaredError()
-    
+
     if optimizer is None:
         optimizer = tf.keras.optimizers.Adam(
             learning_rate=learning_rate,
@@ -381,17 +380,20 @@ def configure_optimizer_and_loss(
 
     return optimizer, loss, metrics
 
-def calculate_sample_weights(outputs: np.ndarray, use_sample_weights: bool, loss: str) -> np.ndarray or None:
+
+def calculate_sample_weights(
+    outputs: np.ndarray, use_sample_weights: bool, loss: str
+) -> Optional[np.ndarray]:
     """
     Calculate sample weights based on image noise standard deviation.
 
-    The function computes sample weights by estimating the noise standard deviation for each image, calculating the inverse variance, 
+    The function computes sample weights by estimating the noise standard deviation for each image, calculating the inverse variance,
     and then normalizing the weights by dividing by the median.
 
     Parameters
     ----------
     outputs: np.ndarray
-        A 3D array of shape (batch_size, height, width) representing images, where the first dimension is the batch size 
+        A 3D array of shape (batch_size, height, width) representing images, where the first dimension is the batch size
         and the next two dimensions are the image height and width.
     use_sample_weights: bool
         Flag indicating whether to compute sample weights. If True, sample weights will be computed based on the image noise.
@@ -407,25 +409,22 @@ def calculate_sample_weights(outputs: np.ndarray, use_sample_weights: bool, loss
         img_dim = (outputs.shape[1], outputs.shape[2])
         win_rad = np.ceil(outputs.shape[1] / 3.33)
         std_est = NoiseEstimator(img_dim=img_dim, win_rad=win_rad)
-        
+
         if loss == "masked_mean_squared_error":
             logger.info("Estimating noise standard deviation for masked images..")
             images = outputs[..., 0]
-            masks = np.array(1-outputs[..., 1], dtype=bool)
+            masks = np.array(1 - outputs[..., 1], dtype=bool)
             imgs_std = np.array(
-                [
-                    std_est.estimate_noise(_im, _win)
-                    for _im, _win in zip(images, masks)
-                ]
+                [std_est.estimate_noise(_im, _win) for _im, _win in zip(images, masks)]
             )
         else:
             logger.info("Estimating noise standard deviation for images..")
             # Estimate noise standard deviation
             imgs_std = np.array([std_est.estimate_noise(_im) for _im in outputs])
-        
+
         # Calculate variances
-        variances = imgs_std ** 2
-    
+        variances = imgs_std**2
+
         # Use inverse variance for weights and scale by median
         sample_weight = 1 / variances
         sample_weight /= np.median(sample_weight)
@@ -433,6 +432,7 @@ def calculate_sample_weights(outputs: np.ndarray, use_sample_weights: bool, loss
         sample_weight = None
 
     return sample_weight
+
 
 def train_cycle_part(
     psf_model: tf.keras.Model,
@@ -448,7 +448,7 @@ def train_cycle_part(
     sample_weight: Optional[tf.Tensor] = None,
     verbose: int = 1,
     first_run: bool = False,
-    cycle_part: str = "parametric"
+    cycle_part: str = "parametric",
 ) -> tf.keras.Model:
     """
     Train either the parametric or non-parametric part of the PSF model using the specified parameters. This function trains a single component of the model (either parametric or non-parametric) based on the provided configuration.
@@ -501,28 +501,28 @@ def train_cycle_part(
     -------
     tf.keras.Model
         The trained TensorFlow model after completing the specified number of epochs.
-    
+
     Notes
     -----
     This function trains the model based on the provided `cycle_part`. If `cycle_part` is set to
     "parametric", the function assumes the model is being trained in a parametric setting, while
-    "non-parametric" indicates the training of a non-parametric part. The model is built using the 
+    "non-parametric" indicates the training of a non-parametric part. The model is built using the
     `build_PSF_model` function before fitting.
 
     Examples
     --------
     model = train_cycle_part(
-        psf_model=model, 
-        inputs=train_inputs, 
-        outputs=train_outputs, 
-        batch_size=32, 
-        epochs=10, 
-        optimizer=tf.keras.optimizers.Adam(), 
-        loss=tf.keras.losses.MeanSquaredError(), 
+        psf_model=model,
+        inputs=train_inputs,
+        outputs=train_outputs,
+        batch_size=32,
+        epochs=10,
+        optimizer=tf.keras.optimizers.Adam(),
+        loss=tf.keras.losses.MeanSquaredError(),
         metrics=[tf.keras.metrics.MeanAbsoluteError()],
         validation_data=(val_inputs, val_outputs),
         callbacks=[tf.keras.callbacks.EarlyStopping(patience=3)],
-        sample_weight=None, 
+        sample_weight=None,
         verbose=1
     )
     """
@@ -550,7 +550,7 @@ def get_callbacks(callback1, callback2):
 
     If both are None, returns None. If one is None, returns the other.
     Otherwise, combines both lists.
-    
+
     Parameters
     ----------
     callback1: list of tf.keras.callbacks.Callback or None
@@ -598,13 +598,13 @@ def general_train_cycle(
     Perform a Bi-Cycle Descent (BCD) training iteration on a semi-parametric model.
 
     The function alternates between optimizing the parametric and/or non-parametric parts of the model
-    across specified training cycles. Each part of the model can be trained individually or together 
+    across specified training cycles. Each part of the model can be trained individually or together
     depending on the `cycle_def` parameter.
 
     For the parametric part:
     - Default learning rate: `learning_rate_param = 1e-2`
     - Default epochs: `n_epochs_param = 20`
-    
+
     For the non-parametric part:
     - Default learning rate: `learning_rate_non_param = 1.0`
     - Default epochs: `n_epochs_non_param = 100`
@@ -626,7 +626,7 @@ def general_train_cycle(
 
     batch_size: int
         The batch size for the training.
-        
+
     learning_rate_param: float
         Learning rate for the parametric part of the PSF model.
 
@@ -667,7 +667,7 @@ def general_train_cycle(
         Callback shared between both the parametric and non-parametric parts. Defaults to no callback.
 
     first_run: bool, optional
-        If True, the first iteration of training is assumed, and the non-parametric part 
+        If True, the first iteration of training is assumed, and the non-parametric part
         is not considered during the parametric training. Default is False.
 
     cycle_def: str, optional
@@ -675,7 +675,7 @@ def general_train_cycle(
         The `complete` cycle trains both parts, while the others train only the specified part (both parametric and non-parametric). Default is `complete`.
 
     use_sample_weights: bool, optional
-        If True, sample weights are used in training. Sample weights are computed 
+        If True, sample weights are used in training. Sample weights are computed
         based on estimated noise variance. Default is False.
 
     verbose: int, optional
@@ -715,7 +715,7 @@ def general_train_cycle(
         if cycle_def == "only-parametric":
             # Set the non-parametric part to zero
             psf_model.set_zero_nonparam()
-        
+
         # Define callbacks for parametric part
         # If both are None, set callbacks to None
         callbacks = get_callbacks(param_callback, general_callback)
@@ -736,12 +736,16 @@ def general_train_cycle(
             sample_weight=sample_weight,
             verbose=verbose,
             first_run=first_run,
-            cycle_part="parametric"
+            cycle_part="parametric",
         )
-       
+
     # Non-parametric part
     optimizer, loss, metrics = configure_optimizer_and_loss(
-        learning_rate_non_param, non_param_optim, non_param_loss, non_param_metrics, is_parametric=False
+        learning_rate_non_param,
+        non_param_optim,
+        non_param_loss,
+        non_param_metrics,
+        is_parametric=False,
     )
 
     if cycle_def in ("non-parametric", "complete", "only-non-parametric"):
@@ -757,7 +761,7 @@ def general_train_cycle(
         # Define callbacks for non-parametric part
         # If both are None, set callbacks to None
         callbacks = get_callbacks(non_param_callback, general_callback)
-        
+
         psf_model.set_trainable_layers(param_bool=False, nonparam_bool=True)
 
         hist_non_param = train_cycle_part(
@@ -774,7 +778,7 @@ def general_train_cycle(
             sample_weight=sample_weight,
             verbose=verbose,
             first_run=first_run,
-            cycle_part="non-parametric"
+            cycle_part="non-parametric",
         )
 
     return psf_model, hist_param, hist_non_param
