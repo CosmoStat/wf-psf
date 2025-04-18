@@ -31,6 +31,10 @@ def calc_wfe_rms(zernike_basis, zks, pupil_mask):
     return wfe_rms
 
 
+def generalised_sigmoid(x, max_val=1, power_k=1):
+    return max_val * x / np.power(1 + np.power(np.abs(x), power_k), 1 / power_k)
+
+
 def generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
     """Generate SED Elements.
 
@@ -244,7 +248,6 @@ class NoiseEstimator:
         The radius of the exclusion window (in pixels).
     """
 
-
     def __init__(self, img_dim: Tuple[int, int], win_rad: int) -> None:
         """
         Initializes the NoiseEstimator instance.
@@ -259,7 +262,7 @@ class NoiseEstimator:
         self.img_dim: Tuple[int, int] = img_dim
         self.win_rad: int = win_rad
 
-        self._init_window() # Initialize self.window
+        self._init_window()  # Initialize self.window
 
     def _init_window(self):
         """
@@ -284,7 +287,7 @@ class NoiseEstimator:
         Parameters
         ----------
         mask : np.ndarray, optional
-            A boolean mask to apply to the exclusion window. If None, the exclusion 
+            A boolean mask to apply to the exclusion window. If None, the exclusion
             window is returned without any modification.
 
         Returns
@@ -333,9 +336,10 @@ class NoiseEstimator:
         """
         if mask is not None:
             return self.sigma_mad(image[self.apply_mask(mask)])
-        
+
         # Use the default window if no mask is provided
         return self.sigma_mad(image[self.window])
+
 
 class ZernikeInterpolation(object):
     """Interpolate zernikes
