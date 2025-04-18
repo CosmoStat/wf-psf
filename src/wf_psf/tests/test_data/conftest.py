@@ -30,6 +30,11 @@ training_config = RecursiveNamespace(
         add_ccd_misalignments=False,
         ccd_misalignments_input_path="/Users/tl255879/Documents/research/Euclid/real_data/CCD_missalignments/tiles.npy",
         use_sample_weights=True,
+        sample_weights_sigmoid=RecursiveNamespace(
+            apply_sigmoid=True,
+            sigmoid_max_val=5.0,
+            sigmoid_power_k=1.0,
+        ),
         interpolation_type=None,
         sed_interp_pts_per_bin=0,
         sed_extrapolate=True,
@@ -37,9 +42,9 @@ training_config = RecursiveNamespace(
         sed_sigma=0,
         x_lims=[0.0, 1000.0],
         y_lims=[0.0, 1000.0],
-        pix_sampling= 12,
-        tel_diameter = 1.2,
-        tel_focal_length = 24.5,
+        pix_sampling=12,
+        tel_diameter=1.2,
+        tel_focal_length=24.5,
         euclid_obsc=True,
         LP_filter_length=3,
         param_hparams=RecursiveNamespace(
@@ -96,6 +101,7 @@ def data_params():
 @pytest.fixture(scope="module", params=[training_config])
 def simPSF():
     return psf_models.simPSF(training_config.model_params)
+
 
 @pytest.fixture(scope="module", params=[training_config])
 def model_params():
