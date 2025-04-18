@@ -120,7 +120,7 @@ training:
       d_max_nonparam: 5 
 
       # Number of graph features
-      num_graph_features: 10
+      num_graph_features: 0
       
       # L1 regularisation parameter for the non-parametric part."
       l1_rate: 1.0e-8
