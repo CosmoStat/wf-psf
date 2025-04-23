@@ -35,6 +35,48 @@ def generalised_sigmoid(x, max_val=1, power_k=1):
     return max_val * x / np.power(1 + np.power(np.abs(x), power_k), 1 / power_k)
 
 
+def single_mask_generator(shape):
+    """Generate a single mask with random 2D cosine waves.
+
+    Note: These masks simulate the effect of cosmic rays on the observations.
+
+    Parameters
+    ----------
+    shape: tuple
+        Shape of the mask to be generated.
+
+    Returns
+    -------
+    mask: np.ndarray
+        A 2D mask with random 2D cosine waves.
+    """
+    # 2D meshgrid between 0.5 and 1
+    x, y = np.meshgrid(np.linspace(0.7, 1.2, shape[1]), np.linspace(0.6, 1.1, shape[0]))
+    # random pair of 2D frequencies, xy shifts and flip flag
+    fxy_list = [np.random.random(5) * 6 for _ in range(100)]
+    # 2D cosine waves
+    cosine_wave_list = [
+        np.cos(2 * np.pi * (fxy[0] * (x - fxy[2] / 50) + fxy[1] * (y - fxy[3] / 50)))
+        for fxy in fxy_list
+    ]
+    # Sum of all cosine waves with random orientation
+    cosine_wave_tot = np.zeros_like(cosine_wave_list[0])
+    for cosine_wave, fxy in zip(cosine_wave_list, fxy_list):
+        if fxy[4] < 3:
+            cosine_wave = np.flipud(cosine_wave)
+        cosine_wave_tot += cosine_wave
+    # normalize
+    cosine_wave = cosine_wave_tot / np.max(cosine_wave_tot)
+
+    # detect values less than 0.6
+    return cosine_wave < 0.6
+
+
+def generate_n_mask(shape, n_masks=1):
+    """Generate n masks with random 2D cosine waves."""
+    return np.array([single_mask_generator(shape) for _ in range(n_masks)])
+
+
 def generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
     """Generate SED Elements.
 
