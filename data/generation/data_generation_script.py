@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
+"""Simulated PSF dataset generation script.
+
+This script can generate different types of PSF dataset for validation.
+It should fulfill all of WaveDiff's PSF simulation requirements.
+
+:Author: Tobias Liaudat <tobias.liaudat@cea.fr>
+"""
+
 
 import numpy as np
 import argparse
