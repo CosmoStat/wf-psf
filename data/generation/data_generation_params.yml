@@ -6,6 +6,9 @@ dataset_version: v1.0.0
 # Random seed for the generation of the dataset
 random_seed: 46711
 
+# Flag to plot figures representing the generated dataset
+plot_option: True
+
 paths:
   # Input SEDs directory which should contain the two files: "SEDs.npy" and "lambdas.npy"
   SED_dir_path: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/data/SEDs/save_SEDs/
@@ -13,13 +16,13 @@ paths:
   ref_train_dataset_path: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/data/coherent_euclid_dataset/train_Euclid_res_2000_TrainStars_id_001.npy
   ref_test_dataset_path: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/data/coherent_euclid_dataset/test_Euclid_res_id_001.npy
   # Output data folder path
-  output_folder: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/debug/notebooks/tmp_data_gen/
+  output_dir: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/debug/notebooks/tmp_data_gen/
   # Output figs folder path
-  output_fig_folder: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/debug/notebooks/tmp_data_gen/figs/
+  output_fig_dir: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/debug/notebooks/tmp_data_gen/figs/
   # Input optical simulation data (in npy format)
   sim_optical_data_path: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/debug/notebooks/input_data/Z_datacubes_irregular_grid.npy
-  # CCD missalignments data
-  ccd_miss_path: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/debug/notebooks/input_data/tiles.npy
+  # CCD misalignments data
+  ccd_misalignment_path: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/debug/notebooks/input_data/tiles.npy
 
 
 # Base simulation parameters
@@ -41,7 +44,7 @@ base_params:
   # Use an Euclid-like obscuration mask
   euclid_obsc: True
 
-  # Top-hat filter to avoid the aliasing effect in the obscurationmask
+  # Top-hat filter to avoid the aliasing effect in the obscuration mask
   LP_filter_length: 2
 
   # WFE pupil size
@@ -66,7 +69,7 @@ base_params:
   SR_output_Q: 1.0
 
   # Defaulted to the Euclid pixel size of 12 um. Value in [m].
-  pix_sampling: 12e-6
+  pix_sampling: 12.0e-6
 
 
 # Parameters specific to the PSF field generation
