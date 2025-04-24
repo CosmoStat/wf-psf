@@ -38,7 +38,7 @@ def main(args):
     # ------------ #
     # Paths
     ## Input SEDs
-    SED_path = "/Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/data/SEDs/save_SEDs/"
+    SED_dir_path = "/Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/data/SEDs/save_SEDs/"
     ## Reference datasets
     ref_train_dataset_path = "/Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/data/coherent_euclid_dataset/train_Euclid_res_2000_TrainStars_id_001.npy"
     ref_test_dataset_path = "/Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/data/coherent_euclid_dataset/test_Euclid_res_id_001.npy"
@@ -57,8 +57,6 @@ def main(args):
     # ------------ #
     #  Parameters
     # Differentiate the two datasets
-    # num_train_stars = [0, 3]
-    # num_test_stars = [3, 4]
     n_train_stars = 3
     n_test_stars = 1
 
@@ -474,8 +472,8 @@ def main(args):
     # ------------ #
     # SEDs
     # Load the SEDs
-    stellar_SEDs = np.load(SED_path + "SEDs.npy", allow_pickle=True)
-    stellar_lambdas = np.load(SED_path + "lambdas.npy", allow_pickle=True)
+    stellar_SEDs = np.load(SED_dir_path + "SEDs.npy", allow_pickle=True)
+    stellar_lambdas = np.load(SED_dir_path + "lambdas.npy", allow_pickle=True)
 
     # Compute total number of stars
     total_n_stars = n_train_stars + n_test_stars
