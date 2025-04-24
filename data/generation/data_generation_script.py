@@ -23,7 +23,7 @@ from wf_psf.utils.utils import (
     add_noise,
     generate_n_mask,
 )
-from wf_psf.utils.read_config import read_conf
+from wf_psf.utils.read_config import read_conf, RecursiveNamespace
 from wf_psf.sims.psf_simulator import PSFSimulator
 from wf_psf.utils.preprocessing import shift_x_y_to_zk1_2_wavediff
 from wf_psf.sims.spatial_varying_psf import SpatialVaryingPSF, ZernikeHelper
@@ -39,113 +39,152 @@ font = {"size": 18}
 mpl.rc("font", **font)
 
 
+def recursively_convert_lists_to_floats(namespace):
+    """Recursively convert all elements in lists in a RecursiveNamespace
+    that are strings to floats.
+    """
+    for key, value in vars(namespace).items():
+        if isinstance(value, list):
+            # Convert list elements to floats
+            setattr(
+                namespace,
+                key,
+                [float(item) if isinstance(item, str) else item for item in value],
+            )
+        elif isinstance(value, RecursiveNamespace):
+            # Recursively process nested namespaces
+            recursively_convert_lists_to_floats(value)
+
+
 def main(args):
     # Load config parameters
     config_params = read_conf(args.config)
 
-    # ------------ #
-    # Paths
-    ## Input SEDs
-    SED_dir_path = "/Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/data/SEDs/save_SEDs/"
-    ## Reference datasets
-    ref_train_dataset_path = "/Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/data/coherent_euclid_dataset/train_Euclid_res_2000_TrainStars_id_001.npy"
-    ref_test_dataset_path = "/Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/data/coherent_euclid_dataset/test_Euclid_res_id_001.npy"
-    ## Output data folder path
-    output_folder = "/Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/debug/notebooks/tmp_data_gen/"
-    ## Output figs folder path
-    output_fig_folder = "/Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/debug/notebooks/tmp_data_gen/figs/"
-    ## Input data
-    sim_optical_data_path = "/Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/debug/notebooks/input_data/Z_datacubes_irregular_grid.npy"
-    ## CCD missalignments data
-    ccd_miss_path = "/Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/debug/notebooks/input_data/tiles.npy"
+    # Convert all strings in lists in the config to floats
+    recursively_convert_lists_to_floats(config_params)
 
     # Version Id of the generated dataset
-    dataset_version = "v1.0.0"
-
-    # ------------ #
-    #  Parameters
-    # Differentiate the two datasets
-    n_train_stars = 3
-    n_test_stars = 1
-
-    # Range of coordinate values
-    x_lims = [0.0, 1.0e3]
-    y_lims = [0.0, 1.0e3]
-
-    # Define PSF generation parameters
-
-    # Max number of Zernike modes to be used
-    max_order = 66
-    max_wfe_rms = 0.01  # In um
-    output_dim = 32
-    LP_filter_length = 2
-    euclid_obsc = True
-    pupil_diameter = 256
-    oversampling_rate = 3.0
-    output_Q = 3.0
-
-    # Number of spectral bins to be used
-    n_bins = 20
-
-    # Parameters for the SR in the test dataset
-    SR_output_dim = 64
-    SR_output_Q = 1.0
-    pix_sampling = 12e-6
-
-    # Polynomial variations of the PSF field
-    psf_field_d_max = 2
-    psf_field_grid_points = [4, 4]
-
-    # Gaussian noise for training stars
-    SNR_range = [10, 110]
+    dataset_version = config_params.dataset_version
 
     # Random seed for the generation of the dataset
-    random_seed = 46711
+    random_seed = config_params.random_seed
+    # Set the random seed
+    np.random.seed(random_seed)
 
     # Plot some figures regarding the generated dataset
-    plot_option = True
+    plot_option = config_params.plot_option
+
+    # ------------ #
+    # Paths
+
+    # Input SEDs
+    SED_dir_path = config_params.paths.SED_dir_path
+    # Reference datasets
+    ref_train_dataset_path = config_params.paths.ref_train_dataset_path
+    ref_test_dataset_path = config_params.paths.ref_test_dataset_path
+    # Output data directory path
+    output_dir = config_params.paths.output_dir
+    # Output figs directory path
+    output_fig_dir = config_params.paths.output_fig_dir
+    # Input data
+    sim_optical_data_path = config_params.paths.sim_optical_data_path
+    # CCD misalignments data
+    ccd_misalignment_path = config_params.paths.ccd_misalignment_path
+
+    # ------------ #
+    # Base parameters
+    # Define PSF generation parameters
+
+    # Range of coordinate values
+    x_lims = config_params.base_params.x_lims
+    y_lims = config_params.base_params.y_lims
+    # Max number of Zernike modes to be used
+    max_order = config_params.base_params.max_order
+    # Maximum WFE RMS in [um]
+    max_wfe_rms = config_params.base_params.max_wfe_rms
+    # Use an Euclid-like obscuration mask
+    euclid_obsc = config_params.base_params.euclid_obsc
+    # Postage stamp size in pixels
+    output_dim = config_params.base_params.output_dim
+    # Top-hat filter to avoid the aliasing effect in the obscuration mask
+    LP_filter_length = config_params.base_params.LP_filter_length
+    # WFE pupil size
+    pupil_diameter = config_params.base_params.pupil_diameter
+    # Maximum allowed oversampling rate with respect to the observation resolution
+    oversampling_rate = config_params.base_params.oversampling_rate
+    # The output oversampling Q value for the observation resolution of the PSF.
+    # If `oversampling_rate/output_Q = 1`, then the PSF is not oversampled
+    output_Q = config_params.base_params.output_Q
+    # Number of spectral bins to be used in the spectral integration
+    n_bins = config_params.base_params.n_bins
+    # Parameters for the super resolution PSFs
+    # Postage stamp size in pixels of the super resolved PSF
+    SR_output_dim = config_params.base_params.SR_output_dim
+    # Output_Q value to generate the super resolved PSF
+    # The upsampling factor is equal to the ratio `output_Q/SR_output_Q`
+    SR_output_Q = config_params.base_params.SR_output_Q
+    # Defaulted to the Euclid pixel size of 12 um. Value in [m].
+    pix_sampling = config_params.base_params.pix_sampling
+
+    # ------------ #
+    # PSF field parameters
+
+    # Differentiate the two datasets
+    n_train_stars = config_params.psf_field_params.n_train_stars
+    n_test_stars = config_params.psf_field_params.n_test_stars
 
     # Simulation options can be: 'SFE', 'NoSFE', `new_polynomial`, `reference_polynomial`
-    sims_option = "SFE"
-    # If `SFE` or `NoSFE` are used, we load the corresponding optical simulated data and use it to generate the PSFs
+    # If `SFE` or `NoSFE` are used, we load the corresponding optical simulated data and use itto generate the PSFs
     # If `new_polynomial` is used, we generate a new random polynomial variation
-    # If `reference_polynomial` is used, we load a reference polynomial variation and use it to generate the PSFs
-
+    # If `reference_polynomial` is used, we load a reference polynomial variation and use it togenerate the PSFs
+    sims_option = config_params.psf_field_params.sims_option
     # Positions of the stars in the field of view
     # Simulation options can be: 'SFE', 'NoSFE', `random`, `reference`
-    positions_options = "reference"
     # If `random` is used, the positions are randomly generated in the field of view
     # If `reference` is used, the positions are taken from the reference dataset
     # If `SFE` or `NoSFE` are used, the positions are taken from the optical simulations
     # Note: if `sims_option` is `SFE` or `NoSFE` then the positions are forced to be the ones from the optical simulations
+    positions_options = config_params.psf_field_params.positions_options
+    # Polynomial variations of the PSF field
+    # Used if the `sims_option` is set to "new_polynomial"
+    psf_field_d_max = config_params.psf_field_params.psf_field_d_max
+    psf_field_grid_points = config_params.psf_field_params.psf_field_grid_points
+    # Gaussian noise for training stars
+    SNR_range = config_params.psf_field_params.SNR_range
+
+    # ------------ #
+    # Dataset features
 
     # Centroid shift options
-    add_intrapixel_shifts = True
-    intrapixel_shift_range = [-0.5, 0.5]
-
+    add_intrapixel_shifts = config_params.dataset_features.add_intrapixel_shifts
+    # In pixels (should be abs(limits)<0.5)
+    intrapixel_shift_range = config_params.dataset_features.intrapixel_shift_range
     # CCD misalignment options
-    add_ccd_misalignments = True
-
+    add_ccd_misalignments = config_params.dataset_features.add_ccd_misalignments
     # Add random masks to the observed PSFs (simulates the effect of Cosmic Rays)
-    add_masks = True
+    add_masks = config_params.dataset_features.add_masks
     # Options: 'random', 'unitary' (the unitary mask is a dummy mask with all pixels unmasked)
-    mask_type = "random"
+    mask_type = config_params.dataset_features.mask_type
 
-    # Prior error parameters
+    # ------------ #
+    # Prior error field parameters
+
     # Polynomial order of the error field
-    error_field_d_max = 4
+    error_field_d_max = config_params.prior_error_field_params.error_field_d_max
     # Number of anchor points to generate the randome realisation of the error field
-    error_field_grid_points = [5, 5]
-
+    error_field_grid_points = (
+        config_params.prior_error_field_params.error_field_grid_points
+    )
     # The model's units are um
     # Input required wfe_rms to SpatialVaryingPSF for getting the required wfe_rms.
     # req_wfe_rms = np.array([53, 26, 13.5, 6.5, 2.65, 1.35]) * 1e-3
     # desired_wfe_rms = np.array([40, 20, 10, 5, 2, 1]) * 1e-3
-    error_field_req_wfe_rms = np.array([53, 13.5, 2.65]) * 1e-3
-    error_field_desired_wfe_rms = np.array([40, 10, 2]) * 1e-3
-
-    # Set the random seed
-    np.random.seed(random_seed)
+    error_field_req_wfe_rms = (
+        config_params.prior_error_field_params.error_field_req_wfe_rms
+    )
+    error_field_desired_wfe_rms = (
+        config_params.prior_error_field_params.error_field_desired_wfe_rms
+    )
 
     # ------------ #
     # PSF Simulator
@@ -177,7 +216,7 @@ def main(args):
         plt.figure(figsize=(6, 6))
         plt.imshow(obscurations)
         plt.colorbar()
-        plt.savefig(output_fig_folder + dataset_version + "-obscurations.pdf")
+        plt.savefig(output_fig_dir + dataset_version + "-obscurations.pdf")
         # plt.show()
         plt.close()
 
@@ -328,7 +367,7 @@ def main(args):
         plt.legend(fontsize=16)
         plt.xlabel("X", fontsize=20)
         plt.ylabel("Y", fontsize=20)
-        plt.savefig(output_fig_folder + dataset_version + "-positions_plot.pdf")
+        plt.savefig(output_fig_dir + dataset_version + "-positions_plot.pdf")
         # plt.show()
         plt.close()
 
@@ -561,7 +600,7 @@ def main(args):
 
         # Generate the CCD misalignment calculator from file
         ccd_missalignment_calculator = CCDMisalignmentCalculator(
-            ccd_miss_path, x_lims, y_lims
+            ccd_misalignment_path, x_lims, y_lims
         )
 
         # Train
@@ -623,7 +662,7 @@ def main(args):
         plt.subplot(122)
         plt.imshow(opd, cmap=newcmp)
         plt.colorbar()
-        plt.savefig(output_fig_folder + dataset_version + "-example_psf.pdf")
+        plt.savefig(output_fig_dir + dataset_version + "-example_psf.pdf")
         # plt.show()
         plt.close()
 
@@ -656,7 +695,7 @@ def main(args):
             plt.xlabel("WFE nm RMS")
             plt.legend()
             plt.savefig(
-                output_fig_folder
+                output_fig_dir
                 + dataset_version
                 + "-"
                 + dataset_type
@@ -674,7 +713,7 @@ def main(args):
             cbar.ax.get_yaxis().labelpad = 20
             cbar.ax.set_ylabel("WFE nm RMS", rotation=270)
             plt.savefig(
-                output_fig_folder
+                output_fig_dir
                 + dataset_version
                 + "-"
                 + dataset_type
@@ -790,7 +829,7 @@ def main(args):
             plt.title("Masked noisy Star")
             plt.xticks([])
             plt.yticks([])
-            plt.savefig(output_fig_folder + dataset_version + "-masked_noisy_star.pdf")
+            plt.savefig(output_fig_dir + dataset_version + "-masked_noisy_star.pdf")
             # plt.show()
             plt.close()
 
@@ -879,7 +918,7 @@ def main(args):
                         )
                     )
                     plt.savefig(
-                        output_fig_folder
+                        output_fig_dir
                         + dataset_version
                         + "-"
                         + dataset_type
@@ -898,7 +937,7 @@ def main(args):
                         plt.colorbar()
                         plt.title("Zk %d, in [nm]" % zk_ex[j])
                     plt.savefig(
-                        output_fig_folder
+                        output_fig_dir
                         + dataset_version
                         + "-"
                         + dataset_type
@@ -998,7 +1037,7 @@ def main(args):
 
         # Save dataset
         np.save(
-            output_folder + dataset_version + "-train.npy",
+            output_dir + dataset_version + "-train.npy",
             train_psf_dataset,
             allow_pickle=True,
         )
@@ -1027,7 +1066,7 @@ def main(args):
 
             # Save dataset
             np.save(
-                output_folder
+                output_dir
                 + dataset_version
                 + "-train"
                 + "_prior_error_rms_{:.0e}".format(error_field_desired_wfe_rms[it])
@@ -1110,7 +1149,7 @@ def main(args):
 
         # Save dataset
         np.save(
-            output_folder + dataset_version + "-test.npy",
+            output_dir + dataset_version + "-test.npy",
             test_psf_dataset,
             allow_pickle=True,
         )
@@ -1137,7 +1176,7 @@ def main(args):
 
             # Save dataset
             np.save(
-                output_folder
+                output_dir
                 + dataset_version
                 + "-test"
                 + "_prior_error_rms_{:.0e}".format(error_field_desired_wfe_rms[it])
