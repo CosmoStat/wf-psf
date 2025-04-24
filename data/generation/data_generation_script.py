@@ -1063,7 +1063,7 @@ SR_test_poly_psf_list = []
 n_test_stars = num_test_stars[1] - num_test_stars[0]
 
 
-print("Generate SR test PSFs")
+print("Generate testing SR PSFs")
 for it_j in tqdm(range(n_test_stars)):
     SR_sim_PSF_toolkit.set_z_coeffs(test_zks[it_j, :])
     SR_test_poly_psf_list.append(
