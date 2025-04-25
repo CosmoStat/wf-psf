@@ -31,12 +31,23 @@ from wf_psf.utils.ccd_misalignments import CCDMisalignmentCalculator
 
 
 # Pre-defined colormap
-top = mpl.colormaps["Oranges_r"].resampled(128)
-bottom = mpl.colormaps["Blues"].resampled(128)
-newcolors = np.vstack((top(np.linspace(0, 1, 128)), bottom(np.linspace(0, 1, 128))))
-newcmp = ListedColormap(newcolors, name="OrangeBlue")
-font = {"size": 18}
-mpl.rc("font", **font)
+try:
+    top = mpl.colormaps["Oranges_r"].resampled(128)
+    bottom = mpl.colormaps["Blues"].resampled(128)
+    newcolors = np.vstack((top(np.linspace(0, 1, 128)), bottom(np.linspace(0, 1, 128))))
+    newcmp = ListedColormap(newcolors, name="OrangeBlue")
+    font = {"size": 18}
+    mpl.rc("font", **font)
+except AttributeError:
+    # For older versions of matplotlib
+    top = mpl.cm.get_cmap(
+        "Oranges_r", 128
+    )  # Get the "Oranges_r" colormap with 128 colors
+    bottom = mpl.cm.get_cmap("Blues", 128)  # Get the "Blues" colormap with 128 colors
+    newcolors = np.vstack((top(np.linspace(0, 1, 128)), bottom(np.linspace(0, 1, 128))))
+    newcmp = ListedColormap(newcolors, name="OrangeBlue")
+    font = {"size": 18}
+    mpl.rc("font", **font)
 
 
 def recursively_convert_lists_to_floats(namespace):
