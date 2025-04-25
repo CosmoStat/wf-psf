@@ -533,10 +533,13 @@ def get_number_of_stars(metrics):
     """
     list_of_stars = []
 
-    for k, v in metrics.items():
-        for run in v:
-            run_id = list(run.keys())[0]
-            list_of_stars.append(int(re.search(r"\d+", run_id).group()))
+    try:
+        for k, v in metrics.items():
+            for run in v:
+                run_id = list(run.keys())[0]
+                list_of_stars.append(int(re.search(r"\d+", run_id).group()))
+    except AttributeError:
+        list_of_stars = np.arange(len(metrics.items())) + 1
 
     return list_of_stars
 
