@@ -33,6 +33,7 @@ base_params:
 
   # Define PSF generation parameters
   # Max number of Zernike modes to be used
+  # SFE/NoSFE simulations use 66 modes, while the reference_polynomial simulations uses 45 modes
   max_order: 66
 
   # Maximum WFE RMS in [um]
