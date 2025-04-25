@@ -334,8 +334,8 @@ def main(args):
         num_ref_test_stars = test_positions.shape[0]
 
         # Check the number of positions in the field of view is valid
-        assert num_ref_train_stars <= n_train_stars
-        assert num_ref_test_stars <= n_test_stars
+        assert num_ref_train_stars >= n_train_stars
+        assert num_ref_test_stars >= n_test_stars
 
         # Fix to the number of required stars for each dataset
         train_positions = train_positions[0:n_train_stars, :]
