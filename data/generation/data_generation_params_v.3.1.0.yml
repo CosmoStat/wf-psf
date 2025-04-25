@@ -11,18 +11,18 @@ plot_option: True
 
 paths:
   # Input SEDs directory which should contain the two files: "SEDs.npy" and "lambdas.npy"
-  SED_dir_path: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/data/SEDs/save_SEDs/
+  SED_dir_path: </path/to/directory/>
   # Reference datasets
-  ref_train_dataset_path: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/data/coherent_euclid_dataset/train_Euclid_res_2000_TrainStars_id_001.npy
-  ref_test_dataset_path: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/data/coherent_euclid_dataset/test_Euclid_res_id_001.npy
+  ref_train_dataset_path: </path/to/reference/train/dataset/.npy>
+  ref_test_dataset_path:  </path/to/reference/test/dataset/.npy>
   # Output data folder path
-  output_dir: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/debug/notebooks/tmp_data_gen/
+  output_dir: </path/to/output/directory/>
   # Output figs folder path
-  output_fig_dir: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/debug/notebooks/tmp_data_gen/figs/
+  output_fig_dir: </path/to/output/directory/for/figures>
   # Input optical simulation data (in npy format)
-  sim_optical_data_path: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/debug/notebooks/input_data/Z_datacubes_irregular_grid.npy
+  sim_optical_data_path: </path/to/optical/simulation/file/Z_datacubes_irregular_grid.npy/>
   # CCD misalignments data
-  ccd_misalignment_path: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/debug/notebooks/input_data/tiles.npy
+  ccd_misalignment_path: </path/to/ccd/misalignment/file/tiles.npy/>
 
 
 # Base simulation parameters
