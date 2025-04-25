@@ -93,7 +93,9 @@ def compute_poly_metric(
 
     # Ground truth data preparation
     if dataset_dict is None or "stars" not in dataset_dict:
-        logger.info("No precomputed ground truth stars found. Regenerating from the ground truth model using configured interpolation settings.")
+        logger.info(
+            "No precomputed ground truth stars found. Regenerating from the ground truth model using configured interpolation settings."
+        )
         # Change interpolation parameters for the ground truth simPSF
         simPSF_np.SED_interp_pts_per_bin = 0
         simPSF_np.SED_sigma = 0
@@ -115,16 +117,18 @@ def compute_poly_metric(
 
     # If the data is masked, mask the predictions
     if mask:
-        logger.info("Applying masks to predictions. Only unmasked regions will be considered for metric calculations.")
-      
-        masks = 1-dataset_dict["masks"]
+        logger.info(
+            "Applying masks to predictions. Only unmasked regions will be considered for metric calculations."
+        )
+
+        masks = 1 - dataset_dict["masks"]
 
         # Ensure masks as float dtype
         masks = masks.astype(preds.dtype)
 
         # Weight the mse by the number of unmasked pixels
         weights = np.sum(masks, axis=(1, 2))
-        
+
         # Avoid divide by zero
         weights = np.maximum(weights, 1e-7)
 
@@ -458,12 +462,12 @@ def compute_shape_metrics(
     predictions = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
     # Ground truth data preparation
-    if (
-        dataset_dict is None
-        or "super_res_stars" not in dataset_dict
-        or "SR_stars" not in dataset_dict
+    if dataset_dict is None or (
+        "super_res_stars" not in dataset_dict and "SR_stars" not in dataset_dict
     ):
-        logger.info("No pre-computed super-resolved ground truth stars found.  Regenerating ground truth super resolved stars from the ground-truth model using configured interpolation settings.")
+        logger.info(
+            "No pre-computed super-resolved ground truth stars found.  Regenerating ground truth super resolved stars from the ground-truth model using configured interpolation settings."
+        )
         # Change interpolation parameters for the ground truth simPSF
         simPSF_np.SED_interp_pts_per_bin = 0
         simPSF_np.SED_sigma = 0
