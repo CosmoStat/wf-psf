@@ -48,6 +48,9 @@ metrics:
       #Dimension of the OPD/Wavefront space."
       pupil_diameter: 256
 
+      # Top-hat filter to avoid the aliasing effect in the obscuration mask
+      LP_filter_length: 2
+
       #Boolean to define if we use sample weights based on the noise standard deviation estimation
       use_sample_weights: True 
 
