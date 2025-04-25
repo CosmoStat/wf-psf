@@ -1,0 +1,135 @@
+# Data generation parameters
+
+# Version of the dataset it should follow the fomat "v.X.Y.Z"
+dataset_version: v3.3.0
+
+# Random seed for the generation of the dataset
+random_seed: 46711
+
+# Flag to plot figures representing the generated dataset
+plot_option: True
+
+paths:
+  # Input SEDs directory which should contain the two files: "SEDs.npy" and "lambdas.npy"
+  SED_dir_path: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/data/SEDs/save_SEDs/
+  # Reference datasets
+  ref_train_dataset_path: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/data/coherent_euclid_dataset/train_Euclid_res_2000_TrainStars_id_001.npy
+  ref_test_dataset_path: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/data/coherent_euclid_dataset/test_Euclid_res_id_001.npy
+  # Output data folder path
+  output_dir: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/debug/notebooks/tmp_data_gen/
+  # Output figs folder path
+  output_fig_dir: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/debug/notebooks/tmp_data_gen/figs/
+  # Input optical simulation data (in npy format)
+  sim_optical_data_path: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/debug/notebooks/input_data/Z_datacubes_irregular_grid.npy
+  # CCD misalignments data
+  ccd_misalignment_path: /Users/tl255879/Documents/research/projects/wf-projects/case_study_psf_decontamination/wf-psf/debug/notebooks/input_data/tiles.npy
+
+
+# Base simulation parameters
+base_params:
+  # Range of coordinate values
+  x_lims: [0.0, 1.0e3]
+  y_lims: [0.0, 1.0e3]
+
+  # Define PSF generation parameters
+  # Max number of Zernike modes to be used
+  max_order: 66
+
+  # Maximum WFE RMS in [um]
+  max_wfe_rms: 0.01
+
+  # Postage stamp size in pixels
+  output_dim: 32
+
+  # Use an Euclid-like obscuration mask
+  euclid_obsc: True
+
+  # Top-hat filter to avoid the aliasing effect in the obscuration mask
+  LP_filter_length: 2
+
+  # WFE pupil size
+  pupil_diameter: 256
+
+  # Maximum allowed oversampling rate with respect to the observation resolution
+  oversampling_rate: 3.0
+
+  # The output oversampling Q value for the observation resolution of the PSF.
+  # If `oversampling_rate/output_Q = 1`, then the PSF is not oversampled
+  output_Q: 3.0
+
+  # Number of spectral bins to be used in the spectral integration
+  n_bins: 20
+
+  # Parameters for the super resolution PSFs
+  # Postage stamp size in pixels of the super resolved PSF
+  SR_output_dim: 64
+
+  # Output_Q value to generate the super resolved PSF
+  # The upsampling factor is equal to the ratio `output_Q/SR_output_Q`
+  SR_output_Q: 1.0
+
+  # Defaulted to the Euclid pixel size of 12 um. Value in [m].
+  pix_sampling: 12.0e-6
+
+
+# Parameters specific to the PSF field generation
+psf_field_params:
+  # Differentiate the two datasets
+  n_train_stars: 3
+  n_test_stars: 1
+
+  # Simulation options can be: 'SFE', 'NoSFE', `new_polynomial`, `reference_polynomial`
+  sims_option: SFE
+  # If `SFE` or `NoSFE` are used, we load the corresponding optical simulated data and use itto generate the PSFs
+  # If `new_polynomial` is used, we generate a new random polynomial variation
+  # If `reference_polynomial` is used, we load a reference polynomial variation and use it togenerate the PSFs
+
+  # Positions of the stars in the field of view
+  # Simulation options can be: 'SFE', 'NoSFE', `random`, `reference`
+  positions_options: SFE
+  # If `random` is used, the positions are randomly generated in the field of view
+  # If `reference` is used, the positions are taken from the reference dataset
+  # If `SFE` or `NoSFE` are used, the positions are taken from the optical simulations
+  # Note: if `sims_option` is `SFE` or `NoSFE` then the positions are forced to be the ones from the optical simulations
+
+  # Polynomial variations of the PSF field
+  # Used if the `sims_option` is set to "new_polynomial"
+  psf_field_d_max: 2
+  psf_field_grid_points: [4, 4]
+
+  # Gaussian noise for training stars
+  SNR_range: [10.0, 110.0]
+
+
+# Available simluation features for the dataset
+dataset_features:
+  # Centroid shift options
+  add_intrapixel_shifts: True
+  # In pixels (should be abs(limits)<0.5)
+  intrapixel_shift_range: [-0.5, 0.5]
+
+  # CCD misalignment options
+  add_ccd_misalignments: True
+
+  # Add random masks to the observed PSFs (simulates the effect of Cosmic Rays)
+  add_masks: True
+  # Options: 'random', 'unitary' (the unitary mask is a dummy mask with all pixels unmasked)
+  mask_type: random
+
+
+# Prior error parameters. Useful to build an error for the prior when the "SFE" or "NoSFE" options are used in the `sims_option`
+prior_error_field_params:
+  # Polynomial order of the error field
+  error_field_d_max: 4
+  # Number of anchor points to generate the randome realisation of the error field
+  error_field_grid_points: [5, 5]
+
+  # Error field paramaters
+  # Input required wfe_rms to SpatialVaryingPSF for getting the required wfe_rms.
+  # req_wfe_rms = np.array([53, 26, 13.5, 6.5, 2.65, 1.35]) * 1e-3
+  # desired_wfe_rms = np.array([40, 20, 10, 5, 2, 1]) * 1e-3
+  # The model's units are um
+  error_field_req_wfe_rms: [53.0e-3, 13.5e-3, 2.65e-3]
+  error_field_desired_wfe_rms: [40.0e-3, 10.0e-3, 2.0e-3]
+
+
