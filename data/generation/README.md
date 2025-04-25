@@ -3,6 +3,11 @@
 
 Characteristics of the reference datasets.
 
+To run the script:
+```python
+python data_generation_script.py -c data_generation_params_v.0.1.0.yml
+```
+
 
 **Dataset 0.x.x:**
 
