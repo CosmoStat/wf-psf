@@ -16,7 +16,11 @@ from wf_psf.psf_models.tf_modules.tf_layers import (
     TFPhysicalLayer,
 )
 from wf_psf.psf_models.models.psf_model_semiparametric import TFSemiParametricField
+<<<<<<< HEAD
 from wf_psf.data.data_handler import get_data_array
+=======
+from wf_psf.data.training_preprocessing import get_obs_positions
+>>>>>>> 8ada04a (Refactor: Encapsulate logic in psf_models package with subpackages: models and tf_modules, add/rm modules, update import statements and tests)
 from wf_psf.psf_models import psf_models as psfm
 from wf_psf.psf_models.tf_modules.tf_utils import ensure_tensor
 import logging
