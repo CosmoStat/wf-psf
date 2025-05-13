@@ -10,11 +10,9 @@ to manage the parameters of the psf physical polychromatic model.
 from typing import Optional
 import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
-from wf_psf.psf_models import psf_models as psfm
-from wf_psf.utils.read_config import RecursiveNamespace
-from wf_psf.utils.configs_handler import DataConfigHandler
 from wf_psf.data.training_preprocessing import get_obs_positions, get_zernike_prior
-from wf_psf.psf_models.tf_layers import (
+from wf_psf.psf_models import psf_models as psfm
+from wf_psf.psf_models.tf_modules.tf_layers import (
     TFPolynomialZernikeField,
     TFZernikeOPD,
     TFBatchPolychromaticPSF,
@@ -22,6 +20,8 @@ from wf_psf.psf_models.tf_layers import (
     TFNonParametricPolynomialVariationsOPD,
     TFPhysicalLayer,
 )
+from wf_psf.utils.read_config import RecursiveNamespace
+from wf_psf.utils.configs_handler import DataConfigHandler
 import logging
 
 

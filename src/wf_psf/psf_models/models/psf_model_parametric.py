@@ -9,7 +9,7 @@ to manage the parameters of the psf parametric model.
 
 import tensorflow as tf
 from wf_psf.psf_models.psf_models import register_psfclass
-from wf_psf.psf_models.tf_layers import (
+from wf_psf.psf_models.tf_modules.tf_layers import (
     TFPolynomialZernikeField,
     TFZernikeOPD,
     TFBatchPolychromaticPSF,
