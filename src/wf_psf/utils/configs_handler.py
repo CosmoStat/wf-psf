@@ -378,12 +378,12 @@ class MetricsConfigHandler:
     def weights_basename_filepath(self):
         """Get PSF model weights filepath.
 
-        A function to return the basename of the user-specified psf model weights path.
+        A function to return the basename of the user-specified PSF model weights path.
 
         Returns
         -------
         weights_basename: str
-            The basename of the psf model weights to be loaded.
+            The basename of the PSF model weights to be loaded.
 
         """
         return os.path.join(
@@ -437,12 +437,12 @@ class MetricsConfigHandler:
     def run(self):
         """Run.
 
-        A function to run wave-diff according to the
+        A function to run WaveDiff according to the
         input configuration.
 
         """
         logger.info(
-            "Running metrics evaluation on psf model: {}".format(self.weights_path)
+            "Running metrics evaluation on PSF model: {}".format(self.weights_path)
         )
 
         model_metrics = evaluate_model(
