@@ -9,13 +9,13 @@ A module with classes for the Ground-Truth TensorFlow-based PSF field models.
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
-from wf_psf.psf_models.tf_layers import (
+from wf_psf.psf_models.tf_modules.tf_layers import (
     TFZernikeOPD,
     TFBatchPolychromaticPSF,
     TFBatchMonochromaticPSF,
     TFPhysicalLayer,
 )
-from wf_psf.psf_models.psf_model_semiparametric import TFSemiParametricField
+from wf_psf.psf_models.models.psf_model_semiparametric import TFSemiParametricField
 from wf_psf.data.training_preprocessing import get_obs_positions
 from wf_psf.psf_models import psf_models as psfm
 import logging

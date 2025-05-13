@@ -9,7 +9,7 @@ This module contains unit tests for the wf_psf.psf_models.psf_model_physical_pol
 import pytest
 import numpy as np
 import tensorflow as tf
-from wf_psf.psf_models.psf_model_physical_polychromatic import (
+from wf_psf.psf_models.models.psf_model_physical_polychromatic import (
     TFPhysicalPolychromaticField,
 )
 from wf_psf.utils.configs_handler import DataConfigHandler
@@ -54,7 +54,7 @@ def test_initialize_parameters(mocker, mock_data, mock_model_params, zks_prior):
 
     # Mock internal methods called during initialization
     mocker.patch(
-        "wf_psf.psf_models.psf_model_physical_polychromatic.get_zernike_prior",
+        "wf_psf.psf_models.models.psf_model_physical_polychromatic.get_zernike_prior",
         return_value=zks_prior,
     )
 
@@ -92,7 +92,7 @@ def test_initialize_zernike_parameters(mocker, mock_model_params, mock_data, zks
 
     # Mock internal methods called during initialization
     mocker.patch(
-        "wf_psf.psf_models.psf_model_physical_polychromatic.get_zernike_prior",
+        "wf_psf.psf_models.models.psf_model_physical_polychromatic.get_zernike_prior",
         return_value=zks_prior,
     )
 
@@ -146,13 +146,13 @@ def test_initialize_physical_layer_mocking(
 
     # Mock internal methods called during initialization
     mocker.patch(
-        "wf_psf.psf_models.psf_model_physical_polychromatic.get_zernike_prior",
+        "wf_psf.psf_models.models.psf_model_physical_polychromatic.get_zernike_prior",
         return_value=zks_prior,
     )
 
     # Create a mock for the TFPhysicalLayer class
     mock_physical_layer_class = mocker.patch(
-        "wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalLayer"
+        "wf_psf.psf_models.models.psf_model_physical_polychromatic.TFPhysicalLayer"
     )
 
     # Create TFPhysicalPolychromaticField instance
@@ -176,13 +176,13 @@ def physical_layer_instance(mocker, mock_model_params, mock_data, zks_prior):
 
     # Mock internal methods called during initialization
     mocker.patch(
-        "wf_psf.psf_models.psf_model_physical_polychromatic.get_zernike_prior",
+        "wf_psf.psf_models.models.psf_model_physical_polychromatic.get_zernike_prior",
         return_value=zks_prior,
     )
 
     # Create a mock for the TFPhysicalLayer class
     mocker.patch(
-        "wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalLayer"
+        "wf_psf.psf_models.models.psf_model_physical_polychromatic.TFPhysicalLayer"
     )
 
     # Create TFPhysicalPolychromaticField instance
