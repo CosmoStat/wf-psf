@@ -1,4 +1,4 @@
-"""Preprocessing.
+"""Data Preprocessing.
 
 A module with utils to preprocess data.
 
