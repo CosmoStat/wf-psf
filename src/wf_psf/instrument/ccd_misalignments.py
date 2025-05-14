@@ -10,7 +10,7 @@ from typing import Union
 import numpy as np
 import matplotlib.path as mpltPath
 from scipy.spatial import KDTree
-from wf_psf.utils.preprocessing import defocus_to_zk4_wavediff
+from wf_psf.data.data_preprocessing import defocus_to_zk4_wavediff
 
 
 class CCDMisalignmentCalculator:
