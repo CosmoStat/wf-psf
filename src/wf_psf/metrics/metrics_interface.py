@@ -366,14 +366,6 @@ def evaluate_model(
         # Prepare np input
         simPSF_np = data.training_data.simPSF
 
-        ## Load the model's weights
-        try:
-            logger.info("Loading PSF model weights from {}".format(weights_path))
-            psf_model.load_weights(weights_path)
-        except Exception as e: 
-            logger.exception("An error occurred with the weights_path file: %s", e)
-            exit()
-
         # Define datasets
         datasets = {"test": data.test_data.dataset, "train": data.training_data.dataset}
 
