@@ -9,7 +9,7 @@ This module contains unit tests for the wf_psf.utils centroids module.
 import numpy as np
 import pytest
 from unittest.mock import MagicMock, patch
-from wf_psf.utils.centroids import (
+from wf_psf.data.centroids import (
     compute_zernike_tip_tilt,
     CentroidEstimator
 )
@@ -124,7 +124,7 @@ def test_compute_zernike_tip_tilt_single_batch(mocker, simple_image, identity_ma
     """Test compute_zernike_tip_tilt with single batch input and mocks."""
 
     # Mock the CentroidEstimator class
-    mock_centroid_calc = mocker.patch("wf_psf.utils.centroids.CentroidEstimator", autospec=True)
+    mock_centroid_calc = mocker.patch("wf_psf.data.centroids.CentroidEstimator", autospec=True)
 
     # Create a mock instance and configure get_intra_pixel_shifts()
     mock_instance = mock_centroid_calc.return_value
@@ -132,7 +132,7 @@ def test_compute_zernike_tip_tilt_single_batch(mocker, simple_image, identity_ma
 
     # Mock shift_x_y_to_zk1_2_wavediff to return predictable values
     mock_shift_fn = mocker.patch(
-        "wf_psf.utils.centroids.shift_x_y_to_zk1_2_wavediff",
+        "wf_psf.data.centroids.shift_x_y_to_zk1_2_wavediff",
         side_effect=lambda shift: shift * 0.5  # Mocked conversion for test
     )
 
@@ -166,7 +166,7 @@ def test_compute_zernike_tip_tilt_batch(mocker, multiple_images):
     """Test compute_zernike_tip_tilt with batch input and mocks."""
     
     # Mock the CentroidEstimator class
-    mock_centroid_calc = mocker.patch("wf_psf.utils.centroids.CentroidEstimator", autospec=True)
+    mock_centroid_calc = mocker.patch("wf_psf.data.centroids.CentroidEstimator", autospec=True)
 
     # Create a mock instance and configure get_intra_pixel_shifts()
     mock_instance = mock_centroid_calc.return_value
@@ -174,7 +174,7 @@ def test_compute_zernike_tip_tilt_batch(mocker, multiple_images):
 
     # Mock shift_x_y_to_zk1_2_wavediff to return predictable values
     mock_shift_fn = mocker.patch(
-        "wf_psf.utils.centroids.shift_x_y_to_zk1_2_wavediff",
+        "wf_psf.data.centroids.shift_x_y_to_zk1_2_wavediff",
         side_effect=lambda shift: shift * 0.5  # Mocked conversion for test
     )
 
