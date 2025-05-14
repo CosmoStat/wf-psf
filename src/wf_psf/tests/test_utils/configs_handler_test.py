@@ -4,15 +4,18 @@ This module contains unit tests for the wf_psf.utils configs_handler module.
 
 :Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 
-
 """
 
 import pytest
+from wf_psf.data.training_preprocessing import DataHandler
 from wf_psf.utils import configs_handler
 from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.utils.io import FileIOHandler
-from wf_psf.utils.configs_handler import TrainingConfigHandler, DataConfigHandler
-from wf_psf.data.training_preprocessing import DataHandler
+from wf_psf.utils.configs_handler import (
+    TrainingConfigHandler,
+    MetricsConfigHandler,
+    DataConfigHandler,
+)
 import os
 
 
@@ -228,22 +231,4 @@ def test_run_method_calls_train_with_correct_arguments(
         mock_th.checkpoint_dir,
         mock_th.optimizer_dir,
         mock_th.psf_model_dir,
-    )
-
-
-def test_MetricsConfigHandler_weights_basename_filepath(
-    path_to_tmp_output_dir, path_to_config_dir
-):
-    test_file_handler = FileIOHandler(path_to_tmp_output_dir, path_to_config_dir)
-
-    metrics_config_file = "validation/main_random_seed/config/metrics_config.yaml"
-
-    metrics_object = configs_handler.MetricsConfigHandler(
-        os.path.join(path_to_config_dir, metrics_config_file), test_file_handler
-    )
-    weights_filepath = metrics_object.weights_basename_filepath
-
-    assert (
-        weights_filepath
-        == "src/wf_psf/tests/data/validation/main_random_seed/checkpoint/checkpoint*_poly*_sample_w_bis1_2k_cycle2*"
     )

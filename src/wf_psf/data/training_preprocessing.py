@@ -10,8 +10,8 @@ import os
 import numpy as np
 import wf_psf.utils.utils as utils
 import tensorflow as tf
-from wf_psf.utils.ccd_misalignments import CCDMisalignmentCalculator
-from wf_psf.utils.centroids import compute_zernike_tip_tilt
+from wf_psf.instrument.ccd_misalignments import CCDMisalignmentCalculator
+from wf_psf.data.centroids import compute_zernike_tip_tilt
 from fractions import Fraction
 import logging
 

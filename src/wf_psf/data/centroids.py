@@ -8,7 +8,7 @@ A module with utils to handle PSF centroids.
 
 import numpy as np
 import scipy.signal as scisig
-from wf_psf.utils.preprocessing import shift_x_y_to_zk1_2_wavediff
+from wf_psf.data.data_preprocessing import shift_x_y_to_zk1_2_wavediff
 from typing import Optional
 
 
