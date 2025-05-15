@@ -211,7 +211,6 @@ def test_evaluate_model(
             trained_model_params=mock_trained_model_params,
             data=mock_data,
             psf_model=mock_psf_model,
-            weights_path="/mock/weights/path",
             metrics_output="/mock/metrics/output",
         )
 
