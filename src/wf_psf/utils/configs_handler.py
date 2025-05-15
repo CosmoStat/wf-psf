@@ -256,12 +256,12 @@ class MetricsConfigHandler:
 
     def __init__(self, metrics_conf, file_handler, training_conf=None):
         self._metrics_conf = read_conf(metrics_conf)
-        self.data_conf = self._load_data_conf()
-        self._file_handler = file_handler 
-        self.metrics_dir = self._file_handler.get_metrics_dir(self._file_handler._run_output_dir)
+        self._file_handler = file_handler
         self.training_conf = training_conf
-        self.trained_psf_model = self.load_trained_psf_model(self.training_conf, self.data_conf )
-
+        self.data_conf = self._load_data_conf()
+        self.metrics_dir = self._file_handler.get_metrics_dir(self._file_handler._run_output_dir)
+        self.trained_psf_model = self._load_trained_psf_model()
+    
     @property
     def metrics_conf(self):
         return self._metrics_conf
@@ -455,15 +455,13 @@ class MetricsConfigHandler:
         input configuration.
 
         """
-        logger.info(
-            "Running metrics evaluation on PSF model: {}".format(self.weights_path)
-        )
+        logger.info("Running metrics evaluation on trained PSF model...")
 
         model_metrics = evaluate_model(
             self.metrics_conf.metrics,
             self.training_conf.training,
             self.data_conf,
-            self.psf_model,
+            self.trained_psf_model,
             self.metrics_dir,
         )
 
