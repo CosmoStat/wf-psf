@@ -325,7 +325,6 @@ def evaluate_model(
     trained_model_params,
     data,
     psf_model,
-    weights_path,
     metrics_output,
 ):
     """Evaluate the trained model on both training and test datasets by computing various metrics.
@@ -356,8 +355,8 @@ def evaluate_model(
     try:
         ## Load datasets
         # -----------------------------------------------------
-        # Get training data
-        logger.info("Fetching and preprocessing training and test data...")
+        # Get training and test data
+        logger.info("Fetching training and test data...")
 
         # Initialize metrics_handler
         metrics_handler = MetricsParamsHandler(metrics_params, trained_model_params)
