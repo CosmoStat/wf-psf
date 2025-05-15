@@ -7,10 +7,14 @@ It includes utilities to:
 
 Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 """
+import logging
 from wf_psf.psf_models.psf_models import (
     get_psf_model,
     get_psf_model_weights_filepath
 )
+
+
+logger = logging.getLogger(__name__)
 
 def load_trained_psf_model(training_conf, data_conf, weights_path_pattern):
     """
