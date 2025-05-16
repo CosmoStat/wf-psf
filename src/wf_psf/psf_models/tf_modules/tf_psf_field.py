@@ -16,7 +16,7 @@ from wf_psf.psf_models.tf_modules.tf_layers import (
     TFPhysicalLayer,
 )
 from wf_psf.psf_models.models.psf_model_semiparametric import TFSemiParametricField
-from wf_psf.data.training_preprocessing import get_obs_positions
+from wf_psf.data.data_handler import get_obs_positions
 from wf_psf.psf_models import psf_models as psfm
 import logging
 
