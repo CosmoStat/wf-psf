@@ -17,13 +17,17 @@ import numpy as np
 import wf_psf.utils.utils as utils
 import tensorflow as tf
 from fractions import Fraction
+<<<<<<< HEAD
 from typing import Optional, Union
+=======
+>>>>>>> 80aad95 (Refactor: reorganise modules, relocate utility functions, rename modules, update import statements and unit tests)
 import logging
 
 logger = logging.getLogger(__name__)
 
 
 class DataHandler:
+<<<<<<< HEAD
     """
     DataHandler for WaveDiff PSF modeling.
 
@@ -88,10 +92,54 @@ class DataHandler:
            and `process_sed_data()` is called with either the given `sed_data` or `dataset["SEDs"]`.
         3. **Automatic loading mode** (`load_data=True` and no `dataset`): the dataset is loaded
            from disk using `data_params`, and SEDs are extracted and processed automatically.
+=======
+    """Data Handler.
+
+    This class manages loading and processing of training and testing data for use during PSF model training and validation.
+    It provides methods to access and preprocess the data.
+
+    Parameters
+    ----------
+    dataset_type: str
+        A string indicating type of data ("train" or "test").
+    data_params: Recursive Namespace object
+        Recursive Namespace object containing training data parameters
+    simPSF: PSFSimulator
+        An instance of the PSFSimulator class for simulating a PSF.
+    n_bins_lambda: int
+        The number of bins in wavelength.
+    load_data: bool, optional
+        A flag used to control data loading steps. If True, data is loaded and processed
+        during initialization. If False, data loading is deferred until explicitly called.
+
+    Attributes
+    ----------
+    dataset_type: str
+        A string indicating the type of dataset ("train" or "test").
+    data_params: Recursive Namespace object
+        A Recursive Namespace object containing training or test data parameters.
+    dataset: dict
+        A dictionary containing the loaded dataset, including positions and stars/noisy_stars.
+    simPSF: object
+        An instance of the SimPSFToolkit class for simulating PSF.
+    n_bins_lambda: int
+        The number of bins in wavelength.
+    sed_data: tf.Tensor
+        A TensorFlow tensor containing the SED data for training/testing.
+    load_data_on_init: bool, optional
+        A flag used to control data loading steps. If True, data is loaded and processed
+        during initialization. If False, data loading is deferred until explicitly called.
+    """
+
+    def __init__(self, dataset_type, data_params, simPSF, n_bins_lambda, load_data: bool=True):
+        """
+        Initialize the dataset handler for PSF simulation.
+>>>>>>> 80aad95 (Refactor: reorganise modules, relocate utility functions, rename modules, update import statements and unit tests)
 
         Parameters
         ----------
         dataset_type : str
+<<<<<<< HEAD
             One of {"train", "test", "inference"} indicating dataset usage.
         data_params : RecursiveNamespace
             Configuration object with paths, preprocessing options, and metadata.
@@ -133,10 +181,36 @@ class DataHandler:
             self.load_dataset()
             self.process_sed_data(self.dataset["SEDs"])
             self.validate_and_process_dataset()
+=======
+            A string indicating the type of data ("train" or "test").
+        data_params : Recursive Namespace object
+            A Recursive Namespace object containing parameters for both 'train' and 'test' datasets.
+        simPSF : PSFSimulator
+            An instance of the PSFSimulator class for simulating a PSF.
+        n_bins_lambda : int
+            The number of bins in wavelength.
+        load_data : bool, optional
+            A flag to control whether data should be loaded and processed during initialization.
+            If True, data is loaded and processed during initialization; if False, data loading
+            is deferred until explicitly called.
+        """
+        self.dataset_type = dataset_type
+        self.data_params = data_params.__dict__[dataset_type]
+        self.simPSF = simPSF
+        self.n_bins_lambda = n_bins_lambda
+        self.load_data_on_init = load_data
+        if self.load_data_on_init:
+            self.load_dataset()
+            self.process_sed_data()
+>>>>>>> 80aad95 (Refactor: reorganise modules, relocate utility functions, rename modules, update import statements and unit tests)
         else:
             self.dataset = None
             self.sed_data = None
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 80aad95 (Refactor: reorganise modules, relocate utility functions, rename modules, update import statements and unit tests)
     def load_dataset(self):
         """Load dataset.
 
@@ -147,6 +221,7 @@ class DataHandler:
             os.path.join(self.data_params.data_dir, self.data_params.file),
             allow_pickle=True,
         )[()]
+<<<<<<< HEAD
 
     def validate_and_process_dataset(self):
         """Validate the dataset structure and convert fields to TensorFlow tensors."""
@@ -184,10 +259,24 @@ class DataHandler:
                 )
             
         elif self.dataset_type == "test":
+=======
+        self.dataset["positions"] = tf.convert_to_tensor(
+            self.dataset["positions"], dtype=tf.float32
+        )
+        if "train" == self.dataset_type:
+            if "noisy_stars" in self.dataset:
+                self.dataset["noisy_stars"] = tf.convert_to_tensor(
+                    self.dataset["noisy_stars"], dtype=tf.float32
+                )
+            else:
+                logger.warning(f"Missing 'noisy_stars' in {self.dataset_type} dataset.")
+        elif "test" == self.dataset_type:
+>>>>>>> 80aad95 (Refactor: reorganise modules, relocate utility functions, rename modules, update import statements and unit tests)
             if "stars" in self.dataset:
                 self.dataset["stars"] = tf.convert_to_tensor(
                     self.dataset["stars"], dtype=tf.float32
                 )
+<<<<<<< HEAD
         
 
     def process_sed_data(self, sed_data):
@@ -223,11 +312,28 @@ class DataHandler:
         if sed_data is None:
             raise ValueError("SED data must be provided explicitly or via dataset.")
 
+=======
+            else:
+                logger.warning(f"Missing 'stars' in {self.dataset_type} dataset.")
+        elif "inference" == self.dataset_type:
+            pass
+
+    def process_sed_data(self):
+        """Process SED Data.
+
+        A method to generate and process SED data.
+
+        """
+>>>>>>> 80aad95 (Refactor: reorganise modules, relocate utility functions, rename modules, update import statements and unit tests)
         self.sed_data = [
             utils.generate_SED_elems_in_tensorflow(
                 _sed, self.simPSF, n_bins=self.n_bins_lambda, tf_dtype=tf.float64
             )
+<<<<<<< HEAD
             for _sed in sed_data
+=======
+            for _sed in self.dataset["SEDs"]
+>>>>>>> 80aad95 (Refactor: reorganise modules, relocate utility functions, rename modules, update import statements and unit tests)
         ]
         self.sed_data = tf.convert_to_tensor(self.sed_data, dtype=tf.float32)
         self.sed_data = tf.transpose(self.sed_data, perm=[0, 2, 1])
@@ -285,7 +391,11 @@ def get_obs_positions(data):
 
 def extract_star_data(data, train_key: str, test_key: str) -> np.ndarray:
     """Extract specific star-related data from training and test datasets.
+<<<<<<< HEAD
 
+=======
+   
+>>>>>>> 80aad95 (Refactor: reorganise modules, relocate utility functions, rename modules, update import statements and unit tests)
     This function retrieves and concatenates specific star-related data (e.g., stars, masks) from the
     star training and test datasets such as star stamps or masks, based on the provided keys.
 
@@ -315,6 +425,7 @@ def extract_star_data(data, train_key: str, test_key: str) -> np.ndarray:
     """
     # Ensure the requested keys exist in both training and test datasets
     missing_keys = [
+<<<<<<< HEAD
         key
         for key, dataset in [
             (train_key, data.training_data.dataset),
@@ -323,6 +434,12 @@ def extract_star_data(data, train_key: str, test_key: str) -> np.ndarray:
         if key not in dataset
     ]
 
+=======
+        key for key, dataset in [(train_key, data.training_data.dataset), (test_key, data.test_data.dataset)]
+        if key not in dataset
+    ]
+    
+>>>>>>> 80aad95 (Refactor: reorganise modules, relocate utility functions, rename modules, update import statements and unit tests)
     if missing_keys:
         raise KeyError(f"Missing keys in dataset: {missing_keys}")
 
@@ -338,3 +455,7 @@ def extract_star_data(data, train_key: str, test_key: str) -> np.ndarray:
 
     # Concatenate and return
     return np.concatenate((train_data, test_data), axis=0)
+<<<<<<< HEAD
+=======
+
+>>>>>>> 80aad95 (Refactor: reorganise modules, relocate utility functions, rename modules, update import statements and unit tests)
