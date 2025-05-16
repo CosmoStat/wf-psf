@@ -8,11 +8,14 @@ This module contains unit tests for the wf_psf.utils centroids module.
 
 import numpy as np
 import pytest
-from unittest.mock import MagicMock, patch
 from wf_psf.data.centroids import (
-    compute_zernike_tip_tilt,
+    compute_centroid_correction,
     CentroidEstimator
 )
+from wf_psf.data.data_handler import extract_star_data
+from wf_psf.data.data_zernike_utils import compute_zernike_tip_tilt
+from wf_psf.utils.read_config import RecursiveNamespace
+from unittest.mock import MagicMock, patch
 
 # Function to compute centroid based on first-order moments
 def calculate_centroid(image, mask=None):
@@ -29,22 +32,6 @@ def calculate_centroid(image, mask=None):
     yc = M01 / M00
     return (xc, yc)
 
-@pytest.fixture
-def simple_image():
-    """Fixture for a batch of simple star images."""
-    num_images = 1  # Change this to test with multiple images
-    image = np.zeros((num_images, 5, 5))  # Create a 3D array
-    image[:, 2, 2] = 1  # Place the star at the center for each image
-    return image
-
-@pytest.fixture
-def multiple_images():
-    """Fixture for a batch of images with stars at different positions."""
-    images = np.zeros((3, 5, 5))  # 3 images, each of size 5x5
-    images[0, 2, 2] = 1  # Star at center of image 0
-    images[1, 1, 3] = 1  # Star at (1, 3) in image 1
-    images[2, 3, 1] = 1  # Star at (3, 1) in image 2
-    return images
 
 @pytest.fixture
 def simple_star_and_mask():
@@ -63,13 +50,6 @@ def simple_star_and_mask():
     mask[:, 3, 3] = 1      
 
     return image, mask
-
-
-@pytest.fixture
-def identity_mask():
-    """Creates a mask where all pixels are fully considered."""
-    return np.ones((5, 5))
-
 
 @pytest.fixture
 def simple_image_with_mask(simple_image):
@@ -120,101 +100,74 @@ def batch_images():
     return images
 
 
-def test_compute_zernike_tip_tilt_single_batch(mocker, simple_image, identity_mask):
-    """Test compute_zernike_tip_tilt with single batch input and mocks."""
-
-    # Mock the CentroidEstimator class
-    mock_centroid_calc = mocker.patch("wf_psf.data.centroids.CentroidEstimator", autospec=True)
-
-    # Create a mock instance and configure get_intra_pixel_shifts()
-    mock_instance = mock_centroid_calc.return_value
-    mock_instance.get_intra_pixel_shifts.return_value = np.array([[0.05, -0.02]])  # Shape (1, 2)
-
-    # Mock shift_x_y_to_zk1_2_wavediff to return predictable values
-    mock_shift_fn = mocker.patch(
-        "wf_psf.data.centroids.shift_x_y_to_zk1_2_wavediff",
-        side_effect=lambda shift: shift * 0.5  # Mocked conversion for test
+def test_compute_centroid_correction_with_masks(mock_data):
+    """Test compute_centroid_correction function with masks present."""
+    # Given that compute_centroid_correction expects a model_params and data object
+    model_params = RecursiveNamespace(
+        pix_sampling=12e-6,  # Example pixel sampling in meters
+        correct_centroids=True,
+        reference_shifts=["-1/3", "-1/3"]
     )
 
-    # Define test inputs (batch of 1 image)
-    pixel_sampling = 12e-6
-    reference_shifts = [-1 / 3, -1 / 3]  # Default Euclid conditions
-
-    # Run the function
-    zernike_corrections = compute_zernike_tip_tilt(simple_image, identity_mask, pixel_sampling, reference_shifts)
-    zernike_corrections = compute_zernike_tip_tilt(simple_image, identity_mask, pixel_sampling, reference_shifts)
-
-    # Expected shifts based on centroid calculation
-    expected_dx = (reference_shifts[1] - (-0.02)) # Expected x-axis shift in meters
-    expected_dy = (reference_shifts[0] - 0.05) # Expected y-axis shift in meters
-
-    # Expected calls to the mocked function
-    # Extract the arguments passed to mock_shift_fn
-    args, _ = mock_shift_fn.call_args_list[0]  # Get the first call args 
-
-    # Compare expected values with the actual arguments passed to the mock function
-    np.testing.assert_allclose(args[0][0], expected_dx * pixel_sampling, rtol=1e-7, atol=0)
-
-    # Check dy values similarly
-    np.testing.assert_allclose(args[0][1], expected_dy * pixel_sampling, rtol=1e-7, atol=0)
-
-    # Expected values based on mock side_effect (0.5 * shift)
-    np.testing.assert_allclose(zernike_corrections[0, 0], expected_dx * pixel_sampling * 0.5)  # Zk1
-    np.testing.assert_allclose(zernike_corrections[0, 1], expected_dy * pixel_sampling * 0.5) # Zk2
-
-def test_compute_zernike_tip_tilt_batch(mocker, multiple_images):
-    """Test compute_zernike_tip_tilt with batch input and mocks."""
-    
-    # Mock the CentroidEstimator class
-    mock_centroid_calc = mocker.patch("wf_psf.data.centroids.CentroidEstimator", autospec=True)
-
-    # Create a mock instance and configure get_intra_pixel_shifts()
-    mock_instance = mock_centroid_calc.return_value
-    mock_instance.get_intra_pixel_shifts.return_value = np.array([[0.05, -0.02], [0.04, -0.01], [0.06, -0.03]])  # Shape (3, 2)
-
-    # Mock shift_x_y_to_zk1_2_wavediff to return predictable values
-    mock_shift_fn = mocker.patch(
-        "wf_psf.data.centroids.shift_x_y_to_zk1_2_wavediff",
-        side_effect=lambda shift: shift * 0.5  # Mocked conversion for test
-    )
-
-    # Define test inputs (batch of 3 images)
-    pixel_sampling = 12e-6
-    reference_shifts = [-1 / 3, -1 / 3]  # Default Euclid conditions
-
-    # Run the function
-    zernike_corrections = compute_zernike_tip_tilt(
-        star_images=multiple_images, 
-        pixel_sampling=pixel_sampling, 
-        reference_shifts=reference_shifts
+    # Mock the internal function calls:
+    with patch('wf_psf.data.centroids.extract_star_data') as mock_extract_star_data, \
+     patch('wf_psf.data.centroids.compute_zernike_tip_tilt') as mock_compute_zernike_tip_tilt:
+        
+        # Mock the return values of extract_star_data and compute_zernike_tip_tilt
+        mock_extract_star_data.side_effect = lambda data, train_key, test_key: (
+            np.array([[1, 2], [3, 4]]) if train_key == 'noisy_stars' else np.array([[5, 6], [7, 8]])
         )
+        mock_compute_zernike_tip_tilt.return_value = np.array([[0.1, 0.2], [0.3, 0.4]])
 
-    # Check if the mock function was called once with the full batch
-    assert len(mock_shift_fn.call_args_list) == 1, f"Expected 1 call, but got {len(mock_shift_fn.call_args_list)}"
+        # Call the function under test
+        result = compute_centroid_correction(model_params, mock_data)
+        
+        # Ensure the result has the correct shape
+        assert result.shape == (4, 3)  # Should be (n_stars, 3 Zernike components)
+        
+        assert np.allclose(result[0, :], np.array([0, -0.1, -0.2]))  # First star Zernike coefficients
+        assert np.allclose(result[1, :], np.array([0, -0.3, -0.4]))  # Second star Zernike coefficients
 
-    # Get the arguments passed to the mock function for the batch of images
-    args, _ = mock_shift_fn.call_args_list[0]  
 
-    print("Shape of args[0]:", args[0].shape)
-    print("Contents of args[0]:", args[0])
-    print("Mock function call args list:", mock_shift_fn.call_args_list)
+def test_compute_centroid_correction_without_masks(mock_data):
+    """Test compute_centroid_correction function when no masks are provided."""
+    # Remove masks from mock_data
+    mock_data.test_data.dataset["masks"] = None
+    mock_data.training_data.dataset["masks"] = None
+    
+    # Define model parameters
+    model_params = RecursiveNamespace(
+        pix_sampling=12e-6,  # Example pixel sampling in meters
+        correct_centroids=True,
+        reference_shifts=["-1/3", "-1/3"]
+    )
+    
+    # Mock internal function calls
+    with patch('wf_psf.data.centroids.extract_star_data') as mock_extract_star_data, \
+     patch('wf_psf.data.centroids.compute_zernike_tip_tilt') as mock_compute_zernike_tip_tilt:
+        
+        # Mock extract_star_data to return synthetic star postage stamps
+        mock_extract_star_data.side_effect = lambda data, train_key, test_key: (
+            np.array([[1, 2], [3, 4]]) if train_key == 'noisy_stars' else np.array([[5, 6], [7, 8]])
+        )
+        
+        # Mock compute_zernike_tip_tilt assuming no masks
+        mock_compute_zernike_tip_tilt.return_value = np.array([[0.1, 0.2], [0.3, 0.4]])
+        
+        # Call function under test
+        result = compute_centroid_correction(model_params, mock_data)
 
-    # Reshape args[0] to (N, 2) for batch processing
-    args_array = np.array(args[0]).reshape(-1, 2)
+        # Validate result shape
+        assert result.shape == (4, 3)  # (n_stars, 3 Zernike components)
 
-    # Process the displacements and expected values for each image in the batch
-    expected_dx = reference_shifts[1] - mock_instance.get_intra_pixel_shifts.return_value[:, 1]  # Expected x-axis shift in meters
-   
-    expected_dy = reference_shifts[0] - mock_instance.get_intra_pixel_shifts.return_value[:, 0]  # Expected y-axis shift in meters
-
-    # Compare expected values with the actual arguments passed to the mock function
-    np.testing.assert_allclose(args_array[:, 0], expected_dx * pixel_sampling, rtol=1e-7, atol=0)
-    np.testing.assert_allclose(args_array[:, 1], expected_dy * pixel_sampling, rtol=1e-7, atol=0)
-
-    # Expected values based on mock side_effect (0.5 * shift)
-    np.testing.assert_allclose(zernike_corrections[:, 0], expected_dx * pixel_sampling * 0.5)  # Zk1 for each image
-    np.testing.assert_allclose(zernike_corrections[:, 1], expected_dy * pixel_sampling * 0.5)  # Zk2 for each image
-
+        # Validate expected values (adjust based on behavior)
+        expected_result = np.array([
+            [0, -0.1, -0.2],  # From training data
+            [0, -0.3, -0.4],
+            [0, -0.1, -0.2],  # From test data (reused mocked return)
+            [0, -0.3, -0.4]
+        ])
+        assert np.allclose(result, expected_result)
 
 
 # Test for centroid calculation without mask
