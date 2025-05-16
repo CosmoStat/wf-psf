@@ -25,7 +25,8 @@ logger = logging.getLogger(__name__)
 class DataHandler:
     """Data Handler.
 
-    This class manages loading and processing of training and testing data for use during PSF model training and validation.
+    This class manages loading and processing of training, testing and inference data for use during PSF model training, inference, and validation.
+
     It provides methods to access and preprocess the data.
 
     Parameters
@@ -44,20 +45,21 @@ class DataHandler:
 
     Attributes
     ----------
-    dataset_type : str
-        Type of dataset ("train" or "test").
-    data_params : RecursiveNamespace
-        Parameters for the current dataset type.
-    dataset : dict or None
-        Dictionary containing the loaded dataset, including positions and stars/noisy_stars.
-    simPSF : PSFSimulator
-        Instance of the PSFSimulator class for simulating PSF models.
-    n_bins_lambda : int
-        Number of wavelength bins.
-    sed_data : tf.Tensor or None
-        TensorFlow tensor containing processed SED data for training/testing.
-    load_data_on_init : bool
-        Flag controlling whether data is loaded during initialization.
+    dataset_type: str
+        A string indicating the type of dataset ("train", "test" or "inference").
+    data_params: Recursive Namespace object
+        A Recursive Namespace object containing training, test or inference data parameters.
+    dataset: dict
+        A dictionary containing the loaded dataset, including positions and stars/noisy_stars.
+    simPSF: object
+        An instance of the SimPSFToolkit class for simulating PSF.
+    n_bins_lambda: int
+        The number of bins in wavelength.
+    sed_data: tf.Tensor
+        A TensorFlow tensor containing the SED data for training/testing.
+    load_data_on_init: bool, optional
+        A flag used to control data loading steps. If True, data is loaded and processed
+        during initialization. If False, data loading is deferred until explicitly called.
     """
 
     def __init__(
@@ -69,9 +71,9 @@ class DataHandler:
         Parameters
         ----------
         dataset_type : str
-            Type of dataset ("train" or "test").
-        data_params : RecursiveNamespace
-            Recursive Namespace object containing parameters for both 'train' and 'test' datasets.
+            A string indicating the type of data ("train", "test", or "inference").
+        data_params : Recursive Namespace object
+            A Recursive Namespace object containing parameters for both 'train', 'test', 'inference' datasets.
         simPSF : PSFSimulator
             Instance of the PSFSimulator class for simulating PSF models.
         n_bins_lambda : int
