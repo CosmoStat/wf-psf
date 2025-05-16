@@ -53,6 +53,46 @@ def compute_ccd_misalignment(model_params, positions: np.ndarray) -> np.ndarray:
     return zernike_ccd_misalignment_array
 
 
+def compute_ccd_misalignment(model_params, data):
+    """Compute CCD misalignment.
+
+    Parameters
+    ----------
+    model_params : RecursiveNamespace
+        Object containing parameters for this PSF model class.
+    data : DataConfigHandler
+        Object containing training and test datasets.
+
+    Returns
+    -------
+    zernike_ccd_misalignment_array : np.ndarray
+        Numpy array containing the Zernike contributions to model the CCD chip misalignments.
+    """
+    obs_positions = get_np_obs_positions(data)
+
+    ccd_misalignment_calculator = CCDMisalignmentCalculator(
+        tiles_path=model_params.ccd_misalignments_input_path,
+        x_lims=model_params.x_lims,
+        y_lims=model_params.y_lims,
+        tel_focal_length=model_params.tel_focal_length,
+        tel_diameter=model_params.tel_diameter,
+    )
+    # Compute required zernike 4 for each position
+    zk4_values = np.array(
+        [
+            ccd_misalignment_calculator.get_zk4_from_position(single_pos)
+            for single_pos in obs_positions
+        ]
+    ).reshape(-1, 1)
+
+    # Zero pad array to get shape (n_stars, n_zernike=4)
+    zernike_ccd_misalignment_array = np.pad(
+        zk4_values, pad_width=[(0, 0), (3, 0)], mode="constant", constant_values=0
+    )
+
+    return zernike_ccd_misalignment_array
+
+
 class CCDMisalignmentCalculator:
     """CCD Misalignment Calculator.
 

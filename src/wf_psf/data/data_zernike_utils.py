@@ -359,7 +359,6 @@ def compute_zernike_tip_tilt(
         An array of shape `(num_images, 2)`, where:
         - Column 0 contains `Zk1` (tip) values.
         - Column 1 contains `Zk2` (tilt) values.
-
     Notes
     -----
     - This function processes all images at once using vectorized operations.

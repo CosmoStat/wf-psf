@@ -198,7 +198,6 @@ def test_extract_star_data_partially_missing_key(mock_data):
 def test_extract_star_data_tensor_conversion(mock_data):
     """Test that the function properly converts TensorFlow tensors to NumPy arrays."""
     result = extract_star_data(mock_data, train_key="noisy_stars", test_key="stars")
-
     assert isinstance(result, np.ndarray), "The result should be a NumPy array"
     assert result.dtype == np.float32, "The NumPy array should have dtype float32"
 
