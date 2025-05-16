@@ -1,11 +1,127 @@
 import numpy as np
 import tensorflow as tf
-from wf_psf.instrument.ccd_misalignments import CCDMisalignmentCalculator
-from wf_psf.data.centroids import compute_zernike_tip_tilt
 from fractions import Fraction
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+class DataHandler:
+    """Data Handler.
+
+    This class manages loading and processing of training and testing data for use during PSF model training and validation.
+    It provides methods to access and preprocess the data.
+
+    Parameters
+    ----------
+    dataset_type: str
+        A string indicating type of data ("train" or "test").
+    data_params: Recursive Namespace object
+        Recursive Namespace object containing training data parameters
+    simPSF: PSFSimulator
+        An instance of the PSFSimulator class for simulating a PSF.
+    n_bins_lambda: int
+        The number of bins in wavelength.
+    load_data: bool, optional
+        A flag used to control data loading steps. If True, data is loaded and processed
+        during initialization. If False, data loading is deferred until explicitly called.
+
+    Attributes
+    ----------
+    dataset_type: str
+        A string indicating the type of dataset ("train" or "test").
+    data_params: Recursive Namespace object
+        A Recursive Namespace object containing training or test data parameters.
+    dataset: dict
+        A dictionary containing the loaded dataset, including positions and stars/noisy_stars.
+    simPSF: object
+        An instance of the SimPSFToolkit class for simulating PSF.
+    n_bins_lambda: int
+        The number of bins in wavelength.
+    sed_data: tf.Tensor
+        A TensorFlow tensor containing the SED data for training/testing.
+    load_data_on_init: bool, optional
+        A flag used to control data loading steps. If True, data is loaded and processed
+        during initialization. If False, data loading is deferred until explicitly called.
+    """
+
+    def __init__(
+        self, dataset_type, data_params, simPSF, n_bins_lambda, load_data: bool = True
+    ):
+        """
+        Initialize the dataset handler for PSF simulation.
+
+        Parameters
+        ----------
+        dataset_type : str
+            A string indicating the type of data ("train" or "test").
+        data_params : Recursive Namespace object
+            A Recursive Namespace object containing parameters for both 'train' and 'test' datasets.
+        simPSF : PSFSimulator
+            An instance of the PSFSimulator class for simulating a PSF.
+        n_bins_lambda : int
+            The number of bins in wavelength.
+        load_data : bool, optional
+            A flag to control whether data should be loaded and processed during initialization.
+            If True, data is loaded and processed during initialization; if False, data loading
+            is deferred until explicitly called.
+        """
+        self.dataset_type = dataset_type
+        self.data_params = data_params.__dict__[dataset_type]
+        self.simPSF = simPSF
+        self.n_bins_lambda = n_bins_lambda
+        self.load_data_on_init = load_data
+        if self.load_data_on_init:
+            self.load_dataset()
+            self.process_sed_data()
+        else:
+            self.dataset = None
+            self.sed_data = None
+
+    def load_dataset(self):
+        """Load dataset.
+
+        Load the dataset based on the specified dataset type.
+
+        """
+        self.dataset = np.load(
+            os.path.join(self.data_params.data_dir, self.data_params.file),
+            allow_pickle=True,
+        )[()]
+        self.dataset["positions"] = tf.convert_to_tensor(
+            self.dataset["positions"], dtype=tf.float32
+        )
+        if "train" == self.dataset_type:
+            if "noisy_stars" in self.dataset:
+                self.dataset["noisy_stars"] = tf.convert_to_tensor(
+                    self.dataset["noisy_stars"], dtype=tf.float32
+                )
+            else:
+                logger.warning(f"Missing 'noisy_stars' in {self.dataset_type} dataset.")
+        elif "test" == self.dataset_type:
+            if "stars" in self.dataset:
+                self.dataset["stars"] = tf.convert_to_tensor(
+                    self.dataset["stars"], dtype=tf.float32
+                )
+            else:
+                logger.warning(f"Missing 'stars' in {self.dataset_type} dataset.")
+        elif "inference" == self.dataset_type:
+            pass
+
+    def process_sed_data(self):
+        """Process SED Data.
+
+        A method to generate and process SED data.
+
+        """
+        self.sed_data = [
+            utils.generate_SED_elems_in_tensorflow(
+                _sed, self.simPSF, n_bins=self.n_bins_lambda, tf_dtype=tf.float64
+            )
+            for _sed in self.dataset["SEDs"]
+        ]
+        self.sed_data = tf.convert_to_tensor(self.sed_data, dtype=tf.float32)
+        self.sed_data = tf.transpose(self.sed_data, perm=[0, 2, 1])
 
 
 def get_np_obs_positions(data):
