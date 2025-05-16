@@ -10,7 +10,8 @@ to manage the parameters of the psf physical polychromatic model.
 from typing import Optional
 import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
-from wf_psf.data.training_preprocessing import get_obs_positions, get_zernike_prior
+from wf_psf.data.data_handler import get_obs_positions
+from wf_psf.data.data_zernike_utils import get_zernike_prior
 from wf_psf.psf_models import psf_models as psfm
 from wf_psf.psf_models.tf_modules.tf_layers import (
     TFPolynomialZernikeField,
