@@ -12,7 +12,7 @@ import logging
 import os
 import re
 import glob
-from wf_psf.data.training_preprocessing import DataHandler
+from wf_psf.data.data_handler import DataHandler
 from wf_psf.metrics.metrics_interface import evaluate_model
 from wf_psf.plotting.plots_interface import plot_metrics
 from wf_psf.psf_models import psf_models

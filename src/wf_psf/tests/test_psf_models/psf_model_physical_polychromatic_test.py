@@ -59,7 +59,7 @@ def test_initialize_parameters(mocker, mock_data, mock_model_params, zks_prior):
     )
 
     mocker.patch(
-        "wf_psf.data.training_preprocessing.get_obs_positions", return_value=True
+        "wf_psf.data.data_handler.get_obs_positions", return_value=True
     )
 
     # Create TFPhysicalPolychromaticField instance

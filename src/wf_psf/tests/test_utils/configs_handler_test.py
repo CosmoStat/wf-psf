@@ -7,7 +7,7 @@ This module contains unit tests for the wf_psf.utils configs_handler module.
 """
 
 import pytest
-from wf_psf.data.training_preprocessing import DataHandler
+from wf_psf.data.data_handler import DataHandler
 from wf_psf.utils import configs_handler
 from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.utils.io import FileIOHandler
