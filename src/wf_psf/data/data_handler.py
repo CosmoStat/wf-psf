@@ -163,10 +163,14 @@ class DataHandler:
 
         if self.dataset_type == "training":
             if "noisy_stars" not in self.dataset:
-                raise ValueError(f"Missing required field 'noisy_stars' in {self.dataset_type} dataset.")
+                raise ValueError(
+                    f"Missing required field 'noisy_stars' in {self.dataset_type} dataset."
+                )
         elif self.dataset_type == "test":
             if "stars" not in self.dataset:
-                raise ValueError(f"Missing required field 'stars' in {self.dataset_type} dataset.")
+                raise ValueError(
+                    f"Missing required field 'stars' in {self.dataset_type} dataset."
+                )
         elif self.dataset_type == "inference":
             pass
         else:
@@ -179,10 +183,10 @@ class DataHandler:
             self.dataset["positions"], dtype=tf.float32
         )
         if self.dataset_type == "training":
-                self.dataset["noisy_stars"] = tf.convert_to_tensor(
-                    self.dataset["noisy_stars"], dtype=tf.float32
-                )
-            
+            self.dataset["noisy_stars"] = tf.convert_to_tensor(
+                self.dataset["noisy_stars"], dtype=tf.float32
+            )
+
         elif self.dataset_type == "test":
             if "stars" in self.dataset:
                 self.dataset["stars"] = tf.convert_to_tensor(
