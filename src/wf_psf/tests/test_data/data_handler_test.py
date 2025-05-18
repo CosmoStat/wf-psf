@@ -14,6 +14,11 @@ def mock_sed():
     return np.linspace(0.1, 1.0, 50)
 
 
+def mock_sed():
+    # Create a fake SED with shape (n_wavelengths,) — match what your real SEDs look like
+    return np.linspace(0.1, 1.0, 50)
+
+
 def test_process_sed_data_auto_load(data_params, simPSF):
     # load_data=True → dataset is used and SEDs processed automatically
     data_handler = DataHandler(
