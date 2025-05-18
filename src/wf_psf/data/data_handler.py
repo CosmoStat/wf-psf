@@ -17,17 +17,13 @@ import numpy as np
 import wf_psf.utils.utils as utils
 import tensorflow as tf
 from fractions import Fraction
-<<<<<<< HEAD
 from typing import Optional, Union
-=======
->>>>>>> 80aad95 (Refactor: reorganise modules, relocate utility functions, rename modules, update import statements and unit tests)
 import logging
 
 logger = logging.getLogger(__name__)
 
 
 class DataHandler:
-<<<<<<< HEAD
     """
     DataHandler for WaveDiff PSF modeling.
 
@@ -92,76 +88,7 @@ class DataHandler:
            and `process_sed_data()` is called with either the given `sed_data` or `dataset["SEDs"]`.
         3. **Automatic loading mode** (`load_data=True` and no `dataset`): the dataset is loaded
            from disk using `data_params`, and SEDs are extracted and processed automatically.
-=======
-    """Data Handler.
-
-    This class manages loading and processing of training and testing data for use during PSF model training and validation.
-    It provides methods to access and preprocess the data.
-    """
-    DataHandler for WaveDiff PSF modeling.
-
-    This class manages loading, preprocessing, and TensorFlow conversion of datasets used
-    for PSF model training, testing, and inference in the WaveDiff framework. 
-
-    Parameters
-    ----------
-    dataset_type : str
-        Indicates the dataset mode ("train", "test", or "inference").
-    data_params : RecursiveNamespace
-        Configuration object containing dataset parameters (e.g., file paths, preprocessing flags).
-    simPSF : PSFSimulator
-        An instance of the PSFSimulator class used to encode SEDs into a TensorFlow-compatible format.
-    n_bins_lambda : int
-        Number of wavelength bins used to discretize SEDs.
-    load_data : bool, optional
-        If True (default), loads and processes data during initialization. If False, data loading
-        must be triggered explicitly.
-    dataset : dict or list, optional
-        If provided, uses this pre-loaded dataset instead of triggering automatic loading.
-    sed_data : dict or list, optional
-        If provided, uses this SED data directly instead of extracting it from the dataset.
-
-    Attributes
-    ----------
-    dataset_type : str
-        Indicates the dataset mode ("train", "test", or "inference").
-    data_params : RecursiveNamespace
-        Configuration parameters for data access and structure.
-    simPSF : PSFSimulator
-        Simulator used to transform SEDs into TensorFlow-ready tensors.
-    n_bins_lambda : int
-        Number of wavelength bins in the SED representation.
-    load_data_on_init : bool
-        Whether data was loaded automatically during initialization.
-    dataset : dict
-        Loaded dataset including keys such as 'positions', 'stars', 'noisy_stars', or similar.
-    sed_data : tf.Tensor
-        TensorFlow-formatted SED data with shape [batch_size, n_bins_lambda, features].
-    """
-
-    def __init__(
-        self,
-        dataset_type,
-        data_params,
-        simPSF,
-        n_bins_lambda,
-        load_data: bool = True,
-        dataset: Optional[Union[dict, list]] = None,
-        sed_data: Optional[Union[dict, list]] = None,
-    ):
-        """
-        Initialize the DataHandler for PSF dataset preparation.
-
-        This constructor sets up the dataset handler used for PSF simulation tasks,
-        such as training, testing, or inference. It supports three modes of use:
-
-        1. **Manual mode** (`load_data=False`, no `dataset`): data loading and SED processing
-           must be triggered manually via `load_dataset()` and `process_sed_data()`.
-        2. **Pre-loaded dataset mode** (`dataset` is provided): the given dataset is used directly,
-           and `process_sed_data()` is called with either the given `sed_data` or `dataset["SEDs"]`.
-        3. **Automatic loading mode** (`load_data=True` and no `dataset`): the dataset is loaded
-           from disk using `data_params`, and SEDs are extracted and processed automatically.
-
+      
         Parameters
         ----------
         dataset_type : str
@@ -210,10 +137,6 @@ class DataHandler:
             self.dataset = None
             self.sed_data = None
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 80aad95 (Refactor: reorganise modules, relocate utility functions, rename modules, update import statements and unit tests)
     def load_dataset(self):
         """Load dataset.
 
@@ -224,7 +147,6 @@ class DataHandler:
             os.path.join(self.data_params.data_dir, self.data_params.file),
             allow_pickle=True,
         )[()]
-<<<<<<< HEAD
 
     def validate_and_process_dataset(self):
         """Validate the dataset structure and convert fields to TensorFlow tensors."""
@@ -262,79 +184,26 @@ class DataHandler:
                 )
             
         elif self.dataset_type == "test":
-=======
-        self.dataset["positions"] = tf.convert_to_tensor(
-            self.dataset["positions"], dtype=tf.float32
-        )
-
-        if "train" == self.dataset_type:
-                self.dataset["noisy_stars"] = tf.convert_to_tensor(
-                    self.dataset["noisy_stars"], dtype=tf.float32
-                )
-        elif "test" == self.dataset_type:
->>>>>>> 80aad95 (Refactor: reorganise modules, relocate utility functions, rename modules, update import statements and unit tests)
             if "stars" in self.dataset:
                 self.dataset["stars"] = tf.convert_to_tensor(
                     self.dataset["stars"], dtype=tf.float32
                 )
-<<<<<<< HEAD
-        
-
-    def process_sed_data(self, sed_data):
-        """
-        Generate and process SED (Spectral Energy Distribution) data.
-
-        This method transforms raw SED inputs into TensorFlow tensors suitable for model input.
-        It generates wavelength-binned SED elements using the PSF simulator, converts the result
-        into a tensor, and transposes it to match the expected shape for training or inference.
-
-        Parameters
-        ----------
-        sed_data : list or array-like
-            A list or array of raw SEDs, where each SED is typically a vector of flux values
-            or coefficients. These will be processed using the PSF simulator.
-
-        Raises
-        ------
-        ValueError
-            If `sed_data` is None.
-
-        Notes
-        -----
-        The resulting tensor is stored in `self.sed_data` and has shape
-        `(num_samples, n_bins_lambda, n_components)`, where:
-            - `num_samples` is the number of SEDs,
-            - `n_bins_lambda` is the number of wavelength bins,
-            - `n_components` is the number of components per SED (e.g., filters or basis terms).
-
-        The intermediate tensor is created with `tf.float64` for precision during generation,
-        but is converted to `tf.float32` after processing for use in training.
-        """
-        if sed_data is None:
-            raise ValueError("SED data must be provided explicitly or via dataset.")
-
-=======
             else:
                 logger.warning(f"Missing 'stars' in {self.dataset_type} dataset.")
         elif "inference" == self.dataset_type:
             pass
 
-    def process_sed_data(self):
+    def process_sed_data(self, sed_data):
         """Process SED Data.
 
         A method to generate and process SED data.
 
         """
->>>>>>> 80aad95 (Refactor: reorganise modules, relocate utility functions, rename modules, update import statements and unit tests)
         self.sed_data = [
             utils.generate_SED_elems_in_tensorflow(
                 _sed, self.simPSF, n_bins=self.n_bins_lambda, tf_dtype=tf.float64
             )
-<<<<<<< HEAD
             for _sed in sed_data
-=======
-            for _sed in self.dataset["SEDs"]
->>>>>>> 80aad95 (Refactor: reorganise modules, relocate utility functions, rename modules, update import statements and unit tests)
         ]
         self.sed_data = tf.convert_to_tensor(self.sed_data, dtype=tf.float32)
         self.sed_data = tf.transpose(self.sed_data, perm=[0, 2, 1])
@@ -392,11 +261,7 @@ def get_obs_positions(data):
 
 def extract_star_data(data, train_key: str, test_key: str) -> np.ndarray:
     """Extract specific star-related data from training and test datasets.
-<<<<<<< HEAD
-
-=======
    
->>>>>>> 80aad95 (Refactor: reorganise modules, relocate utility functions, rename modules, update import statements and unit tests)
     This function retrieves and concatenates specific star-related data (e.g., stars, masks) from the
     star training and test datasets such as star stamps or masks, based on the provided keys.
 
@@ -426,7 +291,6 @@ def extract_star_data(data, train_key: str, test_key: str) -> np.ndarray:
     """
     # Ensure the requested keys exist in both training and test datasets
     missing_keys = [
-<<<<<<< HEAD
         key
         for key, dataset in [
             (train_key, data.training_data.dataset),
@@ -435,12 +299,6 @@ def extract_star_data(data, train_key: str, test_key: str) -> np.ndarray:
         if key not in dataset
     ]
 
-=======
-        key for key, dataset in [(train_key, data.training_data.dataset), (test_key, data.test_data.dataset)]
-        if key not in dataset
-    ]
-    
->>>>>>> 80aad95 (Refactor: reorganise modules, relocate utility functions, rename modules, update import statements and unit tests)
     if missing_keys:
         raise KeyError(f"Missing keys in dataset: {missing_keys}")
 
@@ -456,7 +314,3 @@ def extract_star_data(data, train_key: str, test_key: str) -> np.ndarray:
 
     # Concatenate and return
     return np.concatenate((train_data, test_data), axis=0)
-<<<<<<< HEAD
-=======
-
->>>>>>> 80aad95 (Refactor: reorganise modules, relocate utility functions, rename modules, update import statements and unit tests)
