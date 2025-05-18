@@ -119,9 +119,20 @@ def test_data_config_handler_init(mock_training_conf, mock_data_read_conf, mocke
         "wf_psf.psf_models.psf_models.simPSF", return_value=mock_simPSF_instance
     )
 
-    # Patch the load_dataset and process_sed_data methods inside DataHandler
-    mocker.patch.object(DataHandler, "load_dataset")
+    # Patch process_sed_data method
     mocker.patch.object(DataHandler, "process_sed_data")
+
+    # Patch validate_and_process_datasetmethod
+    mocker.patch.object(DataHandler, "validate_and_process_dataset")
+
+    # Patch load_dataset to assign dataset
+    def mock_load_dataset(self):
+        self.dataset = {
+            "SEDs": ["dummy_sed_data"],
+            "positions": ["dummy_positions_data"],
+        }
+
+    mocker.patch.object(DataHandler, "load_dataset", new=mock_load_dataset)
 
     # Create DataConfigHandler instance
     data_config_handler = DataConfigHandler(
@@ -144,7 +155,7 @@ def test_data_config_handler_init(mock_training_conf, mock_data_read_conf, mocke
     assert (
         data_config_handler.batch_size
         == mock_training_conf.training.training_hparams.batch_size
-    )  # Default value
+    )
 
 
 def test_training_config_handler_init(mocker, mock_training_conf, mock_file_handler):
