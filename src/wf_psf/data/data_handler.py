@@ -97,49 +97,74 @@ class DataHandler:
 
     This class manages loading and processing of training and testing data for use during PSF model training and validation.
     It provides methods to access and preprocess the data.
+    """
+    DataHandler for WaveDiff PSF modeling.
+
+    This class manages loading, preprocessing, and TensorFlow conversion of datasets used
+    for PSF model training, testing, and inference in the WaveDiff framework. 
 
     Parameters
     ----------
-    dataset_type: str
-        A string indicating type of data ("train" or "test").
-    data_params: Recursive Namespace object
-        Recursive Namespace object containing training data parameters
-    simPSF: PSFSimulator
-        An instance of the PSFSimulator class for simulating a PSF.
-    n_bins_lambda: int
-        The number of bins in wavelength.
-    load_data: bool, optional
-        A flag used to control data loading steps. If True, data is loaded and processed
-        during initialization. If False, data loading is deferred until explicitly called.
+    dataset_type : str
+        Indicates the dataset mode ("train", "test", or "inference").
+    data_params : RecursiveNamespace
+        Configuration object containing dataset parameters (e.g., file paths, preprocessing flags).
+    simPSF : PSFSimulator
+        An instance of the PSFSimulator class used to encode SEDs into a TensorFlow-compatible format.
+    n_bins_lambda : int
+        Number of wavelength bins used to discretize SEDs.
+    load_data : bool, optional
+        If True (default), loads and processes data during initialization. If False, data loading
+        must be triggered explicitly.
+    dataset : dict or list, optional
+        If provided, uses this pre-loaded dataset instead of triggering automatic loading.
+    sed_data : dict or list, optional
+        If provided, uses this SED data directly instead of extracting it from the dataset.
 
     Attributes
     ----------
-    dataset_type: str
-        A string indicating the type of dataset ("train" or "test").
-    data_params: Recursive Namespace object
-        A Recursive Namespace object containing training or test data parameters.
-    dataset: dict
-        A dictionary containing the loaded dataset, including positions and stars/noisy_stars.
-    simPSF: object
-        An instance of the SimPSFToolkit class for simulating PSF.
-    n_bins_lambda: int
-        The number of bins in wavelength.
-    sed_data: tf.Tensor
-        A TensorFlow tensor containing the SED data for training/testing.
-    load_data_on_init: bool, optional
-        A flag used to control data loading steps. If True, data is loaded and processed
-        during initialization. If False, data loading is deferred until explicitly called.
+    dataset_type : str
+        Indicates the dataset mode ("train", "test", or "inference").
+    data_params : RecursiveNamespace
+        Configuration parameters for data access and structure.
+    simPSF : PSFSimulator
+        Simulator used to transform SEDs into TensorFlow-ready tensors.
+    n_bins_lambda : int
+        Number of wavelength bins in the SED representation.
+    load_data_on_init : bool
+        Whether data was loaded automatically during initialization.
+    dataset : dict
+        Loaded dataset including keys such as 'positions', 'stars', 'noisy_stars', or similar.
+    sed_data : tf.Tensor
+        TensorFlow-formatted SED data with shape [batch_size, n_bins_lambda, features].
     """
 
-    def __init__(self, dataset_type, data_params, simPSF, n_bins_lambda, load_data: bool=True):
+    def __init__(
+        self,
+        dataset_type,
+        data_params,
+        simPSF,
+        n_bins_lambda,
+        load_data: bool = True,
+        dataset: Optional[Union[dict, list]] = None,
+        sed_data: Optional[Union[dict, list]] = None,
+    ):
         """
-        Initialize the dataset handler for PSF simulation.
->>>>>>> 80aad95 (Refactor: reorganise modules, relocate utility functions, rename modules, update import statements and unit tests)
+        Initialize the DataHandler for PSF dataset preparation.
+
+        This constructor sets up the dataset handler used for PSF simulation tasks,
+        such as training, testing, or inference. It supports three modes of use:
+
+        1. **Manual mode** (`load_data=False`, no `dataset`): data loading and SED processing
+           must be triggered manually via `load_dataset()` and `process_sed_data()`.
+        2. **Pre-loaded dataset mode** (`dataset` is provided): the given dataset is used directly,
+           and `process_sed_data()` is called with either the given `sed_data` or `dataset["SEDs"]`.
+        3. **Automatic loading mode** (`load_data=True` and no `dataset`): the dataset is loaded
+           from disk using `data_params`, and SEDs are extracted and processed automatically.
 
         Parameters
         ----------
         dataset_type : str
-<<<<<<< HEAD
             One of {"train", "test", "inference"} indicating dataset usage.
         data_params : RecursiveNamespace
             Configuration object with paths, preprocessing options, and metadata.
@@ -152,7 +177,7 @@ class DataHandler:
         dataset : dict or list, optional
             A pre-loaded dataset to use directly (overrides `load_data`).
         sed_data : array-like, optional
-            Pre-loaded SED data to use directly. If not provided but `dataset` is,
+            Pre-loaded SED data to use directly. If not provided but `dataset` is, 
             SEDs are taken from `dataset["SEDs"]`.
 
         Raises
@@ -162,7 +187,7 @@ class DataHandler:
 
         Notes
         -----
-        - `self.dataset` and `self.sed_data` are both `None` if neither `dataset` nor
+        - `self.dataset` and `self.sed_data` are both `None` if neither `dataset` nor 
           `load_data=True` is used.
         - TensorFlow conversion is performed at the end of initialization via `convert_dataset_to_tensorflow()`.
         """
@@ -181,28 +206,6 @@ class DataHandler:
             self.load_dataset()
             self.process_sed_data(self.dataset["SEDs"])
             self.validate_and_process_dataset()
-=======
-            A string indicating the type of data ("train" or "test").
-        data_params : Recursive Namespace object
-            A Recursive Namespace object containing parameters for both 'train' and 'test' datasets.
-        simPSF : PSFSimulator
-            An instance of the PSFSimulator class for simulating a PSF.
-        n_bins_lambda : int
-            The number of bins in wavelength.
-        load_data : bool, optional
-            A flag to control whether data should be loaded and processed during initialization.
-            If True, data is loaded and processed during initialization; if False, data loading
-            is deferred until explicitly called.
-        """
-        self.dataset_type = dataset_type
-        self.data_params = data_params.__dict__[dataset_type]
-        self.simPSF = simPSF
-        self.n_bins_lambda = n_bins_lambda
-        self.load_data_on_init = load_data
-        if self.load_data_on_init:
-            self.load_dataset()
-            self.process_sed_data()
->>>>>>> 80aad95 (Refactor: reorganise modules, relocate utility functions, rename modules, update import statements and unit tests)
         else:
             self.dataset = None
             self.sed_data = None
@@ -263,13 +266,11 @@ class DataHandler:
         self.dataset["positions"] = tf.convert_to_tensor(
             self.dataset["positions"], dtype=tf.float32
         )
+
         if "train" == self.dataset_type:
-            if "noisy_stars" in self.dataset:
                 self.dataset["noisy_stars"] = tf.convert_to_tensor(
                     self.dataset["noisy_stars"], dtype=tf.float32
                 )
-            else:
-                logger.warning(f"Missing 'noisy_stars' in {self.dataset_type} dataset.")
         elif "test" == self.dataset_type:
 >>>>>>> 80aad95 (Refactor: reorganise modules, relocate utility functions, rename modules, update import statements and unit tests)
             if "stars" in self.dataset:
