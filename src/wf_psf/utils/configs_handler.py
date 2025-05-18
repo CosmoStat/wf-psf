@@ -129,28 +129,31 @@ class DataConfigHandler:
     def __init__(self, data_conf, training_model_params, batch_size=16, load_data=True):
         try:
             self.data_conf = read_conf(data_conf)
-        except FileNotFoundError as e:
-            logger.exception(e)
-            exit()
-        except TypeError as e:
+        except (FileNotFoundError, TypeError) as e:
             logger.exception(e)
             exit()
 
         self.simPSF = psf_models.simPSF(training_model_params)
+        
+        # Extract sub-configs early
+        train_params = self.data_conf.data.training
+        test_params = self.data_conf.data.test
+
         self.training_data = DataHandler(
             dataset_type="training",
-            data_params=self.data_conf.data,
+            data_params=train_params,
             simPSF=self.simPSF,
             n_bins_lambda=training_model_params.n_bins_lda,
             load_data=load_data,
         )
         self.test_data = DataHandler(
             dataset_type="test",
-            data_params=self.data_conf.data,
+            data_params=test_params,
             simPSF=self.simPSF,
             n_bins_lambda=training_model_params.n_bins_lda,
             load_data=load_data,
         )
+        
         self.batch_size = batch_size
 
 
