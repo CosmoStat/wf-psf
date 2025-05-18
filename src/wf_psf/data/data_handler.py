@@ -118,6 +118,7 @@ class DataHandler:
           `load_data=True` is used.
         - TensorFlow conversion is performed at the end of initialization via `convert_dataset_to_tensorflow()`.
         """
+
         self.dataset_type = dataset_type
         self.data_params = data_params
         self.simPSF = simPSF
