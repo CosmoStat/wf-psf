@@ -150,6 +150,21 @@ def test_load_test_dataset_missing_stars(tmp_path, simPSF):
         data_handler.load_dataset()
         data_handler.validate_and_process_dataset()
 
+    data_handler = DataHandler(
+        dataset_type="train",
+        data_params=data_params,
+        simPSF=simPSF,
+        n_bins_lambda=10,
+        load_data=False
+    )
+
+    data_handler.load_dataset()
+    data_handler.process_sed_data(mock_dataset["SEDs"])
+
+    with patch("wf_psf.data.data_handler.logger.warning") as mock_warning:
+        data_handler._validate_dataset_structure()
+        mock_warning.assert_called_with("Missing 'noisy_stars' in 'train' dataset.")
+
 
 def test_get_obs_positions(mock_data):
     observed_positions = get_obs_positions(mock_data)
