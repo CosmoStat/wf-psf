@@ -188,10 +188,9 @@ class DataHandler:
             )
 
         elif self.dataset_type == "test":
-            if "stars" in self.dataset:
-                self.dataset["stars"] = tf.convert_to_tensor(
-                    self.dataset["stars"], dtype=tf.float32
-                )
+            self.dataset["stars"] = tf.convert_to_tensor(
+                self.dataset["stars"], dtype=tf.float32
+            )
 
     def process_sed_data(self, sed_data):
         """
