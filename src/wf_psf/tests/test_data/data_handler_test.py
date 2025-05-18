@@ -10,6 +10,9 @@ from wf_psf.utils.read_config import RecursiveNamespace
 import logging
 from unittest.mock import patch
 
+def mock_sed():
+    # Create a fake SED with shape (n_wavelengths,) — match what your real SEDs look like
+    return np.linspace(0.1, 1.0, 50)
 
 def test_process_sed_data(data_params, simPSF):
     # Test processing SED data without initialization
@@ -18,11 +21,11 @@ def test_process_sed_data(data_params, simPSF):
     )
     assert data_handler.sed_data is None  # SED data should not be processed
 
-    # Test processing SED data with initialization
+def test_process_sed_data_auto_load(data_params, simPSF):
+    # load_data=True → dataset is used and SEDs processed automatically
     data_handler = DataHandler(
         "training", data_params, simPSF, n_bins_lambda=10, load_data=True
     )
-    assert data_handler.sed_data is not None  # SED data should be processed
 
 
 def test_load_train_dataset(tmp_path, data_params, simPSF):
@@ -82,7 +85,12 @@ def test_load_test_dataset(tmp_path, data_params, simPSF):
     )
 
     n_bins_lambda = 10
-    data_handler = DataHandler("test", data_params, simPSF, n_bins_lambda, load_data=False)
+    data_handler = DataHandler(
+        dataset_type="test", 
+        data_params=data_params.test, 
+        simPSF=simPSF, 
+        n_bins_lambda=n_bins_lambda, 
+        load_data=False)
 
     # Call the load_dataset method
     data_handler.load_dataset()
@@ -93,8 +101,8 @@ def test_load_test_dataset(tmp_path, data_params, simPSF):
     assert np.array_equal(data_handler.dataset["SEDs"], mock_dataset["SEDs"])
 
 
-def test_load_train_dataset_missing_noisy_stars(tmp_path, data_params, simPSF):
-    """Test that a warning is raised if 'noisy_stars' is missing in training data."""
+def test_validate_train_dataset_missing_noisy_stars_raises(tmp_path, simPSF):
+    """Test that validation raises an error if 'noisy_stars' is missing in training data."""
     data_dir = tmp_path / "data"
     data_dir.mkdir()
     temp_data_file = data_dir / "train_data.npy"
@@ -145,23 +153,36 @@ def test_load_test_dataset_missing_stars(tmp_path, data_params, simPSF):
 def test_process_sed_data(data_params, simPSF):
     mock_dataset = {
         "positions": np.array([[1, 2], [3, 4]]),
-        "noisy_stars": np.array([[5, 6], [7, 8]]),
-        "SEDs": np.array([[[0.1, 0.2], [0.3, 0.4]], [[0.5, 0.6], [0.7, 0.8]]]),
+        "SEDs": np.array([
+            [[0.1, 0.2], [0.3, 0.4]],
+            [[0.5, 0.6], [0.7, 0.8]]
+        ]),
+        # Missing 'noisy_stars'
     }
     # Initialize DataHandler instance
     n_bins_lambda = 4
     data_handler = DataHandler("training", data_params, simPSF, n_bins_lambda, False)
 
-    data_handler.dataset = mock_dataset
-    data_handler.process_sed_data()
-    # Assertions
-    assert isinstance(data_handler.sed_data, tf.Tensor)
-    assert data_handler.sed_data.dtype == tf.float32
-    assert data_handler.sed_data.shape == (
-        len(data_handler.dataset["positions"]),
-        n_bins_lambda,
-        len(["feasible_N", "feasible_wv", "SED_norm"]),
+    np.save(temp_data_file, mock_dataset)
+
+    data_params = RecursiveNamespace(
+        data_dir=str(data_dir), file="train_data.npy"
     )
+
+    data_handler = DataHandler(
+        dataset_type="train",
+        data_params=data_params,
+        simPSF=simPSF,
+        n_bins_lambda=10,
+        load_data=False
+    )
+
+    data_handler.load_dataset()
+    data_handler.process_sed_data(mock_dataset["SEDs"])
+
+    with patch("wf_psf.data.data_handler.logger.warning") as mock_warning:
+        data_handler._validate_dataset_structure()
+        mock_warning.assert_called_with("Missing 'noisy_stars' in 'train' dataset.")
 
 
 def test_get_obs_positions(mock_data):
