@@ -23,19 +23,11 @@ from typing import Optional
 class InferenceConfigHandler:
     ids = ("inference_conf",)
 
-    def __init__(
-        self,
-        trained_model_path: str,
-        model_subdir: str,
-        training_conf_path: str,
-        data_conf_path: str,
-        inference_conf_path: str,
-    ):
-        self.trained_model_path = trained_model_path
-        self.model_subdir = model_subdir
-        self.training_conf_path = training_conf_path
-        self.data_conf_path = data_conf_path
+    def __init__(self, inference_conf_path: str):
         self.inference_conf_path = inference_conf_path
+
+        # Load the inference configuration
+        self.read_configurations()
 
         # Overwrite the model parameters with the inference configuration
         self.model_params = self.overwrite_model_params(
@@ -43,10 +35,31 @@ class InferenceConfigHandler:
         )
 
     def read_configurations(self):
+        """Read the configuration files."""
+        # Load the inference configuration
+        self.inference_conf = read_conf(self.inference_conf_path)
+        # Set config paths
+        self.set_config_paths()
         # Load the training and data configurations
-        self.training_conf = read_conf(training_conf_path)
-        self.data_conf = read_conf(data_conf_path)
-        self.inference_conf = read_conf(inference_conf_path)
+        self.training_conf = read_conf(self.training_conf_path)
+        if self.data_conf_path is not None:
+            # Load the data configuration
+            self.data_conf = read_conf(self.data_conf_path)
+        else:
+            self.data_conf = None
+
+    def set_config_paths(self):
+        """Extract and set the configuration paths."""
+        # Set config paths
+        self.config_paths = self.inference_conf.inference.configs.config_paths
+        self.trained_model_path = self.config_paths.trained_model_path
+        self.model_subdir = self.config_paths.model_subdir
+        self.training_config_path = self.config_paths.training_config_path
+        self.data_conf_path = self.config_paths.data_conf_path
+
+    def get_configs(self):
+        """Get the configurations."""
+        return (self.inference_conf, self.training_conf, self.data_conf)
 
     @staticmethod
     def overwrite_model_params(training_conf=None, inference_conf=None):
@@ -86,48 +99,25 @@ class PSFInference:
 
     def __init__(self, inference_conf_path: str):
 
-        self.inference_conf_path = inference_conf_path
-        # Load the training and data configurations
-        self.inference_conf = read_conf(inference_conf_path)
+        self.inference_config_handler = InferenceConfigHandler(
+            inference_conf_path=inference_conf_path
+        )
 
-        # Set config paths
-        self.config_paths = self.inference_conf.inference.configs.config_paths
-        self.trained_model_path = self.config_paths.trained_model_path
-        self.model_subdir = self.config_paths.model_subdir
-        self.training_config_path = self.config_paths.training_config_path
-        self.data_conf_path = self.config_paths.data_conf_path
+        self.inference_conf, self.training_conf, self.data_conf = (
+            self.inference_config_handler.get_configs()
+        )
 
-        # Load the training and data configurations
-        self.training_conf = read_conf(self.training_conf_path)
-        if self.data_conf_path is not None:
-            # Load the data configuration
-            self.data_conf = read_conf(self.data_conf_path)
-        else:
-            self.data_conf = None
-
-        # Set source parameters
+        # Init source parameters
         self.x_field = None
         self.y_field = None
         self.seds = None
         self.trained_psf_model = None
 
-        # Set compute PSF placeholder
+        # Init compute PSF placeholder
         self.inferred_psfs = None
 
-        # Set the number of labmda bins
-        self.n_bins_lambda = self.inference_conf.inference.model_params.n_bins_lda
-        # Set the batch size
-        self.batch_size = self.inference_conf.inference.batch_size
-        assert self.batch_size > 0, "Batch size must be greater than 0."
-        # Set the cycle to use for inference
-        self.cycle = self.inference_conf.inference.cycle
-        # Get output psf dimensions
-        self.output_dim = self.inference_conf.inference.model_params.output_dim
-
-        # Overwrite the model parameters with the inference configuration
-        self.training_conf.training.model_params = self.overwrite_model_params(
-            self.training_conf, self.inference_conf
-        )
+        # Load inference parameters
+        self.load_inference_params()
 
         # Instantiate the PSF simulator object
         self.simPSF = psf_models.simPSF(self.training_conf.training.model_params)
@@ -144,6 +134,18 @@ class PSFInference:
 
         # Load the trained PSF model
         self.trained_psf_model = self.get_trained_psf_model()
+
+    def load_inference_params(self):
+        """Load the inference parameters from the configuration file."""
+        # Set the number of labmda bins
+        self.n_bins_lambda = self.inference_conf.inference.model_params.n_bins_lda
+        # Set the batch size
+        self.batch_size = self.inference_conf.inference.batch_size
+        assert self.batch_size > 0, "Batch size must be greater than 0."
+        # Set the cycle to use for inference
+        self.cycle = self.inference_conf.inference.cycle
+        # Get output psf dimensions
+        self.output_dim = self.inference_conf.inference.model_params.output_dim
 
     @staticmethod
     def overwrite_model_params(training_conf=None, inference_conf=None):
@@ -187,6 +189,11 @@ class PSFInference:
 
     def set_source_parameters(self, x_field, y_field, seds):
         """Set the input source parameters for inferring the PSF.
+
+        Note
+        ----
+        The input source parameters are expected to be in the WaveDiff format. See the simulated data
+        format for more details.
 
         Parameters
         ----------
