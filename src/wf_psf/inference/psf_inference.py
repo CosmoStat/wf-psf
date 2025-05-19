@@ -26,32 +26,31 @@ class PSFInference:
 
     Parameters
     ----------
-    trained_model_path : str
-        Path to the directory containing the trained model.
-    model_subdir : str
-        Subdirectory name of the trained model.
-    training_conf_path : str
-        Path to the training configuration file used to train the model.
-    data_conf_path : str
-        Path to the data configuration file.
     inference_conf_path : str
         Path to the inference configuration file.
 
     """
 
-    def __init__(
-        self,
-        trained_model_path: str,
-        model_subdir: str,
-        training_conf_path: str,
-        data_conf_path: str,
-        inference_conf_path: str,
-    ):
-        self.trained_model_path = trained_model_path
-        self.model_subdir = model_subdir
-        self.training_conf_path = training_conf_path
-        self.data_conf_path = data_conf_path
+    def __init__(self, inference_conf_path: str):
+
         self.inference_conf_path = inference_conf_path
+        # Load the training and data configurations
+        self.inference_conf = read_conf(inference_conf_path)
+
+        # Set config paths
+        self.config_paths = self.inference_conf.inference.configs.config_paths
+        self.trained_model_path = self.config_paths.trained_model_path
+        self.model_subdir = self.config_paths.model_subdir
+        self.training_config_path = self.config_paths.training_config_path
+        self.data_conf_path = self.config_paths.data_conf_path
+
+        # Load the training and data configurations
+        self.training_conf = read_conf(self.training_conf_path)
+        if self.data_conf_path is not None:
+            # Load the data configuration
+            self.data_conf = read_conf(self.data_conf_path)
+        else:
+            self.data_conf = None
 
         # Set source parameters
         self.x_field = None
@@ -61,11 +60,6 @@ class PSFInference:
 
         # Set compute PSF placeholder
         self.inferred_psfs = None
-
-        # Load the training and data configurations
-        self.training_conf = read_conf(training_conf_path)
-        self.data_conf = read_conf(data_conf_path)
-        self.inference_conf = read_conf(inference_conf_path)
 
         # Set the number of labmda bins
         self.n_bins_lambda = self.inference_conf.inference.model_params.n_bins_lda
@@ -207,6 +201,8 @@ class PSFInference:
             The generated PSFs for the input source parameters.
             Shape is (n_samples, output_dim, output_dim).
         """
+        if self.inferred_psfs is None:
+            self.compute_psfs()
         return self.inferred_psfs
 
     def get_psf(self, index) -> np.ndarray:
@@ -218,4 +214,6 @@ class PSFInference:
             The generated PSFs for the input source parameters.
             Shape is (output_dim, output_dim).
         """
+        if self.inferred_psfs is None:
+            self.compute_psfs()
         return self.inferred_psfs[index]
