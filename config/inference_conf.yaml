@@ -2,9 +2,21 @@
 inference:
   # Inference batch size
   batch_size: 16
-
   # Cycle to use for inference. Can be: 1, 2, ...
   cycle: 2
+
+  configs:
+    # Path to the directory containing the trained model
+    training_config_path: models/
+
+    # Subdirectory name of the trained model
+    model_subdir: models
+  
+    # Path to the training configuration file used to train the model
+    trained_model_path: config/training_config.yaml
+
+    # Path to the data config file (this could contain prior information)
+    data_conf_path: 
 
   # The following parameters will overwrite the `model_params` in the training config file.
   model_params:
