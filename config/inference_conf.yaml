@@ -1,0 +1,28 @@
+
+inference:
+  # Inference batch size
+  batch_size: 16
+
+  # Cycle to use for inference. Can be: 1, 2, ...
+  cycle: 2
+
+  # The following parameters will overwrite the `model_params` in the training config file.
+  model_params:
+    # Num of wavelength bins to reconstruct polychromatic objects.
+    n_bins_lda: 20
+
+    # Downsampling rate to match the oversampled model to the specified telescope's sampling.
+    output_Q: 3
+
+    # Oversampling rate used for the OPD/WFE PSF model.
+    oversampling_rate: 3 
+
+    # Dimension of the pixel PSF postage stamp
+    output_dim: 32
+      
+    # Dimension of the OPD/Wavefront space.
+    pupil_diameter: 256
+
+
+
+
