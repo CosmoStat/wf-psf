@@ -5,6 +5,7 @@ inference:
   # Cycle to use for inference. Can be: 1, 2, ...
   cycle: 2
 
+  # Paths to the configuration files and trained model directory
   configs:
     # Path to the directory containing the trained model
     training_config_path: models/
