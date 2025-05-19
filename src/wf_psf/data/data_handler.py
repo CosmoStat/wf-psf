@@ -28,7 +28,7 @@ class DataHandler:
     DataHandler for WaveDiff PSF modeling.
 
     This class manages loading, preprocessing, and TensorFlow conversion of datasets used
-    for PSF model training, testing, and inference in the WaveDiff framework. 
+    for PSF model training, testing, and inference in the WaveDiff framework.
 
     Parameters
     ----------
@@ -104,7 +104,7 @@ class DataHandler:
         dataset : dict or list, optional
             A pre-loaded dataset to use directly (overrides `load_data`).
         sed_data : array-like, optional
-            Pre-loaded SED data to use directly. If not provided but `dataset` is, 
+            Pre-loaded SED data to use directly. If not provided but `dataset` is,
             SEDs are taken from `dataset["SEDs"]`.
 
         Raises
@@ -114,7 +114,7 @@ class DataHandler:
 
         Notes
         -----
-        - `self.dataset` and `self.sed_data` are both `None` if neither `dataset` nor 
+        - `self.dataset` and `self.sed_data` are both `None` if neither `dataset` nor
           `load_data=True` is used.
         - TensorFlow conversion is performed at the end of initialization via `convert_dataset_to_tensorflow()`.
         """
@@ -137,7 +137,6 @@ class DataHandler:
             self.dataset = None
             self.sed_data = None
 
-
     def load_dataset(self):
         """Load dataset.
 
@@ -153,7 +152,6 @@ class DataHandler:
         """Validate the dataset structure and convert fields to TensorFlow tensors."""
         self._validate_dataset_structure()
         self._convert_dataset_to_tensorflow()
-
 
     def _validate_dataset_structure(self):
         """Validate dataset structure based on dataset_type."""
@@ -174,10 +172,9 @@ class DataHandler:
         else:
             logger.warning(f"Unrecognized dataset_type: {self.dataset_type}")
 
-
     def _convert_dataset_to_tensorflow(self):
         """Convert dataset to TensorFlow tensors."""
-    
+
         self.dataset["positions"] = tf.convert_to_tensor(
             self.dataset["positions"], dtype=tf.float32
         )
@@ -216,7 +213,7 @@ class DataHandler:
 
         Notes
         -----
-        The resulting tensor is stored in `self.sed_data` and has shape 
+        The resulting tensor is stored in `self.sed_data` and has shape
         `(num_samples, n_bins_lambda, n_components)`, where:
             - `num_samples` is the number of SEDs,
             - `n_bins_lambda` is the number of wavelength bins,
@@ -290,7 +287,7 @@ def get_obs_positions(data):
 
 def extract_star_data(data, train_key: str, test_key: str) -> np.ndarray:
     """Extract specific star-related data from training and test datasets.
-   
+
     This function retrieves and concatenates specific star-related data (e.g., stars, masks) from the
     star training and test datasets such as star stamps or masks, based on the provided keys.
 
@@ -320,10 +317,14 @@ def extract_star_data(data, train_key: str, test_key: str) -> np.ndarray:
     """
     # Ensure the requested keys exist in both training and test datasets
     missing_keys = [
-        key for key, dataset in [(train_key, data.training_data.dataset), (test_key, data.test_data.dataset)]
+        key
+        for key, dataset in [
+            (train_key, data.training_data.dataset),
+            (test_key, data.test_data.dataset),
+        ]
         if key not in dataset
     ]
-    
+
     if missing_keys:
         raise KeyError(f"Missing keys in dataset: {missing_keys}")
 
@@ -339,4 +340,3 @@ def extract_star_data(data, train_key: str, test_key: str) -> np.ndarray:
 
     # Concatenate and return
     return np.concatenate((train_data, test_data), axis=0)
-
