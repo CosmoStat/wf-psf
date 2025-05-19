@@ -21,7 +21,23 @@ from typing import Optional
 
 
 class PSFInference:
-    """Class to perform inference on PSF models."""
+    """Class to perform inference on PSF models.
+
+
+    Parameters
+    ----------
+    trained_model_path : str
+        Path to the directory containing the trained model.
+    model_subdir : str
+        Subdirectory name of the trained model.
+    training_conf_path : str
+        Path to the training configuration file used to train the model.
+    data_conf_path : str
+        Path to the data configuration file.
+    inference_conf_path : str
+        Path to the inference configuration file.
+
+    """
 
     def __init__(
         self,
@@ -55,8 +71,11 @@ class PSFInference:
         self.n_bins_lambda = self.inference_conf.inference.model_params.n_bins_lda
         # Set the batch size
         self.batch_size = self.inference_conf.inference.batch_size
+        assert self.batch_size > 0, "Batch size must be greater than 0."
         # Set the cycle to use for inference
         self.cycle = self.inference_conf.inference.cycle
+        # Get output psf dimensions
+        self.output_dim = self.inference_conf.inference.model_params.output_dim
 
         # Overwrite the model parameters with the inference configuration
         self.training_conf.training.model_params = self.overwrite_model_params(
@@ -73,6 +92,7 @@ class PSFInference:
             simPSF=self.simPSF,
             n_bins_lambda=self.n_bins_lambda,
             load_data=False,
+            dataset=None,
         )
 
         # Load the trained PSF model
@@ -155,8 +175,7 @@ class PSFInference:
         # Initialize counter
         counter = 0
         # Initialize PSF array
-        self.inferred_psfs = np.zeros((n_samples,))
-        psf_array = []
+        self.inferred_psfs = np.zeros((n_samples, self.output_dim, self.output_dim))
 
         while counter < n_samples:
             # Calculate the batch end element
@@ -174,22 +193,32 @@ class PSFInference:
             batch_poly_psfs = self.trained_psf_model(batch_inputs, training=False)
 
             # Append to the PSF array
-            psf_array.append(poly_psfs)
+            self.inferred_psfs[counter:end_sample, :, :] = batch_poly_psfs.numpy()
 
             # Update the counter
             counter += self.batch_size
 
-        return tf.concat(psf_array, axis=0)
-
     def get_psfs(self) -> np.ndarray:
-        """Get all the generated PSFs."""
+        """Get all the generated PSFs.
 
-        pass
+        Returns
+        -------
+        np.ndarray
+            The generated PSFs for the input source parameters.
+            Shape is (n_samples, output_dim, output_dim).
+        """
+        return self.inferred_psfs
 
     def get_psf(self, index) -> np.ndarray:
-        """Generate the generated PSF at a specific index."""
+        """Generate the generated PSF at a specific index.
 
-        pass
+        Returns
+        -------
+        np.ndarray
+            The generated PSFs for the input source parameters.
+            Shape is (output_dim, output_dim).
+        """
+        return self.inferred_psfs[index]
 
 
 # def run_pipeline():
