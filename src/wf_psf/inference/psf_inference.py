@@ -20,6 +20,59 @@ import tensorflow as tf
 from typing import Optional
 
 
+class InferenceConfigHandler:
+    ids = ("inference_conf",)
+
+    def __init__(
+        self,
+        trained_model_path: str,
+        model_subdir: str,
+        training_conf_path: str,
+        data_conf_path: str,
+        inference_conf_path: str,
+    ):
+        self.trained_model_path = trained_model_path
+        self.model_subdir = model_subdir
+        self.training_conf_path = training_conf_path
+        self.data_conf_path = data_conf_path
+        self.inference_conf_path = inference_conf_path
+
+        # Overwrite the model parameters with the inference configuration
+        self.model_params = self.overwrite_model_params(
+            self.training_conf, self.inference_conf
+        )
+
+    def read_configurations(self):
+        # Load the training and data configurations
+        self.training_conf = read_conf(training_conf_path)
+        self.data_conf = read_conf(data_conf_path)
+        self.inference_conf = read_conf(inference_conf_path)
+
+    @staticmethod
+    def overwrite_model_params(training_conf=None, inference_conf=None):
+        """Overwrite model_params of the training_conf with the inference_conf.
+
+        Parameters
+        ----------
+        training_conf : RecursiveNamespace
+            Configuration object containing model parameters and training hyperparameters.
+        inference_conf : RecursiveNamespace
+            Configuration object containing inference-related parameters.
+
+        """
+        model_params = training_conf.training.model_params
+        inf_model_params = inference_conf.inference.model_params
+
+        if model_params is not None and inf_model_params is not None:
+            for key, value in inf_model_params.__dict__.items():
+                # Check if model_params has the attribute
+                if hasattr(model_params, key):
+                    # Set the attribute of model_params to the new value
+                    setattr(model_params, key, value)
+
+        return model_params
+
+
 class PSFInference:
     """Class to perform inference on PSF models.
 
