@@ -9,11 +9,11 @@ inference:
   # The following parameters will overwrite the `model_params` in the training config file.
   model_params:
     # Num of wavelength bins to reconstruct polychromatic objects.
-    n_bins_lda: 20
+    n_bins_lda: 8
 
     # Downsampling rate to match the oversampled model to the specified telescope's sampling.
     output_Q: 1
 
     # Dimension of the pixel PSF postage stamp
-    output_dim: 32
+    output_dim: 64
 
