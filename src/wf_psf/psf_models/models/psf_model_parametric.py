@@ -205,7 +205,7 @@ class TFParametricPSFFieldModel(tf.keras.Model):
 
         return opd_maps
 
-    def call(self, inputs):
+    def call(self, inputs, **kwargs):
         """Define the PSF field forward model.
 
         [1] From positions to Zernike coefficients
