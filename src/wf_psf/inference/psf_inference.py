@@ -219,16 +219,3 @@ class PSFInference:
             Shape is (output_dim, output_dim).
         """
         return self.inferred_psfs[index]
-
-
-# def run_pipeline():
-#     psf_model = get_trained_psf_model(
-#         model_path, model_dir, cycle, training_conf, data_conf
-#     )
-#     inputs = prepare_inputs()
-#     psfs = generate_psfs(
-#         psf_model,
-#         inputs,
-#         batch_size=1,
-#     )
-#     return psfs
