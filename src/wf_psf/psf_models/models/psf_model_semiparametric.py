@@ -421,7 +421,7 @@ class TFSemiParametricField(tf.keras.Model):
         s_new = self.tf_np_poly_opd.S_mat - s_mat_projected
         self.assign_S_mat(s_new)
 
-    def call(self, inputs):
+    def call(self, inputs, **kwargs):
         """Define the PSF field forward model.
 
         [1] From positions to Zernike coefficients
