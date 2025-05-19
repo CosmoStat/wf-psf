@@ -28,7 +28,7 @@ class DataHandler:
     DataHandler for WaveDiff PSF modeling.
 
     This class manages loading, preprocessing, and TensorFlow conversion of datasets used
-    for PSF model training, testing, inference, and validation in the WaveDiff framework.
+    for PSF model training, testing, and inference in the WaveDiff framework.
 
     Parameters
     ----------
