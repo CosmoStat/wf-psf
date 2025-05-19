@@ -198,11 +198,38 @@ class DataHandler:
             pass
 
     def process_sed_data(self, sed_data):
-        """Process SED Data.
-
-        A method to generate and process SED data.
-
         """
+        Generate and process SED (Spectral Energy Distribution) data.
+
+        This method transforms raw SED inputs into TensorFlow tensors suitable for model input.
+        It generates wavelength-binned SED elements using the PSF simulator, converts the result
+        into a tensor, and transposes it to match the expected shape for training or inference.
+
+        Parameters
+        ----------
+        sed_data : list or array-like
+            A list or array of raw SEDs, where each SED is typically a vector of flux values
+            or coefficients. These will be processed using the PSF simulator.
+
+        Raises
+        ------
+        ValueError
+            If `sed_data` is None.
+
+        Notes
+        -----
+        The resulting tensor is stored in `self.sed_data` and has shape
+        `(num_samples, n_bins_lambda, n_components)`, where:
+            - `num_samples` is the number of SEDs,
+            - `n_bins_lambda` is the number of wavelength bins,
+            - `n_components` is the number of components per SED (e.g., filters or basis terms).
+
+        The intermediate tensor is created with `tf.float64` for precision during generation,
+        but is converted to `tf.float32` after processing for use in training.
+        """
+        if sed_data is None:
+            raise ValueError("SED data must be provided explicitly or via dataset.")
+
         self.sed_data = [
             utils.generate_SED_elems_in_tensorflow(
                 _sed, self.simPSF, n_bins=self.n_bins_lambda, tf_dtype=tf.float64
