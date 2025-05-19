@@ -27,16 +27,15 @@ class PSFInference:
         self,
         trained_model_path: str,
         model_subdir: str,
-        cycle: int,
         training_conf_path: str,
         data_conf_path: str,
-        batch_size: Optional[int] = None,
+        inference_conf_path: str,
     ):
         self.trained_model_path = trained_model_path
         self.model_subdir = model_subdir
-        self.cycle = cycle
         self.training_conf_path = training_conf_path
         self.data_conf_path = data_conf_path
+        self.inference_conf_path = inference_conf_path
 
         # Set source parameters
         self.x_field = None
@@ -44,18 +43,24 @@ class PSFInference:
         self.seds = None
         self.trained_psf_model = None
 
+        # Set compute PSF placeholder
+        self.inferred_psfs = None
+
         # Load the training and data configurations
         self.training_conf = read_conf(training_conf_path)
         self.data_conf = read_conf(data_conf_path)
+        self.inference_conf = read_conf(inference_conf_path)
 
         # Set the number of labmda bins
-        self.n_bins_lambda = self.training_conf.training.model_params.n_bins_lambda
-
+        self.n_bins_lambda = self.inference_conf.inference.model_params.n_bins_lda
         # Set the batch size
-        self.batch_size = (
-            batch_size
-            if batch_size is not None
-            else self.training_conf.training.model_params.batch_size
+        self.batch_size = self.inference_conf.inference.batch_size
+        # Set the cycle to use for inference
+        self.cycle = self.inference_conf.inference.cycle
+
+        # Overwrite the model parameters with the inference configuration
+        self.training_conf.training.model_params = self.overwrite_model_params(
+            self.training_conf, self.inference_conf
         )
 
         # Instantiate the PSF simulator object
@@ -72,6 +77,29 @@ class PSFInference:
 
         # Load the trained PSF model
         self.trained_psf_model = self.get_trained_psf_model()
+
+    @staticmethod
+    def overwrite_model_params(training_conf=None, inference_conf=None):
+        """Overwrite model_params of the training_conf with the inference_conf.
+
+        Parameters
+        ----------
+        training_conf : RecursiveNamespace
+            Configuration object containing model parameters and training hyperparameters.
+        inference_conf : RecursiveNamespace
+            Configuration object containing inference-related parameters.
+
+        """
+        model_params = training_conf.training.model_params
+        inf_model_params = inference_conf.inference.model_params
+        if model_params is not None and inf_model_params is not None:
+            for key, value in inf_model_params.__dict__.items():
+                # Check if model_params has the attribute
+                if hasattr(model_params, key):
+                    # Set the attribute of model_params to the new value
+                    setattr(model_params, key, value)
+
+        return model_params
 
     def get_trained_psf_model(self):
         """Get the trained PSF model."""
@@ -110,25 +138,58 @@ class PSFInference:
             np.array([x_field, y_field]).T, dtype=tf.float32
         )
         # Process SED data
-        self.sed_data = self.data_handler.process_sed_data(seds)
+        self.data_handler.process_sed_data(seds)
+        self.sed_data = self.data_handler.sed_data
 
-    def get_psfs(self):
-        """Generate PSFs on the input source parameters."""
+    def compute_psfs(self):
+        """Compute the PSFs for the input source parameters."""
+
+        # Check if source parameters are set
+        if self.positions is None or self.sed_data is None:
+            raise ValueError(
+                "Source parameters not set. Call set_source_parameters first."
+            )
+
+        # Get the number of samples
+        n_samples = self.positions.shape[0]
+        # Initialize counter
+        counter = 0
+        # Initialize PSF array
+        self.inferred_psfs = np.zeros((n_samples,))
+        psf_array = []
 
         while counter < n_samples:
             # Calculate the batch end element
-            if counter + batch_size <= n_samples:
-                end_sample = counter + batch_size
+            if counter + self.batch_size <= n_samples:
+                end_sample = counter + self.batch_size
             else:
                 end_sample = n_samples
 
-        # Define the batch positions
-        batch_pos = pos[counter:end_sample, :]
+            # Define the batch positions
+            batch_pos = self.positions[counter:end_sample, :]
+            batch_seds = self.sed_data[counter:end_sample, :, :]
 
-        inputs = [self.positions, self.sed_data]
-        poly_psfs = self.trained_psf_model(inputs, training=False)
+            # Generate PSFs for the current batch
+            batch_inputs = [batch_pos, batch_seds]
+            batch_poly_psfs = self.trained_psf_model(batch_inputs, training=False)
 
-        return poly_psfs
+            # Append to the PSF array
+            psf_array.append(poly_psfs)
+
+            # Update the counter
+            counter += self.batch_size
+
+        return tf.concat(psf_array, axis=0)
+
+    def get_psfs(self) -> np.ndarray:
+        """Get all the generated PSFs."""
+
+        pass
+
+    def get_psf(self, index) -> np.ndarray:
+        """Generate the generated PSF at a specific index."""
+
+        pass
 
 
 # def run_pipeline():
