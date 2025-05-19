@@ -4,20 +4,17 @@ A module which provides a PSFInference class to perform inference
 with trained PSF models. It is able to load a trained model,
 perform inference on a dataset of SEDs and positions, and generate polychromatic PSFs.
 
-:Authors: Jennifer Pollack <jennifer.pollack@cea.fr>
+:Authors: Jennifer Pollack <jennifer.pollack@cea.fr>, Tobias Liaudat <tobias.liaudat@cea.fr>
 
 """
 
 import os
-import glob
-import logging
 import numpy as np
 from wf_psf.data.data_handler import DataHandler
 from wf_psf.utils.read_config import read_conf
 from wf_psf.psf_models import psf_models
 from wf_psf.psf_models.psf_model_loader import load_trained_psf_model
 import tensorflow as tf
-from typing import Optional
 
 
 class InferenceConfigHandler:
