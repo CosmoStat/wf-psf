@@ -35,10 +35,13 @@ class InferenceConfigHandler:
         """Read the configuration files."""
         # Load the inference configuration
         self.inference_conf = read_conf(self.inference_conf_path)
+
         # Set config paths
         self.set_config_paths()
+        
         # Load the training and data configurations
         self.training_conf = read_conf(self.training_conf_path)
+        
         if self.data_conf_path is not None:
             # Load the data configuration
             self.data_conf = read_conf(self.data_conf_path)
@@ -136,37 +139,18 @@ class PSFInference:
         """Load the inference parameters from the configuration file."""
         # Set the number of labmda bins
         self.n_bins_lambda = self.inference_conf.inference.model_params.n_bins_lda
+
         # Set the batch size
         self.batch_size = self.inference_conf.inference.batch_size
         assert self.batch_size > 0, "Batch size must be greater than 0."
+        
         # Set the cycle to use for inference
         self.cycle = self.inference_conf.inference.cycle
+        
         # Get output psf dimensions
         self.output_dim = self.inference_conf.inference.model_params.output_dim
-
-    @staticmethod
-    def overwrite_model_params(training_conf=None, inference_conf=None):
-        """Overwrite model_params of the training_conf with the inference_conf.
-
-        Parameters
-        ----------
-        training_conf : RecursiveNamespace
-            Configuration object containing model parameters and training hyperparameters.
-        inference_conf : RecursiveNamespace
-            Configuration object containing inference-related parameters.
-
-        """
-        model_params = training_conf.training.model_params
-        inf_model_params = inference_conf.inference.model_params
-        if model_params is not None and inf_model_params is not None:
-            for key, value in inf_model_params.__dict__.items():
-                # Check if model_params has the attribute
-                if hasattr(model_params, key):
-                    # Set the attribute of model_params to the new value
-                    setattr(model_params, key, value)
-
-        return model_params
-
+        
+ 
     def get_trained_psf_model(self):
         """Get the trained PSF model."""
 
@@ -223,8 +207,10 @@ class PSFInference:
 
         # Get the number of samples
         n_samples = self.positions.shape[0]
+
         # Initialize counter
         counter = 0
+        
         # Initialize PSF array
         self.inferred_psfs = np.zeros((n_samples, self.output_dim, self.output_dim))
 
