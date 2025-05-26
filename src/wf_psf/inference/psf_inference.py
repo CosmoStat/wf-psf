@@ -87,17 +87,67 @@ class InferenceConfigHandler:
 
 
 class PSFInference:
-    """Class to perform inference on PSF models.
+    """
+    Perform PSF inference using a pre-trained WaveDiff model.
 
+    This class handles the setup for PSF inference, including loading configuration
+    files, instantiating the PSF simulator and data handler, and preparing the
+    input data required for inference.
 
     Parameters
     ----------
-    inference_conf_path : str
-        Path to the inference configuration file.
+    inference_conf_path : str, optional
+        Path to the inference configuration YAML file. This file should define
+        paths and parameters for the inference, training, and data configurations.
+    x_field : array-like, optional
+        Array of x field-of-view coordinates in the SHE convention to be transformed
+        and passed to the WaveDiff model.
+    y_field : array-like, optional
+        Array of y field-of-view coordinates in the SHE convention to be transformed
+        and passed to the WaveDiff model.
+    seds : array-like, optional
+        Spectral energy distributions (SEDs) for the sources being modeled. These
+        will be used as part of the input to the PSF simulator.
 
+    Attributes
+    ----------
+    inference_config_handler : InferenceConfigHandler
+        Handler object to load and parse inference, training, and data configs.
+    inference_conf : dict
+        Dictionary containing inference configuration settings.
+    training_conf : dict
+        Dictionary containing training configuration settings.
+    data_conf : dict
+        Dictionary containing data configuration settings.
+    x_field : array-like
+        Input x coordinates after transformation (if applicable).
+    y_field : array-like
+        Input y coordinates after transformation (if applicable).
+    seds : array-like
+        Input spectral energy distributions.
+    trained_psf_model : keras.Model
+        Loaded PSF model used for prediction.
+    inferred_psfs : array-like or None
+        Array of inferred PSF images, populated after inference is performed.
+    simPSF : psf_models.simPSF
+        PSF simulator instance initialized with training model parameters.
+    data_handler : DataHandler
+        Data handler configured for inference, used to prepare inputs to the model.
+    n_bins_lambda : int
+        Number of spectral bins used for PSF simulation (loaded from config).
+
+    Methods
+    -------
+    load_inference_params()
+        Load parameters required for inference, including spectral binning.
+    get_trained_psf_model()
+        Load and return the trained Keras model for PSF inference.
+    run_inference()
+        Run the model on the input data and generate predicted PSFs.
     """
 
-    def __init__(self, inference_conf_path: str):
+
+    def __init__(self, inference_conf_path: str, x_field=None, y_field=None, seds=None):
 
         self.inference_config_handler = InferenceConfigHandler(
             inference_conf_path=inference_conf_path
@@ -108,9 +158,9 @@ class PSFInference:
         )
 
         # Init source parameters
-        self.x_field = None
-        self.y_field = None
-        self.seds = None
+        self.x_field = x_field
+        self.y_field = y_field
+        self.seds = seds
         self.trained_psf_model = None
 
         # Init compute PSF placeholder
@@ -149,18 +199,21 @@ class PSFInference:
         
         # Get output psf dimensions
         self.output_dim = self.inference_conf.inference.model_params.output_dim
-        
+
  
     def get_trained_psf_model(self):
         """Get the trained PSF model."""
 
+        # Load the trained PSF model
+        model_path = self.inference_config_handler.trained_model_path
+        model_dir_name = self.inference_config_handler
         model_name = self.training_conf.training.model_params.model_name
         id_name = self.training_conf.training.id_name
 
         weights_path_pattern = os.path.join(
-            self.trained_model_path,
-            self.model_subdir,
-            (f"{self.model_subdir}*_{model_name}" f"*{id_name}_cycle{self.cycle}*"),
+            model_path,
+            model_dir_name,
+            (f"{model_dir_name}*_{model_name}" f"*{id_name}_cycle{self.cycle}*"),
         )
         return load_trained_psf_model(
             self.training_conf,
@@ -168,7 +221,7 @@ class PSFInference:
             weights_path_pattern,
         )
 
-    def set_source_parameters(self, x_field, y_field, seds):
+    def set_source_parameters(self):
         """Set the input source parameters for inferring the PSF.
 
         Note
@@ -190,10 +243,10 @@ class PSFInference:
         """
         # Positions array is of shape (n_sources, 2)
         self.positions = tf.convert_to_tensor(
-            np.array([x_field, y_field]).T, dtype=tf.float32
+            np.array([self.x_field, self.y_field]).T, dtype=tf.float32
         )
         # Process SED data
-        self.data_handler.process_sed_data(seds)
+        self.data_handler.process_sed_data(self.seds)
         self.sed_data = self.data_handler.sed_data
 
     def compute_psfs(self):
