@@ -247,6 +247,19 @@ class CentroidEstimator:
 
     def __init__(self, im, mask=None, sigma_init=7.5, n_iter=5, auto_run=True, xc=None, yc=None):
         """Initialize class attributes."""
+
+        # Convert to np.ndarray if not already
+        im = np.asarray(im)
+        if mask is not None:
+            mask = np.asarray(mask)
+
+        # Check im dimensions convert to batch, if 2D
+        if im.ndim == 2:
+            # Single stamp → convert to batch of one
+            im = np.expand_dims(im, axis=0)
+        elif im.ndim != 3:
+            raise ValueError(f"Expected 2D or 3D input, got shape {im.shape}")
+
         self.im = im
         self.mask = mask
         if self.mask is not None:
