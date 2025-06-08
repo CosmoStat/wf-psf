@@ -9,6 +9,7 @@ perform inference on a dataset of SEDs and positions, and generate polychromatic
 """
 
 import os
+from pathlib import Path
 import numpy as np
 from wf_psf.data.data_handler import DataHandler
 from wf_psf.utils.read_config import read_conf
@@ -20,71 +21,60 @@ import tensorflow as tf
 class InferenceConfigHandler:
     ids = ("inference_conf",)
 
-    def __init__(self, inference_conf_path: str):
-        self.inference_conf_path = inference_conf_path
+    def __init__(self, inference_config_path: str):
+        self.inference_config_path = inference_config_path
+        self.inference_config = None
+        self.training_config = None
+        self.data_config = None
 
-        # Load the inference configuration
-        self.read_configurations()
 
-        # Overwrite the model parameters with the inference configuration
-        self.model_params = self.overwrite_model_params(
-            self.training_conf, self.inference_conf
-        )
-
-    def read_configurations(self):
-        """Read the configuration files."""
-        # Load the inference configuration
-        self.inference_conf = read_conf(self.inference_conf_path)
-
-        # Set config paths
+    def load_configs(self):
+        """Load configuration files based on the inference config."""
+        self.inference_config = read_conf(self.inference_config_path)
         self.set_config_paths()
-        
-        # Load the training and data configurations
-        self.training_conf = read_conf(self.training_conf_path)
-        
-        if self.data_conf_path is not None:
+        self.training_config = read_conf(self.trained_model_config_path)
+
+        if self.data_config_path is not None:
             # Load the data configuration
-            self.data_conf = read_conf(self.data_conf_path)
-        else:
-            self.data_conf = None
+            self.data_conf = read_conf(self.data_config_path)
+
 
     def set_config_paths(self):
         """Extract and set the configuration paths."""
         # Set config paths
-        self.config_paths = self.inference_conf.inference.configs.config_paths
-        self.trained_model_path = self.config_paths.trained_model_path
-        self.model_subdir = self.config_paths.model_subdir
-        self.training_config_path = self.config_paths.training_config_path
-        self.data_conf_path = self.config_paths.data_conf_path
+        config_paths = self.inference_config.inference.configs
 
-    def get_configs(self):
-        """Get the configurations."""
-        return (self.inference_conf, self.training_conf, self.data_conf)
+        self.trained_model_path = Path(config_paths.trained_model_path)
+        self.model_subdir = config_paths.model_subdir
+        self.trained_model_config_path = self.trained_model_path / config_paths.trained_model_config_path
+        self.data_config_path = config_paths.data_config_path
+
 
     @staticmethod
-    def overwrite_model_params(training_conf=None, inference_conf=None):
-        """Overwrite model_params of the training_conf with the inference_conf.
+    def overwrite_model_params(training_config=None, inference_config=None):
+        """
+        Overwrite training model_params with values from inference_config if available.
 
         Parameters
         ----------
-        training_conf : RecursiveNamespace
-            Configuration object containing model parameters and training hyperparameters.
-        inference_conf : RecursiveNamespace
-            Configuration object containing inference-related parameters.
+        training_config : RecursiveNamespace
+            Configuration object from training phase.
+        inference_config : RecursiveNamespace
+            Configuration object from inference phase.
 
+        Notes
+        -----
+        Updates are applied in-place to training_config.training.model_params.
         """
-        model_params = training_conf.training.model_params
-        inf_model_params = inference_conf.inference.model_params
+        model_params = training_config.training.model_params
+        inf_model_params = inference_config.inference.model_params
 
-        if model_params is not None and inf_model_params is not None:
+        if model_params and inf_model_params:
             for key, value in inf_model_params.__dict__.items():
-                # Check if model_params has the attribute
                 if hasattr(model_params, key):
-                    # Set the attribute of model_params to the new value
                     setattr(model_params, key, value)
 
-        return model_params
-
+    
 
 class PSFInference:
     """
@@ -96,220 +86,216 @@ class PSFInference:
 
     Parameters
     ----------
-    inference_conf_path : str, optional
-        Path to the inference configuration YAML file. This file should define
-        paths and parameters for the inference, training, and data configurations.
+    inference_config_path : str
+        Path to the inference configuration YAML file.
     x_field : array-like, optional
-        Array of x field-of-view coordinates in the SHE convention to be transformed
-        and passed to the WaveDiff model.
+        x coordinates in SHE convention.
     y_field : array-like, optional
-        Array of y field-of-view coordinates in the SHE convention to be transformed
-        and passed to the WaveDiff model.
+        y coordinates in SHE convention.
     seds : array-like, optional
-        Spectral energy distributions (SEDs) for the sources being modeled. These
-        will be used as part of the input to the PSF simulator.
-
-    Attributes
-    ----------
-    inference_config_handler : InferenceConfigHandler
-        Handler object to load and parse inference, training, and data configs.
-    inference_conf : dict
-        Dictionary containing inference configuration settings.
-    training_conf : dict
-        Dictionary containing training configuration settings.
-    data_conf : dict
-        Dictionary containing data configuration settings.
-    x_field : array-like
-        Input x coordinates after transformation (if applicable).
-    y_field : array-like
-        Input y coordinates after transformation (if applicable).
-    seds : array-like
-        Input spectral energy distributions.
-    trained_psf_model : keras.Model
-        Loaded PSF model used for prediction.
-    inferred_psfs : array-like or None
-        Array of inferred PSF images, populated after inference is performed.
-    simPSF : psf_models.simPSF
-        PSF simulator instance initialized with training model parameters.
-    data_handler : DataHandler
-        Data handler configured for inference, used to prepare inputs to the model.
-    n_bins_lambda : int
-        Number of spectral bins used for PSF simulation (loaded from config).
-
-    Methods
-    -------
-    load_inference_params()
-        Load parameters required for inference, including spectral binning.
-    get_trained_psf_model()
-        Load and return the trained Keras model for PSF inference.
-    run_inference()
-        Run the model on the input data and generate predicted PSFs.
+        Spectral energy distributions (SEDs).
     """
 
+    def __init__(self, inference_config_path: str, x_field=None, y_field=None, seds=None):
 
-    def __init__(self, inference_conf_path: str, x_field=None, y_field=None, seds=None):
+        self.inference_config_path = inference_config_path
 
-        self.inference_config_handler = InferenceConfigHandler(
-            inference_conf_path=inference_conf_path
-        )
-
-        self.inference_conf, self.training_conf, self.data_conf = (
-            self.inference_config_handler.get_configs()
-        )
-
-        # Init source parameters
+        # Inputs for the model
         self.x_field = x_field
         self.y_field = y_field
         self.seds = seds
-        self.trained_psf_model = None
+    
+        # Internal caches for lazy-loading
+        self._config_handler = None
+        self._simPSF = None
+        self._data_handler = None
+        self._trained_psf_model = None
+        self._n_bins_lambda = None
+        self._batch_size = None
+        self._cycle = None
+        self._output_dim = None
 
-        # Init compute PSF placeholder
-        self.inferred_psfs = None
+        # Initialise PSF Inference engine
+        self.engine = None 
 
-        # Load inference parameters
-        self.load_inference_params()
+    @property
+    def config_handler(self):
+        if self._config_handler is None:
+            self._config_handler = InferenceConfigHandler(self.inference_config_path)
+            self._config_handler.load_configs()
+        return self._config_handler
 
-        # Instantiate the PSF simulator object
-        self.simPSF = psf_models.simPSF(self.training_conf.training.model_params)
-
-        # Instantiate the data handler
-        self.data_handler = DataHandler(
-            dataset_type="inference",
-            data_params=self.data_conf,
-            simPSF=self.simPSF,
-            n_bins_lambda=self.n_bins_lambda,
-            load_data=False,
-            dataset=None,
+    def prepare_configs(self):
+        """Prepare the configuration for inference."""
+        # Overwrite model parameters with inference config
+        self.config_handler.overwrite_model_params(
+            self.training_config, self.inference_config
         )
 
-        # Load the trained PSF model
-        self.trained_psf_model = self.get_trained_psf_model()
+    @property
+    def inference_config(self):
+        return self.config_handler.inference_config
 
-    def load_inference_params(self):
-        """Load the inference parameters from the configuration file."""
-        # Set the number of labmda bins
-        self.n_bins_lambda = self.inference_conf.inference.model_params.n_bins_lda
+    @property
+    def training_config(self):
+        return self.config_handler.training_config
 
-        # Set the batch size
-        self.batch_size = self.inference_conf.inference.batch_size
-        assert self.batch_size > 0, "Batch size must be greater than 0."
+    @property
+    def data_config(self):
+        return self.config_handler.data_config
+
+    @property
+    def simPSF(self):
+        if self._simPSF is None:
+            self._simPSF = psf_models.simPSF(self.model_params)
+        return self._simPSF
+
+    @property
+    def data_handler(self):
+        if self._data_handler is None:
+            # Instantiate the data handler
+            self._data_handler = DataHandler(
+                dataset_type="inference",
+                data_params=self.data_config,
+                simPSF=self.simPSF,
+                n_bins_lambda=self.n_bins_lambda,
+                load_data=False,
+                dataset=None,
+            )
+        return self._data_handler
+
+    @property
+    def trained_psf_model(self):
+        if self._trained_psf_model is None:
+            self._trained_psf_model = self.load_inference_model()
+        return self._trained_psf_model
+
+    def load_inference_model(self):
+        # Prepare the configuration for inference
+        self.prepare_configs()
         
-        # Set the cycle to use for inference
-        self.cycle = self.inference_conf.inference.cycle
-        
-        # Get output psf dimensions
-        self.output_dim = self.inference_conf.inference.model_params.output_dim
-
- 
-    def get_trained_psf_model(self):
-        """Get the trained PSF model."""
-
-        # Load the trained PSF model
-        model_path = self.inference_config_handler.trained_model_path
-        model_dir_name = self.inference_config_handler
-        model_name = self.training_conf.training.model_params.model_name
-        id_name = self.training_conf.training.id_name
+        model_path = self.config_handler.trained_model_path
+        model_dir = self.config_handler.model_subdir
+        model_name = self.training_config.training.model_params.model_name
+        id_name = self.training_config.training.id_name
 
         weights_path_pattern = os.path.join(
             model_path,
-            model_dir_name,
-            (f"{model_dir_name}*_{model_name}" f"*{id_name}_cycle{self.cycle}*"),
+            model_dir,
+            f"{model_dir}*_{model_name}*{id_name}_cycle{self.cycle}*"
         )
+    
+        # Load the trained PSF model
         return load_trained_psf_model(
-            self.training_conf,
-            self.data_conf,
+            self.training_config,
+            self.data_config,
             weights_path_pattern,
         )
 
-    def set_source_parameters(self):
-        """Set the input source parameters for inferring the PSF.
+    @property
+    def n_bins_lambda(self):
+        if self._n_bins_lambda is None:
+            self._n_bins_lambda = self.inference_config.inference.model_params.n_bins_lda
+        return self._n_bins_lambda
 
-        Note
-        ----
-        The input source parameters are expected to be in the WaveDiff format. See the simulated data
-        format for more details.
+    @property
+    def batch_size(self):
+        if self._batch_size is None:
+            self._batch_size = self.inference_config.inference.batch_size
+            assert self._batch_size > 0, "Batch size must be greater than 0."
+        return self._batch_size
 
-        Parameters
-        ----------
-        x_field : array-like
-            X coordinates of the sources in WaveDiff format.
-        y_field : array-like
-            Y coordinates of the sources in WaveDiff format.
-        seds : list or array-like
-            A list or array of raw SEDs, where each SED is typically a vector of flux values
-            or coefficients. These will be processed using the PSF simulator.
-            It assumes the standard WaveDiff SED format.
+    @property
+    def cycle(self):
+        if self._cycle is None:
+            self._cycle = self.inference_config.inference.cycle
+        return self._cycle
 
-        """
-        # Positions array is of shape (n_sources, 2)
-        self.positions = tf.convert_to_tensor(
+    @property
+    def output_dim(self):
+        if self._output_dim is None:
+            self._output_dim = self.inference_config.inference.model_params.output_dim
+        return self._output_dim
+
+    def _prepare_positions_and_seds(self):
+        """Preprocess and return tensors for positions and SEDs."""
+        positions = tf.convert_to_tensor(
             np.array([self.x_field, self.y_field]).T, dtype=tf.float32
         )
-        # Process SED data
         self.data_handler.process_sed_data(self.seds)
-        self.sed_data = self.data_handler.sed_data
+        sed_data = self.data_handler.sed_data
+        return positions, sed_data
 
-    def compute_psfs(self):
-        """Compute the PSFs for the input source parameters."""
+    def run_inference(self):
+        """Run PSF inference and return the full PSF array."""
+        positions, sed_data = self._prepare_positions_and_seds()
 
-        # Check if source parameters are set
-        if self.positions is None or self.sed_data is None:
-            raise ValueError(
-                "Source parameters not set. Call set_source_parameters first."
-            )
+        self.engine = PSFInferenceEngine(
+            trained_model=self.trained_psf_model,
+            batch_size=self.batch_size,
+            output_dim=self.output_dim,
+        )
+        return self.engine.compute_psfs(positions, sed_data)
 
-        # Get the number of samples
-        n_samples = self.positions.shape[0]
+    def _ensure_psf_inference_completed(self):
+        if self.engine is None or self.engine.inferred_psfs is None:
+            self.run_inference()
+
+    def get_psfs(self):
+        self._ensure_psf_inference_completed()
+        return self.engine.get_psfs()
+
+    def get_psf(self, index):
+        self._ensure_psf_inference_completed()
+        return self.engine.get_psf(index)
+
+class PSFInferenceEngine:
+    def __init__(self, trained_model, batch_size: int, output_dim: int):
+        self.trained_model = trained_model
+        self.batch_size = batch_size
+        self.output_dim = output_dim
+        self._inferred_psfs = None
+
+    @property
+    def inferred_psfs(self) -> np.ndarray:
+        """Access the cached inferred PSFs, if available."""
+        return self._inferred_psfs
+
+    def compute_psfs(self, positions: tf.Tensor, sed_data: tf.Tensor) -> np.ndarray:
+        """Compute and cache PSFs for the input source parameters."""
+        n_samples = positions.shape[0]
+        self._inferred_psfs = np.zeros((n_samples, self.output_dim, self.output_dim), dtype=np.float32)
 
         # Initialize counter
         counter = 0
-        
-        # Initialize PSF array
-        self.inferred_psfs = np.zeros((n_samples, self.output_dim, self.output_dim))
-
         while counter < n_samples:
             # Calculate the batch end element
-            if counter + self.batch_size <= n_samples:
-                end_sample = counter + self.batch_size
-            else:
-                end_sample = n_samples
+            end = min(counter + self.batch_size, n_samples)
 
             # Define the batch positions
-            batch_pos = self.positions[counter:end_sample, :]
-            batch_seds = self.sed_data[counter:end_sample, :, :]
-
-            # Generate PSFs for the current batch
+            batch_pos = positions[counter:end_sample, :]
+            batch_seds = sed_data[counter:end_sample, :, :]
             batch_inputs = [batch_pos, batch_seds]
-            batch_poly_psfs = self.trained_psf_model(batch_inputs, training=False)
-
-            # Append to the PSF array
-            self.inferred_psfs[counter:end_sample, :, :] = batch_poly_psfs.numpy()
+            
+            # Generate PSFs for the current batch
+            batch_psfs = self.trained_model(batch_inputs, training=False)
+            self.inferred_psfs[counter:end, :, :] = batch_psfs.numpy()
 
             # Update the counter
-            counter += self.batch_size
+            counter = end
+        
+        return self._inferred_psfs
 
     def get_psfs(self) -> np.ndarray:
-        """Get all the generated PSFs.
+        """Get all the generated PSFs."""
+        if self._inferred_psfs is None:
+            raise ValueError("PSFs not yet computed. Call compute_psfs() first.")
+        return self._inferred_psfs
 
-        Returns
-        -------
-        np.ndarray
-            The generated PSFs for the input source parameters.
-            Shape is (n_samples, output_dim, output_dim).
-        """
-        if self.inferred_psfs is None:
-            self.compute_psfs()
-        return self.inferred_psfs
+    def get_psf(self, index: int) -> np.ndarray:
+        """Get the PSF at a specific index."""
+        if self._inferred_psfs is None:
+            raise ValueError("PSFs not yet computed. Call compute_psfs() first.")
+        return self._inferred_psfs[index]
 
-    def get_psf(self, index) -> np.ndarray:
-        """Generate the generated PSF at a specific index.
 
-        Returns
-        -------
-        np.ndarray
-            The generated PSFs for the input source parameters.
-            Shape is (output_dim, output_dim).
-        """
-        if self.inferred_psfs is None:
-            self.compute_psfs()
-        return self.inferred_psfs[index]
