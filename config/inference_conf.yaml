@@ -8,16 +8,16 @@ inference:
   # Paths to the configuration files and trained model directory
   configs:
     # Path to the directory containing the trained model
-    training_config_path: models/
+    trained_model_path: /path/to/trained/model/
 
-    # Subdirectory name of the trained model
-    model_subdir: models
+    # Subdirectory name of the trained model, e.g. psf_model
+    model_subdir: model
   
-    # Path to the training configuration file used to train the model
-    trained_model_path: config/training_config.yaml
+    # Relative Path to the training configuration file used to train the model
+    trained_model_config_path: config/training_config.yaml
 
     # Path to the data config file (this could contain prior information)
-    data_conf_path: 
+    data_config_path: 
 
   # The following parameters will overwrite the `model_params` in the training config file.
   model_params:
