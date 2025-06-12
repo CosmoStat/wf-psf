@@ -36,7 +36,7 @@ class InferenceConfigHandler:
 
         if self.data_config_path is not None:
             # Load the data configuration
-            self.data_conf = read_conf(self.data_config_path)
+            self.data_config = read_conf(self.data_config_path)
 
 
     def set_config_paths(self):
