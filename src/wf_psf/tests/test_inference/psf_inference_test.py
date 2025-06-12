@@ -179,17 +179,15 @@ def test_batch_size_positive():
     assert inference.batch_size == 4
 
 
-@patch.object(PSFInference, 'prepare_configs')
 @patch('wf_psf.inference.psf_inference.load_trained_psf_model')
-def test_load_inference_model(mock_load_trained_psf_model, mock_prepare_configs, mock_training_config, mock_inference_config):
+def test_load_inference_model(mock_load_trained_psf_model, mock_training_config, mock_inference_config):
 
-    data_config = MagicMock()
     mock_config_handler = MagicMock(spec=InferenceConfigHandler)
     mock_config_handler.trained_model_path = "mock/path/to/model"
     mock_config_handler.training_config = mock_training_config
     mock_config_handler.inference_config = mock_inference_config
     mock_config_handler.model_subdir = "psf_model"
-    mock_config_handler.data_config = data_config
+    mock_config_handler.data_config = MagicMock()
   
     psf_inf = PSFInference("dummy_path.yaml")
     psf_inf._config_handler = mock_config_handler
@@ -203,17 +201,16 @@ def test_load_inference_model(mock_load_trained_psf_model, mock_prepare_configs,
         )
 
     # Assert calls to the mocked methods
-    mock_prepare_configs.assert_called_once()
     mock_load_trained_psf_model.assert_called_once_with(
         mock_config_handler.training_config,
         mock_config_handler.data_config,
         weights_path_pattern
     )
 
-
+@patch.object(PSFInference, 'prepare_configs')
 @patch.object(PSFInference, '_prepare_positions_and_seds')
 @patch.object(PSFInferenceEngine, 'compute_psfs')
-def test_run_inference(mock_compute_psfs, mock_prepare_positions_and_seds, psf_test_setup):
+def test_run_inference(mock_compute_psfs, mock_prepare_positions_and_seds, mock_prepare_configs,  psf_test_setup):
     inference = psf_test_setup["inference"]
     mock_positions = psf_test_setup["mock_positions"]
     mock_seds = psf_test_setup["mock_seds"]
@@ -228,6 +225,42 @@ def test_run_inference(mock_compute_psfs, mock_prepare_positions_and_seds, psf_t
     assert psfs.shape == expected_psfs.shape
     mock_prepare_positions_and_seds.assert_called_once()
     mock_compute_psfs.assert_called_once_with(mock_positions, mock_seds)
+    mock_prepare_configs.assert_called_once()
+
+@patch("wf_psf.inference.psf_inference.psf_models.simPSF")
+def test_simpsf_uses_updated_model_params(mock_simpsf, mock_training_config, mock_inference_config):
+    """Test that simPSF uses the updated model parameters."""
+    training_config = mock_training_config
+    inference_config = mock_inference_config
+
+    # Set the expected output_Q
+    expected_output_Q = inference_config.inference.model_params.output_Q
+    training_config.training.model_params.output_Q = expected_output_Q
+
+    # Create fake psf instance
+    fake_psf_instance = MagicMock()
+    fake_psf_instance.output_Q = expected_output_Q
+    mock_simpsf.return_value = fake_psf_instance
+
+    mock_config_handler = MagicMock(spec=InferenceConfigHandler)
+    mock_config_handler.trained_model_path = "mock/path/to/model"
+    mock_config_handler.training_config = training_config
+    mock_config_handler.inference_config = inference_config
+    mock_config_handler.model_subdir = "psf_model"
+    mock_config_handler.data_config = MagicMock()
+  
+    modeller = PSFInference("dummy_path.yaml")
+    modeller._config_handler = mock_config_handler
+
+    modeller.prepare_configs()
+    result = modeller.simPSF
+
+    # Confirm simPSF was called once with the updated model_params
+    mock_simpsf.assert_called_once()
+    called_args, _ = mock_simpsf.call_args
+    model_params_passed = called_args[0]
+    assert model_params_passed.output_Q == expected_output_Q
+    assert result.output_Q == expected_output_Q
 
 
 @patch.object(PSFInference, '_prepare_positions_and_seds')
