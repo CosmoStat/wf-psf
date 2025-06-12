@@ -147,7 +147,7 @@ class PSFInference:
     @property
     def simPSF(self):
         if self._simPSF is None:
-            self._simPSF = psf_models.simPSF(self.model_params)
+            self._simPSF = psf_models.simPSF(self.training_config.training.model_params)
         return self._simPSF
 
     @property
@@ -171,9 +171,7 @@ class PSFInference:
         return self._trained_psf_model
 
     def load_inference_model(self):
-        # Prepare the configuration for inference
-        self.prepare_configs()
-        
+        """Load the trained PSF model based on the inference configuration.""" 
         model_path = self.config_handler.trained_model_path
         model_dir = self.config_handler.model_subdir
         model_name = self.training_config.training.model_params.model_name
@@ -228,6 +226,10 @@ class PSFInference:
 
     def run_inference(self):
         """Run PSF inference and return the full PSF array."""
+        # Prepare the configuration for inference
+        self.prepare_configs()
+
+        # Prepare positions and SEDs for inference
         positions, sed_data = self._prepare_positions_and_seds()
 
         self.engine = PSFInferenceEngine(
