@@ -25,8 +25,8 @@ def load_trained_psf_model(training_conf, data_conf, weights_path_pattern):
     training_conf : RecursiveNamespace
         Configuration object containing model parameters and training hyperparameters.
         Supports attribute-style access to nested fields.
-    data_conf : RecursiveNamespace
-        Configuration object containing data-related parameters.
+    data_conf : RecursiveNamespace or dict
+        Configuration RecursiveNamespace object or a dictionary containing data parameters (e.g. pixel data, positions, masks, etc).
     weights_path_pattern : str
         Glob-style pattern used to locate the model weights file.
 
