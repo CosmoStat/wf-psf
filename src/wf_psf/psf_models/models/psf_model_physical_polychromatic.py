@@ -218,6 +218,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
             interpolation_type=self.model_params.interpolation_type,
             interpolation_args=self.model_params.interpolation_args,
         )
+        return self._tf_physical_layer
             
     @property
     def tf_zernike_OPD(self):
