@@ -162,6 +162,7 @@ class PSFInference:
                 load_data=False,
                 dataset=None,
             )
+            self._data_handler.run_type = "inference"
         return self._data_handler
 
     @property
@@ -272,7 +273,7 @@ class PSFInferenceEngine:
         counter = 0
         while counter < n_samples:
             # Calculate the batch end element
-            end = min(counter + self.batch_size, n_samples)
+            end_sample = min(counter + self.batch_size, n_samples)
 
             # Define the batch positions
             batch_pos = positions[counter:end_sample, :]
@@ -281,10 +282,10 @@ class PSFInferenceEngine:
             
             # Generate PSFs for the current batch
             batch_psfs = self.trained_model(batch_inputs, training=False)
-            self.inferred_psfs[counter:end, :, :] = batch_psfs.numpy()
+            self.inferred_psfs[counter:end_sample, :, :] = batch_psfs.numpy()
 
             # Update the counter
-            counter = end
+            counter = end_sample
         
         return self._inferred_psfs
 
