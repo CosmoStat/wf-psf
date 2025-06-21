@@ -57,8 +57,8 @@ class ZernikeInputsFactory:
             centroid_dataset = data  # Assuming data is a DataConfigHandler or similar object containing train and test datasets
             positions = np.concatenate(
                 [
-                    data.training_dataset["positions"],
-                    data.test_dataset["positions"]
+                    data.training_data.dataset["positions"],
+                    data.test_data.dataset["positions"]
                 ],
                 axis=0,
             )
