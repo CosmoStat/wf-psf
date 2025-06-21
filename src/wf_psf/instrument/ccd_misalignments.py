@@ -13,22 +13,23 @@ from scipy.spatial import KDTree
 from wf_psf.data.data_handler import get_np_obs_positions
 
 
-def compute_ccd_misalignment(model_params, data):
+def compute_ccd_misalignment(model_params, positions: np.ndarray) -> np.ndarray:
     """Compute CCD misalignment.
 
     Parameters
     ----------
     model_params : RecursiveNamespace
         Object containing parameters for this PSF model class.
-    data : DataConfigHandler
-        Object containing training and test datasets.
+    positions : np.ndarray
+        Numpy array containing the positions of the stars in the focal plane.
+        Shape: (n_stars, 2), where n_stars is the number of stars and 2 corresponds to x and y coordinates.
 
     Returns
     -------
     zernike_ccd_misalignment_array : np.ndarray
         Numpy array containing the Zernike contributions to model the CCD chip misalignments.
     """
-    obs_positions = get_np_obs_positions(data)
+    obs_positions = positions
 
     ccd_misalignment_calculator = CCDMisalignmentCalculator(
         tiles_path=model_params.ccd_misalignments_input_path,
