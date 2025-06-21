@@ -11,7 +11,7 @@ from typing import Optional
 import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
 from wf_psf.data.data_handler import get_obs_positions
-from wf_psf.data.data_zernike_utils import get_zernike_prior
+from wf_psf.data.data_zernike_utils import ZernikeInputsFactory, assemble_zernike_contributions
 from wf_psf.psf_models import psf_models as psfm
 from wf_psf.psf_models.tf_modules.tf_layers import (
     TFPolynomialZernikeField,
@@ -98,8 +98,8 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
             A Recursive Namespace object containing parameters for this PSF model class.
         training_params: Recursive Namespace
             A Recursive Namespace object containing training hyperparameters for this PSF model class.
-        data: DataConfigHandler
-            A DataConfigHandler object that provides access to training and test datasets, as well as prior knowledge like Zernike coefficients.
+        data: DataConfigHandler or dict
+            A DataConfigHandler object or dict that provides access to single or multiple datasets (e.g. train and test), as well as prior knowledge like Zernike coefficients.
         coeff_mat: Tensor or None, optional
             Coefficient matrix defining the parametric PSF field model.
 
@@ -109,204 +109,151 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
             Initialized instance of the TFPhysicalPolychromaticField class.
         """
         super().__init__(model_params, training_params, coeff_mat)
-        self._initialize_parameters_and_layers(
-            model_params, training_params, data, coeff_mat
-        )
+        self.model_params = model_params
+        self.training_params = training_params
+        self.data = data
+        self.run_type = data.run_type
 
-    def _initialize_parameters_and_layers(
-        self,
-        model_params: RecursiveNamespace,
-        training_params: RecursiveNamespace,
-        data: DataConfigHandler,
-        coeff_mat: Optional[tf.Tensor] = None,
-    ):
-        """Initialize Parameters of the PSF model.
-
-        This method sets up the PSF model parameters, observational positions,
-        Zernike coefficients, and components required for the automatically
-        differentiable optical forward model.
-
-        Parameters
-        ----------
-        model_params: Recursive Namespace
-            A Recursive Namespace object containing parameters for this PSF model class.
-        training_params: Recursive Namespace
-            A Recursive Namespace object containing training hyperparameters for this PSF model class.
-        data: DataConfigHandler object
-            A DataConfigHandler object providing access to training and tests datasets, as well as prior knowledge like Zernike coefficients.
-        coeff_mat: Tensor or None, optional
-            Initialization of the coefficient matrix defining the parametric psf field model.
-
-        Notes
-        -----
-        - Initializes Zernike parameters based on dataset priors.
-        - Configures the PSF model layers according to `model_params`.
-        - If `coeff_mat` is provided, the model coefficients are updated accordingly.
-        """
+        # Initialize the model parameters and layers
         self.output_Q = model_params.output_Q
-        self.obs_pos = get_obs_positions(data)
         self.l2_param = model_params.param_hparams.l2_param
-        # Inputs: Save optimiser history Parametric model features
-        self.save_optim_history_param = (
-            model_params.param_hparams.save_optim_history_param
-        )
-        # Inputs: Save optimiser history NonParameteric model features
-        self.save_optim_history_nonparam = (
-            model_params.nonparam_hparams.save_optim_history_nonparam
-        )
-        self._initialize_zernike_parameters(model_params, data)
-        self._initialize_layers(model_params, training_params)
+        self.output_dim = model_params.output_dim
+
+        # Initialise lazy loading of external Zernike prior
+        self._external_prior = None
 
         # Initialize the model parameters with non-default value
         if coeff_mat is not None:
             self.assign_coeff_matrix(coeff_mat)
 
-    def _initialize_zernike_parameters(self, model_params, data):
-        """Initialize the Zernike parameters.
-
-        Parameters
-        ----------
-        model_params: Recursive Namespace
-            A Recursive Namespace object containing parameters for this PSF model class.
-        data: DataConfigHandler object
-            A DataConfigHandler object providing access to training and tests datasets, as well as prior knowledge like Zernike coefficients.
-        """
-        self.zks_prior = get_zernike_prior(model_params, data, data.batch_size)
-        self.n_zks_total = max(
-            model_params.param_hparams.n_zernikes,
-            tf.cast(tf.shape(self.zks_prior)[1], tf.int32),
+    def _assemble_zernike_contributions(self):
+        zks_inputs = ZernikeInputsFactory.build(
+            data=self.data,
+            run_type=self.run_type,
+            model_params=self.model_params,
+            prior=self._external_prior if hasattr(self, "_external_prior") else None,
         )
-        self.zernike_maps = psfm.generate_zernike_maps_3d(
-            self.n_zks_total, model_params.pupil_diameter
+        return assemble_zernike_contributions(
+            model_params=self.model_params,
+            zernike_prior=zks_inputs.zernike_prior,
+            centroid_dataset=zks_inputs.centroid_dataset,
+            positions=zks_inputs.misalignment_positions,
+            batch_size=self.training_params.batch_size,
         )
 
-    def _initialize_layers(self, model_params, training_params):
-        """Initialize the layers of the PSF model.
+    @property
+    def save_param_history(self) -> bool:
+        """Check if the model should save the optimization history for parametric features."""
+        return getattr(self.model_params.param_hparams, "save_optim_history_param", False)
+    
+    @property
+    def save_nonparam_history(self) -> bool:
+        """Check if the model should save the optimization history for non-parametric features."""
+        return getattr(self.model_params.nonparam_hparams, "save_optim_history_nonparam", False)
+    
 
-        This method initializes the layers of the PSF model, including the physical layer, polynomial Zernike field, batch polychromatic layer, and non-parametric OPD layer.
+    # === Lazy properties ===.
+    @property
+    def obs_pos(self):
+        """Lazy loading of the observation positions."""
+        if not hasattr(self, "_obs_pos"):
+            if self.run_type == "training" or self.run_type == "simulation":
+                # Get the observation positions from the data handler
+                self._obs_pos = get_obs_positions(self.data)
+            elif self.run_type == "inference":
+                # For inference, we might not have a data handler, so we use the model parameters
+                self._obs_pos = self.data.dataset["positions"]
+        return self._obs_pos
 
-        Parameters
-        ----------
-        model_params: Recursive Namespace
-            A Recursive Namespace object containing parameters for this PSF model class.
-        training_params: Recursive Namespace
-            A Recursive Namespace object containing training hyperparameters for this PSF model class.
-        coeff_mat: Tensor or None, optional
-            Initialization of the coefficient matrix defining the parametric psf field model.
+    @property
+    def zks_total_contribution(self):
+        """Lazily load all Zernike contributions, including prior and corrections."""
+        if not hasattr(self, "_zks_total_contribution"):
+            self._zks_total_contribution = self._assemble_zernike_contributions()
+        return self._zks_total_contribution
+        
+    @property
+    def n_zks_total(self):
+        """Get the total number of Zernike coefficients."""
+        if not hasattr(self, "_n_zks_total"):
+            self._n_zks_total = max(
+            self.model_params.param_hparams.n_zernikes,
+            tf.cast(tf.shape(self.zks_total_contribution)[1], tf.int32),
+        )
+        return self._n_zks_total
 
-        """
-        self._initialize_physical_layer(model_params)
-        self._initialize_polynomial_Z_field(model_params)
-        self._initialize_Zernike_OPD(model_params)
-        self._initialize_batch_polychromatic_layer(model_params, training_params)
-        self._initialize_nonparametric_opd_layer(model_params, training_params)
+    @property
+    def zernike_maps(self):
+        """Lazy loading of the Zernike maps."""
+        if not hasattr(self, "_zernike_maps"):
+            self._zernike_maps = psfm.generate_zernike_maps_3d(
+            self.n_zks_total, self.model_params.pupil_diameter
+        )
+        return self._zernike_maps
+            
+    @property
+    def tf_poly_Z_field(self):
+        """Lazy loading of the polynomial Zernike field layer."""
+        if not hasattr(self, "_tf_poly_Z_field"):
+            self._tf_poly_Z_field = TFPolynomialZernikeField(
+                x_lims=self.model_params.x_lims,
+                y_lims=self.model_params.y_lims,
+                random_seed=self.model_params.param_hparams.random_seed,
+                n_zernikes=self.model_params.param_hparams.n_zernikes,
+                d_max=self.model_params.param_hparams.d_max,
+            )
+        return self._tf_poly_Z_field
 
-    def _initialize_physical_layer(self, model_params):
-        """Initialize the physical layer of the PSF model.
+    @tf_poly_Z_field.deleter
+    def tf_poly_Z_field(self):
+        del self._tf_poly_Z_field
 
-        This method initializes the physical layer of the PSF model using parameters
-        specified in the `model_params` object.
-
-        Parameters
-        ----------
-        model_params: Recursive Namespace
-            A Recursive Namespace object containing parameters for this PSF model class.
-        """
-        self.tf_physical_layer = TFPhysicalLayer(
+    @property
+    def tf_physical_layer(self):
+        """Lazy loading of the physical layer of the PSF model."""
+        if not hasattr(self, "_tf_physical_layer"):
+            self._tf_physical_layer = TFPhysicalLayer(
             self.obs_pos,
-            self.zks_prior,
-            interpolation_type=model_params.interpolation_type,
-            interpolation_args=model_params.interpolation_args,
+            self.zks_total_contribution,
+            interpolation_type=self.model_params.interpolation_type,
+            interpolation_args=self.model_params.interpolation_args,
         )
+            
+    @property
+    def tf_zernike_OPD(self):
+        """Lazy loading of the Zernike Optical Path Difference (OPD) layer."""
+        if not hasattr(self, "_tf_zernike_OPD"):
+            self._tf_zernike_OPD = TFZernikeOPD(zernike_maps=self.zernike_maps)
+        return self._tf_zernike_OPD
+    
+    @property
+    def tf_batch_poly_PSF(self):
+        """Lazily initialize the batch polychromatic PSF layer."""
+        if not hasattr(self, "_tf_batch_poly_PSF"):
+            obscurations = psfm.tf_obscurations(
+                pupil_diam=self.model_params.pupil_diameter,
+                N_filter=self.model_params.LP_filter_length,
+                rotation_angle=self.model_params.obscuration_rotation_angle,
+            )
 
-    def _initialize_polynomial_Z_field(self, model_params):
-        """Initialize the polynomial Zernike field of the PSF model.
+            self._tf_batch_poly_PSF = TFBatchPolychromaticPSF(
+                obscurations=obscurations,
+                output_Q=self.output_Q,
+                output_dim=self.output_dim,
+            )
+        return self._tf_batch_poly_PSF
 
-        This method initializes the polynomial Zernike field of the PSF model using
-        parameters specified in the `model_params` object.
-
-        Parameters
-        ----------
-        model_params: Recursive Namespace
-            A Recursive Namespace object containing parameters for this PSF model class.
-
-        """
-        self.tf_poly_Z_field = TFPolynomialZernikeField(
-            x_lims=model_params.x_lims,
-            y_lims=model_params.y_lims,
-            random_seed=model_params.param_hparams.random_seed,
-            n_zernikes=model_params.param_hparams.n_zernikes,
-            d_max=model_params.param_hparams.d_max,
-        )
-
-    def _initialize_Zernike_OPD(self, model_params):
-        """Initialize the Zernike OPD field of the PSF model.
-
-        This method initializes the Zernike Optical Path Difference
-        field of the PSF model using parameters specified in the `model_params` object.
-
-        Parameters
-        ----------
-        model_params: Recursive Namespace
-            A Recursive Namespace object containing parameters for this PSF model class.
-
-        """
-        # Initialize the zernike to OPD layer
-        self.tf_zernike_OPD = TFZernikeOPD(zernike_maps=self.zernike_maps)
-
-    def _initialize_batch_polychromatic_layer(self, model_params, training_params):
-        """Initialize the batch polychromatic PSF layer.
-
-        This method initializes the batch opd to batch polychromatic PSF layer
-        using the provided `model_params` and `training_params`.
-
-        Parameters
-        ----------
-        model_params: Recursive Namespace
-            A Recursive Namespace object containing parameters for this PSF model class.
-        training_params: Recursive Namespace
-            A Recursive Namespace object containing training hyperparameters for this PSF model class.
-
-
-        """
-        self.batch_size = training_params.batch_size
-        self.obscurations = psfm.tf_obscurations(
-            pupil_diam=model_params.pupil_diameter,
-            N_filter=model_params.LP_filter_length,
-            rotation_angle=model_params.obscuration_rotation_angle,
-        )
-        self.output_dim = model_params.output_dim
-
-        self.tf_batch_poly_PSF = TFBatchPolychromaticPSF(
-            obscurations=self.obscurations,
-            output_Q=self.output_Q,
-            output_dim=self.output_dim,
-        )
-
-    def _initialize_nonparametric_opd_layer(self, model_params, training_params):
-        """Initialize the non-parametric OPD layer.
-
-        This method initializes the non-parametric OPD layer using the provided
-        `model_params` and `training_params`.
-
-        Parameters
-        ----------
-        model_params: Recursive Namespace
-            A Recursive Namespace object containing parameters for this PSF model class.
-        training_params: Recursive Namespace
-            A Recursive Namespace object containing training hyperparameters for this PSF model class.
-
-        """
-        # self.d_max_nonparam = model_params.nonparam_hparams.d_max_nonparam
-        # self.opd_dim = tf.shape(self.zernike_maps)[1].numpy()
-
-        self.tf_np_poly_opd = TFNonParametricPolynomialVariationsOPD(
-            x_lims=model_params.x_lims,
-            y_lims=model_params.y_lims,
-            random_seed=model_params.param_hparams.random_seed,
-            d_max=model_params.nonparam_hparams.d_max_nonparam,
-            opd_dim=tf.shape(self.zernike_maps)[1].numpy(),
-        )
+    @property
+    def tf_np_poly_opd(self):
+        """Lazy loading of the non-parametric polynomial variations OPD layer."""
+        if not hasattr(self, "_tf_np_poly_opd"):
+            self._tf_np_poly_opd = TFNonParametricPolynomialVariationsOPD(
+                    x_lims=self.model_params.x_lims,
+                    y_lims=self.model_params.y_lims,
+                    d_max=self.model_params.nonparam_hparams.d_max_nonparam,
+                    opd_dim=tf.shape(self.zernike_maps)[1].numpy(),
+                )
+        return self._tf_np_poly_opd
 
     def get_coeff_matrix(self):
         """Get coefficient matrix."""
@@ -331,23 +278,21 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         """
         self.tf_poly_Z_field.assign_coeff_matrix(coeff_mat)
 
+
     def set_output_Q(self, output_Q: float, output_dim: Optional[int] = None) -> None:
         """Set the output sampling rate (output_Q) for PSF generation.
 
         This method updates the `output_Q` parameter, which defines the
         resampling factor for generating PSFs at different resolutions
-        relative to the telescope's native sampling. It also allows optionally
-        updating `output_dim`, which sets the output resolution of the PSF model.
+        relative to the telescope's native sampling. It also allows optionally updating `output_dim`, which sets the output resolution of the PSF model.
 
         If `output_dim` is provided, the PSF model's output resolution is updated.
-        The method then reinitializes the batch polychromatic PSF generator
-        to reflect the updated parameters.
+        The method then reinitializes the batch polychromatic PSF generator to reflect the updated parameters.
 
         Parameters
         ----------
         output_Q : float
-            The resampling factor that determines the output PSF resolution
-            relative to the telescope's native sampling.
+            The resampling factor that determines the output PSF resolution relative to the telescope's native sampling.
         output_dim : Optional[int], default=None
             The new output dimension for the PSF model. If `None`, the output
             dimension remains unchanged.
@@ -359,6 +304,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         self.output_Q = output_Q
         if output_dim is not None:
             self.output_dim = output_dim
+
         # Reinitialize the PSF batch poly generator
         self.tf_batch_poly_PSF = TFBatchPolychromaticPSF(
             obscurations=self.obscurations,
@@ -472,12 +418,16 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
 
         # Compute zernikes from parametric model and physical layer
         zks_coeffs = self.predict_zernikes(input_positions)
+        
         # Propagate to obtain the OPD
         param_opd_maps = self.tf_zernike_OPD(zks_coeffs)
+        
         # Calculate the non parametric part
         nonparam_opd_maps = self.tf_np_poly_opd(input_positions)
+        
         # Add the estimations
         opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
+        
         # Compute the polychromatic PSFs
         poly_psfs = self.tf_batch_poly_PSF([opd_maps, packed_SEDs])
 
@@ -520,10 +470,13 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
 
         # Predict zernikes from parametric model and physical layer
         zks_coeffs = self.predict_zernikes(input_positions)
+       
         # Propagate to obtain the OPD
         param_opd_maps = self.tf_zernike_OPD(zks_coeffs)
+       
         # Calculate the non parametric part
         nonparam_opd_maps = self.tf_np_poly_opd(input_positions)
+       
         # Add the estimations
         opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
 
@@ -548,10 +501,13 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         """
         # Predict zernikes from parametric model and physical layer
         zks_coeffs = self.predict_zernikes(input_positions)
+        
         # Propagate to obtain the OPD
         param_opd_maps = self.tf_zernike_OPD(zks_coeffs)
+        
         # Calculate the non parametric part
         nonparam_opd_maps = self.tf_np_poly_opd(input_positions)
+        
         # Add the estimations
         opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
 
@@ -589,6 +545,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         padded_zernike_params, padded_zernike_prior = self.pad_zernikes(
             zernike_params, zernike_prior
         )
+
         zernike_coeffs = tf.math.add(padded_zernike_params, padded_zernike_prior)
 
         return zernike_coeffs
@@ -685,7 +642,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         packed_SEDs = inputs[1]
 
         # For the training
-        if training:
+        if training: 
             # Compute zernikes from parametric model and physical layer
             zks_coeffs = self.compute_zernikes(input_positions)
 
