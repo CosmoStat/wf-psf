@@ -15,6 +15,8 @@ from dataclasses import dataclass
 from typing import Optional, Union
 import numpy as np
 import tensorflow as tf
+from wf_psf.data.centroids import compute_centroid_correction
+from wf_psf.instrument.ccd_misalignments import compute_ccd_misalignment
 from wf_psf.utils.read_config import RecursiveNamespace
 import logging
 
@@ -26,7 +28,6 @@ class ZernikeInputs:
     zernike_prior: Optional[np.ndarray]  # true prior, if provided (e.g. from PDC)
     centroid_dataset: Optional[Union[dict, 'RecursiveNamespace']]   # only used in training/simulation
     misalignment_positions: Optional[np.ndarray]  # needed for CCD corrections
-    batch_size: int
 
 
 class ZernikeInputsFactory:
@@ -89,8 +90,7 @@ class ZernikeInputsFactory:
         return ZernikeInputs(
             zernike_prior=prior,
             centroid_dataset=centroid_dataset,
-            misalignment_positions=positions,
-            batch_size=model_params.batch_size,
+            misalignment_positions=positions
         )
 
 
@@ -133,6 +133,8 @@ def combine_zernike_contributions(contributions: list[np.ndarray]) -> np.ndarray
 
     max_order = max(contrib.shape[1] for contrib in contributions)
     n_samples = contributions[0].shape[0]
+    if any(c.shape[0] != n_samples for c in contributions):
+        raise ValueError("All contributions must have the same number of samples.")
 
     combined = np.zeros((n_samples, max_order), dtype=np.float32)
     for contrib in contributions:
