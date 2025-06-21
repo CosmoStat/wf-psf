@@ -188,6 +188,7 @@ class TrainingConfigHandler:
             self.training_conf.training.training_hparams.batch_size,
             self.training_conf.training.load_data_on_init,
         )
+        self.data_conf.run_type = "training"
         self.file_handler.copy_conffile_to_output_dir(
             self.training_conf.training.data_config
         )
