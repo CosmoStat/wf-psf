@@ -142,6 +142,23 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
             zks_total_contribution_np.shape[1],
         )
 
+    @property
+    def tf_zernike_OPD(self):
+        """Lazy loading of the Zernike Optical Path Difference (OPD) layer."""
+        if not hasattr(self, "_tf_zernike_OPD"):
+            self._tf_zernike_OPD = TFZernikeOPD(zernike_maps=self.zernike_maps)
+        return self._tf_zernike_OPD
+
+    @property
+    def tf_batch_poly_PSF(self):
+        """Lazily initialize the batch polychromatic PSF layer."""
+        if not hasattr(self, "_tf_batch_poly_PSF"):
+            obscurations = psfm.tf_obscurations(
+                pupil_diam=self.model_params.pupil_diameter,
+                N_filter=self.model_params.LP_filter_length,
+                rotation_angle=self.model_params.obscuration_rotation_angle,
+            )
+
         # Precompute zernike maps as tf.float32
         self._zernike_maps = psfm.generate_zernike_maps_3d(
             n_zernikes=self._n_zks_total, pupil_diam=self.model_params.pupil_diameter
