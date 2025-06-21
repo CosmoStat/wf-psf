@@ -10,7 +10,6 @@ import numpy as np
 import scipy.signal as scisig
 from wf_psf.data.data_handler import extract_star_data
 from fractions import Fraction
-from wf_psf.data.data_zernike_utils import shift_x_y_to_zk1_2_wavediff
 import tensorflow as tf
 from typing import Optional
 
@@ -127,6 +126,7 @@ def compute_zernike_tip_tilt(
     - This function processes all images at once using vectorized operations.
     - The Zernike coefficients are computed in the WaveDiff convention.
     """
+    from wf_psf.data.data_zernike_utils import shift_x_y_to_zk1_2_wavediff
     # Vectorize the centroid computation
     centroid_estimator = CentroidEstimator(
                             im=star_images,

@@ -10,7 +10,7 @@ from typing import Union
 import numpy as np
 import matplotlib.path as mpltPath
 from scipy.spatial import KDTree
-from wf_psf.data.data_preprocessing import defocus_to_zk4_wavediff
+from wf_psf.data.data_handler import get_np_obs_positions
 
 
 def compute_ccd_misalignment(model_params, data):
@@ -383,6 +383,7 @@ class CCDMisalignmentCalculator:
             Zernike 4 value in wavediff convention corresponding to
             the delta z of the given input position `pos`.
         """
+        from wf_psf.data.data_zernike_utils import defocus_to_zk4_wavediff
 
         dz = self.get_dz_from_position(pos)
 
