@@ -15,6 +15,7 @@ Authors: Jennifer Pollack <jennifer.pollack@cea.fr>, Tobias Liaudat <tobiasliaud
 import os
 import numpy as np
 import wf_psf.utils.utils as utils
+from wf_psf.psf_models.tf_modules.tf_utils import ensure_tensor
 import tensorflow as tf
 from fractions import Fraction
 from typing import Optional, Union
@@ -137,6 +138,10 @@ class DataHandler:
             self.dataset = None
             self.sed_data = None
 
+    @property
+    def tf_positions(self):
+        return ensure_tensor(self.dataset["positions"])
+
     def load_dataset(self):
         """Load dataset.
 
@@ -232,7 +237,8 @@ class DataHandler:
             )
             for _sed in sed_data
         ]
-        self.sed_data = tf.convert_to_tensor(self.sed_data, dtype=tf.float32)
+        # Convert list of generated SED tensors to a single TensorFlow tensor of float32 dtype
+        self.sed_data = ensure_tensor(self.sed_data, dtype=tf.float32)
         self.sed_data = tf.transpose(self.sed_data, perm=[0, 2, 1])
 
 
@@ -266,24 +272,6 @@ def get_np_obs_positions(data):
     )
 
     return obs_positions
-
-
-def get_obs_positions(data):
-    """Get observed positions from the provided dataset.
-
-    Parameters
-    ----------
-    data : DataConfigHandler
-        Object containing training and test datasets.
-
-    Returns
-    -------
-    tf.Tensor
-        Tensor containing the observed positions of the stars.
-    """
-    obs_positions = get_np_obs_positions(data)
-
-    return tf.convert_to_tensor(obs_positions, dtype=tf.float32)
 
 
 def extract_star_data(data, train_key: str, test_key: str) -> np.ndarray:
