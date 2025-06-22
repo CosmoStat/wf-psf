@@ -17,9 +17,6 @@ import numpy as np
 import wf_psf.utils.utils as utils
 from wf_psf.psf_models.tf_modules.tf_utils import ensure_tensor
 import tensorflow as tf
-from typing import Optional, Union
-import numpy as np
-import tensorflow as tf
 from fractions import Fraction
 from typing import Optional, Union
 import logging
@@ -81,50 +78,46 @@ class DataHandler:
         sed_data: Optional[Union[dict, list]] = None,
     ):
         """
-                Initialize the DataHandler for PSF dataset preparation.
+        Initialize the DataHandler for PSF dataset preparation.
 
-                This constructor sets up the dataset handler used for PSF simulation tasks,
-                such as training, testing, or inference. It supports three modes of use:
+        This constructor sets up the dataset handler used for PSF simulation tasks,
+        such as training, testing, or inference. It supports three modes of use:
 
-                1. **Manual mode** (`load_data=False`, no `dataset`): data loading and SED processing
-                   must be triggered manually via `load_dataset()` and `process_sed_data()`.
-                2. **Pre-loaded dataset mode** (`dataset` is provided): the given dataset is used directly,
-                   and `process_sed_data()` is called with either the given `sed_data` or `dataset["SEDs"]`.
-                3. **Automatic loading mode** (`load_data=True` and no `dataset`): the dataset is loaded
-                   from disk using `data_params`, and SEDs are extracted and processed automatically.
+        1. **Manual mode** (`load_data=False`, no `dataset`): data loading and SED processing
+           must be triggered manually via `load_dataset()` and `process_sed_data()`.
+        2. **Pre-loaded dataset mode** (`dataset` is provided): the given dataset is used directly,
+           and `process_sed_data()` is called with either the given `sed_data` or `dataset["SEDs"]`.
+        3. **Automatic loading mode** (`load_data=True` and no `dataset`): the dataset is loaded
+           from disk using `data_params`, and SEDs are extracted and processed automatically.
 
-                Parameters
-                ----------
-                dataset_type : str
-                    One of {"train", "test", "inference"} indicating dataset usage.
-                data_params : RecursiveNamespace
-                    Configuration object with paths, preprocessing options, and metadata.
-                simPSF : PSFSimulator
-                    Used to convert SEDs to TensorFlow format.
-                n_bins_lambda : int
-                    Number of wavelength bins for the SEDs.
-                load_data : bool, optional
-                    Whether to automatically load and process the dataset (default: True).
-                dataset : dict or list, optional
-                    A pre-loaded dataset to use directly (overrides `load_data`).
-                sed_data : array-like, optional
-        <<<<<<< HEAD
-                    Pre-loaded SED data to use directly. If not provided but `dataset` is,
-        =======
-                    Pre-loaded SED data to use directly. If not provided but `dataset` is,
-        >>>>>>> 4b896e3 (Refactor data_handler with new utility functions to validate and process datasets and update docstrings)
-                    SEDs are taken from `dataset["SEDs"]`.
+        Parameters
+        ----------
+        dataset_type : str
+            One of {"train", "test", "inference"} indicating dataset usage.
+        data_params : RecursiveNamespace
+            Configuration object with paths, preprocessing options, and metadata.
+        simPSF : PSFSimulator
+            Used to convert SEDs to TensorFlow format.
+        n_bins_lambda : int
+            Number of wavelength bins for the SEDs.
+        load_data : bool, optional
+            Whether to automatically load and process the dataset (default: True).
+        dataset : dict or list, optional
+            A pre-loaded dataset to use directly (overrides `load_data`).
+        sed_data : array-like, optional
+            Pre-loaded SED data to use directly. If not provided but `dataset` is,
+            SEDs are taken from `dataset["SEDs"]`.
 
-                Raises
-                ------
-                ValueError
-                    If SEDs cannot be found in either `dataset` or as `sed_data`.
+        Raises
+        ------
+        ValueError
+            If SEDs cannot be found in either `dataset` or as `sed_data`.
 
-                Notes
-                -----
-                - `self.dataset` and `self.sed_data` are both `None` if neither `dataset` nor
-                  `load_data=True` is used.
-                - TensorFlow conversion is performed at the end of initialization via `convert_dataset_to_tensorflow()`.
+        Notes
+        -----
+        - `self.dataset` and `self.sed_data` are both `None` if neither `dataset` nor
+          `load_data=True` is used.
+        - TensorFlow conversion is performed at the end of initialization via `convert_dataset_to_tensorflow()`.
         """
 
         self.dataset_type = dataset_type
