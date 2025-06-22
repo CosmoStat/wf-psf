@@ -10,7 +10,7 @@ to manage the parameters of the psf physical polychromatic model.
 from typing import Optional
 import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
-from wf_psf.data.data_handler import get_obs_positions
+from wf_psf.data.data_handler import get_np_obs_positions
 from wf_psf.data.data_zernike_utils import ZernikeInputsFactory, assemble_zernike_contributions
 from wf_psf.psf_models import psf_models as psfm
 from wf_psf.psf_models.tf_modules.tf_layers import (
@@ -21,6 +21,7 @@ from wf_psf.psf_models.tf_modules.tf_layers import (
     TFNonParametricPolynomialVariationsOPD,
     TFPhysicalLayer,
 )
+from wf_psf.psf_models.tf_modules.tf_utils import ensure_tensor
 from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.utils.configs_handler import DataConfigHandler
 import logging
@@ -112,7 +113,8 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         self.model_params = model_params
         self.training_params = training_params
         self.data = data
-        self.run_type = data.run_type
+        self.run_type = self._get_run_type(data)
+        self.obs_pos = self.get_obs_pos()
 
         # Initialize the model parameters and layers
         self.output_Q = model_params.output_Q
@@ -125,6 +127,22 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         # Initialize the model parameters with non-default value
         if coeff_mat is not None:
             self.assign_coeff_matrix(coeff_mat)
+
+        # Eagerly initialise tf_batch_poly_PSF
+        self.tf_batch_poly_PSF = self._build_tf_batch_poly_PSF()
+
+
+    def _get_run_type(self, data):
+        if hasattr(data, 'run_type'):
+            run_type = data.run_type
+        elif isinstance(data, dict) and 'run_type' in data:
+            run_type = data['run_type']
+        else:
+            raise ValueError("data must have a 'run_type' attribute or key")
+
+        if run_type not in {"training", "simulation", "inference"}:
+            raise ValueError(f"Unknown run_type: {run_type}")
+        return run_type
 
     def _assemble_zernike_contributions(self):
         zks_inputs = ZernikeInputsFactory.build(
@@ -150,21 +168,20 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
     def save_nonparam_history(self) -> bool:
         """Check if the model should save the optimization history for non-parametric features."""
         return getattr(self.model_params.nonparam_hparams, "save_optim_history_nonparam", False)
-    
+
+    def get_obs_pos(self):
+        assert self.run_type in {"training", "simulation", "inference"}, f"Unknown run_type: {self.run_type}"
+
+        if self.run_type in {"training", "simulation"}:
+            raw_pos = get_np_obs_positions(self.data)
+        else:
+            raw_pos = self.data.dataset["positions"]
+
+        obs_pos = ensure_tensor(raw_pos, dtype=tf.float32)
+
+        return obs_pos
 
     # === Lazy properties ===.
-    @property
-    def obs_pos(self):
-        """Lazy loading of the observation positions."""
-        if not hasattr(self, "_obs_pos"):
-            if self.run_type == "training" or self.run_type == "simulation":
-                # Get the observation positions from the data handler
-                self._obs_pos = get_obs_positions(self.data)
-            elif self.run_type == "inference":
-                # For inference, we might not have a data handler, so we use the model parameters
-                self._obs_pos = self.data.dataset["positions"]
-        return self._obs_pos
-
     @property
     def zks_total_contribution(self):
         """Lazily load all Zernike contributions, including prior and corrections."""
@@ -227,22 +244,20 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
             self._tf_zernike_OPD = TFZernikeOPD(zernike_maps=self.zernike_maps)
         return self._tf_zernike_OPD
     
-    @property
-    def tf_batch_poly_PSF(self):
-        """Lazily initialize the batch polychromatic PSF layer."""
-        if not hasattr(self, "_tf_batch_poly_PSF"):
-            obscurations = psfm.tf_obscurations(
+    def _build_tf_batch_poly_PSF(self):
+        """Eagerly build the TFBatchPolychromaticPSF layer with numpy-based obscurations."""
+            
+        obscurations = psfm.tf_obscurations(
                 pupil_diam=self.model_params.pupil_diameter,
                 N_filter=self.model_params.LP_filter_length,
                 rotation_angle=self.model_params.obscuration_rotation_angle,
             )
 
-            self._tf_batch_poly_PSF = TFBatchPolychromaticPSF(
+        return TFBatchPolychromaticPSF(
                 obscurations=obscurations,
                 output_Q=self.output_Q,
                 output_dim=self.output_dim,
             )
-        return self._tf_batch_poly_PSF
 
     @property
     def tf_np_poly_opd(self):
@@ -646,23 +661,24 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         if training: 
             # Compute zernikes from parametric model and physical layer
             zks_coeffs = self.compute_zernikes(input_positions)
-
-            # Propagate to obtain the OPD
+            
+            # Parametric OPD maps from Zernikes
             param_opd_maps = self.tf_zernike_OPD(zks_coeffs)
 
-            # Add l2 loss on the parametric OPD
+            # Add L2 regularization loss on parametric OPD maps
             self.add_loss(
-                self.l2_param * tf.math.reduce_sum(tf.math.square(param_opd_maps))
+                self.l2_param * tf.reduce_sum(tf.square(param_opd_maps))
             )
 
-            # Calculate the non parametric part
+            # Non-parametric correction
             nonparam_opd_maps = self.tf_np_poly_opd(input_positions)
 
-            # Add the estimations
-            opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
-
+            # Combine both contributions
+            opd_maps = tf.add(param_opd_maps, nonparam_opd_maps)
+            
             # Compute the polychromatic PSFs
             poly_psfs = self.tf_batch_poly_PSF([opd_maps, packed_SEDs])
+        
         # For the inference
         else:
             # Compute predictions
