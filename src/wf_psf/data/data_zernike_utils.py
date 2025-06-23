@@ -53,7 +53,7 @@ class ZernikeInputsFactory:
         centroid_dataset = None
         positions = None
 
-        if run_type in {"training", "simulation"}:
+        if run_type in {"training", "simulation", "metrics"}:
             centroid_dataset = data  # Assuming data is a DataConfigHandler or similar object containing train and test datasets
             positions = np.concatenate(
                 [
@@ -178,9 +178,9 @@ def assemble_zernike_contributions(
     # Prior
     if model_params.use_prior and zernike_prior is not None:
         logger.info("Adding Zernike prior...")
-        if isinstance(zernike_prior, np.ndarray):
-            zernike_prior = tf.convert_to_tensor(zernike_prior, dtype=tf.float32)
-        zernike_contribution_list.append(zernike_prior)
+        if isinstance(zernike_prior, tf.Tensor):
+            zernike_prior = zernike_prior.numpy()
+            zernike_contribution_list.append(zernike_prior)
     else:
         logger.info("Skipping Zernike prior (not used or not provided).")
 
@@ -190,9 +190,7 @@ def assemble_zernike_contributions(
         centroid_correction = compute_centroid_correction(
             model_params, centroid_dataset, batch_size=batch_size
         )
-        zernike_contribution_list.append(
-            tf.convert_to_tensor(centroid_correction, dtype=tf.float32)
-        )
+        zernike_contribution_list.append(centroid_correction)
     else:
         logger.info("Skipping centroid correction (not enabled or no dataset).")
 
@@ -200,9 +198,7 @@ def assemble_zernike_contributions(
     if model_params.add_ccd_misalignments and positions is not None:
         logger.info("Computing CCD misalignment correction...")
         ccd_misalignment = compute_ccd_misalignment(model_params, positions)
-        zernike_contribution_list.append(
-            tf.convert_to_tensor(ccd_misalignment, dtype=tf.float32)
-        )
+        zernike_contribution_list.append(ccd_misalignment)
     else:
         logger.info("Skipping CCD misalignment correction (not enabled or no positions).")
 
