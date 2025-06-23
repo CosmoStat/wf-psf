@@ -134,7 +134,7 @@ class DataConfigHandler:
             exit()
 
         self.simPSF = psf_models.simPSF(training_model_params)
-        
+
         # Extract sub-configs early
         train_params = self.data_conf.data.training
         test_params = self.data_conf.data.test
@@ -153,7 +153,7 @@ class DataConfigHandler:
             n_bins_lambda=training_model_params.n_bins_lda,
             load_data=load_data,
         )
-        
+
         self.batch_size = batch_size
 
 
@@ -262,6 +262,7 @@ class MetricsConfigHandler:
         self._file_handler = file_handler
         self.training_conf = training_conf
         self.data_conf = self._load_data_conf()
+        self.data_conf.run_type = "metrics"
         self.metrics_dir = self._file_handler.get_metrics_dir(
             self._file_handler._run_output_dir
         )
