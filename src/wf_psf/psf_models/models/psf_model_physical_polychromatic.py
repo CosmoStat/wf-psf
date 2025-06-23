@@ -128,6 +128,32 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         if coeff_mat is not None:
             self.assign_coeff_matrix(coeff_mat)
 
+        # Compute contributions once eagerly (outside graph)
+        zks_total_contribution_np = self._assemble_zernike_contributions().numpy()
+        self._zks_total_contribution = tf.convert_to_tensor(zks_total_contribution_np, dtype=tf.float32)
+        
+        # Compute n_zks_total as int
+        self._n_zks_total = max(
+            self.model_params.param_hparams.n_zernikes,
+            zks_total_contribution_np.shape[1]
+        )
+        
+        # Precompute zernike maps as tf.float32 
+        self._zernike_maps = psfm.generate_zernike_maps_3d(
+            n_zernikes=self._n_zks_total,
+            pupil_diam=self.model_params.pupil_diameter
+        )       
+
+        # Precompute OPD dimension 
+        self._opd_dim = self._zernike_maps.shape[1]
+
+        # Precompute obscurations as tf.complex64
+        self._obscurations =  psfm.tf_obscurations(
+            pupil_diam=self.model_params.pupil_diameter,
+            N_filter=self.model_params.LP_filter_length,
+            rotation_angle=self.model_params.obscuration_rotation_angle,
+        )
+
         # Eagerly initialise tf_batch_poly_PSF
         self.tf_batch_poly_PSF = self._build_tf_batch_poly_PSF()
 
@@ -140,7 +166,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         else:
             raise ValueError("data must have a 'run_type' attribute or key")
 
-        if run_type not in {"training", "simulation", "inference"}:
+        if run_type not in {"training", "simulation", "metrics", "inference"}:
             raise ValueError(f"Unknown run_type: {run_type}")
         return run_type
 
@@ -170,9 +196,9 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         return getattr(self.model_params.nonparam_hparams, "save_optim_history_nonparam", False)
 
     def get_obs_pos(self):
-        assert self.run_type in {"training", "simulation", "inference"}, f"Unknown run_type: {self.run_type}"
+        assert self.run_type in {"training", "simulation", "metrics", "inference"}, f"Unknown run_type: {self.run_type}"
 
-        if self.run_type in {"training", "simulation"}:
+        if self.run_type in {"training", "simulation", "metrics"}:
             raw_pos = get_np_obs_positions(self.data)
         else:
             raw_pos = self.data.dataset["positions"]
@@ -184,30 +210,26 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
     # === Lazy properties ===.
     @property
     def zks_total_contribution(self):
-        """Lazily load all Zernike contributions, including prior and corrections."""
-        if not hasattr(self, "_zks_total_contribution"):
-            self._zks_total_contribution = self._assemble_zernike_contributions()
         return self._zks_total_contribution
-        
+    
     @property
     def n_zks_total(self):
         """Get the total number of Zernike coefficients."""
-        if not hasattr(self, "_n_zks_total"):
-            self._n_zks_total = max(
-            self.model_params.param_hparams.n_zernikes,
-            tf.cast(tf.shape(self.zks_total_contribution)[1], tf.int32),
-        )
         return self._n_zks_total
 
     @property
     def zernike_maps(self):
-        """Lazy loading of the Zernike maps."""
-        if not hasattr(self, "_zernike_maps"):
-            self._zernike_maps = psfm.generate_zernike_maps_3d(
-            self.n_zks_total, self.model_params.pupil_diameter
-        )
+        """Get Zernike maps."""
         return self._zernike_maps
-            
+
+    @property
+    def opd_dim(self):
+        return self._opd_dim
+
+    @property
+    def obscurations(self):
+        return self._obscurations
+
     @property
     def tf_poly_Z_field(self):
         """Lazy loading of the polynomial Zernike field layer."""
@@ -246,15 +268,9 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
     
     def _build_tf_batch_poly_PSF(self):
         """Eagerly build the TFBatchPolychromaticPSF layer with numpy-based obscurations."""
-            
-        obscurations = psfm.tf_obscurations(
-                pupil_diam=self.model_params.pupil_diameter,
-                N_filter=self.model_params.LP_filter_length,
-                rotation_angle=self.model_params.obscuration_rotation_angle,
-            )
 
         return TFBatchPolychromaticPSF(
-                obscurations=obscurations,
+                obscurations=self.obscurations,
                 output_Q=self.output_Q,
                 output_dim=self.output_dim,
             )
@@ -267,7 +283,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
                     x_lims=self.model_params.x_lims,
                     y_lims=self.model_params.y_lims,
                     d_max=self.model_params.nonparam_hparams.d_max_nonparam,
-                    opd_dim=tf.shape(self.zernike_maps)[1].numpy(),
+                    opd_dim=self.opd_dim,
                 )
         return self._tf_np_poly_opd
 
