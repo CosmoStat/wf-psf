@@ -263,6 +263,7 @@ class MetricsConfigHandler:
         self._file_handler = file_handler
         self.training_conf = training_conf
         self.data_conf = self._load_data_conf()
+        self.data_conf.run_type = "metrics"
         self.metrics_dir = self._file_handler.get_metrics_dir(self._file_handler._run_output_dir)
         self.trained_psf_model = self._load_trained_psf_model()
     
