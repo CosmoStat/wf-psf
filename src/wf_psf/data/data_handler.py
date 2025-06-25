@@ -180,17 +180,13 @@ class DataHandler:
     def _convert_dataset_to_tensorflow(self):
         """Convert dataset to TensorFlow tensors."""
 
-        self.dataset["positions"] = tf.convert_to_tensor(
-            self.dataset["positions"], dtype=tf.float32
-        )
-        if self.dataset_type == "training":
-                self.dataset["noisy_stars"] = tf.convert_to_tensor(
-                    self.dataset["noisy_stars"], dtype=tf.float32
-                )
-            
+        self.dataset["positions"] = ensure_tensor(self.dataset["positions"], dtype=tf.float32)
+    
+        if self.dataset_type == "train":
+            self.dataset["noisy_stars"] = ensure_tensor(self.dataset["noisy_stars"], dtype=tf.float32)
         elif self.dataset_type == "test":
             if "stars" in self.dataset:
-                self.dataset["stars"] = tf.convert_to_tensor(
+                self.dataset["stars"] = ensure_tensor(
                     self.dataset["stars"], dtype=tf.float32
                 )
             else:
