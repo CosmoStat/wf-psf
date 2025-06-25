@@ -282,6 +282,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
             self._tf_np_poly_opd = TFNonParametricPolynomialVariationsOPD(
                     x_lims=self.model_params.x_lims,
                     y_lims=self.model_params.y_lims,
+                    random_seed=self.model_params.param_hparams.random_seed,
                     d_max=self.model_params.nonparam_hparams.d_max_nonparam,
                     opd_dim=self.opd_dim,
                 )
