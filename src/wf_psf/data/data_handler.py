@@ -166,7 +166,7 @@ class DataHandler:
         if "positions" not in self.dataset:
             raise ValueError("Dataset missing required field: 'positions'")
 
-        if self.dataset_type == "train":
+        if self.dataset_type == "training":
             if "noisy_stars" not in self.dataset:
                 logger.warning("Missing 'noisy_stars' in 'train' dataset.")
         elif self.dataset_type == "test":
@@ -182,7 +182,7 @@ class DataHandler:
 
         self.dataset["positions"] = ensure_tensor(self.dataset["positions"], dtype=tf.float32)
     
-        if self.dataset_type == "train":
+        if self.dataset_type == "training":
             self.dataset["noisy_stars"] = ensure_tensor(self.dataset["noisy_stars"], dtype=tf.float32)
         elif self.dataset_type == "test":
             self.dataset["stars"] = ensure_tensor(self.dataset["stars"], dtype=tf.float32)
