@@ -131,12 +131,17 @@ def combine_zernike_contributions(contributions: list[np.ndarray]) -> np.ndarray
     if not contributions:
         raise ValueError("No contributions provided.")
 
+    if len(contributions) == 1:
+        return contributions[0]
+
     max_order = max(contrib.shape[1] for contrib in contributions)
     n_samples = contributions[0].shape[0]
+
     if any(c.shape[0] != n_samples for c in contributions):
         raise ValueError("All contributions must have the same number of samples.")
 
-    combined = np.zeros((n_samples, max_order), dtype=np.float32)
+    combined = np.zeros((n_samples, max_order))
+
     for contrib in contributions:
         padded = pad_contribution_to_order(contrib, max_order)
         combined += padded
