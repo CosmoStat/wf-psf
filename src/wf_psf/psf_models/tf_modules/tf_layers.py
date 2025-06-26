@@ -1,12 +1,12 @@
 import tensorflow as tf
 import tensorflow_addons as tfa
 from wf_psf.psf_models.tf_modules.tf_modules import TFMonochromaticPSF
+from wf_psf.psf_models.tf_modules.tf_utils import find_position_indices
 from wf_psf.utils.utils import calc_poly_position_mat
 import wf_psf.utils.utils as utils
 import logging
 
 logger = logging.getLogger(__name__)
-
 
 class TFPolynomialZernikeField(tf.keras.layers.Layer):
     """Calculate the zernike coefficients for a given position.
@@ -925,6 +925,7 @@ class TFPhysicalLayer(tf.keras.layers.Layer):
 
         return interp_zks[:, :, tf.newaxis, tf.newaxis]
 
+    
     def call(self, positions):
         """Calculate the prior Zernike coefficients for a batch of positions.
 
@@ -960,12 +961,10 @@ class TFPhysicalLayer(tf.keras.layers.Layer):
 
         """
 
-        def calc_index(idx_pos):
-            return tf.where(tf.equal(self.obs_pos, idx_pos))[0, 0]
+        # Find indices for all positions in one batch operation
+        idx = find_position_indices(self.obs_pos, positions)
 
-        # Calculate the indices of the input batch
-        indices = tf.map_fn(calc_index, positions, fn_output_signature=tf.int64)
-        # Recover the prior zernikes from the batch indexes
-        batch_zks = tf.gather(self.zks_prior, indices=indices, axis=0, batch_dims=0)
+        # Gather the corresponding Zernike coefficients
+        batch_zks = tf.gather(self.zks_prior, idx, axis=0)
 
         return batch_zks[:, :, tf.newaxis, tf.newaxis]
