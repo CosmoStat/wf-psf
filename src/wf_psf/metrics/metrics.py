@@ -270,16 +270,16 @@ def compute_chi2_metric(
 
     # Compute noise standard deviation from the reference stars
     if not noiseless_stars:
-        estimated_std_dev = compute_noise_std_from_stars(reference_stars, masks)
+        estimated_noise_std_dev = compute_noise_std_from_stars(reference_stars, masks)
         # Check if there is a zero value
-        if np.any(estimated_std_dev == 0):
+        if np.any(estimated_noise_std_dev == 0):
             logger.info(
                 "Chi2 metric calculation: Some estimated standard deviations are zero. Setting them to 1 to avoid division by zero."
             )
-            estimated_std_dev[estimated_std_dev == 0] = 1.0
+            estimated_noise_std_dev[estimated_noise_std_dev == 0] = 1.0
     else:
         # If the stars are noiseless, we set the std dev to 1
-        estimated_std_dev = np.ones(reference_stars.shape[0], dtype=preds.dtype)
+        estimated_noise_std_dev = np.ones(reference_stars.shape[0], dtype=preds.dtype)
         logger.info(
             "Using noiseless stars for chi2 calculation. Setting all std dev to 1."
         )
@@ -291,7 +291,9 @@ def compute_chi2_metric(
     standardized_residuals = np.array(
         [
             (residual - np.sum(residual) / np.sum(mask)) / std_est
-            for residual, mask, std_est in zip(residuals, masks, estimated_std_dev)
+            for residual, mask, std_est in zip(
+                residuals, masks, estimated_noise_std_dev
+            )
         ]
     )
     # Compute the degrees of freedom and the mean
@@ -303,13 +305,13 @@ def compute_chi2_metric(
     ) / (degrees_of_freedom - 1)
 
     # Average std deviation
-    mean_std_dev = np.mean(estimated_std_dev)
+    mean_noise_std_dev = np.mean(estimated_noise_std_dev)
 
     # Print chi2 values
     logger.info("Reduced chi2:\t %.5e" % (reduced_chi2_stat))
-    logger.info("Average noise std dev:\t %.5e" % (mean_std_dev))
+    logger.info("Average noise std dev:\t %.5e" % (mean_noise_std_dev))
 
-    return reduced_chi2_stat, mean_std_dev
+    return reduced_chi2_stat, mean_noise_std_dev
 
 
 def compute_mono_metric(
