@@ -270,7 +270,9 @@ def compute_chi2_metric(
 
     # Compute noise standard deviation from the reference stars
     if not noiseless_stars:
-        estimated_noise_std_dev = compute_noise_std_from_stars(reference_stars, masks)
+        estimated_noise_std_dev = compute_noise_std_from_stars(
+            reference_stars, masks.astype(bool)
+        )
         # Check if there is a zero value
         if np.any(estimated_noise_std_dev == 0):
             logger.info(
