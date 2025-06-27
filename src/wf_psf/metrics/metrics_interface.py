@@ -156,8 +156,8 @@ class MetricsParamsHandler:
 
         # Compute metrics
         reduced_chi2_stat, mean_noise_std_dev = wf_metrics.compute_chi2_metric(
-            tf_semiparam_field=psf_model,
-            gt_tf_semiparam_field=psf_models.get_psf_model(
+            tf_trained_psf_model=psf_model,
+            gt_tf_psf_model=psf_models.get_psf_model(
                 self.metrics_params.ground_truth_model.model_params,
                 self.metrics_params.metrics_hparams,
                 data,
