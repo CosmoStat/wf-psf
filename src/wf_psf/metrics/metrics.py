@@ -14,6 +14,7 @@ import galsim as gs
 import wf_psf.utils.utils as utils
 from wf_psf.psf_models.psf_models import build_PSF_model
 from wf_psf.sims import psf_simulator as psf_simulator
+from wf_psf.training.train_utils import compute_noise_std_from_stars
 import logging
 
 logger = logging.getLogger(__name__)
@@ -155,6 +156,160 @@ def compute_poly_metric(
     logger.info("Relative RMSE:\t %.4e %% \t +/- %.4e %%" % (rel_rmse, std_rel_rmse))
 
     return rmse, rel_rmse, std_rmse, std_rel_rmse
+
+
+def compute_chi2_metric(
+    tf_trained_psf_model,
+    gt_tf_psf_model,
+    simPSF_np,
+    tf_pos,
+    tf_SEDs,
+    n_bins_lda=20,
+    n_bins_gt=20,
+    batch_size=16,
+    dataset_dict=None,
+    mask=False,
+):
+    """Calculate the chi2 metric for polychromatic reconstructions at observation resolution.
+
+    The ``tf_trained_psf_model`` should be the model to evaluate, and the
+    ``gt_tf_psf_model`` should be loaded with the ground truth PSF field.
+
+    Parameters
+    ----------
+    tf_trained_psf_model: PSF field object
+        Trained model to evaluate.
+    gt_tf_psf_model: PSF field object
+        Ground truth model to produce gt observations at any position
+        and wavelength.
+    simPSF_np: PSF simulator object
+        Simulation object to be used by ``generate_packed_elems`` function.
+    tf_pos: Tensor or numpy.ndarray [batch x 2] floats
+        Positions to evaluate the model.
+    tf_SEDs: numpy.ndarray [batch x SED_samples x 2]
+        SED samples for the corresponding positions.
+    n_bins_lda: int
+        Number of wavelength bins to use for the polychromatic PSF.
+    n_bins_gt: int
+        Number of wavelength bins to use for the ground truth polychromatic PSF.
+    batch_size: int
+        Batch size for the PSF calcualtions.
+    dataset_dict: dict
+        Dictionary containing the dataset information. If provided, and if the `'stars'` key
+        is present, the noiseless stars from the dataset are used to compute the metrics.
+        Otherwise, the stars are generated from the gt model.
+        Default is `None`.
+    mask: bool
+        If `True`, predictions are masked using the same mask as the target data, ensuring
+        that metric calculations consider only unmasked regions.
+        Default is `False`.
+
+    Returns
+    -------
+    reduced_chi2_stat: float
+        Reduced chi squared value.
+    avg_noise_std_dev: float
+        Average noise standard deviation used for the chi squared calculation.
+
+    """
+    # Create flag
+    noiseless_stars = False
+
+    # Generate SED data list for the model
+    packed_SED_data = [
+        utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_lda)
+        for _sed in tf_SEDs
+    ]
+    tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
+    tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
+    pred_inputs = [tf_pos, tf_packed_SED_data]
+
+    # Model prediction
+    preds = tf_trained_psf_model.predict(x=pred_inputs, batch_size=batch_size)
+
+    # Ground truth data preparation
+    if dataset_dict is None or "stars" not in dataset_dict:
+        logger.info(
+            "No precomputed ground truth stars found. Regenerating from the ground truth model using configured interpolation settings."
+        )
+        # The stars will be noiseless as we are recreating them from the ground truth model
+        noiseless_stars = True
+
+        # Change interpolation parameters for the ground truth simPSF
+        simPSF_np.SED_interp_pts_per_bin = 0
+        simPSF_np.SED_sigma = 0
+        # Generate SED data list for gt model
+        packed_SED_data = [
+            utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_gt)
+            for _sed in tf_SEDs
+        ]
+        tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
+        tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
+        pred_inputs = [tf_pos, tf_packed_SED_data]
+
+        # Ground Truth model prediction
+        reference_stars = gt_tf_psf_model.predict(x=pred_inputs, batch_size=batch_size)
+
+    else:
+        logger.info("Using precomputed ground truth stars from dataset_dict['stars'].")
+        reference_stars = dataset_dict["stars"]
+
+    # If the data is masked, mask the predictions
+    if mask:
+        logger.info(
+            "Applying masks to predictions. Only unmasked regions will be considered for metric calculations."
+        )
+        # Change convention
+        masks = 1 - dataset_dict["masks"]
+        # Ensure masks as float dtype
+        masks = masks.astype(preds.dtype)
+
+    else:
+        # We create a dummy mask of ones
+        masks = np.ones_like(reference_stars, dtype=preds.dtype)
+
+    # Compute noise standard deviation from the reference stars
+    if not noiseless_stars:
+        estimated_std_dev = compute_noise_std_from_stars(reference_stars, masks)
+        # Check if there is a zero value
+        if np.any(estimated_std_dev == 0):
+            logger.info(
+                "Chi2 metric calculation: Some estimated standard deviations are zero. Setting them to 1 to avoid division by zero."
+            )
+            estimated_std_dev[estimated_std_dev == 0] = 1.0
+    else:
+        # If the stars are noiseless, we set the std dev to 1
+        estimated_std_dev = np.ones(reference_stars.shape[0], dtype=preds.dtype)
+        logger.info(
+            "Using noiseless stars for chi2 calculation. Setting all std dev to 1."
+        )
+
+    # Compute residuals
+    residuals = (reference_stars - preds) * masks
+
+    # Standardize residuals
+    standardized_residuals = np.array(
+        [
+            (residual - np.sum(residual) / np.sum(mask)) / std_est
+            for residual, mask, std_est in zip(residuals, masks, estimated_std_dev)
+        ]
+    )
+    # Compute the degrees of freedom and the mean
+    degrees_of_freedom = np.sum(masks)
+    mean_standardized_residuals = np.sum(standardized_residuals) / degrees_of_freedom
+    # The degrees of freedom is reduced by 1 because we're removing the mean (see Cochran's theorem)
+    reduced_chi2_stat = np.sum(
+        ((standardized_residuals - mean_standardized_residuals) * masks) ** 2
+    ) / (degrees_of_freedom - 1)
+
+    # Average std deviation
+    mean_std_dev = np.mean(estimated_std_dev)
+
+    # Print chi2 values
+    logger.info("Reduced chi2:\t %.5e" % (reduced_chi2_stat))
+    logger.info("Average noise std dev:\t %.5e" % (mean_std_dev))
+
+    return reduced_chi2_stat, mean_std_dev
 
 
 def compute_mono_metric(
