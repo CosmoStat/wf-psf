@@ -379,6 +379,7 @@ def evaluate_model(
         # Define the metric evaluation functions
         metric_functions = {
             "poly_metric": metrics_handler.evaluate_metrics_polychromatic_lowres,
+            "chi2_metric": metrics_handler.evaluate_metrics_chi2,
             "mono_metric": metrics_handler.evaluate_metrics_mono_rmse,
             "opd_metric": metrics_handler.evaluate_metrics_opd,
             "shape_results_dict": metrics_handler.evaluate_metrics_shape,
