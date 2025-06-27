@@ -209,7 +209,7 @@ def compute_chi2_metric(
     reduced_chi2_stat: float
         Reduced chi squared value.
     avg_noise_std_dev: float
-        Average noise standard deviation used for the chi squared calculation.
+        Average estimated noise standard deviation used for the chi squared calculation.
 
     """
     # Create flag
