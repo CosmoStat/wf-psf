@@ -439,6 +439,10 @@ def evaluate_model(
                 "test": True,
                 "train": True,
             },
+            "chi2_metric": {
+                "test": metrics_params.eval_chi2_metric,
+                "train": metrics_params.eval_chi2_metric,
+            },
             "mono_metric": {
                 "test": metrics_params.eval_mono_metric,
                 "train": metrics_params.eval_mono_metric,
