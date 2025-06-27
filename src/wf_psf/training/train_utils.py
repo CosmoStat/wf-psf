@@ -382,18 +382,19 @@ def configure_optimizer_and_loss(
 
 
 def compute_noise_std_from_stars(
-    outputs: np.ndarray, loss: Union[str, Callable, None]
+    images: np.ndarray,
+    masks: Optional[np.ndarray] = None,
 ) -> Optional[np.ndarray]:
     """
     Compute the noise standard deviation from star images.
 
     Parameters
     ----------
-    outputs: np.ndarray
+    images: np.ndarray
         A 3D array of shape (batch_size, height, width) representing star images.
         The first dimension is the batch size, and the next two dimensions are the image height and width.
-    loss: str, callable, optional
-        The loss function used for training. If the loss name is "masked_mean_squared_error", the function will calculate the noise standard deviation for masked images.
+    masks: np.ndarray, optional
+        A 3D array of shape (batch_size, height, width) representing masks for the images.
 
     Returns
     -------
@@ -401,25 +402,17 @@ def compute_noise_std_from_stars(
         An array of standard deviations for each image in the batch, or None if no images are provided.
 
     """
-    if outputs is not None and len(outputs.shape) >= 3:
-        img_dim = (outputs.shape[1], outputs.shape[2])
-        win_rad = np.ceil(outputs.shape[1] / 3.33)
+    if images is not None and len(images.shape) >= 3:
+        img_dim = (images.shape[1], images.shape[2])
+        win_rad = np.ceil(images.shape[1] / 3.33)
         std_est = NoiseEstimator(img_dim=img_dim, win_rad=win_rad)
 
-        if loss is not None and (
-            (isinstance(loss, str) and loss == "masked_mean_squared_error")
-            or (hasattr(loss, "name") and loss.name == "masked_mean_squared_error")
-        ):
-            logger.info("Estimating noise standard deviation for masked images..")
-            images = outputs[..., 0]
-            masks = np.array(1 - outputs[..., 1], dtype=bool)
+        if masks is not None:
             imgs_std = np.array(
                 [std_est.estimate_noise(_im, _win) for _im, _win in zip(images, masks)]
             )
         else:
-            logger.info("Estimating noise standard deviation for images..")
-            # Estimate noise standard deviation
-            imgs_std = np.array([std_est.estimate_noise(_im) for _im in outputs])
+            imgs_std = np.array([std_est.estimate_noise(_im) for _im in images])
 
     else:
         logger.warning(
@@ -448,7 +441,7 @@ def calculate_sample_weights(
     ----------
     outputs: np.ndarray
         A 3D array of shape (batch_size, height, width) representing images, where the first dimension is the batch size
-        and the next two dimensions are the image height and width.
+        and the next two dimensions are the image height and width. It can contain the masks in an extra dimension, e.g., (batch_size, height, width, 2),
     use_sample_weights: bool
         Flag indicating whether to compute sample weights. If True, sample weights will be computed based on the image noise.
     loss: str, callable, optional
@@ -470,7 +463,19 @@ def calculate_sample_weights(
     if use_sample_weights:
 
         # Compute noise standard deviation from images
-        imgs_std = compute_noise_std_from_stars(outputs, loss)
+        if loss is not None and (
+            (isinstance(loss, str) and loss == "masked_mean_squared_error")
+            or (hasattr(loss, "name") and loss.name == "masked_mean_squared_error")
+        ):
+            logger.info("Estimating noise standard deviation for masked images..")
+            images = outputs[..., 0]
+            masks = np.array(1 - outputs[..., 1], dtype=bool)
+            imgs_std = compute_noise_std_from_stars(images, masks)
+
+        else:
+            logger.info("Estimating noise standard deviation for images..")
+            # Estimate noise standard deviation
+            imgs_std = compute_noise_std_from_stars(outputs)
 
         # Calculate variances
         variances = imgs_std**2
