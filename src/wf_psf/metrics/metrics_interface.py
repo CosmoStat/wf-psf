@@ -110,6 +110,74 @@ class MetricsParamsHandler:
             "std_rel_rmse": std_rel_rmse,
         }
 
+    def evaluate_metrics_chi2(
+        self, psf_model: Any, simPSF: Any, data: Any, dataset: Dict[str, Any]
+    ) -> Dict[str, float]:
+        """Evaluate reduced chi2 metric for low-resolution polychromatic PSF.
+
+        This method computes reduced chi2 metric for a
+        low-resolution polychromatic Point Spread Function (PSF) model.
+
+        Parameters
+        ----------
+        psf_model : object
+            An instance of the PSF model selected for metrics evaluation.
+        simPSF : object
+            An instance of the PSFSimulator.
+        data : object
+            A DataConfigHandler object containing training and test datasets.
+        dataset : dict
+            Dictionary containing dataset details, including:
+            - ``SEDs`` (Spectral Energy Distributions)
+            - ``positions`` (Star positions)
+            - ``C_poly``  Tensor or None, optional
+                The Zernike coefficient matrix used in generating simulations of the PSF model. This
+                matrix defines the Zernike polynomials up to a given order used to simulate the PSF
+                field. It may be present in some datasets or only required for some classes.
+                If not present or required, the model will proceed without it.
+
+
+        Returns
+        -------
+        dict
+            A dictionary containing the reduced chi2 statistic and the Average estimated
+            noise standard deviation used for the chi squared calculation.
+
+            - ``reduced_chi2`` : float
+                Reduced chi squared value.
+            - ``mean_noise_std_dev`` : float
+                Average estimated noise standard deviation used for the chi squared calculation.
+
+        """
+        logger.info("Computing polychromatic metrics at low resolution.")
+
+        # Check if testing predictions should be masked
+        mask = self.trained_model.training_hparams.loss == "mask_mse"
+
+        # Compute metrics
+        reduced_chi2_stat, mean_noise_std_dev = wf_metrics.compute_chi2_metric(
+            tf_semiparam_field=psf_model,
+            gt_tf_semiparam_field=psf_models.get_psf_model(
+                self.metrics_params.ground_truth_model.model_params,
+                self.metrics_params.metrics_hparams,
+                data,
+                dataset.get("C_poly", None),  # Extract C_poly or default to None
+            ),
+            simPSF_np=simPSF,
+            tf_pos=dataset["positions"],
+            tf_SEDs=dataset["SEDs"],
+            n_bins_lda=self.trained_model.model_params.n_bins_lda,
+            n_bins_gt=self.metrics_params.ground_truth_model.model_params.n_bins_lda,
+            batch_size=self.metrics_params.metrics_hparams.batch_size,
+            dataset_dict=dataset,
+            mask=mask,
+        )
+
+        return {
+            "reduced_chi2": reduced_chi2_stat,
+            "mean_noise_std_dev": mean_noise_std_dev,
+        }
+
     def evaluate_metrics_mono_rmse(
         self, psf_model: Any, simPSF: Any, data: Any, dataset: Dict[str, Any]
     ) -> Dict[str, float]:
