@@ -101,14 +101,14 @@ class DataHandler:
         self.dataset["positions"] = tf.convert_to_tensor(
             self.dataset["positions"], dtype=tf.float32
         )
-        if "train" == self.dataset_type:
+        if self.dataset_type == "training":
             if "noisy_stars" in self.dataset:
                 self.dataset["noisy_stars"] = tf.convert_to_tensor(
                     self.dataset["noisy_stars"], dtype=tf.float32
                 )
             else:
                 logger.warning(f"Missing 'noisy_stars' in {self.dataset_type} dataset.")
-        elif "test" == self.dataset_type:
+        elif self.dataset_type == "test":
             if "stars" in self.dataset:
                 self.dataset["stars"] = tf.convert_to_tensor(
                     self.dataset["stars"], dtype=tf.float32
