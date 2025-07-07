@@ -7,10 +7,10 @@ This module contains unit tests for the wf_psf.psf_models psf_models module.
 
 """
 
-from wf_psf.psf_models import (
-    psf_models,
+from wf_psf.psf_models import psf_models
+from wf_psf.psf_models.models import (
     psf_model_semiparametric,
-    psf_model_physical_polychromatic,
+    psf_model_physical_polychromatic
 )
 import tensorflow as tf
 import numpy as np

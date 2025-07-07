@@ -2,7 +2,7 @@
 from unittest.mock import patch, MagicMock
 import pytest
 from wf_psf.metrics.metrics_interface import evaluate_model, MetricsParamsHandler
-from wf_psf.data.training_preprocessing import DataHandler
+from wf_psf.data.data_handler import DataHandler
 
 @pytest.fixture
 def mock_metrics_params():
@@ -76,7 +76,6 @@ def test_evaluate_model(mock_metrics_params, mock_trained_model_params, mock_dat
             trained_model_params=mock_trained_model_params,
             data=mock_data,
             psf_model=mock_psf_model,
-            weights_path="/mock/weights/path",
             metrics_output="/mock/metrics/output"
         )
 
