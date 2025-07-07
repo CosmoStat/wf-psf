@@ -599,6 +599,7 @@ def main(args):
 
         # Add the centroid shifts to the Zernike coefficients
         train_zks += train_delta_centroid_shifts
+        # TO_DEFINE: For now we do add the centroid shifts to the test dataset. Should we?
         test_zks += test_delta_centroid_shifts
 
     # ------------ #
@@ -776,6 +777,21 @@ def main(args):
         axis=0,
     )
 
+    # Also add noise to the test stars
+    noisy_test_poly_psf_np = np.copy(test_poly_psf_np)
+    # Generate a dataset with a SNR varying randomly within the desired range
+    rand_SNR = (
+        np.random.rand(noisy_test_poly_psf_np.shape[0]) * (SNR_range[1] - SNR_range[0])
+    ) + SNR_range[0]
+    # Add Gaussian noise to the observations
+    noisy_test_poly_psf_np = np.stack(
+        [
+            add_noise(_im, desired_SNR=_SNR)
+            for _im, _SNR in zip(noisy_test_poly_psf_np, rand_SNR)
+        ],
+        axis=0,
+    )
+
     # ------------ #
     # Generate masks
 
@@ -795,6 +811,13 @@ def main(args):
             # Apply the random masks to the observations
             noisy_train_poly_psf_np = noisy_train_poly_psf_np * train_masks.astype(
                 noisy_train_poly_psf_np.dtype
+            )
+
+            masked_noisy_test_poly_psf_np = np.copy(noisy_test_poly_psf_np)
+            # Apply the random masks to the test stars
+            masked_noisy_test_poly_psf_np = (
+                masked_noisy_test_poly_psf_np
+                * test_masks.astype(noisy_test_poly_psf_np.dtype)
             )
 
             # Turn masks to SHE convention. 1 (True) means to mask and 0 (False) means to keep
@@ -1131,6 +1154,7 @@ def main(args):
     test_psf_dataset = {
         "stars": test_poly_psf_np,
         "SR_stars": SR_test_poly_psf_np,
+        "noisy_stars": noisy_test_poly_psf_np,
         "positions": test_positions,
         "SEDs": test_SED_np,
         "zernike_GT": test_zks,
@@ -1138,6 +1162,7 @@ def main(args):
 
     if add_masks:
         test_psf_dataset["masks"] = test_masks
+        test_psf_dataset["masked_noisy_stars"] = masked_noisy_test_poly_psf_np
 
     if add_ccd_misalignments:
         test_psf_dataset["zernike_ccd_misalignments"] = test_delta_Z3_arr
