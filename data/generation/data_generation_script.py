@@ -25,9 +25,9 @@ from wf_psf.utils.utils import (
 )
 from wf_psf.utils.read_config import read_conf, RecursiveNamespace
 from wf_psf.sims.psf_simulator import PSFSimulator
-from wf_psf.utils.preprocessing import shift_x_y_to_zk1_2_wavediff
+from wf_psf.data.data_zernike_utils import shift_x_y_to_zk1_2_wavediff
 from wf_psf.sims.spatial_varying_psf import SpatialVaryingPSF, ZernikeHelper
-from wf_psf.utils.ccd_misalignments import CCDMisalignmentCalculator
+from wf_psf.instrument.ccd_misalignments import CCDMisalignmentCalculator
 
 
 # Pre-defined colormap
