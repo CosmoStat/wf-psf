@@ -561,6 +561,7 @@ def main(args):
 
     # ------------ #
     # Centroid shifts
+    no_shift_test_zks = None
 
     if add_intrapixel_shifts:
 
@@ -599,7 +600,7 @@ def main(args):
 
         # Add the centroid shifts to the Zernike coefficients
         train_zks += train_delta_centroid_shifts
-        # TO_DEFINE: For now we do add the centroid shifts to the test dataset. Should we?
+        no_shift_test_zks = np.copy(test_zks)
         test_zks += test_delta_centroid_shifts
 
     # ------------ #
@@ -753,12 +754,24 @@ def main(args):
             sim_PSF_toolkit.generate_poly_PSF(test_SED_list[it], n_bins=n_bins)
         )
 
+    # Generate test polychromatic PSFs without shifts
+    if no_shift_test_zks is not None:
+        test_poly_psf_noshift_list = []
+        print("Generate test PSFs at observation resolution without shifts")
+        for it in tqdm(range(no_shift_test_zks.shape[0])):
+            sim_PSF_toolkit.set_z_coeffs(no_shift_test_zks[it, :])
+            test_poly_psf_noshift_list.append(
+                sim_PSF_toolkit.generate_poly_PSF(test_SED_list[it], n_bins=n_bins)
+            )
+
     # Generate numpy arrays from the lists
     train_poly_psf_np = np.array(train_poly_psf_list)
     train_SED_np = np.array(train_SED_list)
 
     test_poly_psf_np = np.array(test_poly_psf_list)
     test_SED_np = np.array(test_SED_list)
+    if no_shift_test_zks is not None:
+        test_poly_psf_noshift_np = np.array(test_poly_psf_noshift_list)
 
     # Generate the noisy train stars
     # Copy the training stars
@@ -1116,8 +1129,21 @@ def main(args):
             SR_sim_PSF_toolkit.generate_poly_PSF(test_SED_list[it_j], n_bins=n_bins)
         )
 
+    # Generate the test super resolved (SR) polychromatic PSFs without shifts
+    if no_shift_test_zks is not None:
+        SR_test_poly_psf_noshift_list = []
+
+        print("Generate testing SR PSFs no shifts")
+        for it_j in tqdm(range(n_test_stars)):
+            SR_sim_PSF_toolkit.set_z_coeffs(no_shift_test_zks[it_j, :])
+            SR_test_poly_psf_noshift_list.append(
+                SR_sim_PSF_toolkit.generate_poly_PSF(test_SED_list[it_j], n_bins=n_bins)
+            )
+
     # Generate numpy arrays from the lists
     SR_test_poly_psf_np = np.array(SR_test_poly_psf_list)
+    if no_shift_test_zks is not None:
+        SR_test_poly_psf_noshift_np = np.array(SR_test_poly_psf_noshift_list)
 
     # ------------ #
     # Save test datasets
@@ -1166,6 +1192,10 @@ def main(args):
 
     if add_ccd_misalignments:
         test_psf_dataset["zernike_ccd_misalignments"] = test_delta_Z3_arr
+
+    if no_shift_test_zks is not None:
+        test_psf_dataset["stars_noshift"] = test_poly_psf_noshift_np
+        test_psf_dataset["SR_stars_noshift"] = SR_test_poly_psf_noshift_np
 
     if add_intrapixel_shifts:
         test_psf_dataset["zernike_centroid_shifts"] = test_delta_centroid_shifts
