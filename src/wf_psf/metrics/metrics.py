@@ -312,9 +312,9 @@ def compute_chi2_metric(
 
     # TODO: Compute the reduced chi2 for each star. Show median and mean values.
     # Print chi2 values
-    logger.info("Reduced chi2:\t\t %.5e" % (reduced_chi2_stat))
+    logger.info("Reduced chi2:\t\t\t %.5e" % (reduced_chi2_stat))
     logger.info("Average noise std dev:\t %.5e" % (mean_noise_std_dev))
-    logger.info("Median noise std dev:\t %.5e" % (median_noise_std_dev))
+    logger.info("Median noise std dev:\t\t %.5e" % (median_noise_std_dev))
 
     return reduced_chi2_stat, mean_noise_std_dev
 
