@@ -57,7 +57,9 @@ class DataHandler:
         during initialization. If False, data loading is deferred until explicitly called.
     """
 
-    def __init__(self, dataset_type, data_params, simPSF, n_bins_lambda, load_data: bool=True):
+    def __init__(
+        self, dataset_type, data_params, simPSF, n_bins_lambda, load_data: bool = True
+    ):
         """
         Initialize the dataset handler for PSF simulation.
 
@@ -87,7 +89,6 @@ class DataHandler:
             self.load_dataset()
             self.process_sed_data()
 
-
     def load_dataset(self):
         """Load dataset.
 
@@ -115,7 +116,6 @@ class DataHandler:
                 )
             else:
                 logger.warning(f"Missing 'stars' in {self.dataset_type} dataset.")
-
 
     def process_sed_data(self):
         """Process SED Data.
@@ -185,7 +185,7 @@ def get_obs_positions(data):
 
 def extract_star_data(data, train_key: str, test_key: str) -> np.ndarray:
     """Extract specific star-related data from training and test datasets.
-   
+
     This function retrieves and concatenates specific star-related data (e.g., stars, masks) from the
     star training and test datasets such as star stamps or masks, based on the provided keys.
 
@@ -215,10 +215,14 @@ def extract_star_data(data, train_key: str, test_key: str) -> np.ndarray:
     """
     # Ensure the requested keys exist in both training and test datasets
     missing_keys = [
-        key for key, dataset in [(train_key, data.training_data.dataset), (test_key, data.test_data.dataset)]
+        key
+        for key, dataset in [
+            (train_key, data.training_data.dataset),
+            (test_key, data.test_data.dataset),
+        ]
         if key not in dataset
     ]
-    
+
     if missing_keys:
         raise KeyError(f"Missing keys in dataset: {missing_keys}")
 
@@ -263,7 +267,7 @@ def get_np_zernike_prior(data):
     return zernike_prior
 
 
-def compute_centroid_correction(model_params, data, batch_size: int=1) -> np.ndarray:
+def compute_centroid_correction(model_params, data, batch_size: int = 1) -> np.ndarray:
     """Compute centroid corrections using Zernike polynomials.
 
     This function calculates the Zernike contributions required to match the centroid
@@ -285,22 +289,24 @@ def compute_centroid_correction(model_params, data, batch_size: int=1) -> np.nda
     Returns
     -------
     zernike_centroid_array : np.ndarray
-         A 2D NumPy array of shape `(n_stars, 3)`, where `n_stars` is the number of 
-        observed stars. The array contains the computed Zernike contributions, 
+         A 2D NumPy array of shape `(n_stars, 3)`, where `n_stars` is the number of
+        observed stars. The array contains the computed Zernike contributions,
         with zero padding applied to the first column to ensure a consistent shape.
     """
-    star_postage_stamps = extract_star_data(data=data, train_key="noisy_stars", test_key="stars")
-    
+    star_postage_stamps = extract_star_data(
+        data=data, train_key="noisy_stars", test_key="stars"
+    )
+
     # Get star mask catalogue only if "masks" exist in both training and test datasets
     star_masks = (
-    extract_star_data(data=data, train_key="masks", test_key="masks")
-    if (
-        data.training_data.dataset.get("masks") is not None 
-        and data.test_data.dataset.get("masks") is not None
-        and tf.size(data.training_data.dataset["masks"]) > 0  
-        and tf.size(data.test_data.dataset["masks"]) > 0 
-    )
-    else None
+        extract_star_data(data=data, train_key="masks", test_key="masks")
+        if (
+            data.training_data.dataset.get("masks") is not None
+            and data.test_data.dataset.get("masks") is not None
+            and tf.size(data.training_data.dataset["masks"]) > 0
+            and tf.size(data.test_data.dataset["masks"]) > 0
+        )
+        else None
     )
 
     pix_sampling = model_params.pix_sampling * 1e-6  # Change units from [um] to [m]
@@ -308,15 +314,17 @@ def compute_centroid_correction(model_params, data, batch_size: int=1) -> np.nda
     # Ensure star_masks is properly handled
     star_masks = star_masks if star_masks is not None else None
 
-    reference_shifts = [float(Fraction(value)) for value in model_params.reference_shifts]
+    reference_shifts = [
+        float(Fraction(value)) for value in model_params.reference_shifts
+    ]
 
     n_stars = len(star_postage_stamps)
     zernike_centroid_array = []
 
     # Batch process the stars
     for i in range(0, n_stars, batch_size):
-        batch_postage_stamps = star_postage_stamps[i:i + batch_size]
-        batch_masks = star_masks[i:i + batch_size] if star_masks is not None else None
+        batch_postage_stamps = star_postage_stamps[i : i + batch_size]
+        batch_masks = star_masks[i : i + batch_size] if star_masks is not None else None
 
         # Compute Zernike 1 and Zernike 2 for the batch
         zk1_2_batch = -1.0 * compute_zernike_tip_tilt(
@@ -324,7 +332,14 @@ def compute_centroid_correction(model_params, data, batch_size: int=1) -> np.nda
         )
 
         # Zero pad array for each batch and append
-        zernike_centroid_array.append(np.pad(zk1_2_batch, pad_width=[(0, 0), (1, 0)], mode="constant", constant_values=0))
+        zernike_centroid_array.append(
+            np.pad(
+                zk1_2_batch,
+                pad_width=[(0, 0), (1, 0)],
+                mode="constant",
+                constant_values=0,
+            )
+        )
 
     # Combine all batches into a single array
     return np.concatenate(zernike_centroid_array, axis=0)
@@ -370,7 +385,7 @@ def compute_ccd_misalignment(model_params, data):
     return zernike_ccd_misalignment_array
 
 
-def get_zernike_prior(model_params, data, batch_size: int=16):
+def get_zernike_prior(model_params, data, batch_size: int = 16):
     """Get Zernike priors from the provided dataset.
 
     This method concatenates the Zernike priors from both the training
