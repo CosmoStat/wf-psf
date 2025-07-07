@@ -8,6 +8,16 @@ To run the script:
 python data_generation_script.py -c data_generation_params_v.0.1.0.yml
 ```
 
+> ⚠️ Warning 
+>
+> There are some differences with the original dataset used for the WaveDiff paper (Liaudat et al. 2023) even if we use it as a reference:
+> - The assingment of SEDs for each star will not match that one of the original dataset. Although the same templates are used.
+> - The assigned noise level (SNR) for each star will not match the original dataset. Although, the same distribution will be used.
+> 
+> Nevertheless, the `C_poly` will match and the `positions` will match. Therefore, results from the new datasets will not be exactly the same as in the original datasets.
+
+
+### Dataset description
 
 **Dataset 0.x.x:**
 
@@ -55,4 +65,6 @@ python data_generation_script.py -c data_generation_params_v.0.1.0.yml
 - v3.1.1/2/3/4 without masks
 - v3.2.1/2/3/4 with dummy (unitary) masks
 - v3.3.1/2/3/4 with realistic masks
+
+
 

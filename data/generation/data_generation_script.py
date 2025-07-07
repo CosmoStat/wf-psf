@@ -561,6 +561,7 @@ def main(args):
 
     # ------------ #
     # Centroid shifts
+    no_shift_test_zks = None
 
     if add_intrapixel_shifts:
 
@@ -599,6 +600,7 @@ def main(args):
 
         # Add the centroid shifts to the Zernike coefficients
         train_zks += train_delta_centroid_shifts
+        no_shift_test_zks = np.copy(test_zks)
         test_zks += test_delta_centroid_shifts
 
     # ------------ #
@@ -752,12 +754,24 @@ def main(args):
             sim_PSF_toolkit.generate_poly_PSF(test_SED_list[it], n_bins=n_bins)
         )
 
+    # Generate test polychromatic PSFs without shifts
+    if no_shift_test_zks is not None:
+        test_poly_psf_noshift_list = []
+        print("Generate test PSFs at observation resolution without shifts")
+        for it in tqdm(range(no_shift_test_zks.shape[0])):
+            sim_PSF_toolkit.set_z_coeffs(no_shift_test_zks[it, :])
+            test_poly_psf_noshift_list.append(
+                sim_PSF_toolkit.generate_poly_PSF(test_SED_list[it], n_bins=n_bins)
+            )
+
     # Generate numpy arrays from the lists
     train_poly_psf_np = np.array(train_poly_psf_list)
     train_SED_np = np.array(train_SED_list)
 
     test_poly_psf_np = np.array(test_poly_psf_list)
     test_SED_np = np.array(test_SED_list)
+    if no_shift_test_zks is not None:
+        test_poly_psf_noshift_np = np.array(test_poly_psf_noshift_list)
 
     # Generate the noisy train stars
     # Copy the training stars
@@ -772,6 +786,21 @@ def main(args):
         [
             add_noise(_im, desired_SNR=_SNR)
             for _im, _SNR in zip(noisy_train_poly_psf_np, rand_SNR)
+        ],
+        axis=0,
+    )
+
+    # Also add noise to the test stars
+    noisy_test_poly_psf_np = np.copy(test_poly_psf_np)
+    # Generate a dataset with a SNR varying randomly within the desired range
+    rand_SNR = (
+        np.random.rand(noisy_test_poly_psf_np.shape[0]) * (SNR_range[1] - SNR_range[0])
+    ) + SNR_range[0]
+    # Add Gaussian noise to the observations
+    noisy_test_poly_psf_np = np.stack(
+        [
+            add_noise(_im, desired_SNR=_SNR)
+            for _im, _SNR in zip(noisy_test_poly_psf_np, rand_SNR)
         ],
         axis=0,
     )
@@ -795,6 +824,13 @@ def main(args):
             # Apply the random masks to the observations
             noisy_train_poly_psf_np = noisy_train_poly_psf_np * train_masks.astype(
                 noisy_train_poly_psf_np.dtype
+            )
+
+            masked_noisy_test_poly_psf_np = np.copy(noisy_test_poly_psf_np)
+            # Apply the random masks to the test stars
+            masked_noisy_test_poly_psf_np = (
+                masked_noisy_test_poly_psf_np
+                * test_masks.astype(noisy_test_poly_psf_np.dtype)
             )
 
             # Turn masks to SHE convention. 1 (True) means to mask and 0 (False) means to keep
@@ -1093,8 +1129,21 @@ def main(args):
             SR_sim_PSF_toolkit.generate_poly_PSF(test_SED_list[it_j], n_bins=n_bins)
         )
 
+    # Generate the test super resolved (SR) polychromatic PSFs without shifts
+    if no_shift_test_zks is not None:
+        SR_test_poly_psf_noshift_list = []
+
+        print("Generate testing SR PSFs no shifts")
+        for it_j in tqdm(range(n_test_stars)):
+            SR_sim_PSF_toolkit.set_z_coeffs(no_shift_test_zks[it_j, :])
+            SR_test_poly_psf_noshift_list.append(
+                SR_sim_PSF_toolkit.generate_poly_PSF(test_SED_list[it_j], n_bins=n_bins)
+            )
+
     # Generate numpy arrays from the lists
     SR_test_poly_psf_np = np.array(SR_test_poly_psf_list)
+    if no_shift_test_zks is not None:
+        SR_test_poly_psf_noshift_np = np.array(SR_test_poly_psf_noshift_list)
 
     # ------------ #
     # Save test datasets
@@ -1131,6 +1180,7 @@ def main(args):
     test_psf_dataset = {
         "stars": test_poly_psf_np,
         "SR_stars": SR_test_poly_psf_np,
+        "noisy_stars": noisy_test_poly_psf_np,
         "positions": test_positions,
         "SEDs": test_SED_np,
         "zernike_GT": test_zks,
@@ -1138,9 +1188,14 @@ def main(args):
 
     if add_masks:
         test_psf_dataset["masks"] = test_masks
+        test_psf_dataset["masked_noisy_stars"] = masked_noisy_test_poly_psf_np
 
     if add_ccd_misalignments:
         test_psf_dataset["zernike_ccd_misalignments"] = test_delta_Z3_arr
+
+    if no_shift_test_zks is not None:
+        test_psf_dataset["stars_noshift"] = test_poly_psf_noshift_np
+        test_psf_dataset["SR_stars_noshift"] = SR_test_poly_psf_noshift_np
 
     if add_intrapixel_shifts:
         test_psf_dataset["zernike_centroid_shifts"] = test_delta_centroid_shifts
