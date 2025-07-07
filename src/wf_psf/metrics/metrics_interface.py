@@ -396,8 +396,6 @@ def evaluate_model(
         DataHandler object containing training and test data
     psf_model: object
         PSF model object
-    weights_path: str
-        Directory location of model weights
     metrics_output: str
         Directory location of metrics output
 
