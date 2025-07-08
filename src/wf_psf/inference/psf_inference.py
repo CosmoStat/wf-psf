@@ -160,7 +160,8 @@ class PSFInference:
                 simPSF=self.simPSF,
                 n_bins_lambda=self.n_bins_lambda,
                 load_data=False,
-                dataset=None,
+                dataset={"positions": self.get_positions()},
+                sed_data = self.seds,
             )
             self._data_handler.run_type = "inference"
         return self._data_handler
@@ -170,6 +171,37 @@ class PSFInference:
         if self._trained_psf_model is None:
             self._trained_psf_model = self.load_inference_model()
         return self._trained_psf_model
+
+    def get_positions(self):
+        """
+        Combine x_field and y_field into position pairs.
+    
+        Returns
+        -------
+        numpy.ndarray
+            Array of shape (num_positions, 2) where each row contains [x, y] coordinates.
+            Returns None if either x_field or y_field is None.
+    
+        Raises
+        ------
+        ValueError
+            If x_field and y_field have different lengths.
+        """
+        if self.x_field is None or self.y_field is None:
+            return None
+    
+        x_arr = np.asarray(self.x_field)
+        y_arr = np.asarray(self.y_field)
+    
+        if x_arr.size != y_arr.size:
+            raise ValueError(f"x_field and y_field must have the same length. "
+                            f"Got {x_arr.size} and {y_arr.size}")
+    
+        # Flatten arrays to handle any input shape, then stack
+        x_flat = x_arr.flatten()
+        y_flat = y_arr.flatten()
+    
+        return np.column_stack((x_flat, y_flat))
 
     def load_inference_model(self):
         """Load the trained PSF model based on the inference configuration.""" 
@@ -187,7 +219,7 @@ class PSFInference:
         # Load the trained PSF model
         return load_trained_psf_model(
             self.training_config,
-            self.data_config,
+            self.data_handler,
             weights_path_pattern,
         )
 
