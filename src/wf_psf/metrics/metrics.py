@@ -289,15 +289,23 @@ def compute_chi2_metric(
     # Compute residuals
     residuals = (reference_stars - preds) * masks
 
-    # Standardize residuals
+    # Standardize residuals -> remove mean and divide by std dev
     standardized_residuals = np.array(
         [
-            (residual - np.mean(residual)) / (np.sum(mask) * std_est)
+            (residual - np.sum(residual) / np.sum(mask)) / std_est
             for residual, mask, std_est in zip(
                 residuals, masks, estimated_noise_std_dev
             )
         ]
     )
+    # Per-image reduced chi2 statistic
+    reduced_chi2_stat_per_image = np.array(
+        [
+            np.sum((standardized_residual * mask) ** 2) / (np.sum(mask))
+            for standardized_residual, mask in zip(standardized_residuals, masks)
+        ]
+    )
+
     # Compute the degrees of freedom and the mean
     degrees_of_freedom = np.sum(masks)
     mean_standardized_residuals = np.sum(standardized_residuals) / degrees_of_freedom
@@ -310,13 +318,23 @@ def compute_chi2_metric(
     mean_noise_std_dev = np.mean(estimated_noise_std_dev)
     median_noise_std_dev = np.median(estimated_noise_std_dev)
 
-    # TODO: Compute the reduced chi2 for each star. Show median and mean values.
-    # Print chi2 values
+    # Print chi2 results
     logger.info("Reduced chi2:\t\t\t %.5e" % (reduced_chi2_stat))
-    logger.info("Average noise std dev:\t %.5e" % (mean_noise_std_dev))
+
+    logger.info(
+        "Average chi2 per image:\t\t %.5e" % (np.mean(reduced_chi2_stat_per_image))
+    )
+    logger.info(
+        "Median chi2 per image:\t\t %.5e" % (np.median(reduced_chi2_stat_per_image))
+    )
+    logger.info(
+        "Std dev chi2 per image:\t\t %.5e" % (np.std(reduced_chi2_stat_per_image))
+    )
+
+    logger.info("Average noise std dev:\t\t %.5e" % (mean_noise_std_dev))
     logger.info("Median noise std dev:\t\t %.5e" % (median_noise_std_dev))
 
-    return reduced_chi2_stat, mean_noise_std_dev
+    return reduced_chi2_stat, mean_noise_std_dev, reduced_chi2_stat_per_image
 
 
 def compute_mono_metric(
