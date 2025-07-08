@@ -314,27 +314,36 @@ def compute_chi2_metric(
         ((standardized_residuals - mean_standardized_residuals) * masks) ** 2
     ) / (degrees_of_freedom - 1)
 
-    # Average std deviation
+    # Compute the average and media values of the noise std deviation
     mean_noise_std_dev = np.mean(estimated_noise_std_dev)
     median_noise_std_dev = np.median(estimated_noise_std_dev)
+
+    # Compute the average, median and std dev of the reduced chi2 statistic per image
+    mean_reduced_chi2_stat_per_image = np.mean(reduced_chi2_stat_per_image)
+    median_reduced_chi2_stat_per_image = np.median(reduced_chi2_stat_per_image)
+    std_reduced_chi2_stat_per_image = np.std(reduced_chi2_stat_per_image)
 
     # Print chi2 results
     logger.info("Reduced chi2:\t\t\t %.5e" % (reduced_chi2_stat))
 
+    logger.info("Average chi2 per image:\t\t %.5e" % (mean_reduced_chi2_stat_per_image))
     logger.info(
-        "Average chi2 per image:\t\t %.5e" % (np.mean(reduced_chi2_stat_per_image))
+        "Median chi2 per image:\t\t %.5e" % (median_reduced_chi2_stat_per_image)
     )
-    logger.info(
-        "Median chi2 per image:\t\t %.5e" % (np.median(reduced_chi2_stat_per_image))
-    )
-    logger.info(
-        "Std dev chi2 per image:\t\t %.5e" % (np.std(reduced_chi2_stat_per_image))
-    )
+    logger.info("Std dev chi2 per image:\t\t %.5e" % (std_reduced_chi2_stat_per_image))
 
     logger.info("Average noise std dev:\t\t %.5e" % (mean_noise_std_dev))
     logger.info("Median noise std dev:\t\t %.5e" % (median_noise_std_dev))
 
-    return reduced_chi2_stat, mean_noise_std_dev, reduced_chi2_stat_per_image
+    return (
+        reduced_chi2_stat,
+        reduced_chi2_stat_per_image,
+        mean_reduced_chi2_stat_per_image,
+        median_reduced_chi2_stat_per_image,
+        std_reduced_chi2_stat_per_image,
+        mean_noise_std_dev,
+        estimated_noise_std_dev,
+    )
 
 
 def compute_mono_metric(
