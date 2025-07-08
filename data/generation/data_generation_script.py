@@ -810,6 +810,8 @@ def main(args):
 
     if add_masks:
 
+        masked_noisy_test_poly_psf_np = np.copy(noisy_test_poly_psf_np)
+
         if mask_type == "random":
             # Generate random train masks
             train_masks = generate_n_mask(
@@ -826,7 +828,6 @@ def main(args):
                 noisy_train_poly_psf_np.dtype
             )
 
-            masked_noisy_test_poly_psf_np = np.copy(noisy_test_poly_psf_np)
             # Apply the random masks to the test stars
             masked_noisy_test_poly_psf_np = (
                 masked_noisy_test_poly_psf_np
