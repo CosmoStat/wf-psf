@@ -292,7 +292,7 @@ def compute_chi2_metric(
     # Standardize residuals
     standardized_residuals = np.array(
         [
-            (residual - np.sum(residual) / np.sum(mask)) / std_est
+            (residual - np.mean(residual)) / (np.sum(mask) * std_est)
             for residual, mask, std_est in zip(
                 residuals, masks, estimated_noise_std_dev
             )
