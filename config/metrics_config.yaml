@@ -12,6 +12,9 @@ metrics:
   # Name of the Trained Model Config file stored in config sub-directory in the trained_model_path parent directory
   trained_model_config: <enter name of trained model config file>
   
+  # Evaluate the chi2 metric.
+  eval_chi2_metric: True
+
   # Evaluate the monchromatic RMSE metric.
   eval_mono_metric: True
   
