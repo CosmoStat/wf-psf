@@ -155,27 +155,30 @@ class MetricsParamsHandler:
         mask = self.trained_model.training_hparams.loss == "mask_mse"
 
         # Compute metrics
-        reduced_chi2_stat, mean_noise_std_dev = wf_metrics.compute_chi2_metric(
-            tf_trained_psf_model=psf_model,
-            gt_tf_psf_model=psf_models.get_psf_model(
-                self.metrics_params.ground_truth_model.model_params,
-                self.metrics_params.metrics_hparams,
-                data,
-                dataset.get("C_poly", None),  # Extract C_poly or default to None
-            ),
-            simPSF_np=simPSF,
-            tf_pos=dataset["positions"],
-            tf_SEDs=dataset["SEDs"],
-            n_bins_lda=self.trained_model.model_params.n_bins_lda,
-            n_bins_gt=self.metrics_params.ground_truth_model.model_params.n_bins_lda,
-            batch_size=self.metrics_params.metrics_hparams.batch_size,
-            dataset_dict=dataset,
-            mask=mask,
+        reduced_chi2_stat, mean_noise_std_dev, reduced_chi2_stat_per_image = (
+            wf_metrics.compute_chi2_metric(
+                tf_trained_psf_model=psf_model,
+                gt_tf_psf_model=psf_models.get_psf_model(
+                    self.metrics_params.ground_truth_model.model_params,
+                    self.metrics_params.metrics_hparams,
+                    data,
+                    dataset.get("C_poly", None),  # Extract C_poly or default to None
+                ),
+                simPSF_np=simPSF,
+                tf_pos=dataset["positions"],
+                tf_SEDs=dataset["SEDs"],
+                n_bins_lda=self.trained_model.model_params.n_bins_lda,
+                n_bins_gt=self.metrics_params.ground_truth_model.model_params.n_bins_lda,
+                batch_size=self.metrics_params.metrics_hparams.batch_size,
+                dataset_dict=dataset,
+                mask=mask,
+            )
         )
 
         return {
             "reduced_chi2": reduced_chi2_stat,
             "mean_noise_std_dev": mean_noise_std_dev,
+            "reduced_chi2_stat_per_image": reduced_chi2_stat_per_image,
         }
 
     def evaluate_metrics_mono_rmse(
