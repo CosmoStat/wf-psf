@@ -150,9 +150,17 @@ class PSFInference:
             self._simPSF = psf_models.simPSF(self.training_config.training.model_params)
         return self._simPSF
 
+
+    def _prepare_dataset_for_inference(self):
+        """Prepare dataset dictionary for inference, returning None if positions are invalid."""
+        positions = self.get_positions()
+        if positions is None:
+            return None
+        return {"positions": positions}
+
     @property
     def data_handler(self):
-        if self._data_handler is None:
+        if self._data_handler is None:   
             # Instantiate the data handler
             self._data_handler = DataHandler(
                 dataset_type="inference",
@@ -160,7 +168,7 @@ class PSFInference:
                 simPSF=self.simPSF,
                 n_bins_lambda=self.n_bins_lambda,
                 load_data=False,
-                dataset={"positions": self.get_positions()},
+                dataset=self._prepare_dataset_for_inference(),
                 sed_data = self.seds,
             )
             self._data_handler.run_type = "inference"
@@ -193,6 +201,9 @@ class PSFInference:
         x_arr = np.asarray(self.x_field)
         y_arr = np.asarray(self.y_field)
     
+        if x_arr.size == 0 or y_arr.size == 0:
+            return None
+
         if x_arr.size != y_arr.size:
             raise ValueError(f"x_field and y_field must have the same length. "
                             f"Got {x_arr.size} and {y_arr.size}")
