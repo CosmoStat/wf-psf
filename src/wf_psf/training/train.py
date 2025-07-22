@@ -272,6 +272,30 @@ def get_gpu_info():
     device_name = tf.test.gpu_device_name()
     return device_name
 
+def get_loss_metrics_monitor_and_outputs(training_handler, data_conf):
+    """Factory to return fresh loss, metrics (param & non-param), monitor, and outputs for the current cycle."""
+
+    if training_handler.training_hparams.loss == "mask_mse":
+        loss = train_utils.MaskedMeanSquaredError()
+        monitor = "loss"
+        param_metrics = [train_utils.MaskedMeanSquaredErrorMetric()]
+        non_param_metrics = [train_utils.MaskedMeanSquaredErrorMetric()]
+        outputs = tf.stack(
+            [data_conf.training_data.dataset["noisy_stars"], data_conf.training_data.dataset["masks"]], axis=-1
+        )
+        output_val = tf.stack(
+            [data_conf.test_data.dataset["stars"], data_conf.test_data.dataset["masks"]], axis=-1
+        )
+    else:
+        loss = tf.keras.losses.MeanSquaredError()
+        monitor = "mean_squared_error"
+        param_metrics = [tf.keras.metrics.MeanSquaredError()]
+        non_param_metrics = [tf.keras.metrics.MeanSquaredError()]
+        outputs = data_conf.training_data.dataset["noisy_stars"]
+        output_val = data_conf.test_data.dataset["stars"]
+
+    return loss, param_metrics, non_param_metrics, monitor, outputs, output_val
+
 
 def train(
     training_params,
@@ -319,10 +343,14 @@ def train(
 
     # Perform all the necessary cycles
     current_cycle = 0
-
     while training_handler.total_cycles > current_cycle:
         current_cycle += 1
 
+        # Instantiate fresh loss, monitor, and independent metric objects per training phase (param / non-param)
+        loss, param_metrics, non_param_metrics, monitor, outputs, output_val = get_loss_metrics_monitor_and_outputs(
+            training_handler, data_conf
+        )
+        
         # If projected learning is enabled project DD_features.
         if hasattr(psf_model, "project_dd_features") and psf_model.project_dd_features:
             if current_cycle > 1:
@@ -340,11 +368,6 @@ def train(
         # Prepare the saving callback
         # Prepare to save the model as a callback
         # -----------------------------------------------------
-        if training_handler.training_hparams.loss == "mask_mse":
-            monitor = "loss"
-        else:
-            monitor = "mean_squared_error"
-
         model_chkp_callback = training_handler._prepare_callbacks(
             checkpoint_dir, current_cycle, monitor=monitor
         )
@@ -357,30 +380,7 @@ def train(
             learning_rate=training_handler.learning_rate_non_params[current_cycle - 1]
         )
         logger.info(f"Starting cycle {current_cycle}..")
-        # Prepare loss & metrics
-        if training_handler.training_hparams.loss == "mask_mse":
-            logger.info("Using masked MSE loss")
-            loss = train_utils.MaskedMeanSquaredError()
-            metrics = [train_utils.MaskedMeanSquaredErrorMetric()]
-            masks = data_conf.training_data.dataset["masks"]
-            outputs = tf.stack(
-                [data_conf.training_data.dataset["noisy_stars"], masks], axis=-1
-            )
-            output_val = tf.stack(
-                [
-                    data_conf.test_data.dataset["stars"],
-                    data_conf.test_data.dataset["masks"],
-                ],
-                axis=-1,
-            )
-        else:
-            loss = tf.keras.losses.MeanSquaredError()
-            metrics = [tf.keras.metrics.MeanSquaredError()]
-            masks = None
-            outputs = data_conf.training_data.dataset["noisy_stars"]
-            output_val = data_conf.test_data.dataset["stars"]
 
-        logger.info(f"Starting cycle {current_cycle}..")
         start_cycle = time.time()
 
         # Compute training per cycle
@@ -415,8 +415,8 @@ def train(
             non_param_optim=non_param_optim,
             param_loss=loss,
             non_param_loss=loss,
-            param_metrics=metrics,
-            non_param_metrics=metrics,
+            param_metrics=param_metrics,
+            non_param_metrics=non_param_metrics,
             param_callback=None,
             non_param_callback=None,
             general_callback=[model_chkp_callback],
