@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 from wf_psf.data.data_handler import (
     DataHandler,
-    get_obs_positions,
+    get_np_obs_positions,
     extract_star_data,
 )
 from wf_psf.utils.read_config import RecursiveNamespace
@@ -166,8 +166,8 @@ def test_load_test_dataset_missing_stars(tmp_path, simPSF):
         mock_warning.assert_called_with("Missing 'noisy_stars' in 'train' dataset.")
 
 
-def test_get_obs_positions(mock_data):
-    observed_positions = get_obs_positions(mock_data)
+def test_get_np_obs_positions(mock_data):
+    observed_positions = get_np_obs_positions(mock_data)
     expected_positions = np.array([[1, 2], [3, 4], [5, 6], [7, 8]])
     assert tf.reduce_all(tf.equal(observed_positions, expected_positions))
 
