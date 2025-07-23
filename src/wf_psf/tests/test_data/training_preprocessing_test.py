@@ -65,13 +65,13 @@ def mock_data():
 def test_process_sed_data(data_params, simPSF):
     # Test processing SED data without initialization
     data_handler = DataHandler(
-        "train", data_params, simPSF, n_bins_lambda=10, load_data=False
+        "training", data_params, simPSF, n_bins_lambda=10, load_data=False
     )
     assert data_handler.sed_data is None  # SED data should not be processed
 
     # Test processing SED data with initialization
     data_handler = DataHandler(
-        "train", data_params, simPSF, n_bins_lambda=10, load_data=True
+        "training", data_params, simPSF, n_bins_lambda=10, load_data=True
     )
     assert data_handler.sed_data is not None  # SED data should be processed
 
@@ -94,11 +94,11 @@ def test_load_train_dataset(tmp_path, data_params, simPSF):
 
     # Initialize DataHandler instance
     data_params = RecursiveNamespace(
-        train=RecursiveNamespace(data_dir=str(data_dir), file="train_data.npy")
+        training=RecursiveNamespace(data_dir=str(data_dir), file="train_data.npy")
     )
 
     n_bins_lambda = 10
-    data_handler = DataHandler("train", data_params, simPSF, n_bins_lambda, load_data=False)
+    data_handler = DataHandler("training", data_params, simPSF, n_bins_lambda, load_data=False)
 
     # Call the load_dataset method
     data_handler.load_dataset()
@@ -158,15 +158,15 @@ def test_load_train_dataset_missing_noisy_stars(tmp_path, data_params, simPSF):
     np.save(temp_data_file, mock_dataset)
 
     data_params = RecursiveNamespace(
-        train=RecursiveNamespace(data_dir=str(data_dir), file="train_data.npy")
+        training=RecursiveNamespace(data_dir=str(data_dir), file="train_data.npy")
     )
 
     n_bins_lambda = 10
-    data_handler = DataHandler("train", data_params, simPSF, n_bins_lambda, load_data=False)
+    data_handler = DataHandler("training", data_params, simPSF, n_bins_lambda, load_data=False)
 
     with patch("wf_psf.data.training_preprocessing.logger.warning") as mock_warning:
         data_handler.load_dataset()
-        mock_warning.assert_called_with("Missing 'noisy_stars' in train dataset.")
+        mock_warning.assert_called_with("Missing 'noisy_stars' in training dataset.")
 
 def test_load_test_dataset_missing_stars(tmp_path, data_params, simPSF):
     """Test that a warning is raised if 'stars' is missing in test data."""
@@ -201,7 +201,7 @@ def test_process_sed_data(data_params, simPSF):
     }
     # Initialize DataHandler instance
     n_bins_lambda = 4
-    data_handler = DataHandler("train", data_params, simPSF, n_bins_lambda, False)
+    data_handler = DataHandler("training", data_params, simPSF, n_bins_lambda, False)
 
     data_handler.dataset = mock_dataset
     data_handler.process_sed_data()
