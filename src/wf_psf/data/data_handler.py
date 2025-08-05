@@ -161,16 +161,16 @@ class DataHandler:
         if "positions" not in self.dataset:
             raise ValueError("Dataset missing required field: 'positions'")
 
-        if self.dataset_type == "train":
+        if self.dataset_type == "training":
             if "noisy_stars" not in self.dataset:
-                logger.warning("Missing 'noisy_stars' in 'train' dataset.")
+                raise ValueError(f"Missing required field 'noisy_stars' in {self.dataset_type} dataset.")
         elif self.dataset_type == "test":
             if "stars" not in self.dataset:
-                logger.warning("Missing 'stars' in 'test' dataset.")
+                raise ValueError(f"Missing required field 'stars' in {self.dataset_type} dataset.")
         elif self.dataset_type == "inference":
             pass
         else:
-            logger.warning(f"Unrecognized dataset_type: {self.dataset_type}")
+            raise ValueError(f"Unrecognized dataset_type: {self.dataset_type}")
 
     def _convert_dataset_to_tensorflow(self):
         """Convert dataset to TensorFlow tensors."""
@@ -179,12 +179,10 @@ class DataHandler:
             self.dataset["positions"], dtype=tf.float32
         )
         if self.dataset_type == "training":
-            if "noisy_stars" in self.dataset:
                 self.dataset["noisy_stars"] = tf.convert_to_tensor(
                     self.dataset["noisy_stars"], dtype=tf.float32
                 )
-            else:
-                logger.warning(f"Missing 'noisy_stars' in {self.dataset_type} dataset.")
+            
         elif self.dataset_type == "test":
             if "stars" in self.dataset:
                 self.dataset["stars"] = tf.convert_to_tensor(
