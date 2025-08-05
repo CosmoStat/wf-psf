@@ -776,7 +776,6 @@ def general_train_cycle(
             callbacks=callbacks,
             sample_weight=sample_weight,
             verbose=verbose,
-            first_run=first_run,
             cycle_part="parametric",
         )
 
@@ -818,7 +817,6 @@ def general_train_cycle(
             callbacks=callbacks,
             sample_weight=sample_weight,
             verbose=verbose,
-            first_run=first_run,
             cycle_part="non-parametric",
         )
 
