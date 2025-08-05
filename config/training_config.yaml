@@ -1,35 +1,75 @@
 training:
-  # Run ID name
-  id_name: -coherent_euclid_200stars
+  # ID name
+  id_name: _no_sfe_id-11
   # Name of Data Config file
   data_config: data_config.yaml 
+  # If true, load dataset from file when initializing DataHandler.
+  # Passed through DataConfigHandler but only affects DataHandler.
+  # Set to false to delay dataset loading and manually load later.
+  load_data_on_init: True
   # Metrics Config file - Enter file to run metrics evaluation else if empty run train only
-  metrics_config: metrics_config.yaml
-  # PSF model parameters
+  metrics_config:
   model_params:
-    # Model type. Options are: 'mccd', 'graph', 'poly, 'param', 'poly_physical'."
-    model_name: poly
+    # Model type. Options are: 'mccd', 'graph', 'poly, 'param', 'physical_poly'.
+    model_name: physical_poly
 
-    #Num of wavelength bins to reconstruct polychromatic objects.
+    # Num of wavelength bins to reconstruct polychromatic objects.
     n_bins_lda: 8 
 
-    #Downsampling rate to match the oversampled model to the specified telescope's sampling.
+    # Downsampling rate to match the oversampled model to the specified telescope's sampling.
     output_Q: 3
   
-    #Oversampling rate used for the OPD/WFE PSF model.
+    # Oversampling rate used for the OPD/WFE PSF model.
     oversampling_rate: 3 
   
-    #Dimension of the pixel PSF postage stamp
+    # Dimension of the pixel PSF postage stamp
     output_dim: 32
       
-    #Dimension of the OPD/Wavefront space."
+    # Dimension of the OPD/Wavefront space.
     pupil_diameter: 256
+    
+    # Flag to use Zernike prior
+    use_prior: False
 
-    #Boolean to define if we use sample weights based on the noise standard deviation estimation
+    # Flag to perform centroid error correction
+    correct_centroids: True
+
+    # Sigma of the window function used to compute the centroids. Default Euclid value is 2.5
+    sigma_centroid_window: 2.5
+
+    # Default reference_shifts value for observations at Euclid conditions, i.e., pixel sampling and telescope parameters.
+    reference_shifts: [-1/3, -1/3]
+
+    # Rotation angle (in degrees) for the obscuration mask.  
+    # Must be a multiple of 90 (0, 90, 180, 270, etc.).  
+    # Rotation is counterclockwise. 
+    obscuration_rotation_angle: 0
+
+    # Flag to perform CCD misalignment error correction
+    add_ccd_misalignments: False
+
+    # CCD misalignments input file path
+    # This should be refactored. It might be better to directly look for the `tiles.npy` in 
+    # the `data/assets/` directory in the repository
+    ccd_misalignments_input_path: /Users/tl255879/Documents/research/Euclid/real_data/CCD_missalignments/tiles.npy
+
+    # Boolean to define if we use sample weights based on the noise standard deviation estimation
     use_sample_weights: True 
 
-    #Interpolation type for the physical poly model. Options are: 'none', 'all', 'top_K', 'independent_Zk'."
+    # Sample weight generalised sigmoid function
+    sample_weights_sigmoid:
+      # Boolean to define if we apply the sigmoid function to the sample weights
+      apply_sigmoid: False
+      # Maximum value of the sigmoid function and consequently the maximum value of the sample weights
+      sigmoid_max_val: 5.0
+      # Power of the sigmoid function. The higher the value the steeper the sigmoid function. In the limit
+      sigmoid_power_k: 1.0
+
+    # Interpolation type for the physical poly model. Options are: 'none', 'all', 'top_K', 'independent_Zk'."
     interpolation_type: None
+    
+    # Interpolation Arguments for the physical polychromatic model
+    interpolation_args: None
 
     # SED intepolation points per bin
     sed_interp_pts_per_bin: 0
@@ -48,71 +88,96 @@ training:
     
     #Limits of the PSF field coordinates for the y axis.
     y_lims: [0.0, 1.0e+3]
+
+    # Pixel sampling in [um]. Default is `12`[um] (Euclid-like).
+    pix_sampling: 12
+
+    # Telescope's main mirror diameter in [m]. Default is `1.2`[m] (Euclid-like).
+    tel_diameter: 1.2
+
+    # Telescope's focal length in [m]. Default is `24.5`[m] (Euclid-like).
+    tel_focal_length: 24.5
+
+    # Wheter to use Euclid-like obscurations.
+    euclid_obsc: True
+
+    # Length of one dimension of the Low-Pass (LP) filter to apply to the
+    # obscurations to avoid the aliasing effect. The filter is a simple top-hat filter.
+    LP_filter_length: 3
     
     # Hyperparameters for Parametric model 
     param_hparams:
-      # Set the random seed for Tensor Flow Initialization
+      # Random seed for Tensor Flow Initialization
       random_seed: 3877572
       
-      # Set the parameter for the l2 loss function for the Optical path differences (OPD)/WFE
+      # Parameter for the l2 loss function for the Optical path differences (OPD)/WFE
       l2_param: 0.
     
-      #Zernike polynomial modes to use on the parametric part.
+      # Zernike polynomial modes to use on the parametric part.
       n_zernikes: 15
     
-      #Max polynomial degree of the parametric part.  m
+      # Max polynomial degree of the parametric part.  chg to max_deg_param
       d_max: 2  
 
-      #Flag to save optimisation history for parametric model
+      # Flag to save optimisation history for parametric model; set to False for non-parametric-only
+      # training
       save_optim_history_param: true
 
     # Hyperparameters for non-parametric model
     nonparam_hparams:
-      #Max polynomial degree of the non-parametric part. chg to max_deg_nonparam
+      # Max polynomial degree of the non-parametric part. chg to max_deg_nonparam
       d_max_nonparam: 5 
 
       # Number of graph features
-      num_graph_features: 10
+      num_graph_features: 0
       
-      #L1 regularisation parameter for the non-parametric part."
+      # L1 regularisation parameter for the non-parametric part."
       l1_rate: 1.0e-8
 
-      #Flag to enable Projected learning for DD_features to be used with `poly` or `semiparametric` model.
+      # Flag to enable Projected learning for DD_features to be used with `poly` or `semiparametric` model.
       project_dd_features: False
 
-      #Flag to reset DD_features to be used with `poly` or `semiparametric` model
+      # Flag to reset DD_features to be used with `poly` or `semiparametric` model
       reset_dd_features: False
 
-      #Flag to save optimisation history for non-parametric model
+      # Flag to save optimisation history for non-parametric model; set to False for parametric-only training 
+      # if specified in cycle
+      # See cycle_def
       save_optim_history_nonparam: true 
 
   # Training hyperparameters
   training_hparams:
-  
-    # Batch Size
+    # Number of training samples processed per batch. Affects memory usage and convergence speed.
     batch_size: 32
-         
-    # Multi-cyclic Parameters     
+
+    # Loss function used during training. 
+    # Options: 'mask_mse' (Masked Mean Squared Error) and 'mse' (Mean Squared Error).
+    # Default: 'mask_mse'. Choose 'mse' if the dataset does not include a mask.
+    loss: 'mask_mse'
+
     multi_cycle_params:
      
-      # Total number of cycles to perform for training.  
-      total_cycles: 1
+      # Number of training cycles to perform. Each cycle may use different learning rates or number of epochs.
+      total_cycles: 2
          
       # Train cycle definition. It can be: 'parametric', 'non-parametric', 'complete', 'only-non-parametric' and 'only-parametric'."
       cycle_def: complete
 
-      # Flag to save all cycles. If "True", create a checkpoint at every cycle, else if "False" only save the checkpoint at the end of the training."
+      # Make checkpoint at every cycle or just save the checkpoint at the end of the training."
       save_all_cycles: False
+
+      #"Saved cycle to use for the evaluation. Can be 'cycle1', 'cycle2', ..."
+      saved_cycle: cycle2
    
-      # Learning rates for training the parametric model parameters per cycle.
+      # Learning rates for the parametric parts. It should be a str where numeric values are separated by spaces.
       learning_rate_params: [1.0e-2, 1.0e-2]
  
-      # Learning rates for training the non-parametric model parameters per cycle.
+      # Learning rates for the non-parametric parts. It should be a str where numeric values are separated by spaces." 
       learning_rate_non_params: [1.0e-1, 1.0e-1]
  
-      # Number of training epochs for training the parametric model parameters per cycle.
+      # Number of training epochs of the parametric parts. It should be a strign where numeric values are separated by spaces."
       n_epochs_params: [20, 20] 
   
-      # Number of training epochs for training the non-parametric model parameters per cycle.
+      # Number of training epochs of the non-parametric parts. It should be a str where numeric values are separated by spaces."
       n_epochs_non_params: [100, 120]
-  
+    

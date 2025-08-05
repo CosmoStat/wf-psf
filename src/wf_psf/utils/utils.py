@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Optional, Tuple
 import tensorflow as tf
 import tensorflow_addons as tfa
 import PIL
@@ -6,7 +7,7 @@ import zernike as zk
 
 try:
     from cv2 import resize, INTER_AREA
-except:
+except ModuleNotFoundError:
     print("Problem importing opencv..")
 import sys
 
@@ -30,6 +31,52 @@ def calc_wfe_rms(zernike_basis, zks, pupil_mask):
     return wfe_rms
 
 
+def generalised_sigmoid(x, max_val=1, power_k=1):
+    return max_val * x / np.power(1 + np.power(np.abs(x), power_k), 1 / power_k)
+
+
+def single_mask_generator(shape):
+    """Generate a single mask with random 2D cosine waves.
+
+    Note: These masks simulate the effect of cosmic rays on the observations.
+
+    Parameters
+    ----------
+    shape: tuple
+        Shape of the mask to be generated.
+
+    Returns
+    -------
+    mask: np.ndarray
+        A 2D mask with random 2D cosine waves.
+    """
+    # 2D meshgrid between 0.5 and 1
+    x, y = np.meshgrid(np.linspace(0.7, 1.2, shape[1]), np.linspace(0.6, 1.1, shape[0]))
+    # random pair of 2D frequencies, xy shifts and flip flag
+    fxy_list = [np.random.random(5) * 6 for _ in range(100)]
+    # 2D cosine waves
+    cosine_wave_list = [
+        np.cos(2 * np.pi * (fxy[0] * (x - fxy[2] / 50) + fxy[1] * (y - fxy[3] / 50)))
+        for fxy in fxy_list
+    ]
+    # Sum of all cosine waves with random orientation
+    cosine_wave_tot = np.zeros_like(cosine_wave_list[0])
+    for cosine_wave, fxy in zip(cosine_wave_list, fxy_list):
+        if fxy[4] < 3:
+            cosine_wave = np.flipud(cosine_wave)
+        cosine_wave_tot += cosine_wave
+    # normalize
+    cosine_wave = cosine_wave_tot / np.max(cosine_wave_tot)
+
+    # detect values less than 0.6
+    return cosine_wave < 0.6
+
+
+def generate_n_mask(shape, n_masks=1):
+    """Generate n masks with random 2D cosine waves."""
+    return np.array([single_mask_generator(shape) for _ in range(n_masks)])
+
+
 def generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
     """Generate SED Elements.
 
@@ -41,7 +88,7 @@ def generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
     SED:
     sim_psf_toolkit:
         An instance of the PSFSimulator class with the correct
-    initialization values.
+        initialization values.
     n_bins: int
         Number of wavelength bins
     """
@@ -55,17 +102,17 @@ def generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
 def generate_SED_elems_in_tensorflow(
     SED, sim_psf_toolkit, n_bins=20, tf_dtype=tf.float64
 ):
-    """Generate SED Elements in Tensor Flow Units.
+    """Generate SED Elements in TensorFlow Units.
 
     A function to generate the SED elements needed for using the
-    Tensor Flow class: TF_poly_PSF.
+    TensorFlow class: TF_poly_PSF.
 
     Parameters
     ----------
     SED:
     sim_psf_toolkit:
         An instance of the PSFSimulator class with the correct
-    initialization values.
+        initialization values.
     n_bins: int
         Number of wavelength bins
     tf_dtype: tf.
@@ -128,7 +175,7 @@ def calc_poly_position_mat(pos, x_lims, y_lims, d_max):
     poly_list = []
 
     for d in range(d_max + 1):
-        row_idx = d * (d + 1) // 2
+        # row_idx = d * (d + 1) // 2
         for p in range(d + 1):
             poly_list.append(scaled_pos_x ** (d - p) * scaled_pos_y**p)
 
@@ -231,31 +278,39 @@ def add_noise(image, desired_SNR):
     return noisy_image
 
 
-class NoiseEstimator(object):
-    """Noise estimator.
+class NoiseEstimator:
+    """
+    A class for estimating noise levels in an image.
 
     Parameters
     ----------
-    img_dim: tuple of int
-        Image size
-    win_rad: int
-        window radius in pixels
-
+    img_dim : tuple of int
+        The dimensions of the image as (height, width).
+    win_rad : int
+        The radius of the exclusion window (in pixels).
     """
 
-    def __init__(self, img_dim, win_rad):
-        self.img_dim = img_dim
-        self.win_rad = win_rad
-        self.window = None
+    def __init__(self, img_dim: Tuple[int, int], win_rad: int) -> None:
+        """
+        Initializes the NoiseEstimator instance.
 
-        self._init_window()
+        Parameters
+        ----------
+        img_dim : tuple of int
+            The dimensions of the image as (height, width).
+        win_rad : int
+            The radius of the exclusion window (in pixels).
+        """
+        self.img_dim: Tuple[int, int] = img_dim
+        self.win_rad: int = win_rad
+
+        self._init_window()  # Initialize self.window
 
     def _init_window(self):
-        # Calculate window function for estimating the noise
-        # We couldn't use Galsim to estimate the moments, so we chose to work
-        # with the real center of the image (25.5,25.5)
-        # instead of using the real centroid. Also, we use 13 instead of
-        # 5 * obs_sigma, so that we are sure to cut all the flux from the star
+        """
+        Initializes a boolean mask defining an exclusion window.
+        Pixels within the specified radius from the image center are excluded.
+        """
         self.window = np.ones(self.img_dim, dtype=bool)
 
         mid_x = self.img_dim[0] / 2
@@ -263,20 +318,68 @@ class NoiseEstimator(object):
 
         for _x in range(self.img_dim[0]):
             for _y in range(self.img_dim[1]):
+                # If pixel is within the exclusion radius, set it to False
                 if np.sqrt((_x - mid_x) ** 2 + (_y - mid_y) ** 2) <= self.win_rad:
                     self.window[_x, _y] = False
 
+    def apply_mask(self, mask: np.ndarray = None) -> np.ndarray:
+        """
+        Apply a given mask to the exclusion window.
+
+        Parameters
+        ----------
+        mask : np.ndarray, optional
+            A boolean mask to apply to the exclusion window. If None, the exclusion
+            window is returned without any modification.
+
+        Returns
+        -------
+        np.ndarray
+            The resulting boolean array after applying the mask to the exclusion window.
+        """
+        if mask is None:
+            return self.window  # Return just the window if no mask is provided
+        return self.window & mask  # Otherwise, apply the mask as usual
+
     @staticmethod
     def sigma_mad(x):
-        r"""Compute an estimation of the standard deviation
-        of a Gaussian distribution using the robust
-        MAD (Median Absolute Deviation) estimator."""
+        """
+        Computes a robust estimation of the standard deviation of a Gaussian distribution
+        using the Median Absolute Deviation (MAD) estimator.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            Input array from which to compute the noise estimate.
+
+        Returns
+        -------
+        float
+            Estimated standard deviation of the noise.
+        """
         return 1.4826 * np.median(np.abs(x - np.median(x)))
 
-    def estimate_noise(self, image):
-        r"""Estimate the noise level of the image."""
+    def estimate_noise(self, image: np.ndarray, mask: np.ndarray = None) -> float:
+        """
+        Estimates the noise level of an image using the MAD estimator.
 
-        # Calculate noise std dev
+        Parameters
+        ----------
+        image : np.ndarray
+            The input image for noise estimation.
+        mask : np.ndarray, optional
+            A boolean mask specifying which pixels to include in the noise estimation.
+            If None, the default exclusion window is used. The mask should have the same shape as `image`.
+
+        Returns
+        -------
+        float
+            The estimated noise standard deviation (MAD of the image pixels within the window or mask).
+        """
+        if mask is not None:
+            return self.sigma_mad(image[self.apply_mask(mask)])
+
+        # Use the default window if no mask is provided
         return self.sigma_mad(image[self.window])
 
 
@@ -485,14 +588,87 @@ def load_multi_cycle_params_click(args):
     return args
 
 
-def PI_zernikes(tf_z1, tf_z2, norm_factor=None):
-    """Compute internal product between zernikes and OPDs
+def compute_unobscured_zernike_projection(tf_z1, tf_z2, norm_factor=None):
+    """Compute a zernike projection for unobscured wavefronts (OPDs).
 
-    Defined such that Zernikes are orthonormal to each other
+    Compute internal product between zernikes and OPDs.
 
-    First one should compute: norm_factor =  PI_zernikes(tf_zernike,tf_zernike)
-    for futur calls: PI_zernikes(OPD,tf_zernike_k, norm_factor)
+    Defined such that Zernikes are orthonormal to each other.
+
+    First one should compute: norm_factor =  unobscured_zernike_projection(tf_zernike,tf_zernike)
+    for futur calls: unobscured_zernike_projection(OPD,tf_zernike_k, norm_factor)
+
+    If the OPD has obscurations, or is not an unobscured circular aperture,
+    the Zernike polynomials are no longer orthonormal. Therefore, you should consider
+    using the function `tf_decompose_obscured_opd_basis` that takes into account the
+    obscurations in the projection.
     """
     if norm_factor is None:
         norm_factor = 1
     return np.sum((tf.math.multiply(tf_z1, tf_z2)).numpy()) / (norm_factor)
+
+
+def decompose_tf_obscured_opd_basis(
+    tf_opd, tf_obscurations, tf_zk_basis, n_zernike, iters=20
+):
+    """Decompose obscured OPD into a basis using an iterative algorithm.
+
+    Tensorflow implementation.
+
+    Parameters
+    ----------
+    tf_opd : tf.Tensor
+        Input OPD that requires to be decomposed on `tf_zk_basis`. The tensor shape is (opd_dim, opd_dim).
+    tf_obscurations : tf.Tensor
+        Tensor with the obscuration map.  The tensor shape is (opd_dim, opd_dim).
+    tf_zk_basis : tf.Tensor
+        Zernike polynomial maps. The tensor shape is (n_batch, opd_dim, opd_dim)
+    n_zernike : int
+        Number of Zernike polynomials to project on.
+    iters : int
+        Number of iterations of the algorithm.
+
+    Returns
+    -------
+    obsc_coeffs : np.ndarray
+        Array of size `n_zernike` with projected Zernike coefficients
+
+    Raises
+    ------
+    ValueError
+        If `n_zernike` is bigger than tf_zk_basis.shape[0].
+
+    """
+    if n_zernike > tf_zk_basis.shape[0]:
+        raise ValueError(
+            "Number of Zernike polynomials to project (n_zernike) exceeds the available Zernike elements in the provided basis (tf_zk_basis). Please ensure that n_zernike is less than or equal to the number of Zernike elements in tf_zk_basis."
+        )
+    # Clone input OPD
+    input_tf_opd = tf.identity(tf_opd)
+    # Clone obscurations and project
+    input_tf_obscurations = tf.math.real(tf.identity(tf_obscurations))
+    # Compute normalisation factor
+    ngood = tf.math.reduce_sum(input_tf_obscurations, axis=None, keepdims=False).numpy()
+
+    obsc_coeffs = np.zeros(n_zernike)
+    new_coeffs = np.zeros(n_zernike)
+
+    for count in range(iters):
+        for i, b in enumerate(tf_zk_basis):
+            this_coeff = (
+                tf.math.reduce_sum(
+                    tf.math.multiply(input_tf_opd, b), axis=None, keepdims=False
+                ).numpy()
+                / ngood
+            )
+            new_coeffs[i] = this_coeff
+
+        for i, b in enumerate(tf_zk_basis):
+            input_tf_opd = input_tf_opd - tf.math.multiply(
+                new_coeffs[i] * b, input_tf_obscurations
+            )
+
+        obsc_coeffs += new_coeffs
+        new_coeffs = np.zeros(n_zernike)
+
+    return obsc_coeffs

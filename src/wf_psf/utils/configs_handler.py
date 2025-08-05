@@ -8,18 +8,16 @@ to manage the parameters of the config files
 """
 
 import numpy as np
+import logging
+import os
+import re
+import glob
 from wf_psf.utils.read_config import read_conf
-from wf_psf.data.training_preprocessing import TrainingDataHandler, TestDataHandler
+from wf_psf.data.training_preprocessing import DataHandler
 from wf_psf.training import train
 from wf_psf.psf_models import psf_models
 from wf_psf.metrics.metrics_interface import evaluate_model
 from wf_psf.plotting.plots_interface import plot_metrics
-import logging
-from wf_psf.utils.io import FileIOHandler
-import os
-import re
-import glob
-
 
 logger = logging.getLogger(__name__)
 
@@ -50,10 +48,10 @@ def register_configclass(config_class):
 
 
 def set_run_config(config_name):
-    """Set Config Class.
+    """Set Run Configuration Class.
 
-    A function to select the class of
-    a configuration from CONFIG_CLASS dictionary.
+    A function to retrieve the appropriate configuration
+    class based on the provided config name.
 
     Parameters
     ----------
@@ -69,27 +67,26 @@ def set_run_config(config_name):
     try:
         config_id = [id for id in CONFIG_CLASS.keys() if re.search(id, config_name)][0]
         config_class = CONFIG_CLASS[config_id]
-    except KeyError as e:
-        logger.exception("Config name entered is invalid. Check your config settings.")
+    except KeyError:
+        logger.exception("Invalid config name. Check your config settings.")
         exit()
 
     return config_class
 
 
-def get_run_config(run_config, config_params, file_handler):
-    """Get Run Configuration.
+def get_run_config(run_config_name, *config_params):
+    """Get Run Configuration Instance.
 
-    A function to get the configuration
-    for a wf-psf run.
+    A function to retrieve an instance of
+    the appropriate configuration class for
+    a WF-PSF run.
 
     Parameters
     ----------
-    run_config: str
-        Name of the type of run configuraton
-    config_params: str
-        Path of the run configuration file
-    file_handler: object
-        A class instance of FileIOHandler
+    run_config_name: str
+        Name of the run configuraton
+    *config_params: str
+        Run configuration parameters used for class instantiation.
 
     Returns
     -------
@@ -97,9 +94,9 @@ def get_run_config(run_config, config_params, file_handler):
         A class instance of the selected configuration class.
 
     """
-    config_class = set_run_config(run_config)
+    config_class = set_run_config(run_config_name)
 
-    return config_class(config_params, file_handler)
+    return config_class(*config_params)
 
 
 class ConfigParameterError(Exception):
@@ -118,14 +115,16 @@ class DataConfigHandler:
 
     Parameters
     ----------
-    data_conf: str
+    data_conf : str
         Path of the data configuration file
-    training_model_params: Recursive Namespace object
+    training_model_params : Recursive Namespace object
         Recursive Namespace object containing the training model parameters
+    batch_size : int
+       Training hyperparameter used for batched pre-processing of data.  
 
     """
 
-    def __init__(self, data_conf, training_model_params):
+    def __init__(self, data_conf, training_model_params, batch_size=16, load_data=True):
         try:
             self.data_conf = read_conf(data_conf)
         except FileNotFoundError as e:
@@ -136,16 +135,21 @@ class DataConfigHandler:
             exit()
 
         self.simPSF = psf_models.simPSF(training_model_params)
-        self.training_data = TrainingDataHandler(
-            self.data_conf.data.training,
-            self.simPSF,
-            training_model_params.n_bins_lda,
+        self.training_data = DataHandler(
+            dataset_type="training",
+            data_params=self.data_conf.data,
+            simPSF=self.simPSF,
+            n_bins_lambda=training_model_params.n_bins_lda,
+            load_data=load_data,
         )
-        self.test_data = TestDataHandler(
-            self.data_conf.data.test,
-            self.simPSF,
-            training_model_params.n_bins_lda,
+        self.test_data = DataHandler(
+            dataset_type="test",
+            data_params=self.data_conf.data,
+            simPSF=self.simPSF,
+            n_bins_lambda=training_model_params.n_bins_lda,
+            load_data=load_data,
         )
+        self.batch_size = batch_size
 
 
 @register_configclass
@@ -176,6 +180,8 @@ class TrainingConfigHandler:
                 file_handler.config_path, self.training_conf.training.data_config
             ),
             self.training_conf.training.model_params,
+            self.training_conf.training.training_hparams.batch_size,
+            self.training_conf.training.load_data_on_init,
         )
         self.file_handler.copy_conffile_to_output_dir(
             self.training_conf.training.data_config
@@ -193,14 +199,14 @@ class TrainingConfigHandler:
     def run(self):
         """Run.
 
-        A function to run wave-diff according to the
+        A function to run wavediff according to the
         input configuration.
 
         """
+
         train.train(
             self.training_conf.training,
-            self.data_conf.training_data,
-            self.data_conf.test_data,
+            self.data_conf,
             self.checkpoint_dir,
             self.optimizer_dir,
             self.psf_model_dir,
@@ -277,6 +283,7 @@ class MetricsConfigHandler:
         return psf_models.get_psf_model(
             self.training_conf.training.model_params,
             self.training_conf.training.training_hparams,
+            self.data_conf,
         )
 
     @property
@@ -441,8 +448,7 @@ class MetricsConfigHandler:
         model_metrics = evaluate_model(
             self.metrics_conf.metrics,
             self.training_conf.training,
-            self.data_conf.training_data,
-            self.data_conf.test_data,
+            self.data_conf,
             self.psf_model,
             self.weights_path,
             self.metrics_dir,
@@ -587,7 +593,7 @@ class PlottingConfigHandler:
             ]
 
             return run_ids
-        except:
+        except FileNotFoundError:
             logger.exception("File not found.")
 
     def load_metrics_into_dict(self):

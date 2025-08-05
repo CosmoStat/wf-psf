@@ -1,6 +1,6 @@
 """FIXTURES FOR GENERATING TESTS FOR WF-PSF MODULES: CONFTEST.
 
-This module contains fixtures to use in unit tests for 
+This module contains fixtures to use in unit tests for
 various wf_psf packages.
 
 :Author: Jennifer Pollack <jennifer.pollack@cea.fr>
@@ -11,11 +11,12 @@ various wf_psf packages.
 import pytest
 from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.training.train import TrainingParamsHandler
+from wf_psf.utils.configs_handler import DataConfigHandler
 from wf_psf.psf_models import psf_models
-from wf_psf.data.training_preprocessing import TrainingDataHandler, TestDataHandler
+from wf_psf.data.training_preprocessing import DataHandler
 
 training_config = RecursiveNamespace(
-    id_name="_sample_w_bis1_2k",
+    id_name="-coherent_euclid_200stars",
     data_config="data_config.yaml",
     metrics_config="metrics_config.yaml",
     model_params=RecursiveNamespace(
@@ -25,14 +26,30 @@ training_config = RecursiveNamespace(
         oversampling_rate=3,
         output_dim=32,
         pupil_diameter=256,
+        use_prior=True,
+        correct_centroids=False,
+        sigma_centroid_window=2.5,
+        obscuration_rotation_angle=0,
+        add_ccd_misalignments=False,
+        ccd_misalignments_input_path="/Users/tl255879/Documents/research/Euclid/real_data/CCD_missalignments/tiles.npy",
         use_sample_weights=True,
-        interpolation_type="None",
+        sample_weights_sigmoid=RecursiveNamespace(
+            apply_sigmoid=True,
+            sigmoid_max_val=5.0,
+            sigmoid_power_k=1.0,
+        ),
+        interpolation_type=None,
         sed_interp_pts_per_bin=0,
         sed_extrapolate=True,
         sed_interp_kind="linear",
         sed_sigma=0,
         x_lims=[0.0, 1000.0],
         y_lims=[0.0, 1000.0],
+        pix_sampling=12,
+        tel_diameter=1.2,
+        tel_focal_length=24.5,
+        euclid_obsc=True,
+        LP_filter_length=3,
         param_hparams=RecursiveNamespace(
             random_seed=3877572,
             l2_param=0.0,
@@ -50,8 +67,7 @@ training_config = RecursiveNamespace(
         ),
     ),
     training_hparams=RecursiveNamespace(
-        n_epochs_params=[2, 2],
-        n_epochs_non_params=[2, 2],
+        loss="mse",
         batch_size=32,
         multi_cycle_params=RecursiveNamespace(
             total_cycles=2,
@@ -66,48 +82,15 @@ training_config = RecursiveNamespace(
     ),
 )
 
-data = RecursiveNamespace(
-    training=RecursiveNamespace(
-        data_dir="data",
-        file="coherent_euclid_dataset/train_Euclid_res_200_TrainStars_id_001.npy",
-        stars=None,
-        positions=None,
-        SEDS=None,
-        zernike_coef=None,
-        C_poly=None,
-        params=RecursiveNamespace(
-            d_max=2,
-            max_order=45,
-            x_lims=[0, 1000.0],
-            y_lims=[0, 1000.0],
-            grid_points=[4, 4],
-            n_bins=20,
-            max_wfe_rms=0.1,
-            oversampling_rate=3.0,
-            output_Q=3.0,
-            output_dim=32,
-            LP_filter_length=2,
-            pupil_diameter=256,
-            euclid_obsc=True,
-            n_stars=200,
+data_conf_object = RecursiveNamespace(
+    data=RecursiveNamespace(
+        training=RecursiveNamespace(
+            data_dir="data",
+            file="coherent_euclid_dataset/train_Euclid_res_200_TrainStars_id_001.npy",
         ),
-    ),
-    test=RecursiveNamespace(
-        data_dir="data",
-        file="coherent_euclid_dataset/test_Euclid_res_id_001.npy",
-        stars=None,
-        noisy_stars=None,
-        positions=None,
-        SEDS=None,
-        zernike_coef=None,
-        C_poly=None,
-        parameters=RecursiveNamespace(
-            d_max=2,
-            max_order=45,
-            x_lims=[0, 1000.0],
-            y_lims=[0, 1000.0],
-            grid_points=[4, 4],
-            max_wfe_rms=0.1,
+        test=RecursiveNamespace(
+            data_dir="data",
+            file="coherent_euclid_dataset/test_Euclid_res_id_001.npy",
         ),
     ),
 )
@@ -120,8 +103,9 @@ def training_params():
 
 @pytest.fixture(scope="module")
 def training_data():
-    return TrainingDataHandler(
-        data.training,
+    return DataHandler(
+        "training",
+        data_conf_object.data,
         psf_models.simPSF(training_config.model_params),
         training_config.model_params.n_bins_lda,
     )
@@ -129,8 +113,9 @@ def training_data():
 
 @pytest.fixture(scope="module")
 def test_data():
-    return TestDataHandler(
-        data.test,
+    return DataHandler(
+        "test",
+        data_conf_object.data,
         psf_models.simPSF(training_config.model_params),
         training_config.model_params.n_bins_lda,
     )
@@ -138,7 +123,21 @@ def test_data():
 
 @pytest.fixture(scope="module")
 def test_dataset(test_data):
-    return test_data.test_dataset
+    return test_data.dataset
+
+
+@pytest.fixture(scope="function")
+def data_conf(mocker, training_data, test_data):
+    # Patch the DataConfigHandler.__init__() method
+    mocker.patch(
+        "wf_psf.utils.configs_handler.DataConfigHandler.__init__", return_value=None
+    )
+    mock_data_conf = DataConfigHandler(None, None)
+    mock_data_conf = mocker.Mock()
+    mock_data_conf.training_data = training_data
+    mock_data_conf.test_data = test_data
+
+    return mock_data_conf
 
 
 @pytest.fixture(scope="module")

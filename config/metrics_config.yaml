@@ -1,46 +1,85 @@
 metrics:
    # Specify the type of model weights to load by entering "psf_model" to load weights of final psf model or "checkpoint" to load weights from a checkpoint callback.
   model_save_path: <enter psf_model or checkpoint>
+  
   # Choose the training cycle for which to evaluate the psf_model. Can be: 1, 2, ...
   saved_training_cycle: 2
+  
   # Metrics-only run: Specify model_params for a pre-trained model else leave blank if running training + metrics
   # Specify path to Parent Directory of Trained Model 
   trained_model_path: </path/to/parent/directory/of/trained/model>
+  
   # Name of the Trained Model Config file stored in config sub-directory in the trained_model_path parent directory
   trained_model_config: <enter name of trained model config file>
-  #Evaluate the monchromatic RMSE metric.
-  eval_mono_metric_rmse: True
-  #Evaluate the OPD RMSE metric.
-  eval_opd_metric_rmse: True
-  #Evaluate the super-resolution and the shape RMSE metrics for the train dataset.
-  eval_train_shape_sr_metric_rmse: True
+  
+  # Evaluate the monchromatic RMSE metric.
+  eval_mono_metric: True
+  
+  # Evaluate the OPD RMSE metric.
+  eval_opd_metric: True
+  
+  # Evaluate the super-resolution and the shape RMSE metrics for the train dataset.
+  eval_train_shape_results_dict: False
+
+  # Evaluate the super-resolution and the shape RMSE metrics for the test dataset.
+  eval_test_shape_results_dict: False
+  
   # Name of Plotting Config file - Enter name of yaml file to run plot metrics else if empty run metrics evaluation only
   plotting_config: <enter name of plotting_config .yaml file or leave empty>
+  
   ground_truth_model:
     model_params:
-      #Model used as ground truth for the evaluation. Options are: 'poly' for polychromatic and 'physical' [not available].
-      model_name: poly 
+      # PSF model used as ground truth for the evaluation. Options are: 'ground_truth_poly' for polychromatic and 'ground_truth_physical_poly' for polychromatic model with the physical layer extension PSF models.
+      model_name: <ground_truth_poly or ground_truth_physical_poly>
 
       # Evaluation parameters
-      #Number of bins used for the ground truth model poly PSF generation
+      # Number of bins used for the ground truth model poly PSF generation
       n_bins_lda: 20
 
-      #Downsampling rate to match the oversampled model to the specified telescope's sampling.
+      # Downsampling rate to match the oversampled model to the specified telescope's sampling.
       output_Q: 3
 
-      #Oversampling rate used for the OPD/WFE PSF model.
+      # Oversampling rate used for the OPD/WFE PSF model.
       oversampling_rate: 3 
     
-      #Dimension of the pixel PSF postage stamp
+      # Dimension of the pixel PSF postage stamp
       output_dim: 32
         
-      #Dimension of the OPD/Wavefront space."
+      # Dimension of the OPD/Wavefront space."
       pupil_diameter: 256
 
-      #Boolean to define if we use sample weights based on the noise standard deviation estimation
+      # Top-hat filter to avoid the aliasing effect in the obscuration mask
+      LP_filter_length: 2
+
+      # Boolean to define if we use sample weights based on the noise standard deviation estimation
       use_sample_weights: True 
 
-      #Interpolation type for the physical poly model. Options are: 'none', 'all', 'top_K', 'independent_Zk'."
+      # Flag to use Zernike prior
+      use_prior: False
+
+      # Correct centroids
+      correct_centroids: False
+
+      # Sigma of the window function used to compute the centroids. Default Euclid value is 2.5
+      sigma_centroid_window: 2.5
+
+      # Default reference_shifts value for observations at Euclid conditions, i.e., pixel sampling and telescope parameters.
+      reference_shifts: [-1/3, -1/3]
+
+      # Rotation angle (in degrees) for the obscuration mask.
+      # Must be a multiple of 90 (0, 90, 180, 270, etc.).
+      # Rotation is counterclockwise.
+      obscuration_rotation_angle: 0
+
+      # Consider CCD missalignments
+      add_ccd_misalignments: False
+
+      # CCD missalignments input file path
+      # This should be refactored. It might be better to directly look for the `tiles.npy` in
+      # the `data/assets/` directory in the repository
+      ccd_misalignments_input_path:
+      
+      # Interpolation type for the physical poly model. Options are: 'none', 'all', 'top_K', 'independent_Zk'."
       interpolation_type: None
 
       # SED intepolation points per bin
@@ -55,13 +94,13 @@ metrics:
       # Standard deviation of the multiplicative SED Gaussian noise.
       sed_sigma: 0
 
-      #Limits of the PSF field coordinates for the x axis.
+      # Limits of the PSF field coordinates for the x axis.
       x_lims: [0.0, 1.0e+3]
       
-      #Limits of the PSF field coordinates for the y axis.
+      # Limits of the PSF field coordinates for the y axis.
       y_lims: [0.0, 1.0e+3]
       
-      # Hyperparameters for Parametric model 
+      # Hyperparameters for the Parametric model 
       param_hparams:
         # Random seed for Tensor Flow Initialization
         random_seed: 3877572
@@ -69,42 +108,42 @@ metrics:
         # Parameter for the l2 loss function for the Optical path differences (OPD)/WFE
         l2_param: 0.
       
-        #Zernike polynomial modes to use on the parametric part.
+        # Zernike polynomial modes to use on the parametric part.
         n_zernikes: 45
       
-        #Max polynomial degree of the parametric part.
+        # Max polynomial degree of the parametric part.
         d_max: 2  
 
-        #Flag to save optimisation history for parametric model
+        # Flag to save optimisation history for parametric model
         save_optim_history_param: true
 
       # Hyperparameters for non-parametric model
       nonparam_hparams:
-        #Max polynomial degree of the non-parametric part. 
+        # Max polynomial degree of the non-parametric part. 
         d_max_nonparam: 5 
 
         # Number of graph features
         num_graph_features: 10
         
-        #L1 regularisation parameter for the non-parametric part."
+        # L1 regularisation parameter for the non-parametric part."
         l1_rate: 1.0e-8
 
-        #Flag to enable Projected learning for DD_features to be used with `poly` or `semiparametric` model.
+        # Flag to enable Projected learning for DD_features to be used with `poly` or `semiparametric` model.
         project_dd_features: False
 
-        #Flag to reset DD_features to be used with `poly` or `semiparametric` model
+        # Flag to reset DD_features to be used with `poly` or `semiparametric` model
         reset_dd_features: False
 
-        #Flag to save optimisation history for non-parametric model
+        # Flag to save optimisation history for non-parametric model
         save_optim_history_nonparam: True 
 
   metrics_hparams:
     # Batch size to use for the evaluation.
     batch_size: 16
   
-    #Save RMS error for each super resolved PSF in the test dataset in addition to the mean across the FOV."
-    #Flag to get Super-Resolution pixel PSF RMSE for each individual test star. 
-    #If `True`, the relative pixel RMSE of each star is added to ther saving dictionary.
+    # Save RMS error for each super resolved PSF in the test dataset in addition to the mean across the FOV."
+    # Flag to get Super-Resolution pixel PSF RMSE for each individual test star. 
+    # If `True`, the relative pixel RMSE of each star is added to ther saving dictionary.
     opt_stars_rel_pix_rmse: False
   
     ## Specific parameters
@@ -112,11 +151,11 @@ metrics:
     l2_param: 0.
 
     ## Define the resolution at which you'd like to measure the shape of the PSFs
-    #Downsampling rate from the high-resolution pixel modelling space.
+    # Downsampling rate from the high-resolution pixel modelling space.
     # Recommended value: 1
     output_Q: 1
 
-    #Dimension of the pixel PSF postage stamp; it should be big enough so that most of the signal is contained inside the postage stamp. 
+    # Dimension of the pixel PSF postage stamp; it should be big enough so that most of the signal is contained inside the postage stamp. 
     # It also depends on the Q values used.
     # Recommended value: 64 or higher
     output_dim: 64
