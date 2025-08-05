@@ -3,7 +3,7 @@
 A module which defines the classes and methods
 to manage training of the psf model.
 
-:Author: Jennifer Pollack <jennifer.pollack@cea.fr>
+:Authors: Jennifer Pollack <jennifer.pollack@cea.fr>, Tobias Liaudat <tobias.liaudat@cea.fr>, Ezequiel Centofanti <ezequiel.centofanti@cea.fr>
 
 """
 
@@ -18,11 +18,25 @@ import wf_psf.training.train_utils as train_utils
 logger = logging.getLogger(__name__)
 
 
+def get_gpu_info():
+    """Get GPU Information.
+
+    A function to return GPU
+    device name.
+
+    Returns
+    -------
+    device_name: str
+        Name of GPU device
+
+    """
+    device_name = tf.test.gpu_device_name()
+    return device_name
+
 def setup_training():
     """Set up Training.
 
     A function to setup training.
-
 
     """
     device_name = get_gpu_info()
@@ -257,23 +271,32 @@ class TrainingParamsHandler:
         )
 
 
-def get_gpu_info():
-    """Get GPU Information.
-
-    A function to return GPU
-    device name.
+def get_loss_metrics_monitor_and_outputs(training_handler, data_conf):
+    """Factory to return fresh loss, metrics (param & non-param), monitor, and outputs for the current cycle.
+    
+    Parameters
+    ----------
+    training_handler: TrainingParamsHandler
+        TrainingParamsHandler object containing training parameters
+    data_conf: object
+        Data configuration object containing training and test data
 
     Returns
     -------
-    device_name: str
-        Name of GPU device
-
+    loss: tf.keras.losses.Loss
+        Loss function to be used for training
+    param_metrics: list
+        List of metrics for the parametric model
+    non_param_metrics: list
+        List of metrics for the non-parametric model
+    monitor: str
+        Metric to monitor for saving the model
+    outputs: tf.Tensor
+        Tensor containing the outputs for training
+    output_val: tf.Tensor
+        Tensor containing the outputs for validation
+    
     """
-    device_name = tf.test.gpu_device_name()
-    return device_name
-
-def get_loss_metrics_monitor_and_outputs(training_handler, data_conf):
-    """Factory to return fresh loss, metrics (param & non-param), monitor, and outputs for the current cycle."""
 
     if training_handler.training_hparams.loss == "mask_mse":
         loss = train_utils.MaskedMeanSquaredError()
@@ -304,25 +327,46 @@ def train(
     optimizer_dir,
     psf_model_dir,
 ):
-    """Train.
+    """
+    Train the PSF model over one or more parametric and non-parametric training cycles.
 
-    A function to train the psf model.
+    This function manages multi-cycle training of a parametric + non-parametric PSF model,
+    including initialization, loss/metric configuration, optimizer setup, model checkpointing,
+    and optional projection or resetting of non-parametric features. Each cycle can include 
+    both parametric and non-parametric training stages, and training history is saved for each.
 
     Parameters
     ----------
-    training_params: Recursive Namespace object
-        Recursive Namespace object containing the training parameters
-    training_data: obj
-        TrainingDataHandler object containing the training data parameters
-    test_data: object
-        TestDataHandler object containing the test data parameters
-    checkpoint_dir: str
-        Absolute path to checkpoint directory
-    optimizer_dir: str
-        Absolute path to optimizer history directory
-    psf_model_dir: str
-        Absolute path to psf model directory
+    training_params : RecursiveNamespace
+        Contains all training configuration parameters, including:
+        - learning rates per cycle
+        - number of epochs per component per cycle
+        - model type and training behavior flags
+        - multi-cycle definitions and callbacks
 
+    data_conf : object
+        Contains training and validation datasets via attributes:
+        - data_conf.training_data: TrainingDataHandler instance with SEDs and positions
+        - data_conf.test_data: TestDataHandler instance with validation SEDs and positions
+
+    checkpoint_dir : str
+        Directory where model checkpoints will be saved during training.
+
+    optimizer_dir : str
+        Directory where the optimizer history (as a NumPy .npy file) will be stored.
+
+    psf_model_dir : str
+        Directory where the final trained PSF model weights will be saved per cycle.
+
+    Returns
+    -------
+    None
+
+    Side Effects
+    ------------ 
+    - Saves model weights to `psf_model_dir` per training cycle (or final one if not all saved)
+    - Saves optimizer histories to `optimizer_dir`
+    - Logs cycle information and time durations
     """
     # Start measuring elapsed time
     starting_time = time.time()

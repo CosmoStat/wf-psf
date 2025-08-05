@@ -5,7 +5,8 @@ This module contains helper functions and utilities related to the training
 process for the PSF model. These functions help with managing training cycles,
 callbacks, and related operations.
 
-Author: Tobias Liaudat <tobias.liaudat@cea.fr>
+Authors: Tobias Liaudat <tobias.liaudat@cea.fr>, Ezequiel Centofanti <ezequiel.centofanti@cea.fr>,
+            Jennifer Pollack <jennifer.pollack@cea.fr>
 """
 
 import numpy as np
@@ -470,7 +471,6 @@ def train_cycle_part(
     callbacks: Optional[list[Callable]] = None,
     sample_weight: Optional[tf.Tensor] = None,
     verbose: int = 1,
-    first_run: bool = False,
     cycle_part: str = "parametric",
 ) -> tf.keras.Model:
     """
@@ -513,9 +513,6 @@ def train_cycle_part(
 
     verbose: int, optional
         Verbosity mode (0, 1, or 2). Default is 1.
-
-    first_run: bool, optional
-        Flag indicating if this is the first run (affects how the model is built). Default is False.
 
     cycle_part: str, optional
         Specifies which part of the model to train ("parametric" or "non-parametric"). Default is "parametric".
