@@ -185,14 +185,7 @@ class DataHandler:
         if self.dataset_type == "train":
             self.dataset["noisy_stars"] = ensure_tensor(self.dataset["noisy_stars"], dtype=tf.float32)
         elif self.dataset_type == "test":
-            if "stars" in self.dataset:
-                self.dataset["stars"] = ensure_tensor(
-                    self.dataset["stars"], dtype=tf.float32
-                )
-            else:
-                logger.warning(f"Missing 'stars' in {self.dataset_type} dataset.")
-        elif "inference" == self.dataset_type:
-            pass
+            self.dataset["stars"] = ensure_tensor(self.dataset["stars"], dtype=tf.float32)
 
     def process_sed_data(self, sed_data):
         """
