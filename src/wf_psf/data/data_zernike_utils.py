@@ -62,7 +62,6 @@ class ZernikeInputsFactory:
                 ],
                 axis=0,
             )
-
             if model_params.use_prior:
                 if prior is not None:
                     logger.warning(
@@ -141,7 +140,7 @@ def combine_zernike_contributions(contributions: list[np.ndarray]) -> np.ndarray
         raise ValueError("All contributions must have the same number of samples.")
 
     combined = np.zeros((n_samples, max_order))
-
+    # Pad each contribution to the max order and sum them
     for contrib in contributions:
         padded = pad_contribution_to_order(contrib, max_order)
         combined += padded
@@ -164,7 +163,8 @@ def assemble_zernike_contributions(
     model_params : RecursiveNamespace
         Parameters controlling which contributions to apply.
     zernike_prior : Optional[np.ndarray or tf.Tensor]
-        The precomputed Zernike prior (e.g., from PDC or another model).
+        The precomputed Zernike prior. Can be either a NumPy array or a TensorFlow tensor.
+        If a Tensor, will be converted to NumPy in eager mode.
     centroid_dataset : Optional[object]
         Dataset used to compute centroid correction. Must have both training and test sets.
     positions : Optional[np.ndarray or tf.Tensor]
@@ -184,8 +184,17 @@ def assemble_zernike_contributions(
     if model_params.use_prior and zernike_prior is not None:
         logger.info("Adding Zernike prior...")
         if isinstance(zernike_prior, tf.Tensor):
-            zernike_prior = zernike_prior.numpy()
+            if tf.executing_eagerly():
+                zernike_prior = zernike_prior.numpy()
+            else:
+                raise RuntimeError(
+                "Zernike prior is a TensorFlow tensor but eager execution is disabled. "
+                "Cannot call `.numpy()` outside of eager mode."
+                )
+        elif isinstance(zernike_prior, np.ndarray):
             zernike_contribution_list.append(zernike_prior)
+        else:
+            raise TypeError("Unsupported zernike_prior type. Must be np.ndarray or tf.Tensor.")
     else:
         logger.info("Skipping Zernike prior (not used or not provided).")
 
@@ -219,7 +228,6 @@ def assemble_zernike_contributions(
 
     return tf.convert_to_tensor(combined_zernike_prior, dtype=tf.float32)
         
-
 
 def shift_x_y_to_zk1_2_wavediff(dxy, tel_focal_length=24.5, tel_diameter=1.2):
     """Compute Zernike 1(2) for a given shifts in x(y) in WaveDifff conventions.
