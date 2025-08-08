@@ -11,7 +11,11 @@ from typing import Optional
 import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
 from wf_psf.data.data_handler import get_np_obs_positions
-from wf_psf.data.data_zernike_utils import ZernikeInputsFactory, assemble_zernike_contributions
+from wf_psf.data.data_zernike_utils import (
+    ZernikeInputsFactory, 
+    assemble_zernike_contributions,
+    pad_tf_zernikes
+)
 from wf_psf.psf_models import psf_models as psfm
 from wf_psf.psf_models.tf_modules.tf_layers import (
     TFPolynomialZernikeField,
@@ -575,8 +579,8 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         zernike_prior = self.tf_physical_layer.call(input_positions)
 
         # Pad and sum the zernike coefficients
-        padded_zernike_params, padded_zernike_prior = self.pad_zernikes(
-            zernike_params, zernike_prior
+        padded_zernike_params, padded_zernike_prior = pad_tf_zernikes(
+            zernike_params, zernike_prior, self.n_zks_total
         )
 
         zernike_coeffs = tf.math.add(padded_zernike_params, padded_zernike_prior)
@@ -613,8 +617,8 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         physical_layer_prediction = self.tf_physical_layer.predict(input_positions)
 
         # Pad and sum the Zernike coefficients
-        padded_zernike_params, padded_physical_layer_prediction = self.pad_zernikes(
-            zernike_params, physical_layer_prediction
+        padded_zernike_params, padded_physical_layer_prediction = pad_tf_zernikes(
+            zernike_params, physical_layer_prediction, self.n_zks_total
         )
         zernike_coeffs = tf.math.add(
             padded_zernike_params, padded_physical_layer_prediction
