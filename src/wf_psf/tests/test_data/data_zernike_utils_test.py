@@ -12,9 +12,8 @@ from wf_psf.data.data_zernike_utils import (
     assemble_zernike_contributions,
     compute_zernike_tip_tilt,
 )
-from wf_psf.tests.test_data.test_data_utils import MockData, MockDataset
+from wf_psf.tests.test_data.test_data_utils import MockData
 from types import SimpleNamespace as RecursiveNamespace
-
 
 @pytest.fixture
 def mock_model_params():
@@ -29,41 +28,45 @@ def mock_model_params():
 def dummy_prior():
     return np.ones((4, 6), dtype=np.float32)
 
-@pytest.fixture
-def dummy_positions():
-    return np.random.rand(4, 2).astype(np.float32)
 
 @pytest.fixture
 def dummy_centroid_dataset():
     return {"training": "dummy_train", "test": "dummy_test"}
 
-def test_training_without_prior(mock_model_params):
+
+def test_training_without_prior(mock_model_params, mock_data):
     mock_model_params.use_prior = False
-    data = MagicMock()
-    data.training_dataset = {"positions": np.ones((2, 2))}
-    data.test_dataset = {"positions": np.zeros((3, 2))}
 
-    zinputs = ZernikeInputsFactory.build(data=data, run_type="training", model_params=mock_model_params)
+    # Clear priors to simulate no prior being used
+    mock_data.training_data.dataset.pop("zernike_prior", None)
+    mock_data.test_data.dataset.pop("zernike_prior", None)
 
-    assert zinputs.centroid_dataset is data
+    zinputs = ZernikeInputsFactory.build(data=mock_data, run_type="training", model_params=mock_model_params)
+
+    assert zinputs.centroid_dataset is mock_data
     assert zinputs.zernike_prior is None
-    np.testing.assert_array_equal(
-        zinputs.misalignment_positions,
-        np.concatenate([data.training_dataset["positions"], data.test_dataset["positions"]])
-    )
 
-@patch("wf_psf.data.data_zernike_utils.get_np_zernike_prior")
-def test_training_with_dataset_prior(mock_get_prior, mock_model_params):
+    expected_positions = np.concatenate([
+        mock_data.training_data.dataset["positions"],
+        mock_data.test_data.dataset["positions"]
+    ])
+    np.testing.assert_array_equal(zinputs.misalignment_positions, expected_positions)
+
+
+def test_training_with_dataset_prior(mock_model_params, mock_data):
     mock_model_params.use_prior = True
-    data = MagicMock()
-    data.training_dataset = {"positions": np.ones((2, 2))}
-    data.test_dataset = {"positions": np.zeros((2, 2))}
-    mock_get_prior.return_value = np.array([1.0, 2.0, 3.0])
 
-    zinputs = ZernikeInputsFactory.build(data=data, run_type="training", model_params=mock_model_params)
+    zinputs = ZernikeInputsFactory.build(data=mock_data, run_type="training", model_params=mock_model_params)
 
-    assert zinputs.zernike_prior.tolist() == [1.0, 2.0, 3.0]
-    mock_get_prior.assert_called_once_with(data)
+    expected_priors = np.concatenate(
+        (
+            mock_data.training_data.dataset["zernike_prior"],
+            mock_data.test_data.dataset["zernike_prior"],
+        ),
+        axis=0,
+    )
+    np.testing.assert_array_equal(zinputs.zernike_prior, expected_priors)
+
 
 def test_training_with_explicit_prior(mock_model_params, caplog):
     mock_model_params.use_prior = True
@@ -224,17 +227,18 @@ def test_zero_order_contributions():
 
 @patch("wf_psf.data.data_zernike_utils.compute_centroid_correction")
 @patch("wf_psf.data.data_zernike_utils.compute_ccd_misalignment")
-def test_full_contribution_combination(mock_ccd, mock_centroid, mock_model_params, dummy_prior, dummy_centroid_dataset, dummy_positions):
+def test_full_contribution_combination(mock_ccd, mock_centroid, mock_model_params, dummy_prior, dummy_centroid_dataset):
     mock_centroid.return_value = np.full((4, 6), 2.0)
     mock_ccd.return_value = np.full((4, 6), 3.0)
+    dummy_positions = np.full((4, 6), 1.0)
 
     result = assemble_zernike_contributions(
         model_params=mock_model_params,
         zernike_prior=dummy_prior,
         centroid_dataset=dummy_centroid_dataset,
-        positions=dummy_positions
+        positions = dummy_positions
     )
-
+  
     expected = dummy_prior + 2.0 + 3.0
     np.testing.assert_allclose(result.numpy(), expected)
 
@@ -275,7 +279,7 @@ def test_prior_as_tensor(mock_model_params):
         model_params=mock_model_params,
         zernike_prior=tensor_prior
     )
-
+    assert tf.executing_eagerly(), "TensorFlow must be in eager mode for this test"
     assert isinstance(result, tf.Tensor)
     np.testing.assert_array_equal(result.numpy(), np.ones((4, 6)))
 
@@ -294,7 +298,7 @@ def test_inconsistent_shapes_raises_error(mock_centroid, mock_model_params, dumm
 
 
 def test_compute_zernike_tip_tilt_single_batch(mocker, simple_image, identity_mask):
-    """Test compute_zernike_tip_tilt with single batch input and mocks."""
+    """Test compute_zernike_tip_tilt handling with single batch input and mocks."""
 
     # Mock the CentroidEstimator class
     mock_centroid_calc = mocker.patch("wf_psf.data.centroids.CentroidEstimator", autospec=True)
@@ -332,11 +336,11 @@ def test_compute_zernike_tip_tilt_single_batch(mocker, simple_image, identity_ma
     np.testing.assert_allclose(args[0][1], expected_dy * pixel_sampling, rtol=1e-7, atol=0)
 
     # Expected values based on mock side_effect (0.5 * shift)
-    np.testing.assert_allclose(zernike_corrections[0, 0], expected_dx * pixel_sampling * 0.5)  # Zk1
+    np.testing.assert_allclose(zernike_corrections[0, 0], expected_dx * pixel_sampling * 0.5) # Zk1
     np.testing.assert_allclose(zernike_corrections[0, 1], expected_dy * pixel_sampling * 0.5) # Zk2
 
 def test_compute_zernike_tip_tilt_batch(mocker, multiple_images):
-    """Test compute_zernike_tip_tilt with batch input and mocks."""
+    """Test compute_zernike_tip_tilt batch handling of multiple inputs."""
     
     # Mock the CentroidEstimator class
     mock_centroid_calc = mocker.patch("wf_psf.data.centroids.CentroidEstimator", autospec=True)
@@ -377,7 +381,6 @@ def test_compute_zernike_tip_tilt_batch(mocker, multiple_images):
 
     # Process the displacements and expected values for each image in the batch
     expected_dx = reference_shifts[1] - mock_instance.get_intra_pixel_shifts.return_value[:, 1]  # Expected x-axis shift in meters
-   
     expected_dy = reference_shifts[0] - mock_instance.get_intra_pixel_shifts.return_value[:, 0]  # Expected y-axis shift in meters
 
     # Compare expected values with the actual arguments passed to the mock function
