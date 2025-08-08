@@ -32,12 +32,11 @@ def compute_centroid_correction(model_params, data, batch_size: int=1) -> np.nda
     batch_size : int, optional
         The batch size to use when processing the stars. Default is 16.
 
-
     Returns
     -------
     zernike_centroid_array : np.ndarray
          A 2D NumPy array of shape `(n_stars, 3)`, where `n_stars` is the number of 
-        observed stars. The array contains the computed Zernike contributions, 
+        observed stars. The array contains the computed Zernike (Z1, Z2) contributions, 
         with zero padding applied to the first column to ensure a consistent shape.
     """
     star_postage_stamps = extract_star_data(data=data, train_key="noisy_stars", test_key="stars")
@@ -70,7 +69,7 @@ def compute_centroid_correction(model_params, data, batch_size: int=1) -> np.nda
         batch_masks = star_masks[i:i + batch_size] if star_masks is not None else None
 
         # Compute Zernike 1 and Zernike 2 for the batch
-        zk1_2_batch = -1.0 * compute_zernike_tip_tilt(
+        zk1_2_batch = compute_zernike_tip_tilt(
             batch_postage_stamps, batch_masks, pix_sampling, reference_shifts
         )
 
