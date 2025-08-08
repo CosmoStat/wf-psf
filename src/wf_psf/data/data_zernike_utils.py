@@ -191,10 +191,10 @@ def assemble_zernike_contributions(
                 "Zernike prior is a TensorFlow tensor but eager execution is disabled. "
                 "Cannot call `.numpy()` outside of eager mode."
                 )
-        elif isinstance(zernike_prior, np.ndarray):
-            zernike_contribution_list.append(zernike_prior)
-        else:
+        
+        elif not isinstance(zernike_prior, np.ndarray):
             raise TypeError("Unsupported zernike_prior type. Must be np.ndarray or tf.Tensor.")
+        zernike_contribution_list.append(zernike_prior)
     else:
         logger.info("Skipping Zernike prior (not used or not provided).")
 
