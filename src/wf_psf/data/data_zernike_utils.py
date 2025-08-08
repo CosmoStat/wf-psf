@@ -147,6 +147,46 @@ def combine_zernike_contributions(contributions: list[np.ndarray]) -> np.ndarray
 
     return combined
 
+
+def pad_tf_zernikes(zk_param: tf.Tensor, zk_prior: tf.Tensor, n_zks_total: int):
+    """
+    Pad the Zernike coefficient tensors to match the specified total number of Zernikes.
+
+    Parameters
+    ----------
+    zk_param : tf.Tensor
+        Zernike coefficients for the parametric part. Shape [batch, n_zks_param, 1, 1].
+    zk_prior : tf.Tensor
+        Zernike coefficients for the prior part. Shape [batch, n_zks_prior, 1, 1].
+    n_zks_total : int
+        Total number of Zernikes to pad to.
+
+    Returns
+    -------
+    padded_zk_param : tf.Tensor
+        Padded Zernike coefficients for the parametric part. Shape [batch, n_zks_total, 1, 1].
+    padded_zk_prior : tf.Tensor
+        Padded Zernike coefficients for the prior part. Shape [batch, n_zks_total, 1, 1].
+    """
+
+    pad_num_param = n_zks_total - tf.shape(zk_param)[1]
+    pad_num_prior = n_zks_total - tf.shape(zk_prior)[1]
+
+    padded_zk_param = tf.cond(
+        tf.not_equal(pad_num_param, 0),
+        lambda: tf.pad(zk_param, [(0, 0), (0, pad_num_param), (0, 0), (0, 0)]),
+        lambda: zk_param,
+    )
+
+    padded_zk_prior = tf.cond(
+        tf.not_equal(pad_num_prior, 0),
+        lambda: tf.pad(zk_prior, [(0, 0), (0, pad_num_prior), (0, 0), (0, 0)]),
+        lambda: zk_prior,
+    )
+
+    return padded_zk_param, padded_zk_prior
+
+
 def assemble_zernike_contributions(
     model_params,
     zernike_prior=None,

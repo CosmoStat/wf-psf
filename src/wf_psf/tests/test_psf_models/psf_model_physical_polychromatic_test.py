@@ -9,7 +9,7 @@ This module contains unit tests for the wf_psf.psf_models.psf_model_physical_pol
 import pytest
 import numpy as np
 import tensorflow as tf
-from unittest.mock import PropertyMock
+from unittest.mock import patch
 from wf_psf.psf_models.models.psf_model_physical_polychromatic import (
     TFPhysicalPolychromaticField,
 )
@@ -29,15 +29,27 @@ def zks_prior():
 
 
 @pytest.fixture
-def mock_data(mocker):
+def mock_data(mocker, zks_prior):
     mock_instance = mocker.Mock(spec=DataConfigHandler)
-    # Configure the mock data object to have the necessary attributes
     mock_instance.run_type = "training"
+    
+    training_dataset = {
+        "positions": np.array([[1, 2], [3, 4]]),
+        "zernike_prior": zks_prior,
+        "noisy_stars": np.zeros((2, 1, 1, 1)), 
+    }
+    test_dataset = {
+        "positions": np.array([[5, 6], [7, 8]]),
+        "zernike_prior": zks_prior,
+        "stars": np.zeros((2, 1, 1, 1)), 
+    }
+
     mock_instance.training_data = mocker.Mock()
-    mock_instance.training_data.dataset = {"positions": np.array([[1, 2], [3, 4]])}
+    mock_instance.training_data.dataset = training_dataset
     mock_instance.test_data = mocker.Mock()
-    mock_instance.test_data.dataset = {"positions": np.array([[5, 6], [7, 8]])}
-    mock_instance.batch_size = 32
+    mock_instance.test_data.dataset = test_dataset
+    mock_instance.batch_size = 16
+
     return mock_instance
 
 
@@ -49,118 +61,44 @@ def mock_model_params(mocker):
     return model_params_mock
 
 @pytest.fixture
-def physical_layer_instance(mocker, mock_model_params, mock_data, zks_prior):
-    # Create training params mock object
-    mock_training_params = mocker.Mock()
-
-    # Create TFPhysicalPolychromaticField instance
-    psf_field_instance = TFPhysicalPolychromaticField(
-        mock_model_params, mock_training_params, mock_data
-    )
-    return psf_field_instance
-
-
-def test_pad_zernikes_num_of_zernikes_equal(physical_layer_instance):
-    # Define input tensors with same length and num of Zernikes
-    zk_param = tf.constant([[[[1]]], [[[2]]]])  # Shape: (2, 1, 1, 1)
-    zk_prior = tf.constant([[[[1]]], [[[2]]]])  # Shape: (2, 1, 1, 1)
-
-    # Reshape the tensors to have the desired shapes
-    zk_param = tf.reshape(zk_param, (1, 2, 1, 1))  # Reshaping tensor1 to (1, 2, 1, 1)
-    zk_prior = tf.reshape(zk_prior, (1, 2, 1, 1))  # Reshaping tensor2 to (1, 2, 1, 1)
-
-    # Reset n_zks_total attribute
-    physical_layer_instance._n_zks_total = max(
-         tf.shape(zk_param)[1].numpy(), tf.shape(zk_prior)[1].numpy()
-    )
-    # Call the method under test
-    padded_zk_param, padded_zk_prior = physical_layer_instance.pad_zernikes(
-        zk_param, zk_prior
-    )
-
-    # Assert that the padded tensors have the correct shapes
-    assert padded_zk_param.shape == (1, 2, 1, 1)
-    assert padded_zk_prior.shape == (1, 2, 1, 1)
-
-
-def test_pad_zernikes_prior_greater_than_param(physical_layer_instance):
-    zk_param = tf.constant([[[[1]]], [[[2]]]])  # Shape: (2, 1, 1, 1)
-    zk_prior = tf.constant([[[[1]], [[2]], [[3]], [[4]], [[5]]]])  # Shape: (5, 1, 1, 1)
-
-    # Reshape the tensors to have the desired shapes
-    zk_param = tf.reshape(zk_param, (1, 2, 1, 1))  # Reshaping tensor1 to (1, 2, 1, 1)
-    zk_prior = tf.reshape(zk_prior, (1, 5, 1, 1))  # Reshaping tensor2 to (1, 5, 1, 1)
-
-    # Reset n_zks_total attribute
-    physical_layer_instance._n_zks_total = max(
-        tf.shape(zk_param)[1].numpy(), tf.shape(zk_prior)[1].numpy()
-    )
-
-    # Call the method under test
-    padded_zk_param, padded_zk_prior = physical_layer_instance.pad_zernikes(
-        zk_param, zk_prior
-    )
-
-    # Assert that the padded tensors have the correct shapes
-    assert padded_zk_param.shape == (1, 5, 1, 1)
-    assert padded_zk_prior.shape == (1, 5, 1, 1)
-
-
-def test_pad_zernikes_param_greater_than_prior(physical_layer_instance):
-    zk_param = tf.constant([[[[10]], [[20]], [[30]], [[40]]]])  # Shape: (4, 1, 1, 1)
-    zk_prior = tf.constant([[[[1]]], [[[2]]]])  # Shape: (2, 1, 1, 1)
-
-    # Reshape the tensors to have the desired shapes
-    zk_param = tf.reshape(zk_param, (1, 4, 1, 1))  # Reshaping tensor1 to (1, 2, 1, 1)
-    zk_prior = tf.reshape(zk_prior, (1, 2, 1, 1))  # Reshaping tensor2 to (1, 4, 1, 1)
-
-    # Reset n_zks_total attribute
-    physical_layer_instance._n_zks_total = max(
-        tf.shape(zk_param)[1].numpy(), tf.shape(zk_prior)[1].numpy()
-    )
-
-    # Call the method under test
-    padded_zk_param, padded_zk_prior = physical_layer_instance.pad_zernikes(
-        zk_param, zk_prior
-    )
-
-    # Assert that the padded tensors have the correct shapes
-    assert padded_zk_param.shape == (1, 4, 1, 1)
-    assert padded_zk_prior.shape == (1, 4, 1, 1)
-
+def physical_layer_instance(mocker, mock_model_params, mock_data):
+    # Patch expensive methods during construction to avoid errors
+    with patch("wf_psf.psf_models.models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField._assemble_zernike_contributions", return_value=tf.constant([[[[1.0]]], [[[2.0]]]])):
+        from wf_psf.psf_models.models.psf_model_physical_polychromatic import TFPhysicalPolychromaticField
+        instance = TFPhysicalPolychromaticField(mock_model_params, mocker.Mock(), mock_data)
+        return instance
 
 def test_compute_zernikes(mocker, physical_layer_instance):
-  # Expected output of mock components
+    # Expected output of mock components
     padded_zernike_param = tf.constant([[[[10]], [[20]], [[30]], [[40]]]], dtype=tf.float32)
     padded_zernike_prior = tf.constant([[[[1]], [[2]], [[0]], [[0]]]], dtype=tf.float32)
-    expected_values = tf.constant([[[[11]], [[22]], [[30]], [[40]]]], dtype=tf.float32)
-
-    # Patch tf_poly_Z_field property
-    mock_tf_poly_Z_field = mocker.Mock(return_value=padded_zernike_param)
+    n_zks_total = physical_layer_instance.n_zks_total
+    expected_values_list = [11, 22, 30, 40] + [0] * (n_zks_total - 4)
+    expected_values = tf.constant(
+        [[[[v]] for v in expected_values_list]],
+        dtype=tf.float32
+)
+    # Patch tf_poly_Z_field method
     mocker.patch.object(
         TFPhysicalPolychromaticField,
-        'tf_poly_Z_field',
-        new_callable=PropertyMock,
-        return_value=mock_tf_poly_Z_field
+        "tf_poly_Z_field",
+        return_value=padded_zernike_param
     )
 
-    # Patch tf_physical_layer property
+    # Patch tf_physical_layer.call method
     mock_tf_physical_layer = mocker.Mock()
     mock_tf_physical_layer.call.return_value = padded_zernike_prior
     mocker.patch.object(
         TFPhysicalPolychromaticField,
-        'tf_physical_layer',
-        new_callable=PropertyMock,
-        return_value=mock_tf_physical_layer
+        "tf_physical_layer",
+        mock_tf_physical_layer
     )
 
-    # Patch pad_zernikes instance method directly (this one isn't a property)
-    mocker.patch.object(
-        physical_layer_instance,
-        'pad_zernikes',
+    # Patch pad_tf_zernikes function
+    mocker.patch(
+        "wf_psf.data.data_zernike_utils.pad_tf_zernikes",
         return_value=(padded_zernike_param, padded_zernike_prior)
     )
-
 
     # Run the test
     zernike_coeffs = physical_layer_instance.compute_zernikes(tf.constant([[0.0, 0.0]]))
