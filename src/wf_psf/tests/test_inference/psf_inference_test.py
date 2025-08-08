@@ -12,11 +12,11 @@ from pathlib import Path
 import pytest
 import tensorflow as tf
 from types import SimpleNamespace
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, patch
 from wf_psf.inference.psf_inference import (
     InferenceConfigHandler, 
     PSFInference,
-    PSFInferenceEngine
+    PSFInferenceEngine 
 )
 
 from wf_psf.utils.read_config import RecursiveNamespace
@@ -29,7 +29,26 @@ def mock_training_config():
             model_params=RecursiveNamespace(
                 model_name="mock_model",
                 output_Q=2,
-                output_dim=32
+                output_dim=32,
+                pupil_diameter=256,
+                oversampling_rate=3,
+                interpolation_type=None,
+                interpolation_args=None,
+                sed_interp_pts_per_bin=0,
+                sed_extrapolate=True,
+                sed_interp_kind="linear",
+                sed_sigma=0,
+                x_lims=[0.0, 1000.0],
+                y_lims=[0.0, 1000.0],
+                pix_sampling=12,
+                tel_diameter=1.2,
+                tel_focal_length=24.5,
+                euclid_obsc=True,
+                LP_filter_length=3,
+                param_hparams=RecursiveNamespace(
+                    n_zernikes=10,
+                    
+                )
             )  
         )   
     )
@@ -48,9 +67,10 @@ def mock_inference_config():
                 data_config_path=None
             ),
             model_params=RecursiveNamespace(
+                n_bins_lda=8,
                 output_Q=1,
                 output_dim=64
-            )
+            ),
         )
     )
     return inference_config
@@ -179,9 +199,11 @@ def test_batch_size_positive():
     assert inference.batch_size == 4
 
 
+@patch('wf_psf.inference.psf_inference.DataHandler')
 @patch('wf_psf.inference.psf_inference.load_trained_psf_model')
-def test_load_inference_model(mock_load_trained_psf_model, mock_training_config, mock_inference_config):
-
+def test_load_inference_model(mock_load_trained_psf_model, mock_data_handler, mock_training_config, mock_inference_config):
+    mock_data_config = MagicMock()
+    mock_data_handler.return_value = mock_data_config
     mock_config_handler = MagicMock(spec=InferenceConfigHandler)
     mock_config_handler.trained_model_path = "mock/path/to/model"
     mock_config_handler.training_config = mock_training_config
@@ -202,8 +224,8 @@ def test_load_inference_model(mock_load_trained_psf_model, mock_training_config,
 
     # Assert calls to the mocked methods
     mock_load_trained_psf_model.assert_called_once_with(
-        mock_config_handler.training_config,
-        mock_config_handler.data_config,
+        mock_training_config,
+        mock_data_config,
         weights_path_pattern
     )
 
