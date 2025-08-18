@@ -69,7 +69,7 @@ def compute_centroid_correction(model_params, data, batch_size: int=1) -> np.nda
         batch_masks = star_masks[i:i + batch_size] if star_masks is not None else None
 
         # Compute Zernike 1 and Zernike 2 for the batch
-        zk1_2_batch = compute_zernike_tip_tilt(
+        zk1_2_batch = -1.0 * compute_zernike_tip_tilt(
             batch_postage_stamps, batch_masks, pix_sampling, reference_shifts
         )
 
