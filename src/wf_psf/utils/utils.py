@@ -19,6 +19,27 @@ def scale_to_range(input_array, old_range, new_range):
     input_array = input_array * (new_range[1] - new_range[0]) + new_range[0]
     return input_array
 
+def ensure_batch(arr):
+    """
+    Ensure array/tensor has a batch dimension. Converts shape (M, N) → (1, M, N).
+
+    Parameters
+    ----------
+    arr : np.ndarray or tf.Tensor
+        Input 2D or 3D array/tensor.
+
+    Returns
+    -------
+    np.ndarray or tf.Tensor
+        With batch dimension prepended if needed.
+    """
+    if isinstance(arr, np.ndarray):
+        return arr if arr.ndim == 3 else np.expand_dims(arr, axis=0)
+    elif isinstance(arr, tf.Tensor):
+        return arr if arr.ndim == 3 else tf.expand_dims(arr, axis=0)
+    else:
+        raise TypeError(f"Expected np.ndarray or tf.Tensor, got {type(arr)}")
+
 
 def calc_wfe(zernike_basis, zks):
     wfe = np.einsum("ijk,ijk->jk", zernike_basis, zks.reshape(-1, 1, 1))

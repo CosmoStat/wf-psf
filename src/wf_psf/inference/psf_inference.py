@@ -13,6 +13,7 @@ from pathlib import Path
 import numpy as np
 from wf_psf.data.data_handler import DataHandler
 from wf_psf.utils.read_config import read_conf
+from wf_psf.utils.utils import ensure_batch
 from wf_psf.psf_models import psf_models
 from wf_psf.psf_models.psf_model_loader import load_trained_psf_model
 import tensorflow as tf
@@ -260,13 +261,40 @@ class PSFInference:
         return self._output_dim
 
     def _prepare_positions_and_seds(self):
-        """Preprocess and return tensors for positions and SEDs."""
-        positions = tf.convert_to_tensor(
-            np.array([self.x_field, self.y_field]).T, dtype=tf.float32
-        )
-        self.data_handler.process_sed_data(self.seds)
-        sed_data = self.data_handler.sed_data
-        return positions, sed_data
+        """
+        Preprocess and return tensors for positions and SEDs with consistent shapes.
+
+        Handles single-star, multi-star, and even scalar inputs, ensuring:
+        - positions: shape (n_samples, 2)
+        - sed_data: shape (n_samples, n_bins, 2)
+        """
+        # Ensure x_field and y_field are at least 1D
+        x_arr = np.atleast_1d(self.x_field)
+        y_arr = np.atleast_1d(self.y_field)
+
+        if x_arr.size != y_arr.size:
+            raise ValueError(f"x_field and y_field must have the same length. "
+                            f"Got {x_arr.size} and {y_arr.size}")
+
+        # Combine into positions array (n_samples, 2)
+        positions = np.column_stack((x_arr, y_arr))
+        positions = tf.convert_to_tensor(positions, dtype=tf.float32)
+
+        # Ensure SEDs have shape (n_samples, n_bins, 2)
+        sed_data = ensure_batch(self.seds)
+        
+        if sed_data.shape[0] != positions.shape[0]:
+            raise ValueError(f"SEDs batch size {sed_data.shape[0]} does not match number of positions {positions.shape[0]}")
+
+        if sed_data.shape[2] != 2:
+            raise ValueError(f"SEDs last dimension must be 2 (flux, wavelength). Got {sed_data.shape}")
+
+        # Process SEDs through the data handler
+        self.data_handler.process_sed_data(sed_data)
+        sed_data_tensor = self.data_handler.sed_data
+
+        return positions, sed_data_tensor
+
 
     def run_inference(self):
         """Run PSF inference and return the full PSF array."""
@@ -291,9 +319,23 @@ class PSFInference:
         self._ensure_psf_inference_completed()
         return self.engine.get_psfs()
 
-    def get_psf(self, index):
+    def get_psf(self, index: int = 0) -> np.ndarray:
+        """
+        Get the PSF at a specific index.
+
+        If only a single star was passed during instantiation, the index defaults to 0.
+        """
         self._ensure_psf_inference_completed()
-        return self.engine.get_psf(index)
+        
+        inferred_psfs = self.engine.get_psfs()
+
+        # If a single-star batch, ignore index bounds
+        if inferred_psfs.shape[0] == 1:
+            return inferred_psfs[0]
+
+        # Otherwise, return the PSF at the requested index
+        return inferred_psfs[index]
+
 
 class PSFInferenceEngine:
     def __init__(self, trained_model, batch_size: int, output_dim: int):
