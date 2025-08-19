@@ -12,7 +12,7 @@ from pathlib import Path
 import pytest
 import tensorflow as tf
 from types import SimpleNamespace
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, PropertyMock
 from wf_psf.inference.psf_inference import (
     InferenceConfigHandler, 
     PSFInference,
@@ -20,6 +20,19 @@ from wf_psf.inference.psf_inference import (
 )
 
 from wf_psf.utils.read_config import RecursiveNamespace
+
+def _patch_data_handler():
+    """Helper for patching data_handler to avoid full PSF logic."""
+    patcher = patch.object(PSFInference, "data_handler", new_callable=PropertyMock)
+    mock_data_handler = patcher.start()
+    mock_instance = MagicMock()
+    mock_data_handler.return_value = mock_instance
+
+    def fake_process(x):
+        mock_instance.sed_data = tf.convert_to_tensor(x)
+
+    mock_instance.process_sed_data.side_effect = fake_process
+    return patcher, mock_instance
 
 @pytest.fixture
 def mock_training_config():
@@ -83,14 +96,46 @@ def psf_test_setup(mock_inference_config):
     output_dim = 32
 
     mock_positions = tf.convert_to_tensor([[0.1, 0.1], [0.2, 0.2]], dtype=tf.float32)
-    mock_seds = tf.convert_to_tensor(np.random.rand(num_sources, 2, num_bins), dtype=tf.float32)
+    mock_seds = tf.convert_to_tensor(np.random.rand(num_sources, num_bins, 2), dtype=tf.float32)
     expected_psfs = np.random.rand(num_sources, output_dim, output_dim).astype(np.float32)
 
     inference = PSFInference(
         "dummy_path.yaml",
         x_field=[0.1, 0.2],
         y_field=[0.1, 0.2],
-        seds=np.random.rand(num_sources, num_bins)
+        seds=np.random.rand(num_sources, num_bins, 2)
+    )
+    inference._config_handler = MagicMock()
+    inference._config_handler.inference_config = mock_inference_config
+    inference._trained_psf_model = MagicMock()
+
+    return {
+        "inference": inference,
+        "mock_positions": mock_positions,
+        "mock_seds": mock_seds,
+        "expected_psfs": expected_psfs,
+        "num_sources": num_sources,
+        "num_bins": num_bins,
+        "output_dim": output_dim
+    }
+
+@pytest.fixture
+def psf_single_star_setup(mock_inference_config):
+    num_sources = 1
+    num_bins = 10
+    output_dim = 32
+
+    # Single position
+    mock_positions = tf.convert_to_tensor([[0.1, 0.1]], dtype=tf.float32)
+    # Shape (1, 2, num_bins)
+    mock_seds = tf.convert_to_tensor(np.random.rand(num_sources, 2, num_bins), dtype=tf.float32)
+    expected_psfs = np.random.rand(num_sources, output_dim, output_dim).astype(np.float32)
+
+    inference = PSFInference(
+        "dummy_path.yaml",
+        x_field=0.1,   # scalar for single star
+        y_field=0.1,
+        seds=np.random.rand(num_bins, 2)  # shape (num_bins, 2) before batching
     )
     inference._config_handler = MagicMock()
     inference._config_handler.inference_config = mock_inference_config
@@ -308,3 +353,89 @@ def test_get_psfs_runs_inference(mock_compute_psfs, mock_prepare_positions_and_s
     assert np.all(psfs_2 == expected_psfs)
 
     assert mock_compute_psfs.call_count == 1
+
+
+
+def test_single_star_inference_shape(psf_single_star_setup):
+    setup = psf_single_star_setup
+
+    _, mock_instance = _patch_data_handler()
+
+    # Run the method under test
+    positions, sed_data = setup["inference"]._prepare_positions_and_seds()
+
+    # Check shapes
+    assert sed_data.shape == (1, setup["num_bins"], 2)
+    assert positions.shape == (1, 2)
+
+    # Verify the call happened
+    mock_instance.process_sed_data.assert_called_once()
+    args, _ = mock_instance.process_sed_data.call_args
+    input_array = args[0]
+
+    # Check input SED had the right shape before being tensorized
+    assert input_array.shape == (1, setup["num_bins"], 2), \
+        "process_sed_data should have been called with shape (1, num_bins, 2)"
+
+
+
+def test_multiple_star_inference_shape(psf_test_setup):
+    """Test that _prepare_positions_and_seds returns correct shapes for multiple stars."""
+    setup = psf_test_setup
+
+    _, mock_instance = _patch_data_handler()
+
+    # Run the method under test
+    positions, sed_data = setup["inference"]._prepare_positions_and_seds()
+
+    # Check shapes
+    assert sed_data.shape == (2, setup["num_bins"], 2)
+    assert positions.shape == (2, 2)
+
+    # Verify the call happened
+    mock_instance.process_sed_data.assert_called_once()
+    args, _ = mock_instance.process_sed_data.call_args
+    input_array = args[0]
+
+    # Check input SED had the right shape before being tensorized
+    assert input_array.shape == (2, setup["num_bins"], 2), \
+        "process_sed_data should have been called with shape (2, num_bins, 2)"
+    
+
+def test_valueerror_on_mismatched_batches(psf_single_star_setup):
+    """Raise if sed_data batch size != positions batch size and sed_data != 1."""
+    setup = psf_single_star_setup
+    inference = setup["inference"]
+
+    patcher, _ = _patch_data_handler()
+    try:
+        # Force sed_data to have 2 sources while positions has 1
+        bad_sed = np.ones((2, setup["num_bins"], 2), dtype=np.float32)
+
+        # Replace fixture's sed_data with mismatched one
+        inference.seds = bad_sed
+        inference.positions = np.ones((1, 2), dtype=np.float32)
+
+        with pytest.raises(ValueError, match="SEDs batch size 2 does not match number of positions 1"):
+            inference._prepare_positions_and_seds()
+    finally:
+        patcher.stop()
+
+
+def test_valueerror_on_mismatched_positions(psf_single_star_setup):
+    """Raise if positions batch size != sed_data batch size (opposite mismatch)."""
+    setup = psf_single_star_setup
+    inference = setup["inference"]
+
+    patcher, _ = _patch_data_handler()
+    try:
+        # Force positions to have 3 entries while sed_data has 2
+        bad_sed = np.ones((2, setup["num_bins"], 2), dtype=np.float32)
+        inference.seds = bad_sed
+        inference.x_field = np.ones((3, 1), dtype=np.float32)
+        inference.y_field = np.ones((3, 1), dtype=np.float32)
+
+        with pytest.raises(ValueError, match="SEDs batch size 2 does not match number of positions 3"):
+            inference._prepare_positions_and_seds()
+    finally:
+        patcher.stop()
