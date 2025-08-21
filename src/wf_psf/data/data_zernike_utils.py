@@ -57,8 +57,8 @@ class ZernikeInputsFactory:
             centroid_dataset = data  # Assuming data is a DataConfigHandler or similar object containing train and test datasets
             positions = np.concatenate(
                 [
-                    data.training_data.dataset["positions"],
-                    data.test_data.dataset["positions"]
+                    data.training_data.dataset["positions"].numpy(),
+                    data.test_data.dataset["positions"].numpy()
                 ],
                 axis=0,
             )
@@ -72,11 +72,11 @@ class ZernikeInputsFactory:
 
         elif run_type == "inference":
             centroid_dataset = None
-            positions = data["positions"]
+            positions = data.dataset["positions"].numpy()
 
             if model_params.use_prior:
                 # Try to extract prior from `data`, if present
-                prior = getattr(data, "zernike_prior", None) if not isinstance(data, dict) else data.get("zernike_prior")
+                prior = getattr(data.dataset, "zernike_prior", None) if not isinstance(data, dict) else data.dataset.get("zernike_prior")
 
                 if prior is None:
                     logger.warning(
