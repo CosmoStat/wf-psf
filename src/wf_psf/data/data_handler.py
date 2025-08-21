@@ -17,7 +17,6 @@ import numpy as np
 import wf_psf.utils.utils as utils
 from wf_psf.psf_models.tf_modules.tf_utils import ensure_tensor
 import tensorflow as tf
-from fractions import Fraction
 from typing import Optional, Union
 import logging
 
@@ -184,12 +183,18 @@ class DataHandler:
     def _convert_dataset_to_tensorflow(self):
         """Convert dataset to TensorFlow tensors."""
 
-        self.dataset["possitions"] = ensure_tensor(self.dataset["positions"], dtype=tf.float32)
-    
+        self.dataset["positions"] = ensure_tensor(
+            self.dataset["positions"], dtype=tf.float32
+        )
+
         if self.dataset_type == "train":
-            self.dataset["noisy_stars"] = ensure_tensor(self.dataset["noisy_stars"], dtype=tf.float32)
+            self.dataset["noisy_stars"] = ensure_tensor(
+                self.dataset["noisy_stars"], dtype=tf.float32
+            )
         elif self.dataset_type == "test":
-            self.dataset["stars"] = ensure_tensor(self.dataset["stars"], dtype=tf.float32)
+            self.dataset["stars"] = ensure_tensor(
+                self.dataset["stars"], dtype=tf.float32
+            )
 
     def process_sed_data(self, sed_data):
         """
