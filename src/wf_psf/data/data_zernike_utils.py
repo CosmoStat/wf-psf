@@ -26,13 +26,17 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ZernikeInputs:
     zernike_prior: Optional[np.ndarray]  # true prior, if provided (e.g. from PDC)
-    centroid_dataset: Optional[Union[dict, 'RecursiveNamespace']]   # only used in training/simulation
+    centroid_dataset: Optional[
+        Union[dict, "RecursiveNamespace"]
+    ]  # only used in training/simulation
     misalignment_positions: Optional[np.ndarray]  # needed for CCD corrections
 
 
 class ZernikeInputsFactory:
     @staticmethod
-    def build(data, run_type: str, model_params, prior: Optional[np.ndarray] = None) -> ZernikeInputs:
+    def build(
+        data, run_type: str, model_params, prior: Optional[np.ndarray] = None
+    ) -> ZernikeInputs:
         """Builds a ZernikeInputs dataclass instance based on run type and data.
 
         Parameters
@@ -58,7 +62,7 @@ class ZernikeInputsFactory:
             positions = np.concatenate(
                 [
                     data.training_data.dataset["positions"].numpy(),
-                    data.test_data.dataset["positions"].numpy()
+                    data.test_data.dataset["positions"].numpy(),
                 ],
                 axis=0,
             )
@@ -76,7 +80,11 @@ class ZernikeInputsFactory:
 
             if model_params.use_prior:
                 # Try to extract prior from `data`, if present
-                prior = getattr(data.dataset, "zernike_prior", None) if not isinstance(data, dict) else data.dataset.get("zernike_prior")
+                prior = (
+                    getattr(data.dataset, "zernike_prior", None)
+                    if not isinstance(data.dataset, dict)
+                    else data.dataset.get("zernike_prior")
+                )
 
                 if prior is None:
                     logger.warning(
@@ -89,7 +97,7 @@ class ZernikeInputsFactory:
         return ZernikeInputs(
             zernike_prior=prior,
             centroid_dataset=centroid_dataset,
-            misalignment_positions=positions
+            misalignment_positions=positions,
         )
 
 
@@ -119,11 +127,13 @@ def get_np_zernike_prior(data):
 
     return zernike_prior
 
+
 def pad_contribution_to_order(contribution: np.ndarray, max_order: int) -> np.ndarray:
     """Pad a Zernike contribution array to the max Zernike order."""
     current_order = contribution.shape[1]
     pad_width = ((0, 0), (0, max_order - current_order))
     return np.pad(contribution, pad_width=pad_width, mode="constant", constant_values=0)
+
 
 def combine_zernike_contributions(contributions: list[np.ndarray]) -> np.ndarray:
     """Combine multiple Zernike contributions, padding each to the max order before summing."""
@@ -228,12 +238,14 @@ def assemble_zernike_contributions(
                 zernike_prior = zernike_prior.numpy()
             else:
                 raise RuntimeError(
-                "Zernike prior is a TensorFlow tensor but eager execution is disabled. "
-                "Cannot call `.numpy()` outside of eager mode."
+                    "Zernike prior is a TensorFlow tensor but eager execution is disabled. "
+                    "Cannot call `.numpy()` outside of eager mode."
                 )
-        
+
         elif not isinstance(zernike_prior, np.ndarray):
-            raise TypeError("Unsupported zernike_prior type. Must be np.ndarray or tf.Tensor.")
+            raise TypeError(
+                "Unsupported zernike_prior type. Must be np.ndarray or tf.Tensor."
+            )
         zernike_contribution_list.append(zernike_prior)
     else:
         logger.info("Skipping Zernike prior (not used or not provided).")
@@ -254,7 +266,9 @@ def assemble_zernike_contributions(
         ccd_misalignment = compute_ccd_misalignment(model_params, positions)
         zernike_contribution_list.append(ccd_misalignment)
     else:
-        logger.info("Skipping CCD misalignment correction (not enabled or no positions).")
+        logger.info(
+            "Skipping CCD misalignment correction (not enabled or no positions)."
+        )
 
     # If no contributions, return zeros tensor to avoid crashes
     if not zernike_contribution_list:
@@ -267,7 +281,7 @@ def assemble_zernike_contributions(
     combined_zernike_prior = combine_zernike_contributions(zernike_contribution_list)
 
     return tf.convert_to_tensor(combined_zernike_prior, dtype=tf.float32)
-        
+
 
 def shift_x_y_to_zk1_2_wavediff(dxy, tel_focal_length=24.5, tel_diameter=1.2):
     """Compute Zernike 1(2) for a given shifts in x(y) in WaveDifff conventions.
@@ -303,18 +317,19 @@ def shift_x_y_to_zk1_2_wavediff(dxy, tel_focal_length=24.5, tel_diameter=1.2):
         * 3.0
     )
 
+
 def compute_zernike_tip_tilt(
     star_images: np.ndarray,
     star_masks: Optional[np.ndarray] = None,
     pixel_sampling: float = 12e-6,
-    reference_shifts: list[float] = [-1/3, -1/3],
+    reference_shifts: list[float] = [-1 / 3, -1 / 3],
     sigma_init: float = 2.5,
     n_iter: int = 20,
 ) -> np.ndarray:
     """
     Compute Zernike tip-tilt corrections for a batch of PSF images.
 
-    This function estimates the centroid shifts of multiple PSFs and computes 
+    This function estimates the centroid shifts of multiple PSFs and computes
     the corresponding Zernike tip-tilt corrections to align them with a reference.
 
     Parameters
@@ -330,7 +345,7 @@ def compute_zernike_tip_tilt(
     pixel_sampling : float, optional
         The pixel size in meters. Defaults to `12e-6 m` (12 microns).
     reference_shifts : list[float], optional
-        The target centroid shifts in pixels, specified as `[dy, dx]`.  
+        The target centroid shifts in pixels, specified as `[dy, dx]`.
         Defaults to `[-1/3, -1/3]` (nominal Euclid conditions).
     sigma_init : float, optional
         Initial standard deviation for centroid estimation. Default is `2.5`.
@@ -343,21 +358,18 @@ def compute_zernike_tip_tilt(
         An array of shape `(num_images, 2)`, where:
         - Column 0 contains `Zk1` (tip) values.
         - Column 1 contains `Zk2` (tilt) values.
-    
+
     Notes
     -----
     - This function processes all images at once using vectorized operations.
     - The Zernike coefficients are computed in the WaveDiff convention.
     """
     from wf_psf.data.centroids import CentroidEstimator
-    
+
     # Vectorize the centroid computation
     centroid_estimator = CentroidEstimator(
-                            im=star_images,
-                            mask=star_masks, 
-                            sigma_init=sigma_init,
-                            n_iter=n_iter
-                            )
+        im=star_images, mask=star_masks, sigma_init=sigma_init, n_iter=n_iter
+    )
 
     shifts = centroid_estimator.get_intra_pixel_shifts()
 
@@ -365,23 +377,25 @@ def compute_zernike_tip_tilt(
     reference_shifts = np.array(reference_shifts)
 
     # Reshape to ensure it's a column vector (1, 2)
-    reference_shifts = reference_shifts[None,:]
-  
+    reference_shifts = reference_shifts[None, :]
+
     # Broadcast reference_shifts to match the shape of shifts
-    reference_shifts = np.broadcast_to(reference_shifts, shifts.shape)  
-    
+    reference_shifts = np.broadcast_to(reference_shifts, shifts.shape)
+
     # Compute displacements
-    displacements = (reference_shifts - shifts) # 
-    
+    displacements = reference_shifts - shifts  #
+
     # Ensure the correct axis order for displacements (x-axis, then y-axis)
-    displacements_swapped = displacements[:, [1, 0]] # Adjust axis order if necessary
+    displacements_swapped = displacements[:, [1, 0]]  # Adjust axis order if necessary
 
     # Call shift_x_y_to_zk1_2_wavediff directly on the vector of displacements
-    zk1_2_array = shift_x_y_to_zk1_2_wavediff(displacements_swapped.flatten() * pixel_sampling )  # vectorized call
-    
+    zk1_2_array = shift_x_y_to_zk1_2_wavediff(
+        displacements_swapped.flatten() * pixel_sampling
+    )  # vectorized call
+
     # Reshape the result back to the original shape of displacements
     zk1_2_array = zk1_2_array.reshape(displacements.shape)
-  
+
     return zk1_2_array
 
 
