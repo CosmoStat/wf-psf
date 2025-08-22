@@ -100,37 +100,34 @@ data = RecursiveNamespace(
 def mock_data(scope="module"):
     """Fixture to provide mock data for testing."""
     # Mock positions and Zernike priors
-    training_positions = np.array([[1, 2], [3, 4]])
-    test_positions = np.array([[5, 6], [7, 8]])
-    training_zernike_priors = np.array([[0.1, 0.2], [0.3, 0.4]])
-    test_zernike_priors = np.array([[0.5, 0.6], [0.7, 0.8]])
+    training_positions = tf.constant([[1, 2], [3, 4]])
+    test_positions = tf.constant([[5, 6], [7, 8]])
+    training_zernike_priors = tf.constant([[0.1, 0.2], [0.3, 0.4]])
+    test_zernike_priors = tf.constant([[0.5, 0.6], [0.7, 0.8]])
 
     # Define dummy 5x5 image patches for stars (mock star images)
     # Define varied values for 5x5 star images
-    noisy_stars = tf.constant([
-        np.arange(25).reshape(5, 5),
-        np.arange(25, 50).reshape(5, 5)
-    ], dtype=tf.float32)
+    noisy_stars = tf.constant(
+        [np.arange(25).reshape(5, 5), np.arange(25, 50).reshape(5, 5)], dtype=tf.float32
+    )
 
-    noisy_masks = tf.constant([
-        np.eye(5),
-        np.ones((5, 5))
-    ], dtype=tf.float32)
+    noisy_masks = tf.constant([np.eye(5), np.ones((5, 5))], dtype=tf.float32)
 
-    stars = tf.constant([
-        np.full((5, 5), 100),
-        np.full((5, 5), 200)
-    ], dtype=tf.float32)
+    stars = tf.constant([np.full((5, 5), 100), np.full((5, 5), 200)], dtype=tf.float32)
 
-    masks = tf.constant([
-        np.zeros((5, 5)),
-        np.tri(5)
-    ], dtype=tf.float32)
+    masks = tf.constant([np.zeros((5, 5)), np.tri(5)], dtype=tf.float32)
 
     return MockData(
-        training_positions, test_positions, training_zernike_priors,
-        test_zernike_priors, noisy_stars, noisy_masks, stars, masks
+        training_positions,
+        test_positions,
+        training_zernike_priors,
+        test_zernike_priors,
+        noisy_stars,
+        noisy_masks,
+        stars,
+        masks,
     )
+
 
 @pytest.fixture
 def simple_image(scope="module"):
@@ -140,10 +137,12 @@ def simple_image(scope="module"):
     image[:, 2, 2] = 1  # Place the star at the center for each image
     return image
 
+
 @pytest.fixture
 def identity_mask(scope="module"):
     """Creates a mask where all pixels are fully considered."""
     return np.ones((5, 5))
+
 
 @pytest.fixture
 def multiple_images(scope="module"):
@@ -153,6 +152,7 @@ def multiple_images(scope="module"):
     images[1, 1, 3] = 1  # Star at (1, 3) in image 1
     images[2, 3, 1] = 1  # Star at (3, 1) in image 2
     return images
+
 
 @pytest.fixture(scope="module", params=[data])
 def data_params():
