@@ -7,6 +7,7 @@ to manage training of the psf model.
 
 """
 
+import gc
 import numpy as np
 import time
 import tensorflow as tf
@@ -525,3 +526,8 @@ def train(
     final_time = time.time()
     logger.info("\nTotal elapsed time: %f" % (final_time - starting_time))
     logger.info("\n Training complete..")
+
+    # Clean up memory
+    del psf_model
+    gc.collect()
+    tf.keras.backend.clear_session()
