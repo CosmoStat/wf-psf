@@ -120,15 +120,15 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         self.run_type = self._get_run_type(data)
         self.obs_pos = self.get_obs_pos()
 
-        # Initialize the model parameters and layers
+        # Initialize the model parameters
         self.output_Q = model_params.output_Q
         self.l2_param = model_params.param_hparams.l2_param
         self.output_dim = model_params.output_dim
-
+        
         # Initialise lazy loading of external Zernike prior
         self._external_prior = None
 
-        # Initialize the model parameters with non-default value
+        # Set Zernike Polynomial Coefficient Matrix if not None
         if coeff_mat is not None:
             self.assign_coeff_matrix(coeff_mat)
 
@@ -158,9 +158,10 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
             rotation_angle=self.model_params.obscuration_rotation_angle,
         )
 
-        # Eagerly initialise tf_batch_poly_PSF
+        # Eagerly initialise model layers
         self.tf_batch_poly_PSF = self._build_tf_batch_poly_PSF()
-
+        _ = self.tf_poly_Z_field
+        _ = self.tf_np_poly_opd
 
     def _get_run_type(self, data):
         if hasattr(data, 'run_type'):
