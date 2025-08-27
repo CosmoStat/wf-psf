@@ -12,7 +12,7 @@ from wf_psf.psf_models.psf_models import (
     get_psf_model,
     get_psf_model_weights_filepath
 )
-
+import tensorflow as tf
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,9 @@ def load_trained_psf_model(training_conf, data_conf, weights_path_pattern):
 
     try:
         logger.info(f"Loading PSF model weights from {weights_path}")
-        model.load_weights(weights_path)
+        status = model.load_weights(weights_path)
+        status.expect_partial()
+
     except Exception as e:
         logger.exception("Failed to load model weights.")
         raise RuntimeError("Model weight loading failed.") from e
