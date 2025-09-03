@@ -14,7 +14,7 @@ import tensorflow as tf
 from typing import Optional
 
 
-def compute_centroid_correction(model_params, data, batch_size: int=1) -> np.ndarray:
+def compute_centroid_correction(model_params, centroid_dataset, batch_size: int=1) -> np.ndarray:
     """Compute centroid corrections using Zernike polynomials.
 
     This function calculates the Zernike contributions required to match the centroid
@@ -25,10 +25,13 @@ def compute_centroid_correction(model_params, data, batch_size: int=1) -> np.nda
     model_params : RecursiveNamespace
         An object containing parameters for the PSF model, including pixel sampling and initial centroid window parameters.
 
-    data : DataConfigHandler
-        An object containing training and test datasets, including observed PSFs
-        and optional star masks.
-
+    centroid_dataset : dict
+        Dictionary containing star data needed for centroiding:
+        - "stamps" : np.ndarray
+            Array of star postage stamps (required).
+        - "masks" : Optional[np.ndarray]
+            Array of star masks (optional, can be None).
+    
     batch_size : int, optional
         The batch size to use when processing the stars. Default is 16.
 
@@ -39,24 +42,14 @@ def compute_centroid_correction(model_params, data, batch_size: int=1) -> np.nda
         observed stars. The array contains the computed Zernike (Z1, Z2) contributions, 
         with zero padding applied to the first column to ensure a consistent shape.
     """
-    star_postage_stamps = extract_star_data(data=data, train_key="noisy_stars", test_key="stars")
-    
-    # Get star mask catalogue only if "masks" exist in both training and test datasets
-    star_masks = (
-    extract_star_data(data=data, train_key="masks", test_key="masks")
-    if (
-        data.training_data.dataset.get("masks") is not None 
-        and data.test_data.dataset.get("masks") is not None
-        and tf.size(data.training_data.dataset["masks"]) > 0  
-        and tf.size(data.test_data.dataset["masks"]) > 0 
-    )
-    else None
-    )
+    # Retrieve stamps and masks from centroid_dataset
+    star_postage_stamps = centroid_dataset.get("stamps")
+    star_masks = centroid_dataset.get("masks")  # may be None
+
+    if star_postage_stamps is None:
+        raise ValueError("centroid_dataset must contain 'stamps'")
 
     pix_sampling = model_params.pix_sampling * 1e-6  # Change units from [um] to [m]
-
-    # Ensure star_masks is properly handled
-    star_masks = star_masks if star_masks is not None else None
 
     reference_shifts = [float(Fraction(value)) for value in model_params.reference_shifts]
 
