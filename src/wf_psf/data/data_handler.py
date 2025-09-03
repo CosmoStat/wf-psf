@@ -240,67 +240,43 @@ class DataHandler:
         self.sed_data = tf.transpose(self.sed_data, perm=[0, 2, 1])
 
 
-def get_np_obs_positions(data):
-    """Get observed positions in numpy from the provided dataset.
-
-    This method concatenates the positions of the stars from both the training
-    and test datasets to obtain the observed positions.
-
-    Parameters
-    ----------
-    data : DataConfigHandler
-        Object containing training and test datasets.
-
-    Returns
-    -------
-    np.ndarray
-        Numpy array containing the observed positions of the stars.
-
-    Notes
-    -----
-    The observed positions are obtained by concatenating the positions of stars
-    from both the training and test datasets along the 0th axis.
-    """
-    obs_positions = np.concatenate(
-        (
-            data.training_data.dataset["positions"],
-            data.test_data.dataset["positions"],
-        ),
-        axis=0,
-    )
-
-    return obs_positions
-
-
 def extract_star_data(data, train_key: str, test_key: str) -> np.ndarray:
-    """Extract specific star-related data from training and test datasets.
+      """
+    Extract and concatenate star-related data from training and test datasets.
 
-    This function retrieves and concatenates specific star-related data (e.g., stars, masks) from the
-    star training and test datasets such as star stamps or masks, based on the provided keys.
+    This function retrieves arrays (e.g., postage stamps, masks, positions) from 
+    both the training and test datasets using the specified keys, converts them 
+    to NumPy if necessary, and concatenates them along the first axis.
 
     Parameters
     ----------
     data : DataConfigHandler
         Object containing training and test datasets.
     train_key : str
-        The key to retrieve data from the training dataset (e.g., 'noisy_stars', 'masks').
+        Key to retrieve data from the training dataset 
+        (e.g., 'noisy_stars', 'masks').
     test_key : str
-        The key to retrieve data from the test dataset (e.g., 'stars', 'masks').
+        Key to retrieve data from the test dataset 
+        (e.g., 'stars', 'masks').
 
     Returns
     -------
     np.ndarray
-        A NumPy array containing the concatenated data for the given keys.
+        Concatenated NumPy array containing the selected data from both 
+        training and test sets.
 
     Raises
     ------
     KeyError
-        If the specified keys do not exist in the training or test datasets.
+        If either the training or test dataset does not contain the 
+        requested key.
 
     Notes
     -----
-    - If the dataset contains TensorFlow tensors, they will be converted to NumPy arrays.
-    - Ensure that eager execution is enabled when calling this function.
+    - Designed for datasets with separate train/test splits, such as when 
+      evaluating metrics on held-out data.
+    - TensorFlow tensors are automatically converted to NumPy arrays.
+    - Requires eager execution if TensorFlow tensors are present.
     """
     # Ensure the requested keys exist in both training and test datasets
     missing_keys = [
@@ -327,3 +303,145 @@ def extract_star_data(data, train_key: str, test_key: str) -> np.ndarray:
 
     # Concatenate and return
     return np.concatenate((train_data, test_data), axis=0)
+
+def get_data_array(
+    data,
+    run_type: str,
+    key: str = None,
+    train_key: str = None,
+    test_key: str = None,
+    allow_missing: bool = False,
+) -> np.ndarray | None:
+    """
+    Retrieve data from dataset depending on run type.
+
+    This function provides a unified interface for accessing data across different
+    execution contexts (training, simulation, metrics, inference). It handles
+    key resolution with sensible fallbacks and optional missing data tolerance.
+
+    Parameters
+    ----------
+    data : DataConfigHandler
+        Dataset object containing training, test, or inference data.
+        Expected to have methods compatible with the specified run_type.
+    run_type : {"training", "simulation", "metrics", "inference"}
+        Execution context that determines how data is retrieved:
+        - "training", "simulation", "metrics": Uses extract_star_data function
+        - "inference": Retrieves data directly from dataset using key lookup
+    key : str, optional
+        Primary key for data lookup. Used directly for inference run_type.
+        If None, falls back to train_key value. Default is None.
+    train_key : str, optional
+        Key for training dataset access. If None and key is provided,
+        defaults to key value. Default is None.
+    test_key : str, optional  
+        Key for test dataset access. If None, defaults to the resolved
+        train_key value. Default is None.
+    allow_missing : bool, default False
+        Control behavior when data is missing or keys are not found:
+        - True: Return None instead of raising exceptions
+        - False: Raise appropriate exceptions (KeyError, ValueError)
+
+    Returns
+    -------
+    np.ndarray or None
+        Retrieved data as NumPy array. Returns None only when allow_missing=True
+        and the requested data is not available.
+
+    Raises
+    ------
+    ValueError
+        If run_type is not one of the supported values, or if no key can be
+        resolved for the operation and allow_missing=False.
+    KeyError
+        If the specified key is not found in the dataset and allow_missing=False.
+    
+    Notes
+    -----
+    Key resolution follows this priority order:
+    1. train_key = train_key or key
+    2. test_key = test_key or resolved_train_key  
+    3. key = key or resolved_train_key (for inference fallback)
+
+    For TensorFlow tensors, the .numpy() method is called to convert to NumPy.
+    Other data types are converted using np.asarray().
+
+    Examples
+    --------
+    >>> # Training data retrieval
+    >>> train_data = get_data_array(data, "training", train_key="noisy_stars")
+    
+    >>> # Inference with fallback handling
+    >>> inference_data = get_data_array(data, "inference", key="positions", 
+    ...                                allow_missing=True)
+    >>> if inference_data is None:
+    ...     print("No inference data available")
+    
+    >>> # Using key parameter for both train and inference
+    >>> result = get_data_array(data, "inference", key="positions")
+    """
+    # Validate run_type early
+    valid_run_types = {"training", "simulation", "metrics", "inference"}
+    if run_type not in valid_run_types:
+        raise ValueError(f"run_type must be one of {valid_run_types}, got '{run_type}'")
+    
+    # Simplify key resolution with clear precedence
+    effective_train_key = train_key or key
+    effective_test_key = test_key or effective_train_key
+    effective_key = key or effective_train_key
+    
+    try:
+        if run_type in {"simulation", "training", "metrics"}:
+            return extract_star_data(data, effective_train_key, effective_test_key)
+        else:  # inference
+            return _get_inference_data(data, effective_key, allow_missing)
+    except Exception as e:
+        if allow_missing:
+            return None
+        raise
+
+
+def _get_inference_data(data, key: str, allow_missing: bool) -> np.ndarray | None:
+    """
+    Extract inference data with proper error handling and type conversion.
+
+    Parameters
+    ----------
+    data : DataConfigHandler
+        Dataset object with a .dataset attribute that supports .get() method.
+    key : str or None
+        Key to lookup in the dataset. If None, behavior depends on allow_missing.
+    allow_missing : bool
+        If True, return None for missing keys/data instead of raising exceptions.
+
+    Returns
+    -------
+    np.ndarray or None
+        Data converted to NumPy array, or None if allow_missing=True and 
+        data is unavailable.
+
+    Raises
+    ------
+    ValueError
+        If key is None and allow_missing=False.
+    KeyError
+        If key is not found in dataset and allow_missing=False.
+
+    Notes
+    -----
+    Conversion logic:
+    - TensorFlow tensors: Converted using .numpy() method
+    - Other types: Converted using np.asarray()
+    """
+    if key is None:
+        if allow_missing:
+            return None
+        raise ValueError("No key provided for inference data")
+    
+    value = data.dataset.get(key, None)
+    if value is None:
+        if allow_missing:
+            return None
+        raise KeyError(f"Key '{key}' not found in inference dataset")
+    
+    return value.numpy() if tf.is_tensor(value) else np.asarray(value)

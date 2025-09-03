@@ -97,7 +97,7 @@ class PSFInference:
         Spectral energy distributions (SEDs).
     """
 
-    def __init__(self, inference_config_path: str, x_field=None, y_field=None, seds=None):
+    def __init__(self, inference_config_path: str, x_field=None, y_field=None, seds=None, sources=None, masks=None):
 
         self.inference_config_path = inference_config_path
 
@@ -105,6 +105,8 @@ class PSFInference:
         self.x_field = x_field
         self.y_field = y_field
         self.seds = seds
+        self.sources = sources
+        self.masks = masks
     
         # Internal caches for lazy-loading
         self._config_handler = None
@@ -157,7 +159,7 @@ class PSFInference:
         positions = self.get_positions()
         if positions is None:
             return None
-        return {"positions": positions}
+        return {"positions": positions, "sources": self.sources, "masks": self.masks}
 
     @property
     def data_handler(self):

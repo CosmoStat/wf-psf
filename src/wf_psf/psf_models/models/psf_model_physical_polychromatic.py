@@ -10,7 +10,7 @@ to manage the parameters of the psf physical polychromatic model.
 from typing import Optional
 import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
-from wf_psf.data.data_handler import get_np_obs_positions
+from wf_psf.data.data_handler import get_data_array
 from wf_psf.data.data_zernike_utils import (
     ZernikeInputsFactory, 
     assemble_zernike_contributions,
@@ -203,10 +203,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
     def get_obs_pos(self):
         assert self.run_type in {"training", "simulation", "metrics", "inference"}, f"Unknown run_type: {self.run_type}"
 
-        if self.run_type in {"training", "simulation", "metrics"}:
-            raw_pos = get_np_obs_positions(self.data)
-        else:
-            raw_pos = self.data.dataset["positions"]
+        raw_pos = get_data_array(data=self.data, run_type=self.run_type, key="positions")
 
         obs_pos = ensure_tensor(raw_pos, dtype=tf.float32)
 
