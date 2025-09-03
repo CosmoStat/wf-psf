@@ -16,6 +16,7 @@ from typing import Optional, Union
 import numpy as np
 import tensorflow as tf
 from wf_psf.data.centroids import compute_centroid_correction
+from wf_psf.data.data_handler import get_data_array
 from wf_psf.instrument.ccd_misalignments import compute_ccd_misalignment
 from wf_psf.utils.read_config import RecursiveNamespace
 import logging
@@ -54,29 +55,29 @@ class ZernikeInputsFactory:
         -------
         ZernikeInputs
         """
-        centroid_dataset = None
-        positions = None
+        centroid_dataset, positions = None, None
 
         if run_type in {"training", "simulation", "metrics"}:
-            centroid_dataset = data  # Assuming data is a DataConfigHandler or similar object containing train and test datasets
-            positions = np.concatenate(
-                [
-                    data.training_data.dataset["positions"].numpy(),
-                    data.test_data.dataset["positions"].numpy(),
-                ],
-                axis=0,
-            )
+            stamps = get_data_array(data, run_type, train_key="noisy_stars", test_key="stars")
+            masks = get_data_array(data, run_type, key="masks", allow_missing=True)
+            centroid_dataset = {"stamps": stamps, "masks": masks}
+
+            positions = get_data_array(data=data, run_type=run_type, key="positions")
+            
             if model_params.use_prior:
                 if prior is not None:
                     logger.warning(
-                        "Zernike prior explicitly provided; ignoring dataset-based prior despite use_prior=True."
+                        "Explicit prior provided; ignoring dataset-based prior."
                     )
                 else:
                     prior = get_np_zernike_prior(data)
 
         elif run_type == "inference":
-            centroid_dataset = None
-            positions = data.dataset["positions"].numpy()
+            stamps = get_data_array(data=data, run_type=run_type, key="sources")
+            masks = get_data_array(data, run_type, key="masks", allow_missing=True)
+            centroid_dataset = {"stamps": stamps, "masks": masks}
+
+            positions = get_data_array(data=data, run_type=run_type, key="positions")
 
             if model_params.use_prior:
                 # Try to extract prior from `data`, if present
