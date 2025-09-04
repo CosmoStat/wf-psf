@@ -95,6 +95,10 @@ class PSFInference:
         y coordinates in SHE convention.
     seds : array-like, optional
         Spectral energy distributions (SEDs).
+    sources : array-like, optional
+        Postage stamps of sources, e.g. star images (shape: [n_stars, h, w]).
+    masks : array-like, optional
+        Corresponding masks for the sources (same shape as sources). Defaults to None.
     """
 
     def __init__(self, inference_config_path: str, x_field=None, y_field=None, seds=None, sources=None, masks=None):
