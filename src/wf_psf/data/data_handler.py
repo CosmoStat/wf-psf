@@ -394,16 +394,16 @@ def get_data_array(
         if run_type in {"simulation", "training", "metrics"}:
             return extract_star_data(data, effective_train_key, effective_test_key)
         else:  # inference
-            return _get_inference_data(data, effective_key, allow_missing)
+            return _get_direct_data(data, effective_key, allow_missing)
     except Exception as e:
         if allow_missing:
             return None
         raise
 
 
-def _get_inference_data(data, key: str, allow_missing: bool) -> np.ndarray | None:
+def _get_direct_data(data, key: str, allow_missing: bool) -> np.ndarray | None:
     """
-    Extract inference data with proper error handling and type conversion.
+    Extract data directly with proper error handling and type conversion.
 
     Parameters
     ----------
