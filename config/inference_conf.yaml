@@ -30,3 +30,8 @@ inference:
     # Dimension of the pixel PSF postage stamp
     output_dim: 64
 
+    # Flag to perform centroid error correction
+    correct_centroids: False
+
+    # Flag to perform CCD misalignment error correction
+    add_ccd_misalignments: True
