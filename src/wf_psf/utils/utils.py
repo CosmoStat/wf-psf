@@ -19,6 +19,7 @@ def scale_to_range(input_array, old_range, new_range):
     input_array = input_array * (new_range[1] - new_range[0]) + new_range[0]
     return input_array
 
+
 def ensure_batch(arr):
     """
     Ensure array/tensor has a batch dimension. Converts shape (M, N) → (1, M, N).

@@ -227,7 +227,7 @@ class PSFSimulator(object):
         """Generate Euclid like pupil obscurations.
 
         This method simulates the 2D pupil obscurations for the Euclid telescope,
-        considering the aperture stop, mirror obscurations, and spider arms. It does 
+        considering the aperture stop, mirror obscurations, and spider arms. It does
         not account for any 3D projections or the angle of the Field of View (FoV).
 
         Parameters

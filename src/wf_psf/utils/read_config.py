@@ -33,9 +33,9 @@ class RecursiveNamespace(SimpleNamespace):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         for key, val in kwargs.items():
-            if isinstance(val,dict):
+            if isinstance(val, dict):
                 setattr(self, key, RecursiveNamespace(**val))
-            elif isinstance(val,list):
+            elif isinstance(val, list):
                 setattr(self, key, list(map(self.map_entry, val)))
 
     @staticmethod

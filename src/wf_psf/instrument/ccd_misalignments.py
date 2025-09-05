@@ -59,8 +59,8 @@ class CCDMisalignmentCalculator:
 
     This class processes and analyzes CCD misalignment data using tile position information.
 
-    The `tiles_data` array is a data cube where each slice is a 4×3 matrix representing 
-    the four corners of a tile. The first two columns correspond to x/y coordinates (in mm), 
+    The `tiles_data` array is a data cube where each slice is a 4×3 matrix representing
+    the four corners of a tile. The first two columns correspond to x/y coordinates (in mm),
     and the third column represents z displacement (in µm).
 
     Parameters
@@ -103,6 +103,7 @@ class CCDMisalignmentCalculator:
     d_list : np.ndarray
         List of plane offset values for CCD planes.
     """
+
     def __init__(
         self,
         tiles_path: str,
@@ -123,7 +124,11 @@ class CCDMisalignmentCalculator:
             raise ValueError("Tile data must have three coordinate columns (x, y, z).")
 
         # Initialize attributes
-        self.tiles_x_lims, self.tiles_y_lims, self.tiles_z_lims = np.zeros(2), np.zeros(2), np.zeros(2)
+        self.tiles_x_lims, self.tiles_y_lims, self.tiles_z_lims = (
+            np.zeros(2),
+            np.zeros(2),
+            np.zeros(2),
+        )
         self.tiles_z_average: float = 0.0
 
         self.ccd_polygons: list[mpltPath.Path] = []
@@ -135,7 +140,6 @@ class CCDMisalignmentCalculator:
 
         self._initialize()
 
-
     def _initialize(self) -> None:
         """Run all required initialization steps."""
         self._preprocess_tile_data()
@@ -145,12 +149,17 @@ class CCDMisalignmentCalculator:
 
     def _preprocess_tile_data(self) -> None:
         """Preprocess tile data by computing spatial limits and averages."""
-        self.tiles_x_lims = np.array([np.min(self.tiles_data[:, 0, :]), np.max(self.tiles_data[:, 0, :])])
-        self.tiles_y_lims = np.array([np.min(self.tiles_data[:, 1, :]), np.max(self.tiles_data[:, 1, :])])
-        self.tiles_z_lims = np.array([np.min(self.tiles_data[:, 2, :]), np.max(self.tiles_data[:, 2, :])])
+        self.tiles_x_lims = np.array(
+            [np.min(self.tiles_data[:, 0, :]), np.max(self.tiles_data[:, 0, :])]
+        )
+        self.tiles_y_lims = np.array(
+            [np.min(self.tiles_data[:, 1, :]), np.max(self.tiles_data[:, 1, :])]
+        )
+        self.tiles_z_lims = np.array(
+            [np.min(self.tiles_data[:, 2, :]), np.max(self.tiles_data[:, 2, :])]
+        )
 
         self.tiles_z_average = np.mean(self.tiles_z_lims)
-    
 
     def _initialize_polygons(self):
         """Initialize polygons to look for CCD IDs"""
@@ -221,7 +230,6 @@ class CCDMisalignmentCalculator:
             self.normal_list.append(normal)
             self.d_list.append(d)
 
-
     def scale_position_to_tile_reference(self, pos):
         """Scale input position into tiles coordinate system.
 
@@ -250,7 +258,6 @@ class CCDMisalignmentCalculator:
         )
 
         return np.array([scaled_x, scaled_y])
-
 
     def scale_position_to_wavediff_reference(self, pos):
         """Scale input position into wavediff coordinate system.
@@ -297,7 +304,6 @@ class CCDMisalignmentCalculator:
             raise ValueError(
                 "Input position is not within the tile focal plane limits."
             )
-    
 
     def get_ccd_from_position(self, pos):
         """Get CCD ID from the position.
@@ -340,7 +346,6 @@ class CCDMisalignmentCalculator:
 
         return ccd_id
 
-
     def get_dz_from_position(self, pos):
         """Get z-axis displacement for a focal plane position.
 
@@ -369,7 +374,6 @@ class CCDMisalignmentCalculator:
 
         return dz
 
-
     def get_zk4_from_position(self, pos):
         """Get defocus Zernike contribution from focal plane position.
 
@@ -389,7 +393,6 @@ class CCDMisalignmentCalculator:
         dz = self.get_dz_from_position(pos)
 
         return defocus_to_zk4_wavediff(dz, self.tel_focal_length, self.tel_diameter)
-
 
     @staticmethod
     def compute_z_from_plane_data(pos, normal, d):
@@ -420,7 +423,6 @@ class CCDMisalignmentCalculator:
 
         return z
 
-        
     @staticmethod
     def check_position_format(pos):
         if type(pos) is list:

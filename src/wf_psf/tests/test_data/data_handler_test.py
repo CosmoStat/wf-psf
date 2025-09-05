@@ -10,9 +10,11 @@ from wf_psf.utils.read_config import RecursiveNamespace
 import logging
 from unittest.mock import patch
 
+
 def mock_sed():
     # Create a fake SED with shape (n_wavelengths,) — match what your real SEDs look like
     return np.linspace(0.1, 1.0, 50)
+
 
 def test_process_sed_data_auto_load(data_params, simPSF):
     # load_data=True → dataset is used and SEDs processed automatically
@@ -43,7 +45,9 @@ def test_load_train_dataset(tmp_path, simPSF):
     data_params = RecursiveNamespace(data_dir=str(data_dir), file="train_data.npy")
 
     n_bins_lambda = 10
-    data_handler = DataHandler("training", data_params, simPSF, n_bins_lambda, load_data=False)
+    data_handler = DataHandler(
+        "training", data_params, simPSF, n_bins_lambda, load_data=False
+    )
 
     # Call the load_dataset method
     data_handler.load_dataset()
@@ -74,14 +78,15 @@ def test_load_test_dataset(tmp_path, simPSF):
 
     # Initialize DataHandler instance
     data_params = RecursiveNamespace(data_dir=str(data_dir), file="test_data.npy")
-    
+
     n_bins_lambda = 10
     data_handler = DataHandler(
-        dataset_type="test", 
-        data_params=data_params, 
-        simPSF=simPSF, 
-        n_bins_lambda=n_bins_lambda, 
-        load_data=False)
+        dataset_type="test",
+        data_params=data_params,
+        simPSF=simPSF,
+        n_bins_lambda=n_bins_lambda,
+        load_data=False,
+    )
 
     # Call the load_dataset method
     data_handler.load_dataset()
@@ -102,17 +107,22 @@ def test_validate_train_dataset_missing_noisy_stars_raises(tmp_path, simPSF):
         "positions": np.array([[1, 2], [3, 4]]),  # No 'noisy_stars' key
         "SEDs": np.array([[[0.1, 0.2], [0.3, 0.4]], [[0.5, 0.6], [0.7, 0.8]]]),
     }
-    
+
     np.save(temp_data_file, mock_dataset)
 
     data_params = RecursiveNamespace(data_dir=str(data_dir), file="train_data.npy")
 
     n_bins_lambda = 10
-    data_handler = DataHandler("training", data_params, simPSF, n_bins_lambda, load_data=False)
+    data_handler = DataHandler(
+        "training", data_params, simPSF, n_bins_lambda, load_data=False
+    )
 
-    with pytest.raises(ValueError, match="Missing required field 'noisy_stars' in training dataset."):
+    with pytest.raises(
+        ValueError, match="Missing required field 'noisy_stars' in training dataset."
+    ):
         data_handler.load_dataset()
         data_handler.validate_and_process_dataset()
+
 
 def test_load_test_dataset_missing_stars(tmp_path, simPSF):
     """Test that a warning is raised if 'stars' is missing in test data."""
@@ -130,9 +140,13 @@ def test_load_test_dataset_missing_stars(tmp_path, simPSF):
     data_params = RecursiveNamespace(data_dir=str(data_dir), file="test_data.npy")
 
     n_bins_lambda = 10
-    data_handler = DataHandler("test", data_params, simPSF, n_bins_lambda, load_data=False)
+    data_handler = DataHandler(
+        "test", data_params, simPSF, n_bins_lambda, load_data=False
+    )
 
-    with pytest.raises(ValueError, match="Missing required field 'stars' in test dataset."):
+    with pytest.raises(
+        ValueError, match="Missing required field 'stars' in test dataset."
+    ):
         data_handler.load_dataset()
         data_handler.validate_and_process_dataset()
 
@@ -146,17 +160,17 @@ def test_get_np_obs_positions(mock_data):
 def test_extract_star_data_valid_keys(mock_data):
     """Test extracting valid data from the dataset."""
     result = extract_star_data(mock_data, train_key="noisy_stars", test_key="stars")
-    
-    expected = tf.concat([
-        tf.constant([
-            np.arange(25).reshape(5, 5),
-            np.arange(25, 50).reshape(5, 5)
-        ], dtype=tf.float32),
-        tf.constant([
-            np.full((5, 5), 100),
-            np.full((5, 5), 200)
-        ], dtype=tf.float32),
-    ], axis=0)
+
+    expected = tf.concat(
+        [
+            tf.constant(
+                [np.arange(25).reshape(5, 5), np.arange(25, 50).reshape(5, 5)],
+                dtype=tf.float32,
+            ),
+            tf.constant([np.full((5, 5), 100), np.full((5, 5), 200)], dtype=tf.float32),
+        ],
+        axis=0,
+    )
 
     np.testing.assert_array_equal(result, expected)
 
@@ -180,29 +194,34 @@ def test_extract_star_data_missing_key(mock_data):
     with pytest.raises(KeyError, match="Missing keys in dataset: \\['invalid_key'\\]"):
         extract_star_data(mock_data, train_key="invalid_key", test_key="stars")
 
+
 def test_extract_star_data_partially_missing_key(mock_data):
     """Test that the function raises a KeyError if only one key is missing."""
-    with pytest.raises(KeyError, match="Missing keys in dataset: \\['missing_stars'\\]"):
+    with pytest.raises(
+        KeyError, match="Missing keys in dataset: \\['missing_stars'\\]"
+    ):
         extract_star_data(mock_data, train_key="noisy_stars", test_key="missing_stars")
 
 
 def test_extract_star_data_tensor_conversion(mock_data):
     """Test that the function properly converts TensorFlow tensors to NumPy arrays."""
     result = extract_star_data(mock_data, train_key="noisy_stars", test_key="stars")
-    
+
     assert isinstance(result, np.ndarray), "The result should be a NumPy array"
     assert result.dtype == np.float32, "The NumPy array should have dtype float32"
 
 
 def test_reference_shifts_broadcasting():
-    reference_shifts = [-1/3, -1/3]  # Example reference_shifts
+    reference_shifts = [-1 / 3, -1 / 3]  # Example reference_shifts
     shifts = np.random.rand(2, 2400)  # Example shifts array
 
     # Ensure reference_shifts is a NumPy array (if it's not already)
     reference_shifts = np.array(reference_shifts)
 
     # Broadcast reference_shifts to match the shape of shifts
-    reference_shifts = np.broadcast_to(reference_shifts[:, None], shifts.shape)  # Shape will be (2, 2400)
+    reference_shifts = np.broadcast_to(
+        reference_shifts[:, None], shifts.shape
+    )  # Shape will be (2, 2400)
 
     # Ensure shapes are compatible for subtraction
     displacements = reference_shifts - shifts

@@ -122,7 +122,7 @@ class DataConfigHandler:
     training_model_params : Recursive Namespace object
         Recursive Namespace object containing the training model parameters
     batch_size : int
-       Training hyperparameter used for batched pre-processing of data.  
+       Training hyperparameter used for batched pre-processing of data.
 
     """
 
@@ -134,7 +134,7 @@ class DataConfigHandler:
             exit()
 
         self.simPSF = psf_models.simPSF(training_model_params)
-        
+
         # Extract sub-configs early
         train_params = self.data_conf.data.training
         test_params = self.data_conf.data.test
@@ -153,7 +153,7 @@ class DataConfigHandler:
             n_bins_lambda=training_model_params.n_bins_lda,
             load_data=load_data,
         )
-        
+
         self.batch_size = batch_size
 
 
@@ -264,9 +264,11 @@ class MetricsConfigHandler:
         self.training_conf = training_conf
         self.data_conf = self._load_data_conf()
         self.data_conf.run_type = "metrics"
-        self.metrics_dir = self._file_handler.get_metrics_dir(self._file_handler._run_output_dir)
+        self.metrics_dir = self._file_handler.get_metrics_dir(
+            self._file_handler._run_output_dir
+        )
         self.trained_psf_model = self._load_trained_psf_model()
-    
+
     @property
     def metrics_conf(self):
         return self._metrics_conf
@@ -285,7 +287,9 @@ class MetricsConfigHandler:
         if training_conf is None:
             try:
                 training_conf_path = self._get_training_conf_path_from_metrics()
-                logger.info(f"Loading training config from inferred path: {training_conf_path}")
+                logger.info(
+                    f"Loading training config from inferred path: {training_conf_path}"
+                )
                 self._training_conf = read_conf(training_conf_path)
             except Exception as e:
                 logger.error(f"Failed to load training config: {e}")
@@ -307,21 +311,17 @@ class MetricsConfigHandler:
 
         model_name = self.training_conf.training.model_params.model_name
         id_name = self.training_conf.training.id_name
-        
+
         weights_path_pattern = os.path.join(
-        trained_model_path,
-        model_subdir,
-        (
-            f"{model_subdir}*_{model_name}"
-            f"*{id_name}_cycle{cycle}*"
-         ),
+            trained_model_path,
+            model_subdir,
+            (f"{model_subdir}*_{model_name}" f"*{id_name}_cycle{cycle}*"),
         )
         return load_trained_psf_model(
             self.training_conf,
             self.data_conf,
             weights_path_pattern,
         )
-
 
     def _get_training_conf_path_from_metrics(self):
         """
@@ -344,22 +344,27 @@ class MetricsConfigHandler:
         try:
             training_conf_filename = self._metrics_conf.metrics.trained_model_config
         except AttributeError as e:
-            raise KeyError("Missing 'trained_model_config' key in metrics configuration.") from e
+            raise KeyError(
+                "Missing 'trained_model_config' key in metrics configuration."
+            ) from e
 
         training_conf_path = os.path.join(
-            self._file_handler.get_config_dir(trained_model_path), training_conf_filename)
+            self._file_handler.get_config_dir(trained_model_path),
+            training_conf_filename,
+        )
 
         if not os.path.exists(training_conf_path):
-            raise FileNotFoundError(f"Training config file not found: {training_conf_path}")
+            raise FileNotFoundError(
+                f"Training config file not found: {training_conf_path}"
+            )
 
         return training_conf_path
-
 
     def _get_trained_model_path(self):
         """
         Determine the trained model path from either:
-    
-        1. The metrics configuration file (i.e., for metrics-only runs after training), or  
+
+        1. The metrics configuration file (i.e., for metrics-only runs after training), or
         2. The runtime-generated file handler paths (i.e., for single runs that perform both training and evaluation).
 
         Returns
@@ -372,14 +377,18 @@ class MetricsConfigHandler:
         ConfigParameterError
             If the path specified in the metrics config is invalid or missing.
         """
-        trained_model_path = getattr(self._metrics_conf.metrics, "trained_model_path", None)
+        trained_model_path = getattr(
+            self._metrics_conf.metrics, "trained_model_path", None
+        )
 
         if trained_model_path:
             if not os.path.isdir(trained_model_path):
                 raise ConfigParameterError(
                     f"The trained model path provided in the metrics config is not a valid directory: {trained_model_path}"
                 )
-            logger.info(f"Using trained model path from metrics config: {trained_model_path}")
+            logger.info(
+                f"Using trained model path from metrics config: {trained_model_path}"
+            )
             return trained_model_path
 
         # Fallback for single-run training + metrics evaluation mode
@@ -388,7 +397,9 @@ class MetricsConfigHandler:
             self._file_handler.parent_output_dir,
             self._file_handler.workdir,
         )
-        logger.info(f"Using fallback trained model path from runtime file handler: {fallback_path}")
+        logger.info(
+            f"Using fallback trained model path from runtime file handler: {fallback_path}"
+        )
         return fallback_path
 
     def _load_data_conf(self):
@@ -412,7 +423,6 @@ class MetricsConfigHandler:
         except TypeError as e:
             logger.exception(e)
             raise ConfigParameterError("Data configuration loading error.")
-
 
     def call_plot_config_handler_run(self, model_metrics):
         """Make Metrics Plots.

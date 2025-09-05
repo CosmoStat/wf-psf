@@ -12,9 +12,9 @@ from wf_psf.utils import configs_handler
 from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.utils.io import FileIOHandler
 from wf_psf.utils.configs_handler import (
-    TrainingConfigHandler, 
-    MetricsConfigHandler, 
-    DataConfigHandler
+    TrainingConfigHandler,
+    MetricsConfigHandler,
+    DataConfigHandler,
 )
 import os
 
@@ -110,9 +110,8 @@ def test_get_run_config(path_to_repo_dir, path_to_tmp_output_dir, path_to_config
 
     assert type(config_class) is RegisterConfigClass
 
-def test_data_config_handler_init(
-    mock_training_conf, mock_data_read_conf, mocker
-):
+
+def test_data_config_handler_init(mock_training_conf, mock_data_read_conf, mocker):
     # Mock read_conf function
     mock_data_read_conf()
 
@@ -130,13 +129,16 @@ def test_data_config_handler_init(
 
     # Patch load_dataset to assign dataset
     def mock_load_dataset(self):
-        self.dataset = {"SEDs": ["dummy_sed_data"], "positions": ["dummy_positions_data"]}
+        self.dataset = {
+            "SEDs": ["dummy_sed_data"],
+            "positions": ["dummy_positions_data"],
+        }
 
     mocker.patch.object(DataHandler, "load_dataset", new=mock_load_dataset)
 
     # Create DataConfigHandler instance
     data_config_handler = DataConfigHandler(
-        "/path/to/data_config.yaml", 
+        "/path/to/data_config.yaml",
         mock_training_conf.training.model_params,
         mock_training_conf.training.training_hparams.batch_size,
     )
@@ -153,10 +155,9 @@ def test_data_config_handler_init(
         == mock_training_conf.training.model_params.n_bins_lda
     )
     assert (
-        data_config_handler.batch_size 
+        data_config_handler.batch_size
         == mock_training_conf.training.training_hparams.batch_size
     )
-
 
 
 def test_training_config_handler_init(mocker, mock_training_conf, mock_file_handler):
