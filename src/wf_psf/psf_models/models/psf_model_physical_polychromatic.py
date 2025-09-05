@@ -12,9 +12,9 @@ import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
 from wf_psf.data.data_handler import get_data_array
 from wf_psf.data.data_zernike_utils import (
-    ZernikeInputsFactory, 
+    ZernikeInputsFactory,
     assemble_zernike_contributions,
-    pad_tf_zernikes
+    pad_tf_zernikes,
 )
 from wf_psf.psf_models import psf_models as psfm
 from wf_psf.psf_models.tf_modules.tf_layers import (
@@ -124,7 +124,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         self.output_Q = model_params.output_Q
         self.l2_param = model_params.param_hparams.l2_param
         self.output_dim = model_params.output_dim
-        
+
         # Initialise lazy loading of external Zernike prior
         self._external_prior = None
 
@@ -134,25 +134,26 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
 
         # Compute contributions once eagerly (outside graph)
         zks_total_contribution_np = self._assemble_zernike_contributions().numpy()
-        self._zks_total_contribution = tf.convert_to_tensor(zks_total_contribution_np, dtype=tf.float32)
-        
+        self._zks_total_contribution = tf.convert_to_tensor(
+            zks_total_contribution_np, dtype=tf.float32
+        )
+
         # Compute n_zks_total as int
         self._n_zks_total = max(
             self.model_params.param_hparams.n_zernikes,
-            zks_total_contribution_np.shape[1]
+            zks_total_contribution_np.shape[1],
         )
-        
-        # Precompute zernike maps as tf.float32 
-        self._zernike_maps = psfm.generate_zernike_maps_3d(
-            n_zernikes=self._n_zks_total,
-            pupil_diam=self.model_params.pupil_diameter
-        )       
 
-        # Precompute OPD dimension 
+        # Precompute zernike maps as tf.float32
+        self._zernike_maps = psfm.generate_zernike_maps_3d(
+            n_zernikes=self._n_zks_total, pupil_diam=self.model_params.pupil_diameter
+        )
+
+        # Precompute OPD dimension
         self._opd_dim = self._zernike_maps.shape[1]
 
         # Precompute obscurations as tf.complex64
-        self._obscurations =  psfm.tf_obscurations(
+        self._obscurations = psfm.tf_obscurations(
             pupil_diam=self.model_params.pupil_diameter,
             N_filter=self.model_params.LP_filter_length,
             rotation_angle=self.model_params.obscuration_rotation_angle,
@@ -164,10 +165,10 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         _ = self.tf_np_poly_opd
 
     def _get_run_type(self, data):
-        if hasattr(data, 'run_type'):
+        if hasattr(data, "run_type"):
             run_type = data.run_type
-        elif isinstance(data, dict) and 'run_type' in data:
-            run_type = data['run_type']
+        elif isinstance(data, dict) and "run_type" in data:
+            run_type = data["run_type"]
         else:
             raise ValueError("data must have a 'run_type' attribute or key")
 
@@ -193,17 +194,28 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
     @property
     def save_param_history(self) -> bool:
         """Check if the model should save the optimization history for parametric features."""
-        return getattr(self.model_params.param_hparams, "save_optim_history_param", False)
-    
+        return getattr(
+            self.model_params.param_hparams, "save_optim_history_param", False
+        )
+
     @property
     def save_nonparam_history(self) -> bool:
         """Check if the model should save the optimization history for non-parametric features."""
-        return getattr(self.model_params.nonparam_hparams, "save_optim_history_nonparam", False)
+        return getattr(
+            self.model_params.nonparam_hparams, "save_optim_history_nonparam", False
+        )
 
     def get_obs_pos(self):
-        assert self.run_type in {"training", "simulation", "metrics", "inference"}, f"Unknown run_type: {self.run_type}"
+        assert self.run_type in {
+            "training",
+            "simulation",
+            "metrics",
+            "inference",
+        }, f"Unknown run_type: {self.run_type}"
 
-        raw_pos = get_data_array(data=self.data, run_type=self.run_type, key="positions")
+        raw_pos = get_data_array(
+            data=self.data, run_type=self.run_type, key="positions"
+        )
 
         obs_pos = ensure_tensor(raw_pos, dtype=tf.float32)
 
@@ -213,7 +225,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
     @property
     def zks_total_contribution(self):
         return self._zks_total_contribution
-    
+
     @property
     def n_zks_total(self):
         """Get the total number of Zernike coefficients."""
@@ -254,40 +266,40 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         """Lazy loading of the physical layer of the PSF model."""
         if not hasattr(self, "_tf_physical_layer"):
             self._tf_physical_layer = TFPhysicalLayer(
-            self.obs_pos,
-            self.zks_total_contribution,
-            interpolation_type=self.model_params.interpolation_type,
-            interpolation_args=self.model_params.interpolation_args,
-        )
+                self.obs_pos,
+                self.zks_total_contribution,
+                interpolation_type=self.model_params.interpolation_type,
+                interpolation_args=self.model_params.interpolation_args,
+            )
         return self._tf_physical_layer
-            
+
     @property
     def tf_zernike_OPD(self):
         """Lazy loading of the Zernike Optical Path Difference (OPD) layer."""
         if not hasattr(self, "_tf_zernike_OPD"):
             self._tf_zernike_OPD = TFZernikeOPD(zernike_maps=self.zernike_maps)
         return self._tf_zernike_OPD
-    
+
     def _build_tf_batch_poly_PSF(self):
         """Eagerly build the TFBatchPolychromaticPSF layer with numpy-based obscurations."""
 
         return TFBatchPolychromaticPSF(
-                obscurations=self.obscurations,
-                output_Q=self.output_Q,
-                output_dim=self.output_dim,
-            )
+            obscurations=self.obscurations,
+            output_Q=self.output_Q,
+            output_dim=self.output_dim,
+        )
 
     @property
     def tf_np_poly_opd(self):
         """Lazy loading of the non-parametric polynomial variations OPD layer."""
         if not hasattr(self, "_tf_np_poly_opd"):
             self._tf_np_poly_opd = TFNonParametricPolynomialVariationsOPD(
-                    x_lims=self.model_params.x_lims,
-                    y_lims=self.model_params.y_lims,
-                    random_seed=self.model_params.param_hparams.random_seed,
-                    d_max=self.model_params.nonparam_hparams.d_max_nonparam,
-                    opd_dim=self.opd_dim,
-                )
+                x_lims=self.model_params.x_lims,
+                y_lims=self.model_params.y_lims,
+                random_seed=self.model_params.param_hparams.random_seed,
+                d_max=self.model_params.nonparam_hparams.d_max_nonparam,
+                opd_dim=self.opd_dim,
+            )
         return self._tf_np_poly_opd
 
     def get_coeff_matrix(self):
@@ -312,7 +324,6 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         None
         """
         self.tf_poly_Z_field.assign_coeff_matrix(coeff_mat)
-
 
     def set_output_Q(self, output_Q: float, output_dim: Optional[int] = None) -> None:
         """Set the output sampling rate (output_Q) for PSF generation.
@@ -453,16 +464,16 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
 
         # Compute zernikes from parametric model and physical layer
         zks_coeffs = self.predict_zernikes(input_positions)
-        
+
         # Propagate to obtain the OPD
         param_opd_maps = self.tf_zernike_OPD(zks_coeffs)
-        
+
         # Calculate the non parametric part
         nonparam_opd_maps = self.tf_np_poly_opd(input_positions)
-        
+
         # Add the estimations
         opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
-        
+
         # Compute the polychromatic PSFs
         poly_psfs = self.tf_batch_poly_PSF([opd_maps, packed_SEDs])
 
@@ -505,13 +516,13 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
 
         # Predict zernikes from parametric model and physical layer
         zks_coeffs = self.predict_zernikes(input_positions)
-       
+
         # Propagate to obtain the OPD
         param_opd_maps = self.tf_zernike_OPD(zks_coeffs)
-       
+
         # Calculate the non parametric part
         nonparam_opd_maps = self.tf_np_poly_opd(input_positions)
-       
+
         # Add the estimations
         opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
 
@@ -536,13 +547,13 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         """
         # Predict zernikes from parametric model and physical layer
         zks_coeffs = self.predict_zernikes(input_positions)
-        
+
         # Propagate to obtain the OPD
         param_opd_maps = self.tf_zernike_OPD(zks_coeffs)
-        
+
         # Calculate the non parametric part
         nonparam_opd_maps = self.tf_np_poly_opd(input_positions)
-        
+
         # Add the estimations
         opd_maps = tf.math.add(param_opd_maps, nonparam_opd_maps)
 
@@ -677,27 +688,25 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         packed_SEDs = inputs[1]
 
         # For the training
-        if training: 
+        if training:
             # Compute zernikes from parametric model and physical layer
             zks_coeffs = self.compute_zernikes(input_positions)
-            
+
             # Parametric OPD maps from Zernikes
             param_opd_maps = self.tf_zernike_OPD(zks_coeffs)
 
             # Add L2 regularization loss on parametric OPD maps
-            self.add_loss(
-                self.l2_param * tf.reduce_sum(tf.square(param_opd_maps))
-            )
+            self.add_loss(self.l2_param * tf.reduce_sum(tf.square(param_opd_maps)))
 
             # Non-parametric correction
             nonparam_opd_maps = self.tf_np_poly_opd(input_positions)
 
             # Combine both contributions
             opd_maps = tf.add(param_opd_maps, nonparam_opd_maps)
-            
+
             # Compute the polychromatic PSFs
             poly_psfs = self.tf_batch_poly_PSF([opd_maps, packed_SEDs])
-        
+
         # For the inference
         else:
             # Compute predictions

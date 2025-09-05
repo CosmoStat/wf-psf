@@ -7,14 +7,13 @@ It includes utilities to:
 
 Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 """
+
 import logging
-from wf_psf.psf_models.psf_models import (
-    get_psf_model,
-    get_psf_model_weights_filepath
-)
+from wf_psf.psf_models.psf_models import get_psf_model, get_psf_model_weights_filepath
 import tensorflow as tf
 
 logger = logging.getLogger(__name__)
+
 
 def load_trained_psf_model(training_conf, data_conf, weights_path_pattern):
     """
@@ -40,9 +39,11 @@ def load_trained_psf_model(training_conf, data_conf, weights_path_pattern):
     RuntimeError
         If loading the model weights fails for any reason.
     """
-    model = get_psf_model(training_conf.training.model_params,
-    training_conf.training.training_hparams,
-    data_conf)
+    model = get_psf_model(
+        training_conf.training.model_params,
+        training_conf.training.training_hparams,
+        data_conf,
+    )
 
     weights_path = get_psf_model_weights_filepath(weights_path_pattern)
 
@@ -55,4 +56,3 @@ def load_trained_psf_model(training_conf, data_conf, weights_path_pattern):
         logger.exception("Failed to load model weights.")
         raise RuntimeError("Model weight loading failed.") from e
     return model
-
