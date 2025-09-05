@@ -241,7 +241,7 @@ class DataHandler:
 
 
 def extract_star_data(data, train_key: str, test_key: str) -> np.ndarray:
-      """
+    """
     Extract and concatenate star-related data from training and test datasets.
 
     This function retrieves arrays (e.g., postage stamps, masks, positions) from 
@@ -310,8 +310,8 @@ def get_data_array(
     key: str = None,
     train_key: str = None,
     test_key: str = None,
-    allow_missing: bool = False,
-) -> np.ndarray | None:
+    allow_missing: bool = True,
+) -> Optional[np.ndarray]:
     """
     Retrieve data from dataset depending on run type.
 
@@ -337,7 +337,7 @@ def get_data_array(
     test_key : str, optional  
         Key for test dataset access. If None, defaults to the resolved
         train_key value. Default is None.
-    allow_missing : bool, default False
+    allow_missing : bool, default True
         Control behavior when data is missing or keys are not found:
         - True: Return None instead of raising exceptions
         - False: Raise appropriate exceptions (KeyError, ValueError)
@@ -401,7 +401,7 @@ def get_data_array(
         raise
 
 
-def _get_direct_data(data, key: str, allow_missing: bool) -> np.ndarray | None:
+def _get_direct_data(data, key: str, allow_missing: bool) -> Optional[np.ndarray]:
     """
     Extract data directly with proper error handling and type conversion.
 
