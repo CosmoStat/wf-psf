@@ -58,12 +58,14 @@ class ZernikeInputsFactory:
         centroid_dataset, positions = None, None
 
         if run_type in {"training", "simulation", "metrics"}:
-            stamps = get_data_array(data, run_type, train_key="noisy_stars", test_key="stars")
+            stamps = get_data_array(
+                data, run_type, train_key="noisy_stars", test_key="stars"
+            )
             masks = get_data_array(data, run_type, key="masks", allow_missing=True)
             centroid_dataset = {"stamps": stamps, "masks": masks}
 
             positions = get_data_array(data=data, run_type=run_type, key="positions")
-            
+
             if model_params.use_prior:
                 if prior is not None:
                     logger.warning(

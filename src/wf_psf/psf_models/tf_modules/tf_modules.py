@@ -1,10 +1,11 @@
 """TensorFlow-Based PSF Modeling.
 
-A module containing TensorFlow implementations for modeling monochromatic PSFs using Zernike polynomials and Fourier optics.  
+A module containing TensorFlow implementations for modeling monochromatic PSFs using Zernike polynomials and Fourier optics.
 
 :Author: Tobias Liaudat <tobiasliaudat@gmail.com>
 
 """
+
 import numpy as np
 import tensorflow as tf
 from typing import Optional
@@ -21,7 +22,9 @@ class TFFftDiffract(tf.Module):
         Downsampling factor. Must be integer.
     """
 
-    def __init__(self, output_dim: int = 64, output_Q: int = 2, name: Optional[str] = None) -> None:
+    def __init__(
+        self, output_dim: int = 64, output_Q: int = 2, name: Optional[str] = None
+    ) -> None:
         """Initialize the TFFftDiffract class.
 
         Parameters
@@ -47,15 +50,15 @@ class TFFftDiffract(tf.Module):
     def tf_crop_img(self, image, output_crop_dim):
         """Crop images using TensorFlow methods.
 
-        This method handles a batch of 2D images and crops them to the specified dimension. 
-        The images are expected to have the shape [batch, width, height], and the method 
+        This method handles a batch of 2D images and crops them to the specified dimension.
+        The images are expected to have the shape [batch, width, height], and the method
         uses TensorFlow's `crop_to_bounding_box` to crop each image in the batch.
 
         Parameters
         ----------
         image : tf.Tensor
             A batch of 2D images with shape [batch, height, width]. The images are expected
-            to be 3D tensors where the second and third dimensions represent the height and width. 
+            to be 3D tensors where the second and third dimensions represent the height and width.
         output_crop_dim : int
             The dimension of the square crop. The image will be cropped to this dimension.
 
@@ -108,8 +111,8 @@ class TFFftDiffract(tf.Module):
     def __call__(self, input_phase):
         """Calculate the normalized Point Spread Function (PSF) from a phase array.
 
-        This method takes a 2D input phase array, applies a 2D FFT-based diffraction operation, 
-        crops the resulting PSF, and downscales it by a factor of Q if necessary. Finally, the PSF 
+        This method takes a 2D input phase array, applies a 2D FFT-based diffraction operation,
+        crops the resulting PSF, and downscales it by a factor of Q if necessary. Finally, the PSF
         is normalized by summing over its spatial dimensions.
 
         Parameters
@@ -120,7 +123,7 @@ class TFFftDiffract(tf.Module):
         Returns
         -------
         tf.Tensor
-            The normalized PSF tensor with shape [batch, height, width], where each PSF is normalized 
+            The normalized PSF tensor with shape [batch, height, width], where each PSF is normalized
             by its sum over the spatial dimensions.
         """
         # Perform the FFT-based diffraction operation
@@ -174,7 +177,13 @@ class TFBuildPhase(tf.Module):
         A tensor representing the obscurations (e.g., apertures or masks) to be applied to the phase.
     """
 
-    def __init__(self, phase_N: int, lambda_obs: float, obscurations: tf.Tensor, name: Optional[str] = None) -> None:
+    def __init__(
+        self,
+        phase_N: int,
+        lambda_obs: float,
+        obscurations: tf.Tensor,
+        name: Optional[str] = None,
+    ) -> None:
         """Initialize the TFBuildPhase class.
 
         Parameters
@@ -225,7 +234,6 @@ class TFBuildPhase(tf.Module):
         padded_phase = tf.pad(no_pad_phase, padding)
 
         return padded_phase
-     
 
     def apply_obscurations(self, phase: tf.Tensor) -> tf.Tensor:
         """Apply obscurations to the phase map.
@@ -295,15 +303,15 @@ class TFBuildPhase(tf.Module):
 class TFZernikeOPD(tf.Module):
     """Convert Zernike coefficients into an Optical Path Difference (OPD).
 
-    This class performs the weighted sum of Zernike coefficients and Zernike maps 
-    to compute the OPD. The Zernike maps and the corresponding Zernike coefficients 
+    This class performs the weighted sum of Zernike coefficients and Zernike maps
+    to compute the OPD. The Zernike maps and the corresponding Zernike coefficients
     are required to perform the calculation.
 
     Parameters
     ----------
     zernike_maps : tf.Tensor
-        A tensor containing the Zernike maps. The shape should be 
-        (num_coeffs, x_dim, y_dim), where `num_coeffs` is the number of Zernike coefficients 
+        A tensor containing the Zernike maps. The shape should be
+        (num_coeffs, x_dim, y_dim), where `num_coeffs` is the number of Zernike coefficients
         and `x_dim`, `y_dim` are the dimensions of each map.
 
     name : str, optional
@@ -312,12 +320,12 @@ class TFZernikeOPD(tf.Module):
     Returns
     -------
     tf.Tensor
-        A tensor representing the OPD, with shape (num_star, x_dim, y_dim), 
-        where `num_star` corresponds to the number of stars and `x_dim`, `y_dim` are 
+        A tensor representing the OPD, with shape (num_star, x_dim, y_dim),
+        where `num_star` corresponds to the number of stars and `x_dim`, `y_dim` are
         the dimensions of the OPD map.
     """
 
-    def __init__(self, zernike_maps : tf.Tensor, name: Optional[str] = None) -> None:
+    def __init__(self, zernike_maps: tf.Tensor, name: Optional[str] = None) -> None:
         """
         Initialize the TFZernikeOPD class.
 
@@ -332,18 +340,18 @@ class TFZernikeOPD(tf.Module):
 
         self.zernike_maps = zernike_maps
 
-    def __call__(self, z_coeffs : tf.Tensor) -> tf.Tensor:
+    def __call__(self, z_coeffs: tf.Tensor) -> tf.Tensor:
         """Compute the OPD from Zernike coefficients and maps.
 
-        This method calculates the OPD by performing the weighted sum of Zernike 
-        coefficients and corresponding Zernike maps. The result is a tensor representing 
+        This method calculates the OPD by performing the weighted sum of Zernike
+        coefficients and corresponding Zernike maps. The result is a tensor representing
         the computed OPD for the given coefficients.
 
         Parameters
         ----------
         z_coeffs : tf.Tensor
-            A tensor containing the Zernike coefficients. The shape should be 
-            (num_star, num_coeffs, 1, 1), where `num_star` is the number of stars and 
+            A tensor containing the Zernike coefficients. The shape should be
+            (num_star, num_coeffs, 1, 1), where `num_star` is the number of stars and
             `num_coeffs` is the number of Zernike coefficients.
 
         Returns
@@ -358,30 +366,30 @@ class TFZernikeOPD(tf.Module):
 class TFZernikeMonochromaticPSF(tf.Module):
     """Build a monochromatic Point Spread Function (PSF) from Zernike coefficients.
 
-    This class computes the monochromatic PSF by following the Zernike model. It 
-    involves multiple stages, including the calculation of the OPD (Optical Path 
-    Difference), the phase from the OPD, and diffraction via FFT-based operations. 
+    This class computes the monochromatic PSF by following the Zernike model. It
+    involves multiple stages, including the calculation of the OPD (Optical Path
+    Difference), the phase from the OPD, and diffraction via FFT-based operations.
     The Zernike coefficients are used to generate the PSF.
 
     Parameters
     ----------
     phase_N : int
         The size of the phase grid, typically a square matrix dimension.
-        
+
     lambda_obs : float
         The wavelength of the observed light.
-        
+
     obscurations : tf.Tensor
-        A tensor representing the obscurations in the system, which will be applied 
+        A tensor representing the obscurations in the system, which will be applied
         to the phase.
 
     zernike_maps : tf.Tensor
-        A tensor containing the Zernike maps, with the shape (num_coeffs, x_dim, y_dim), 
-        where `num_coeffs` is the number of Zernike coefficients and `x_dim`, `y_dim` are 
+        A tensor containing the Zernike maps, with the shape (num_coeffs, x_dim, y_dim),
+        where `num_coeffs` is the number of Zernike coefficients and `x_dim`, `y_dim` are
         the dimensions of the Zernike maps.
 
     output_dim : int, optional, default=64
-        The output dimension of the PSF, i.e., the size of the resulting image. 
+        The output dimension of the PSF, i.e., the size of the resulting image.
 
     name : str, optional
         The name of the module. Default is `None`.
@@ -390,17 +398,22 @@ class TFZernikeMonochromaticPSF(tf.Module):
     ----------
     tf_build_opd_zernike : TFZernikeOPD
         A module used to generate the OPD from the Zernike coefficients.
-        
+
     tf_build_phase : TFBuildPhase
         A module used to compute the phase from the OPD.
-        
+
     tf_fft_diffract : TFFftDiffract
         A module that performs the diffraction calculation using FFT-based methods.
     """
 
     def __init__(
-        self, phase_N: int, lambda_obs: float, obscurations: tf.Tensor, 
-        zernike_maps: tf.Tensor, output_dim: int = 64, name: Optional[str] = None
+        self,
+        phase_N: int,
+        lambda_obs: float,
+        obscurations: tf.Tensor,
+        zernike_maps: tf.Tensor,
+        output_dim: int = 64,
+        name: Optional[str] = None,
     ):
         """
         Initialize the TFZernikeMonochromaticPSF class.
@@ -437,15 +450,15 @@ class TFZernikeMonochromaticPSF(tf.Module):
         Parameters
         ----------
         z_coeffs : tf.Tensor
-            A tensor containing the Zernike coefficients. The shape should be 
-            (num_star, num_coeffs, 1, 1), where `num_star` is the number of stars 
+            A tensor containing the Zernike coefficients. The shape should be
+            (num_star, num_coeffs, 1, 1), where `num_star` is the number of stars
             and `num_coeffs` is the number of Zernike coefficients.
 
         Returns
         -------
         tf.Tensor
-            A tensor representing the computed PSF, with shape 
-            (num_star, output_dim, output_dim), where `output_dim` is the size of 
+            A tensor representing the computed PSF, with shape
+            (num_star, output_dim, output_dim), where `output_dim` is the size of
             the resulting PSF image.
         """
         # Generate OPD from Zernike coefficients

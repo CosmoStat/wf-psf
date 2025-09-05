@@ -1,8 +1,13 @@
-
 class MockDataset:
     def __init__(self, positions, zernike_priors, star_type, stars, masks):
-        self.dataset = {"positions": positions, "zernike_prior": zernike_priors, star_type: stars, "masks": masks}
-        
+        self.dataset = {
+            "positions": positions,
+            "zernike_prior": zernike_priors,
+            star_type: stars,
+            "masks": masks,
+        }
+
+
 class MockData:
     def __init__(
         self,
@@ -16,15 +21,16 @@ class MockData:
         masks=None,
     ):
         self.training_data = MockDataset(
-            positions=training_positions, 
+            positions=training_positions,
             zernike_priors=training_zernike_priors,
             star_type="noisy_stars",
             stars=noisy_stars,
-            masks=noisy_masks)
+            masks=noisy_masks,
+        )
         self.test_data = MockDataset(
-            positions=test_positions, 
+            positions=test_positions,
             zernike_priors=test_zernike_priors,
             star_type="stars",
             stars=stars,
-            masks=masks)
-
+            masks=masks,
+        )

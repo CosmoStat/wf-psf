@@ -16,6 +16,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class TFPolynomialZernikeField(tf.keras.layers.Layer):
     """Calculate the zernike coefficients for a given position.
 
@@ -963,7 +964,6 @@ class TFPhysicalLayer(tf.keras.layers.Layer):
 
         return interp_zks[:, :, tf.newaxis, tf.newaxis]
 
-    
     def call(self, positions):
         """Calculate the prior Zernike coefficients for a batch of positions.
 
