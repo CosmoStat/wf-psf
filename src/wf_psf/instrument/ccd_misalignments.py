@@ -10,7 +10,6 @@ from typing import Union
 import numpy as np
 import matplotlib.path as mpltPath
 from scipy.spatial import KDTree
-from wf_psf.data.data_handler import get_np_obs_positions
 
 
 def compute_ccd_misalignment(model_params, positions: np.ndarray) -> np.ndarray:
