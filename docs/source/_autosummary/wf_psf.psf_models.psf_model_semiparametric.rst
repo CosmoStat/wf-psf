@@ -1,0 +1,30 @@
+wf\_psf.psf\_models.psf\_model\_semiparametric
+==============================================
+
+.. automodule:: wf_psf.psf_models.psf_model_semiparametric
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      SemiParamFieldFactory
+      TFSemiParametricField
+   
+   
+
+   
+   
+   
+
+
+

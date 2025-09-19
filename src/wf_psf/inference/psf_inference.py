@@ -386,14 +386,20 @@ class PSFInferenceEngine:
             batch_pos = positions[counter:end_sample, :]
             batch_seds = sed_data[counter:end_sample, :, :]
             batch_inputs = [batch_pos, batch_seds]
+<<<<<<< HEAD
 
+=======
+>>>>>>> f2d8aa4 (merge feature/159-psf-output-from-trained-model  with real data metrics)
             # Generate PSFs for the current batch
             batch_psfs = self.trained_model(batch_inputs, training=False)
             self.inferred_psfs[counter:end_sample, :, :] = batch_psfs.numpy()
 
             # Update the counter
             counter = end_sample
+<<<<<<< HEAD
 
+=======
+>>>>>>> f2d8aa4 (merge feature/159-psf-output-from-trained-model  with real data metrics)
         return self._inferred_psfs
 
     def get_psfs(self) -> np.ndarray:

@@ -131,6 +131,7 @@ def mock_data(scope="module"):
     )
 
 
+<<<<<<< HEAD
 @pytest.fixture
 def mock_data_inference():
     """Flat dataset for inference path only."""
@@ -143,6 +144,8 @@ def mock_data_inference():
     )
 
 
+=======
+>>>>>>> f2d8aa4 (merge feature/159-psf-output-from-trained-model  with real data metrics)
 @pytest.fixture
 def simple_image(scope="module"):
     """Fixture for a simple star image."""

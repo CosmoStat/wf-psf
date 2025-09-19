@@ -3,7 +3,11 @@ import numpy as np
 import tensorflow as tf
 from wf_psf.data.data_handler import (
     DataHandler,
+<<<<<<< HEAD
     get_data_array,
+=======
+    get_np_obs_positions,
+>>>>>>> f2d8aa4 (merge feature/159-psf-output-from-trained-model  with real data metrics)
     extract_star_data,
 )
 from wf_psf.utils.read_config import RecursiveNamespace
@@ -12,6 +16,7 @@ from wf_psf.utils.read_config import RecursiveNamespace
 def mock_sed():
     # Create a fake SED with shape (n_wavelengths,) — match what your real SEDs look like
     return np.linspace(0.1, 1.0, 50)
+
 
 
 def mock_sed():
@@ -152,6 +157,15 @@ def test_load_test_dataset_missing_stars(tmp_path, simPSF):
     ):
         data_handler.load_dataset()
         data_handler.validate_and_process_dataset()
+<<<<<<< HEAD
+=======
+
+
+def test_get_np_obs_positions(mock_data):
+    observed_positions = get_np_obs_positions(mock_data)
+    expected_positions = np.array([[1, 2], [3, 4], [5, 6], [7, 8]])
+    assert tf.reduce_all(tf.equal(observed_positions, expected_positions))
+>>>>>>> f2d8aa4 (merge feature/159-psf-output-from-trained-model  with real data metrics)
 
 
 def test_extract_star_data_valid_keys(mock_data):
@@ -203,6 +217,10 @@ def test_extract_star_data_partially_missing_key(mock_data):
 def test_extract_star_data_tensor_conversion(mock_data):
     """Test that the function properly converts TensorFlow tensors to NumPy arrays."""
     result = extract_star_data(mock_data, train_key="noisy_stars", test_key="stars")
+<<<<<<< HEAD
+=======
+
+>>>>>>> f2d8aa4 (merge feature/159-psf-output-from-trained-model  with real data metrics)
     assert isinstance(result, np.ndarray), "The result should be a NumPy array"
     assert result.dtype == np.float32, "The NumPy array should have dtype float32"
 

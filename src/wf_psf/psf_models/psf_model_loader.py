@@ -10,6 +10,10 @@ Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 
 import logging
 from wf_psf.psf_models.psf_models import get_psf_model, get_psf_model_weights_filepath
+<<<<<<< HEAD
+=======
+import tensorflow as tf
+>>>>>>> f2d8aa4 (merge feature/159-psf-output-from-trained-model  with real data metrics)
 
 logger = logging.getLogger(__name__)
 

@@ -1,0 +1,30 @@
+wf\_psf.psf\_models.psf\_model\_physical\_polychromatic
+=======================================================
+
+.. automodule:: wf_psf.psf_models.psf_model_physical_polychromatic
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      PhysicalPolychromaticFieldFactory
+      TFPhysicalPolychromaticField
+   
+   
+
+   
+   
+   
+
+
+
