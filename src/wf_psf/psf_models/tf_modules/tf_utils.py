@@ -83,7 +83,10 @@ def ensure_tensor(input_array, dtype=tf.float32):
         The input to convert.
     dtype : tf.DType, optional
         The desired TensorFlow dtype (default: tf.float32).
+<<<<<<< HEAD
 
+=======
+>>>>>>> f2d8aa4 (merge feature/159-psf-output-from-trained-model  with real data metrics)
     Returns
     -------
     tf.Tensor

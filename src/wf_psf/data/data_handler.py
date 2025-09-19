@@ -17,7 +17,6 @@ import numpy as np
 import wf_psf.utils.utils as utils
 from wf_psf.psf_models.tf_modules.tf_utils import ensure_tensor
 import tensorflow as tf
-from fractions import Fraction
 from typing import Optional, Union
 import logging
 
