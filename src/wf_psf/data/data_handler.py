@@ -186,13 +186,6 @@ class DataHandler:
             self.dataset["positions"], dtype=tf.float32
         )
 
-<<<<<<< HEAD
-=======
-        self.dataset["positions"] = ensure_tensor(
-            self.dataset["positions"], dtype=tf.float32
-        )
-
->>>>>>> f2d8aa4 (merge feature/159-psf-output-from-trained-model  with real data metrics)
         if self.dataset_type == "train":
             self.dataset["noisy_stars"] = ensure_tensor(
                 self.dataset["noisy_stars"], dtype=tf.float32
@@ -402,11 +395,7 @@ def get_data_array(
             return extract_star_data(data, effective_train_key, effective_test_key)
         else:  # inference
             return _get_direct_data(data, effective_key, allow_missing)
-<<<<<<< HEAD
     except Exception:
-=======
-    except Exception as e:
->>>>>>> f2d8aa4 (merge feature/159-psf-output-from-trained-model  with real data metrics)
         if allow_missing:
             return None
         raise

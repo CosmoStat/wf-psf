@@ -181,10 +181,6 @@ def pad_tf_zernikes(zk_param: tf.Tensor, zk_prior: tf.Tensor, n_zks_total: int):
     padded_zk_prior : tf.Tensor
         Padded Zernike coefficients for the prior part. Shape [batch, n_zks_total, 1, 1].
     """
-<<<<<<< HEAD
-=======
-
->>>>>>> f2d8aa4 (merge feature/159-psf-output-from-trained-model  with real data metrics)
     pad_num_param = n_zks_total - tf.shape(zk_param)[1]
     pad_num_prior = n_zks_total - tf.shape(zk_prior)[1]
 

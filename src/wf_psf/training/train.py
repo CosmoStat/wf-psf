@@ -299,10 +299,6 @@ def get_loss_metrics_monitor_and_outputs(training_handler, data_conf):
         Tensor containing the outputs for validation
 
     """
-<<<<<<< HEAD
-=======
-
->>>>>>> f2d8aa4 (merge feature/159-psf-output-from-trained-model  with real data metrics)
     if training_handler.training_hparams.loss == "mask_mse":
         loss = train_utils.MaskedMeanSquaredError()
         monitor = "loss"

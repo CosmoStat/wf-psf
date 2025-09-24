@@ -93,10 +93,8 @@ def compute_poly_metric(
     preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
     # Ground truth data preparation
-    if (
-        dataset_dict is None
-        or "stars" not in dataset_dict
-        or "noisy_stars" not in dataset_dict
+    if dataset_dict is None or (
+        "stars" not in dataset_dict and "noisy_stars" not in dataset_dict
     ):
         logger.info(
             "No precomputed ground truth stars found. Regenerating from the ground truth model using configured interpolation settings."
@@ -240,10 +238,8 @@ def compute_chi2_metric(
     preds = tf_trained_psf_model.predict(x=pred_inputs, batch_size=batch_size)
 
     # Ground truth data preparation
-    if (
-        dataset_dict is None
-        or "stars" not in dataset_dict
-        or "noisy_stars" not in dataset_dict
+    if dataset_dict is None or (
+        "stars" not in dataset_dict and "noisy_stars" not in dataset_dict
     ):
         logger.info(
             "No precomputed ground truth stars found. Regenerating from the ground truth model using configured interpolation settings."

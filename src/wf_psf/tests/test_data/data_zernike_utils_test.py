@@ -11,10 +11,6 @@ from wf_psf.data.data_zernike_utils import (
     compute_zernike_tip_tilt,
     pad_tf_zernikes,
 )
-<<<<<<< HEAD
-=======
-from wf_psf.tests.test_data.test_data_utils import MockData
->>>>>>> f2d8aa4 (merge feature/159-psf-output-from-trained-model  with real data metrics)
 from types import SimpleNamespace as RecursiveNamespace
 
 
@@ -49,7 +45,6 @@ def test_training_without_prior(mock_model_params, mock_data):
         data=mock_data, run_type="training", model_params=mock_model_params
     )
 
-<<<<<<< HEAD
     mock_data_stamps = np.concatenate(
         [
             mock_data.training_data.dataset["noisy_stars"],
@@ -71,9 +66,6 @@ def test_training_without_prior(mock_model_params, mock_data):
         zinputs.centroid_dataset["masks"], mock_data_masks, rtol=1e-6, atol=1e-8
     )
 
-=======
-    assert zinputs.centroid_dataset is mock_data
->>>>>>> f2d8aa4 (merge feature/159-psf-output-from-trained-model  with real data metrics)
     assert zinputs.zernike_prior is None
 
     expected_positions = np.concatenate(
@@ -130,12 +122,8 @@ def test_inference_with_dict_and_prior(mock_model_params):
 
     zinputs = ZernikeInputsFactory.build(data, "inference", mock_model_params)
 
-<<<<<<< HEAD
     for key in ["stamps", "masks"]:
         assert zinputs.centroid_dataset[key] is None
-=======
-    assert zinputs.centroid_dataset is None
->>>>>>> f2d8aa4 (merge feature/159-psf-output-from-trained-model  with real data metrics)
 
     # NumPy array comparison
     np.testing.assert_array_equal(
@@ -369,69 +357,6 @@ def test_pad_zernikes_num_of_zernikes_equal():
     # Prepare your test tensors
     zk_param = tf.constant([[[[1.0]]], [[[2.0]]]])  # Shape (2, 1, 1, 1)
     zk_prior = tf.constant([[[[1.0]]], [[[2.0]]]])  # Same shape
-<<<<<<< HEAD
-=======
-
-    # Reshape to (1, 2, 1, 1)
-    zk_param = tf.reshape(zk_param, (1, 2, 1, 1))
-    zk_prior = tf.reshape(zk_prior, (1, 2, 1, 1))
-
-    # Reset _n_zks_total to max number of zernikes (2 here)
-    n_zks_total = max(tf.shape(zk_param)[1].numpy(), tf.shape(zk_prior)[1].numpy())
-
-    # Call pad_zernikes method
-    padded_zk_param, padded_zk_prior = pad_tf_zernikes(zk_param, zk_prior, n_zks_total)
-
-    # Assert shapes are equal and correct
-    assert padded_zk_param.shape[1] == n_zks_total
-    assert padded_zk_prior.shape[1] == n_zks_total
-
-    # If num zernikes already equal, output should be unchanged
-    np.testing.assert_array_equal(padded_zk_param.numpy(), zk_param.numpy())
-    np.testing.assert_array_equal(padded_zk_prior.numpy(), zk_prior.numpy())
-
-
-def test_pad_zernikes_prior_greater_than_param():
-    zk_param = tf.constant([[[[1]]], [[[2]]]])  # Shape: (2, 1, 1, 1)
-    zk_prior = tf.constant([[[[1]], [[2]], [[3]], [[4]], [[5]]]])  # Shape: (5, 1, 1, 1)
-
-    # Reshape the tensors to have the desired shapes
-    zk_param = tf.reshape(zk_param, (1, 2, 1, 1))  # Reshaping tensor1 to (1, 2, 1, 1)
-    zk_prior = tf.reshape(zk_prior, (1, 5, 1, 1))  # Reshaping tensor2 to (1, 5, 1, 1)
-
-    # Reset n_zks_total attribute
-    n_zks_total = max(tf.shape(zk_param)[1].numpy(), tf.shape(zk_prior)[1].numpy())
-
-    # Call the method under test
-    padded_zk_param, padded_zk_prior = pad_tf_zernikes(zk_param, zk_prior, n_zks_total)
-
-    # Assert that the padded tensors have the correct shapes
-    assert padded_zk_param.shape == (1, 5, 1, 1)
-    assert padded_zk_prior.shape == (1, 5, 1, 1)
-
-
-def test_pad_zernikes_param_greater_than_prior():
-    zk_param = tf.constant([[[[10]], [[20]], [[30]], [[40]]]])  # Shape: (4, 1, 1, 1)
-    zk_prior = tf.constant([[[[1]]], [[[2]]]])  # Shape: (2, 1, 1, 1)
-
-    # Reshape the tensors to have the desired shapes
-    zk_param = tf.reshape(zk_param, (1, 4, 1, 1))  # Reshaping tensor1 to (1, 2, 1, 1)
-    zk_prior = tf.reshape(zk_prior, (1, 2, 1, 1))  # Reshaping tensor2 to (1, 4, 1, 1)
-
-    # Reset n_zks_total attribute
-    n_zks_total = max(tf.shape(zk_param)[1].numpy(), tf.shape(zk_prior)[1].numpy())
-
-    # Call the method under test
-    padded_zk_param, padded_zk_prior = pad_tf_zernikes(zk_param, zk_prior, n_zks_total)
-
-    # Assert that the padded tensors have the correct shapes
-    assert padded_zk_param.shape == (1, 4, 1, 1)
-    assert padded_zk_prior.shape == (1, 4, 1, 1)
-
-
-def test_compute_zernike_tip_tilt_single_batch(mocker, simple_image, identity_mask):
-    """Test compute_zernike_tip_tilt handling with single batch input and mocks."""
->>>>>>> f2d8aa4 (merge feature/159-psf-output-from-trained-model  with real data metrics)
 
     # Reshape to (1, 2, 1, 1)
     zk_param = tf.reshape(zk_param, (1, 2, 1, 1))
@@ -550,10 +475,6 @@ def test_compute_zernike_tip_tilt_single_batch(mocker, simple_image, identity_ma
 
 def test_compute_zernike_tip_tilt_batch(mocker, multiple_images):
     """Test compute_zernike_tip_tilt batch handling of multiple inputs."""
-<<<<<<< HEAD
-=======
-
->>>>>>> f2d8aa4 (merge feature/159-psf-output-from-trained-model  with real data metrics)
     # Mock the CentroidEstimator class
     mock_centroid_calc = mocker.patch(
         "wf_psf.data.centroids.CentroidEstimator", autospec=True
