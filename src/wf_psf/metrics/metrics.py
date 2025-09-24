@@ -93,7 +93,11 @@ def compute_poly_metric(
     preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
     # Ground truth data preparation
-    if dataset_dict is None or "stars" not in dataset_dict:
+    if (
+        dataset_dict is None
+        or "stars" not in dataset_dict
+        or "noisy_stars" not in dataset_dict
+    ):
         logger.info(
             "No precomputed ground truth stars found. Regenerating from the ground truth model using configured interpolation settings."
         )
@@ -113,8 +117,16 @@ def compute_poly_metric(
         gt_preds = gt_tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
     else:
-        logger.info("Using precomputed ground truth stars from dataset_dict['stars'].")
-        gt_preds = dataset_dict["stars"]
+        if "stars" in dataset_dict:
+            gt_preds = dataset_dict["stars"]
+            logger.info(
+                "Using precomputed ground truth stars from dataset_dict['stars']."
+            )
+        elif "noisy_stars" in dataset_dict:
+            gt_preds = dataset_dict["noisy_stars"]
+            logger.info(
+                "Using precomputed noisy ground truth stars from dataset_dict['noisy_stars']."
+            )
 
     # If the data is masked, mask the predictions
     if mask:
@@ -228,7 +240,11 @@ def compute_chi2_metric(
     preds = tf_trained_psf_model.predict(x=pred_inputs, batch_size=batch_size)
 
     # Ground truth data preparation
-    if dataset_dict is None or "stars" not in dataset_dict:
+    if (
+        dataset_dict is None
+        or "stars" not in dataset_dict
+        or "noisy_stars" not in dataset_dict
+    ):
         logger.info(
             "No precomputed ground truth stars found. Regenerating from the ground truth model using configured interpolation settings."
         )
@@ -251,8 +267,16 @@ def compute_chi2_metric(
         reference_stars = gt_tf_psf_model.predict(x=pred_inputs, batch_size=batch_size)
 
     else:
-        logger.info("Using precomputed ground truth stars from dataset_dict['stars'].")
-        reference_stars = dataset_dict["stars"]
+        if "stars" in dataset_dict:
+            reference_stars = dataset_dict["stars"]
+            logger.info(
+                "Using precomputed ground truth stars from dataset_dict['stars']."
+            )
+        elif "noisy_stars" in dataset_dict:
+            reference_stars = dataset_dict["noisy_stars"]
+            logger.info(
+                "Using precomputed noisy ground truth stars from dataset_dict['noisy_stars']."
+            )
 
     # If the data is masked, mask the predictions
     if mask:
