@@ -8,9 +8,7 @@ A module with utils to handle PSF centroids.
 
 import numpy as np
 import scipy.signal as scisig
-from wf_psf.data.data_handler import extract_star_data
 from fractions import Fraction
-import tensorflow as tf
 from typing import Optional
 
 
@@ -252,7 +250,6 @@ class CentroidEstimator:
         self, im, mask=None, sigma_init=7.5, n_iter=5, auto_run=True, xc=None, yc=None
     ):
         """Initialize class attributes."""
-
         # Convert to np.ndarray if not already
         im = np.asarray(im)
         if mask is not None:
