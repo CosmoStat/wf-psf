@@ -209,7 +209,6 @@ class TrainingConfigHandler:
         input configuration.
 
         """
-
         train.train(
             self.training_conf.training,
             self.data_conf,
@@ -581,7 +580,6 @@ class PlottingConfigHandler:
         metrics_run_id_name: list
             List containing the model name and id for each training run
         """
-
         try:
             training_conf = read_conf(
                 os.path.join(
@@ -596,9 +594,7 @@ class PlottingConfigHandler:
         except (TypeError, FileNotFoundError):
             logger.info("Trained model path not provided...")
             logger.info(
-                "Trying to retrieve training config file from workdir: {}".format(
-                    wf_outdir
-                )
+                f"Trying to retrieve training config file from workdir: {wf_outdir}"
             )
 
             training_confs = [
@@ -649,9 +645,7 @@ class PlottingConfigHandler:
                     "metrics-" + run_id_name + ".npy",
                 )
                 logger.info(
-                    "Attempting to read in trained model config file...{}".format(
-                        output_path
-                    )
+                    f"Attempting to read in trained model config file...{output_path}"
                 )
                 try:
                     metrics_dict[k].append(

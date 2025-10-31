@@ -240,7 +240,6 @@ class CoordinateHelper:
         None
 
         """
-
         x_check = np.sum(xv >= x_lims[1] * 1.1) + np.sum(xv <= x_lims[0] * 1.1)
         y_check = np.sum(yv >= y_lims[1] * 1.1) + np.sum(yv <= y_lims[0] * 1.1)
 
@@ -480,7 +479,7 @@ class ZernikeHelper:
         )
 
 
-class SpatialVaryingPSF(object):
+class SpatialVaryingPSF:
     """Spatial Varying PSF.
 
     Generate PSF field with polynomial variations of Zernike coefficients.
@@ -621,7 +620,6 @@ class SpatialVaryingPSF(object):
         numpy.ndarray
             An array containing the WFE RMS values for the provided positions.
         """
-
         Z = ZernikeHelper.generate_zernike_polynomials(
             xv, yv, self.x_lims, self.y_lims, self.d_max, polynomial_coeffs
         )
@@ -645,7 +643,6 @@ class SpatialVaryingPSF(object):
         -------
         None
         """
-
         # Build mesh
         xv_grid, yv_grid = MeshHelper.build_mesh(
             self.x_lims, self.y_lims, self.grid_points

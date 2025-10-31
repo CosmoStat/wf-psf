@@ -299,7 +299,6 @@ def get_loss_metrics_monitor_and_outputs(training_handler, data_conf):
         Tensor containing the outputs for validation
 
     """
-
     if training_handler.training_hparams.loss == "mask_mse":
         loss = train_utils.MaskedMeanSquaredError()
         monitor = "loss"

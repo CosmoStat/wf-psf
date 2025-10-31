@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Optional, Tuple
+from typing import Tuple
 import tensorflow as tf
 import tensorflow_addons as tfa
 import PIL
@@ -114,7 +114,6 @@ def generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
     n_bins: int
         Number of wavelength bins
     """
-
     feasible_wv, SED_norm = sim_psf_toolkit.calc_SED_wave_values(SED, n_bins)
     feasible_N = np.array([sim_psf_toolkit.feasible_N(_wv) for _wv in feasible_wv])
 
@@ -140,7 +139,6 @@ def generate_SED_elems_in_tensorflow(
     tf_dtype: tf.
         Tensor Flow data type
     """
-
     feasible_wv, SED_norm = sim_psf_toolkit.calc_SED_wave_values(SED, n_bins)
     feasible_N = np.array([sim_psf_toolkit.feasible_N(_wv) for _wv in feasible_wv])
 
@@ -405,7 +403,7 @@ class NoiseEstimator:
         return self.sigma_mad(image[self.window])
 
 
-class ZernikeInterpolation(object):
+class ZernikeInterpolation:
     """Interpolate zernikes
 
     This class helps to interpolate zernikes using only the closest K elements
@@ -478,7 +476,7 @@ class ZernikeInterpolation(object):
         return tf.squeeze(interp_zks, axis=1)
 
 
-class IndependentZernikeInterpolation(object):
+class IndependentZernikeInterpolation:
     """Interpolate each Zernike polynomial independently
 
     The interpolation is done independently for each Zernike polynomial.

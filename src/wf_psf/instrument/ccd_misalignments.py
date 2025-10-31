@@ -162,7 +162,6 @@ class CCDMisalignmentCalculator:
 
     def _initialize_polygons(self):
         """Initialize polygons to look for CCD IDs"""
-
         # Build polygon list corresponding to each CCD
         self.ccd_polygons = []
 
@@ -238,7 +237,6 @@ class CCDMisalignmentCalculator:
             Focal plane position in wavediff coordinate system
             respecting `self.x_lims` and `self.y_lims`. Shape: (2,)
         """
-
         self.check_position_wavediff_limits(pos)
 
         pos_x = pos[0]
@@ -266,7 +264,6 @@ class CCDMisalignmentCalculator:
         pos : np.ndarray
             Tile position in input tile coordinate system. Shape: (2,)
         """
-
         self.check_position_tile_limits(pos)
 
         pos_x = pos[0]
@@ -286,7 +283,6 @@ class CCDMisalignmentCalculator:
 
     def check_position_wavediff_limits(self, pos):
         """Check if position is within wavediff limits."""
-
         if (pos[0] < self.x_lims[0] or pos[0] > self.x_lims[1]) or (
             pos[1] < self.y_lims[0] or pos[1] > self.y_lims[1]
         ):
@@ -296,7 +292,6 @@ class CCDMisalignmentCalculator:
 
     def check_position_tile_limits(self, pos):
         """Check if position is within tile limits."""
-
         if (pos[0] < self.tiles_x_lims[0] or pos[0] > self.tiles_x_lims[1]) or (
             pos[1] < self.tiles_y_lims[0] or pos[1] > self.tiles_y_lims[1]
         ):
@@ -417,7 +412,6 @@ class CCDMisalignmentCalculator:
         d : np.ndarray
             `d` value from the plane ecuation. Shape (3,)
         """
-
         z = (-normal[0] * pos[0] - normal[1] * pos[1] - d) * 1.0 / normal[2]
 
         return z

@@ -189,7 +189,6 @@ class TFBatchPolychromaticPSF(tf.keras.layers.Layer):
 
     def calculate_polychromatic_PSF(self, packed_elems):
         """Calculate a polychromatic PSF."""
-
         self.current_opd = packed_elems[0][tf.newaxis, :, :]
         SED_pack_data = packed_elems[1]
 
@@ -214,7 +213,6 @@ class TFBatchPolychromaticPSF(tf.keras.layers.Layer):
 
     def call(self, inputs):
         """Calculate the batch polychromatic PSFs."""
-
         # Unpack Inputs
         opd_batch = inputs[0]
         packed_SED_data = inputs[1]
@@ -299,7 +297,6 @@ class TFBatchMonochromaticPSF(tf.keras.layers.Layer):
 
     def call(self, opd_batch):
         """Calculate the batch poly PSFs."""
-
         if self.phase_N is None:
             self.set_lambda_phaseN()
 
@@ -312,14 +309,13 @@ class TFBatchMonochromaticPSF(tf.keras.layers.Layer):
                 swap_memory=True,
             )
 
-        mono_psf_batch = _calculate_PSF_batch((opd_batch))
+        mono_psf_batch = _calculate_PSF_batch(opd_batch)
 
         return mono_psf_batch
 
 
 class TFNonParametricPolynomialVariationsOPD(tf.keras.layers.Layer):
     """Non-parametric OPD generation with polynomial variations.
-
 
     Parameters
     ----------
@@ -423,7 +419,6 @@ class TFNonParametricPolynomialVariationsOPD(tf.keras.layers.Layer):
 
 class TFNonParametricMCCDOPDv2(tf.keras.layers.Layer):
     """Non-parametric OPD generation with hybrid-MCCD variations.
-
 
     Parameters
     ----------
@@ -642,7 +637,6 @@ class TFNonParametricMCCDOPDv2(tf.keras.layers.Layer):
 class TFNonParametricGraphOPD(tf.keras.layers.Layer):
     """Non-parametric OPD generation with only graph-cosntraint variations.
 
-
     Parameters
     ----------
     obs_pos: tensor(n_stars, 2)
@@ -750,7 +744,6 @@ class TFNonParametricGraphOPD(tf.keras.layers.Layer):
 
     def predict(self, positions):
         """Prediction step."""
-
         ## Graph part
         A_graph_train = tf.linalg.matmul(self.graph_dic, self.alpha_graph)
         # RBF interpolation
@@ -960,7 +953,6 @@ class TFPhysicalLayer(tf.keras.layers.Layer):
             If the shape of the input `positions` tensor is not compatible.
 
         """
-
         # Find indices for all positions in one batch operation
         idx = find_position_indices(self.obs_pos, positions)
 

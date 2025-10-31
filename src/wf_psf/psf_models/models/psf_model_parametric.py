@@ -166,7 +166,6 @@ class TFParametricPSFFieldModel(tf.keras.Model):
             ``simPSF_np = wf_psf.sims.psf_simulator.PSFSimulator(...)``
             ``phase_N = simPSF_np.feasible_N(lambda_obs)``
         """
-
         # Initialise the monochromatic PSF batch calculator
         tf_batch_mono_psf = TFBatchMonochromaticPSF(
             obscurations=self.obscurations,

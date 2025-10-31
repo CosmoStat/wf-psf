@@ -150,7 +150,6 @@ def test_calculate_sample_weights_integration(
     use_sample_weights, loss, expected_output_type
 ):
     """Test different cases for sample weight computation."""
-
     # Generate dummy image data
     batch_size, height, width = 5, 32, 32
 
@@ -416,7 +415,6 @@ def test_general_train_cycle_with_callbacks(
     mock_test_setup, cycle_def, param_callback, non_param_callback, general_callback
 ):
     """Test general_train_cycle with different cycle_def and callback configurations."""
-
     # Unpack test setup
     mock_model = mock_test_setup["mock_model"]
 
