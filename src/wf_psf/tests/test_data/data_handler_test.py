@@ -3,12 +3,10 @@ import numpy as np
 import tensorflow as tf
 from wf_psf.data.data_handler import (
     DataHandler,
-    get_np_obs_positions,
+    get_data_array,
     extract_star_data,
 )
 from wf_psf.utils.read_config import RecursiveNamespace
-import logging
-from unittest.mock import patch
 
 
 def mock_sed():
@@ -151,12 +149,6 @@ def test_load_test_dataset_missing_stars(tmp_path, simPSF):
         data_handler.validate_and_process_dataset()
 
 
-def test_get_np_obs_positions(mock_data):
-    observed_positions = get_np_obs_positions(mock_data)
-    expected_positions = np.array([[1, 2], [3, 4], [5, 6], [7, 8]])
-    assert tf.reduce_all(tf.equal(observed_positions, expected_positions))
-
-
 def test_extract_star_data_valid_keys(mock_data):
     """Test extracting valid data from the dataset."""
     result = extract_star_data(mock_data, train_key="noisy_stars", test_key="stars")
@@ -229,3 +221,141 @@ def test_reference_shifts_broadcasting():
     # Test the result
     assert displacements.shape == shifts.shape, "Shapes do not match"
     assert np.all(displacements.shape == (2, 2400)), "Broadcasting failed"
+
+
+@pytest.mark.parametrize(
+    "run_type,data_fixture,key,train_key,test_key,allow_missing,expect",
+    [
+        # ===================================================
+        # training/simulation/metrics → extract_star_data path
+        # ===================================================
+        (
+            "training",
+            "mock_data",
+            None,
+            "positions",
+            None,
+            False,
+            np.array([[1, 2], [3, 4], [5, 6], [7, 8]]),
+        ),
+        (
+            "simulation",
+            "mock_data",
+            "none",
+            "noisy_stars",
+            "stars",
+            True,
+            # will concatenate noisy_stars from train and stars from test
+            # expected shape: (4, 5, 5)
+            # validate shape only, not full content (too large)
+            "shape:(4, 5, 5)",
+        ),
+        (
+            "metrics",
+            "mock_data",
+            "zernike_prior",
+            None,
+            None,
+            True,
+            np.array([[0.1, 0.2], [0.3, 0.4], [0.5, 0.6], [0.7, 0.8]]),
+        ),
+        # =================
+        # inference (success)
+        # =================
+        (
+            "inference",
+            "mock_data_inference",
+            "positions",
+            None,
+            None,
+            False,
+            np.array([[9, 9], [10, 10]]),
+        ),
+        (
+            "inference",
+            "mock_data_inference",
+            "zernike_prior",
+            None,
+            None,
+            False,
+            np.array([[0.9, 0.9]]),
+        ),
+        # ==============================
+        # inference → allow_missing=True
+        # ==============================
+        (
+            "inference",
+            "mock_data_inference",
+            None,
+            None,
+            None,
+            True,
+            None,
+        ),
+        (
+            "inference",
+            "mock_data_inference",
+            "missing_key",
+            None,
+            None,
+            True,
+            None,
+        ),
+        # =================================
+        # inference → allow_missing=False → errors
+        # =================================
+        (
+            "inference",
+            "mock_data_inference",
+            None,
+            None,
+            None,
+            False,
+            pytest.raises(ValueError),
+        ),
+        (
+            "inference",
+            "mock_data_inference",
+            "missing_key",
+            None,
+            None,
+            False,
+            pytest.raises(KeyError),
+        ),
+    ],
+)
+def test_get_data_array_v2(
+    request, run_type, data_fixture, key, train_key, test_key, allow_missing, expect
+):
+    data = request.getfixturevalue(data_fixture)
+
+    if hasattr(expect, "__enter__") and hasattr(expect, "__exit__"):
+        with expect:
+            get_data_array(
+                data,
+                run_type,
+                key=key,
+                train_key=train_key,
+                test_key=test_key,
+                allow_missing=allow_missing,
+            )
+        return
+
+    result = get_data_array(
+        data,
+        run_type,
+        key=key,
+        train_key=train_key,
+        test_key=test_key,
+        allow_missing=allow_missing,
+    )
+
+    if expect is None:
+        assert result is None
+    elif isinstance(expect, str) and expect.startswith("shape:"):
+        expected_shape = tuple(eval(expect.replace("shape:", "")))
+        assert isinstance(result, np.ndarray)
+        assert result.shape == expected_shape
+    else:
+        assert isinstance(result, np.ndarray)
+        assert np.allclose(result, expect, rtol=1e-6, atol=1e-8)
