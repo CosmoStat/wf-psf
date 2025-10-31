@@ -11,9 +11,11 @@ various wf_psf packages.
 import pytest
 import numpy as np
 import tensorflow as tf
+from types import SimpleNamespace
+
 from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.psf_models import psf_models
-from wf_psf.tests.test_data.test_data_utils import MockData, MockDataset
+from wf_psf.tests.test_data.test_data_utils import MockData
 
 training_config = RecursiveNamespace(
     id_name="-coherent_euclid_200stars",
@@ -126,6 +128,18 @@ def mock_data(scope="module"):
         noisy_masks,
         stars,
         masks,
+    )
+
+
+@pytest.fixture
+def mock_data_inference():
+    """Flat dataset for inference path only."""
+    return SimpleNamespace(
+        dataset={
+            "positions": np.array([[9, 9], [10, 10]]),
+            "zernike_prior": np.array([[0.9, 0.9]]),
+            # no "missing_key" → used to trigger allow_missing behavior
+        }
     )
 
 

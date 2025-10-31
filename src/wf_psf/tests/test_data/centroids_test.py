@@ -9,8 +9,6 @@ This module contains unit tests for the wf_psf.utils centroids module.
 import numpy as np
 import pytest
 from wf_psf.data.centroids import compute_centroid_correction, CentroidEstimator
-from wf_psf.data.data_handler import extract_star_data
-from wf_psf.data.data_zernike_utils import compute_zernike_tip_tilt
 from wf_psf.utils.read_config import RecursiveNamespace
 from unittest.mock import MagicMock, patch
 
@@ -116,24 +114,23 @@ def test_compute_centroid_correction_with_masks(mock_data):
         reference_shifts=["-1/3", "-1/3"],
     )
 
+    # Wrap mock_data into a dict to match the function signature
+    centroid_dataset = {
+        "stamps": mock_data.training_data.dataset["noisy_stars"],
+        "masks": mock_data.training_data.dataset["masks"],
+    }
+
     # Mock the internal function calls:
     with (
-        patch("wf_psf.data.centroids.extract_star_data") as mock_extract_star_data,
         patch(
             "wf_psf.data.centroids.compute_zernike_tip_tilt"
         ) as mock_compute_zernike_tip_tilt,
     ):
-
-        # Mock the return values of extract_star_data and compute_zernike_tip_tilt
-        mock_extract_star_data.side_effect = lambda data, train_key, test_key: (
-            np.array([[1, 2], [3, 4]])
-            if train_key == "noisy_stars"
-            else np.array([[5, 6], [7, 8]])
-        )
+        # Mock compute_zernike_tip_tilt to return synthetic Zernike coefficients
         mock_compute_zernike_tip_tilt.return_value = np.array([[0.1, 0.2], [0.3, 0.4]])
 
         # Call the function under test
-        result = compute_centroid_correction(model_params, mock_data)
+        result = compute_centroid_correction(model_params, centroid_dataset)
 
         # Ensure the result has the correct shape
         assert result.shape == (4, 3)  # Should be (n_stars, 3 Zernike components)
@@ -148,10 +145,6 @@ def test_compute_centroid_correction_with_masks(mock_data):
 
 def test_compute_centroid_correction_without_masks(mock_data):
     """Test compute_centroid_correction function when no masks are provided."""
-    # Remove masks from mock_data
-    mock_data.test_data.dataset["masks"] = None
-    mock_data.training_data.dataset["masks"] = None
-
     # Define model parameters
     model_params = RecursiveNamespace(
         pix_sampling=12e-6,  # Example pixel sampling in meters
@@ -159,26 +152,23 @@ def test_compute_centroid_correction_without_masks(mock_data):
         reference_shifts=["-1/3", "-1/3"],
     )
 
+    # Wrap mock_data into a dict to match the function signature
+    centroid_dataset = {
+        "stamps": mock_data.training_data.dataset["noisy_stars"],
+    }
+
     # Mock internal function calls
     with (
-        patch("wf_psf.data.centroids.extract_star_data") as mock_extract_star_data,
         patch(
             "wf_psf.data.centroids.compute_zernike_tip_tilt"
         ) as mock_compute_zernike_tip_tilt,
     ):
 
-        # Mock extract_star_data to return synthetic star postage stamps
-        mock_extract_star_data.side_effect = lambda data, train_key, test_key: (
-            np.array([[1, 2], [3, 4]])
-            if train_key == "noisy_stars"
-            else np.array([[5, 6], [7, 8]])
-        )
-
         # Mock compute_zernike_tip_tilt assuming no masks
         mock_compute_zernike_tip_tilt.return_value = np.array([[0.1, 0.2], [0.3, 0.4]])
 
         # Call function under test
-        result = compute_centroid_correction(model_params, mock_data)
+        result = compute_centroid_correction(model_params, centroid_dataset)
 
         # Validate result shape
         assert result.shape == (4, 3)  # (n_stars, 3 Zernike components)
@@ -274,7 +264,6 @@ def test_centroid_estimator_initialization(simple_image):
 
 def test_single_iteration(centroid_estimator):
     """Test that the internal methods are called exactly once for n_iter=1."""
-
     # Mock the methods
     centroid_estimator.update_grid = MagicMock()
     centroid_estimator.elliptical_gaussian = MagicMock()
@@ -294,7 +283,6 @@ def test_single_iteration(centroid_estimator):
 
 def test_single_iteration_auto_run(simple_image):
     """Test that the internal methods are called exactly once for n_iter=1."""
-
     # Patch the methods at the time the object is created
     with (
         patch.object(CentroidEstimator, "update_grid") as update_grid_mock,
@@ -372,7 +360,6 @@ def test_elliptical_gaussian(simple_image):
 
 def test_intra_pixel_shifts(simple_image_with_centroid):
     """Test the return_intra_pixel_shifts method."""
-
     centroid_estimator = simple_image_with_centroid
 
     # Calculate intra-pixel shifts

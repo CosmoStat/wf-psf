@@ -161,7 +161,6 @@ def psf_single_star_setup(mock_inference_config):
 
 def test_set_config_paths(mock_inference_config):
     """Test setting configuration paths."""
-
     # Initialize handler and inject mock config
     config_handler = InferenceConfigHandler("fake/path")
     config_handler.inference_config = mock_inference_config
