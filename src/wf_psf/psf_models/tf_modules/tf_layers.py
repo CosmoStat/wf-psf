@@ -998,7 +998,6 @@ class TFPhysicalLayer(tf.keras.layers.Layer):
             If the shape of the input `positions` tensor is not compatible.
 
         """
-
         # Find indices for all positions in one batch operation
         idx = find_position_indices(self.obs_pos, positions)
 

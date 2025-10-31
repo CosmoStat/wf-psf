@@ -26,8 +26,6 @@ from wf_psf.psf_models.tf_modules.tf_layers import (
     TFPhysicalLayer,
 )
 from wf_psf.psf_models.tf_modules.tf_utils import ensure_tensor
-from wf_psf.utils.read_config import RecursiveNamespace
-from wf_psf.utils.configs_handler import DataConfigHandler
 import logging
 
 
@@ -282,7 +280,6 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
 
     def _build_tf_batch_poly_PSF(self):
         """Eagerly build the TFBatchPolychromaticPSF layer with numpy-based obscurations."""
-
         return TFBatchPolychromaticPSF(
             obscurations=self.obscurations,
             output_Q=self.output_Q,
