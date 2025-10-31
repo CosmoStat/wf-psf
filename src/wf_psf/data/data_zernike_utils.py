@@ -181,7 +181,6 @@ def pad_tf_zernikes(zk_param: tf.Tensor, zk_prior: tf.Tensor, n_zks_total: int):
     padded_zk_prior : tf.Tensor
         Padded Zernike coefficients for the prior part. Shape [batch, n_zks_total, 1, 1].
     """
-
     pad_num_param = n_zks_total - tf.shape(zk_param)[1]
     pad_num_prior = n_zks_total - tf.shape(zk_prior)[1]
 
@@ -230,7 +229,6 @@ def assemble_zernike_contributions(
     tf.Tensor
         A tensor representing the full Zernike contribution map.
     """
-
     zernike_contribution_list = []
 
     # Prior

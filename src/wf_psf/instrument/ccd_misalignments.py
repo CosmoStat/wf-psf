@@ -161,11 +161,7 @@ class CCDMisalignmentCalculator:
         self.tiles_z_average = np.mean(self.tiles_z_lims)
 
     def _initialize_polygons(self):
-        """Initialize polygons to look for CCD IDs.
-
-        Each CCD is represented by a polygon defined by its corner points.
-
-        """
+        """Initialize polygons to look for CCD IDs"""
         # Build polygon list corresponding to each CCD
         self.ccd_polygons = []
 

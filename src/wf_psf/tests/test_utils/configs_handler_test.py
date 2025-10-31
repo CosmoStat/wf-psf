@@ -13,7 +13,6 @@ from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.utils.io import FileIOHandler
 from wf_psf.utils.configs_handler import (
     TrainingConfigHandler,
-    MetricsConfigHandler,
     DataConfigHandler,
 )
 import os

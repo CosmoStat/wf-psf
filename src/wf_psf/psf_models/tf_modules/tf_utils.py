@@ -16,7 +16,6 @@ Authors: Jennifer Pollack <jennifer.pollack@cea.fr>
 """
 
 import tensorflow as tf
-import numpy as np
 
 
 @tf.function
