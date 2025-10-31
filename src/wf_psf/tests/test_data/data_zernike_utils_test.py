@@ -11,7 +11,6 @@ from wf_psf.data.data_zernike_utils import (
     compute_zernike_tip_tilt,
     pad_tf_zernikes,
 )
-from wf_psf.tests.test_data.test_data_utils import MockData
 from types import SimpleNamespace as RecursiveNamespace
 
 
@@ -46,7 +45,27 @@ def test_training_without_prior(mock_model_params, mock_data):
         data=mock_data, run_type="training", model_params=mock_model_params
     )
 
-    assert zinputs.centroid_dataset is mock_data
+    mock_data_stamps = np.concatenate(
+        [
+            mock_data.training_data.dataset["noisy_stars"],
+            mock_data.test_data.dataset["stars"],
+        ]
+    )
+    mock_data_masks = np.concatenate(
+        [
+            mock_data.training_data.dataset["masks"],
+            mock_data.test_data.dataset["masks"],
+        ]
+    )
+
+    assert np.allclose(
+        zinputs.centroid_dataset["stamps"], mock_data_stamps, rtol=1e-6, atol=1e-8
+    )
+
+    assert np.allclose(
+        zinputs.centroid_dataset["masks"], mock_data_masks, rtol=1e-6, atol=1e-8
+    )
+
     assert zinputs.zernike_prior is None
 
     expected_positions = np.concatenate(
@@ -88,7 +107,7 @@ def test_training_with_explicit_prior(mock_model_params, caplog):
             data, "training", mock_model_params, prior=explicit_prior
         )
 
-    assert "Zernike prior explicitly provided" in caplog.text
+    assert "Explicit prior provided; ignoring dataset-based prior." in caplog.text
     assert (zinputs.zernike_prior == explicit_prior).all()
 
 
@@ -103,7 +122,8 @@ def test_inference_with_dict_and_prior(mock_model_params):
 
     zinputs = ZernikeInputsFactory.build(data, "inference", mock_model_params)
 
-    assert zinputs.centroid_dataset is None
+    for key in ["stamps", "masks"]:
+        assert zinputs.centroid_dataset[key] is None
 
     # NumPy array comparison
     np.testing.assert_array_equal(
@@ -397,7 +417,6 @@ def test_pad_zernikes_param_greater_than_prior():
 
 def test_compute_zernike_tip_tilt_single_batch(mocker, simple_image, identity_mask):
     """Test compute_zernike_tip_tilt handling with single batch input and mocks."""
-
     # Mock the CentroidEstimator class
     mock_centroid_calc = mocker.patch(
         "wf_psf.data.centroids.CentroidEstimator", autospec=True
@@ -456,7 +475,6 @@ def test_compute_zernike_tip_tilt_single_batch(mocker, simple_image, identity_ma
 
 def test_compute_zernike_tip_tilt_batch(mocker, multiple_images):
     """Test compute_zernike_tip_tilt batch handling of multiple inputs."""
-
     # Mock the CentroidEstimator class
     mock_centroid_calc = mocker.patch(
         "wf_psf.data.centroids.CentroidEstimator", autospec=True
