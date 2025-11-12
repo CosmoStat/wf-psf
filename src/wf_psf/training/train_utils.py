@@ -323,7 +323,6 @@ def configure_optimizer_and_loss(
     optimizer: Optional[Callable] = None,
     loss: Optional[Callable] = None,
     metrics: Optional[list[Callable]] = None,
-    is_parametric: bool = True,
 ) -> tuple[Callable, Callable, list[Callable]]:
     """
     Configure and return the optimizer, loss function, and metrics for model training.
@@ -348,10 +347,6 @@ def configure_optimizer_and_loss(
     metrics: list of callable, optional
         A list of metric functions to evaluate during training (e.g., `tf.keras.metrics.MeanSquaredError`).
         If None, the default metric `MeanSquaredError` is used.
-
-    is_parametric: bool, optional
-        Flag to indicate whether the configuration is for the parametric part of the model.
-        Default is True, indicating that this configuration is for the parametric component.
 
     Returns
     -------
@@ -785,7 +780,6 @@ def general_train_cycle(
         non_param_optim,
         non_param_loss,
         non_param_metrics,
-        is_parametric=False,
     )
 
     if cycle_def in ("non-parametric", "complete", "only-non-parametric"):
