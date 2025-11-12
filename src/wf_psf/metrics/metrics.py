@@ -381,8 +381,9 @@ def compute_shape_metrics(
     output_Q=1,
     output_dim=64,
     batch_size=16,
-    opt_stars_rel_pix_rmse=False,
+    optimizer_settings=None,
     dataset_dict=None,
+    opt_stars_rel_pix_rmse=False,
 ):
     """Compute the pixel, shape and size RMSE of a PSF model.
 
@@ -418,15 +419,18 @@ def compute_shape_metrics(
         Output dimension of the square PSF stamps.
     batch_size: int
         Batch size to process the PSF estimations.
-    opt_stars_rel_pix_rmse: bool
-        If `True`, the relative pixel RMSE of each star is added to ther saving dictionary.
-        The summary statistics are always computed.
-        Default is `False`.
+    optimizer_settings: RecursiveNamespace, dict, str, optional
+        Optimizer configuration (from YAML or programmatically), or string name.
     dataset_dict: dict
         Dictionary containing the dataset information. If provided, and if the `'super_res_stars'`
         key is present, the noiseless super resolved stars from the dataset are used to compute
         the metrics. Otherwise, the stars are generated from the gt model.
         Default is `None`.
+    opt_stars_rel_pix_rmse: bool
+        If `True`, the relative pixel RMSE of each star is added to ther saving dictionary.
+        The summary statistics are always computed.
+        Default is `False`.
+
 
     Returns
     -------
@@ -445,8 +449,12 @@ def compute_shape_metrics(
     gt_tf_semiparam_field.set_output_Q(output_Q=output_Q, output_dim=output_dim)
 
     # Need to compile the models again
-    tf_semiparam_field = build_PSF_model(tf_semiparam_field)
-    gt_tf_semiparam_field = build_PSF_model(gt_tf_semiparam_field)
+    tf_semiparam_field = build_PSF_model(
+        tf_semiparam_field, optimizer=optimizer_settings
+    )
+    gt_tf_semiparam_field = build_PSF_model(
+        gt_tf_semiparam_field, optimizer=optimizer_settings
+    )
 
     # Generate SED data list
     packed_SED_data = [
