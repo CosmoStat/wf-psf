@@ -296,9 +296,10 @@ class MetricsParamsHandler:
             tf_pos=dataset["positions"],
             n_bins_lda=self.trained_model.model_params.n_bins_lda,
             n_bins_gt=self.metrics_params.ground_truth_model.model_params.n_bins_lda,
-            batch_size=self.metrics_params.metrics_hparams.batch_size,
             output_Q=self.metrics_params.metrics_hparams.output_Q,
             output_dim=self.metrics_params.metrics_hparams.output_dim,
+            batch_size=self.metrics_params.metrics_hparams.batch_size,
+            optimizer_settings=self.metrics_params.metrics_hparams.optimizer,
             opt_stars_rel_pix_rmse=self.metrics_params.metrics_hparams.opt_stars_rel_pix_rmse,
             dataset_dict=dataset,
         )
