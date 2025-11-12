@@ -10,10 +10,10 @@ to manage training of the psf model.
 import numpy as np
 import time
 import tensorflow as tf
-import tensorflow_addons as tfa
 import logging
 from wf_psf.psf_models import psf_models
 import wf_psf.training.train_utils as train_utils
+from wf_psf.utils.optimizer import get_optimizer
 
 logger = logging.getLogger(__name__)
 
@@ -428,10 +428,12 @@ def train(
         )
 
         # Prepare the optimizers
-        param_optim = tfa.optimizers.RectifiedAdam(
-            learning_rate=training_handler.learning_rate_params[current_cycle - 1]
+        param_optim = get_optimizer(
+            optimizer_config=training_handler.training_hparams.optimizer,
+            learning_rate=training_handler.learning_rate_params[current_cycle - 1],
         )
-        non_param_optim = tfa.optimizers.RectifiedAdam(
+        non_param_optim = get_optimizer(
+            optimizer_config=training_handler.training_hparams.optimizer,
             learning_rate=training_handler.learning_rate_non_params[current_cycle - 1]
         )
         logger.info(f"Starting cycle {current_cycle}..")
