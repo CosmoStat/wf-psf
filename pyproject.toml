@@ -14,7 +14,6 @@ dependencies = [
     "numpy>=1.26.4,<2.0",
     "scipy",
     "tensorflow==2.11.0",
-    "tensorflow-addons",
     "tensorflow-estimator",
     "zernike",
     "opencv-python",
@@ -39,6 +38,10 @@ docs = [
     "sphinxemoji",
     "sphinx_rtd_theme",
 
+]
+
+addons = [
+    "tensorflow-addons",
 ]
 
 lint = [
