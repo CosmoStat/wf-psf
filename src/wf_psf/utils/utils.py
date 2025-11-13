@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Optional, Tuple
+from typing import Tuple
 import tensorflow as tf
 import PIL
 import zernike as zk
