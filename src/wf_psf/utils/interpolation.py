@@ -18,7 +18,7 @@
 """Polyharmonic spline interpolation."""
 
 import tensorflow as tf
-from tensorflow_addons.utils.types import FloatTensorLike, TensorLike
+from wf_psf.utils.types import FloatTensorLike, TensorLike
 
 EPSILON = 0.0000000001
 
