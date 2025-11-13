@@ -1,9 +1,9 @@
 import numpy as np
 from typing import Optional, Tuple
 import tensorflow as tf
-import tensorflow_addons as tfa
 import PIL
 import zernike as zk
+from wf_psf.utils.interpolation import tfa_interpolate_spline_rbf
 
 try:
     from cv2 import resize, INTER_AREA
@@ -432,7 +432,7 @@ class ZernikeInterpolation(object):
             batch_dims=0,
         )
         # Interpolate
-        interp_zk = tfa.image.interpolate_spline(
+        interp_zk = tfa_interpolate_spline_rbf(
             train_points=tf.expand_dims(rec_pos, axis=0),
             train_values=tf.expand_dims(rec_zks, axis=0),
             query_points=tf.expand_dims(single_pos[tf.newaxis, :], axis=0),
@@ -482,7 +482,7 @@ class IndependentZernikeInterpolation(object):
 
     def interp_one_zk(self, zk_prior):
         """Interpolate each Zerkine polynomial independently"""
-        interp_zk = tfa.image.interpolate_spline(
+        interp_zk = tfa_interpolate_spline_rbf(
             train_points=tf.expand_dims(self.tf_pos, axis=0),
             train_values=tf.expand_dims(zk_prior[:, tf.newaxis], axis=0),
             query_points=tf.expand_dims(self.target_pos, axis=0),
