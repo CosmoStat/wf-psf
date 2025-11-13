@@ -481,7 +481,7 @@ class IndependentZernikeInterpolation(object):
         self.target_pos = None
 
     def interp_one_zk(self, zk_prior):
-        """Interpolate each Zerkine polynomial independently"""
+        """Interpolate each Zernike polynomial independently"""
         interp_zk = tfa_interpolate_spline_rbf(
             train_points=tf.expand_dims(self.tf_pos, axis=0),
             train_values=tf.expand_dims(zk_prior[:, tf.newaxis], axis=0),
