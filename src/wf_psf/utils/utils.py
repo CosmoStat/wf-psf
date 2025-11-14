@@ -20,6 +20,28 @@ def scale_to_range(input_array, old_range, new_range):
     return input_array
 
 
+def ensure_batch(arr):
+    """
+    Ensure array/tensor has a batch dimension. Converts shape (M, N) → (1, M, N).
+
+    Parameters
+    ----------
+    arr : np.ndarray or tf.Tensor
+        Input 2D or 3D array/tensor.
+
+    Returns
+    -------
+    np.ndarray or tf.Tensor
+        With batch dimension prepended if needed.
+    """
+    if isinstance(arr, np.ndarray):
+        return arr if arr.ndim == 3 else np.expand_dims(arr, axis=0)
+    elif isinstance(arr, tf.Tensor):
+        return arr if arr.ndim == 3 else tf.expand_dims(arr, axis=0)
+    else:
+        raise TypeError(f"Expected np.ndarray or tf.Tensor, got {type(arr)}")
+
+
 def calc_wfe(zernike_basis, zks):
     wfe = np.einsum("ijk,ijk->jk", zernike_basis, zks.reshape(-1, 1, 1))
     return wfe
@@ -92,7 +114,6 @@ def generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
     n_bins: int
         Number of wavelength bins
     """
-
     feasible_wv, SED_norm = sim_psf_toolkit.calc_SED_wave_values(SED, n_bins)
     feasible_N = np.array([sim_psf_toolkit.feasible_N(_wv) for _wv in feasible_wv])
 
@@ -118,7 +139,6 @@ def generate_SED_elems_in_tensorflow(
     tf_dtype: tf.
         Tensor Flow data type
     """
-
     feasible_wv, SED_norm = sim_psf_toolkit.calc_SED_wave_values(SED, n_bins)
     feasible_N = np.array([sim_psf_toolkit.feasible_N(_wv) for _wv in feasible_wv])
 
@@ -383,7 +403,7 @@ class NoiseEstimator:
         return self.sigma_mad(image[self.window])
 
 
-class ZernikeInterpolation(object):
+class ZernikeInterpolation:
     """Interpolate zernikes
 
     This class helps to interpolate zernikes using only the closest K elements
@@ -456,7 +476,7 @@ class ZernikeInterpolation(object):
         return tf.squeeze(interp_zks, axis=1)
 
 
-class IndependentZernikeInterpolation(object):
+class IndependentZernikeInterpolation:
     """Interpolate each Zernike polynomial independently
 
     The interpolation is done independently for each Zernike polynomial.

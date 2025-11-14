@@ -7,9 +7,9 @@ wf_psf metrics package.
 
 
 """
+
 import pytest
 from unittest.mock import patch, MagicMock
-import numpy as np
 import tensorflow as tf
 
 
@@ -27,6 +27,7 @@ class TFSemiParametricField(tf.keras.Model):
         # Simulate the weight loading
         pass
 
+
 class TFGroundTruthSemiParametricField(TFSemiParametricField):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -35,6 +36,7 @@ class TFGroundTruthSemiParametricField(TFSemiParametricField):
     def call(self, inputs, **kwargs):
         return inputs
 
+
 @pytest.fixture
 def mock_psf_model():
     # Return a mock instance of TFSemiParametricField
@@ -42,8 +44,10 @@ def mock_psf_model():
     psf_model.load_weights = MagicMock()  # Mock load_weights method
     return psf_model
 
+
 @pytest.fixture
 def mock_get_psf_model(mock_psf_model):
-    with patch('wf_psf.psf_models.psf_models.get_psf_model', return_value=mock_psf_model) as mock_method:
+    with patch(
+        "wf_psf.psf_models.psf_models.get_psf_model", return_value=mock_psf_model
+    ) as mock_method:
         yield mock_method
-

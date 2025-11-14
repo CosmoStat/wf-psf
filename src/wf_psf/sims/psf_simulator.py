@@ -19,7 +19,7 @@ except ImportError:
         print("Problem importing skimage..")
 
 
-class PSFSimulator(object):
+class PSFSimulator:
     """Simulate PSFs.
 
     In the future the zernike maps could be created with galsim or some other
@@ -198,7 +198,7 @@ class PSFSimulator(object):
             start = int(psf.shape[0] // 2 - (output_dim * output_Q) // 2)
             stop = int(psf.shape[0] // 2 + (output_dim * output_Q) // 2)
         else:
-            start = int(0)
+            start = 0
             stop = psf.shape[0]
 
         # Crop psf
@@ -227,7 +227,7 @@ class PSFSimulator(object):
         """Generate Euclid like pupil obscurations.
 
         This method simulates the 2D pupil obscurations for the Euclid telescope,
-        considering the aperture stop, mirror obscurations, and spider arms. It does 
+        considering the aperture stop, mirror obscurations, and spider arms. It does
         not account for any 3D projections or the angle of the Field of View (FoV).
 
         Parameters
@@ -366,7 +366,6 @@ class PSFSimulator(object):
         Based on the PIL library using the default interpolator.
 
         """
-
         pil_im = PIL.Image.fromarray(input_im)
         (width, height) = (pil_im.width // decim_f, pil_im.height // decim_f)
         im_resized = pil_im.resize((width, height))
@@ -593,7 +592,6 @@ class PSFSimulator(object):
 
     def check_wfe_rms(self, z_coeffs=None, max_wfe_rms=None):
         """Check if Zernike coefficients are within the maximum admitted error."""
-
         if max_wfe_rms is None:
             max_wfe_rms = self.max_wfe_rms
 

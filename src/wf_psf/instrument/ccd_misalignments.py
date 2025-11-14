@@ -10,7 +10,47 @@ from typing import Union
 import numpy as np
 import matplotlib.path as mpltPath
 from scipy.spatial import KDTree
-from wf_psf.utils.preprocessing import defocus_to_zk4_wavediff
+
+
+def compute_ccd_misalignment(model_params, positions: np.ndarray) -> np.ndarray:
+    """Compute CCD misalignment.
+
+    Parameters
+    ----------
+    model_params : RecursiveNamespace
+        Object containing parameters for this PSF model class.
+    positions : np.ndarray
+        Numpy array containing the positions of the stars in the focal plane.
+        Shape: (n_stars, 2), where n_stars is the number of stars and 2 corresponds to x and y coordinates.
+
+    Returns
+    -------
+    zernike_ccd_misalignment_array : np.ndarray
+        Numpy array containing the Zernike contributions to model the CCD chip misalignments.
+    """
+    obs_positions = positions
+
+    ccd_misalignment_calculator = CCDMisalignmentCalculator(
+        tiles_path=model_params.ccd_misalignments_input_path,
+        x_lims=model_params.x_lims,
+        y_lims=model_params.y_lims,
+        tel_focal_length=model_params.tel_focal_length,
+        tel_diameter=model_params.tel_diameter,
+    )
+    # Compute required zernike 4 for each position
+    zk4_values = np.array(
+        [
+            ccd_misalignment_calculator.get_zk4_from_position(single_pos)
+            for single_pos in obs_positions
+        ]
+    ).reshape(-1, 1)
+
+    # Zero pad array to get shape (n_stars, n_zernike=4)
+    zernike_ccd_misalignment_array = np.pad(
+        zk4_values, pad_width=[(0, 0), (3, 0)], mode="constant", constant_values=0
+    )
+
+    return zernike_ccd_misalignment_array
 
 
 class CCDMisalignmentCalculator:
@@ -18,8 +58,8 @@ class CCDMisalignmentCalculator:
 
     This class processes and analyzes CCD misalignment data using tile position information.
 
-    The `tiles_data` array is a data cube where each slice is a 4×3 matrix representing 
-    the four corners of a tile. The first two columns correspond to x/y coordinates (in mm), 
+    The `tiles_data` array is a data cube where each slice is a 4×3 matrix representing
+    the four corners of a tile. The first two columns correspond to x/y coordinates (in mm),
     and the third column represents z displacement (in µm).
 
     Parameters
@@ -62,6 +102,7 @@ class CCDMisalignmentCalculator:
     d_list : np.ndarray
         List of plane offset values for CCD planes.
     """
+
     def __init__(
         self,
         tiles_path: str,
@@ -82,7 +123,11 @@ class CCDMisalignmentCalculator:
             raise ValueError("Tile data must have three coordinate columns (x, y, z).")
 
         # Initialize attributes
-        self.tiles_x_lims, self.tiles_y_lims, self.tiles_z_lims = np.zeros(2), np.zeros(2), np.zeros(2)
+        self.tiles_x_lims, self.tiles_y_lims, self.tiles_z_lims = (
+            np.zeros(2),
+            np.zeros(2),
+            np.zeros(2),
+        )
         self.tiles_z_average: float = 0.0
 
         self.ccd_polygons: list[mpltPath.Path] = []
@@ -94,7 +139,6 @@ class CCDMisalignmentCalculator:
 
         self._initialize()
 
-
     def _initialize(self) -> None:
         """Run all required initialization steps."""
         self._preprocess_tile_data()
@@ -104,16 +148,20 @@ class CCDMisalignmentCalculator:
 
     def _preprocess_tile_data(self) -> None:
         """Preprocess tile data by computing spatial limits and averages."""
-        self.tiles_x_lims = np.array([np.min(self.tiles_data[:, 0, :]), np.max(self.tiles_data[:, 0, :])])
-        self.tiles_y_lims = np.array([np.min(self.tiles_data[:, 1, :]), np.max(self.tiles_data[:, 1, :])])
-        self.tiles_z_lims = np.array([np.min(self.tiles_data[:, 2, :]), np.max(self.tiles_data[:, 2, :])])
+        self.tiles_x_lims = np.array(
+            [np.min(self.tiles_data[:, 0, :]), np.max(self.tiles_data[:, 0, :])]
+        )
+        self.tiles_y_lims = np.array(
+            [np.min(self.tiles_data[:, 1, :]), np.max(self.tiles_data[:, 1, :])]
+        )
+        self.tiles_z_lims = np.array(
+            [np.min(self.tiles_data[:, 2, :]), np.max(self.tiles_data[:, 2, :])]
+        )
 
         self.tiles_z_average = np.mean(self.tiles_z_lims)
-    
 
     def _initialize_polygons(self):
         """Initialize polygons to look for CCD IDs"""
-
         # Build polygon list corresponding to each CCD
         self.ccd_polygons = []
 
@@ -180,7 +228,6 @@ class CCDMisalignmentCalculator:
             self.normal_list.append(normal)
             self.d_list.append(d)
 
-
     def scale_position_to_tile_reference(self, pos):
         """Scale input position into tiles coordinate system.
 
@@ -190,7 +237,6 @@ class CCDMisalignmentCalculator:
             Focal plane position in wavediff coordinate system
             respecting `self.x_lims` and `self.y_lims`. Shape: (2,)
         """
-
         self.check_position_wavediff_limits(pos)
 
         pos_x = pos[0]
@@ -210,7 +256,6 @@ class CCDMisalignmentCalculator:
 
         return np.array([scaled_x, scaled_y])
 
-
     def scale_position_to_wavediff_reference(self, pos):
         """Scale input position into wavediff coordinate system.
 
@@ -219,7 +264,6 @@ class CCDMisalignmentCalculator:
         pos : np.ndarray
             Tile position in input tile coordinate system. Shape: (2,)
         """
-
         self.check_position_tile_limits(pos)
 
         pos_x = pos[0]
@@ -239,7 +283,6 @@ class CCDMisalignmentCalculator:
 
     def check_position_wavediff_limits(self, pos):
         """Check if position is within wavediff limits."""
-
         if (pos[0] < self.x_lims[0] or pos[0] > self.x_lims[1]) or (
             pos[1] < self.y_lims[0] or pos[1] > self.y_lims[1]
         ):
@@ -249,14 +292,12 @@ class CCDMisalignmentCalculator:
 
     def check_position_tile_limits(self, pos):
         """Check if position is within tile limits."""
-
         if (pos[0] < self.tiles_x_lims[0] or pos[0] > self.tiles_x_lims[1]) or (
             pos[1] < self.tiles_y_lims[0] or pos[1] > self.tiles_y_lims[1]
         ):
             raise ValueError(
                 "Input position is not within the tile focal plane limits."
             )
-    
 
     def get_ccd_from_position(self, pos):
         """Get CCD ID from the position.
@@ -299,7 +340,6 @@ class CCDMisalignmentCalculator:
 
         return ccd_id
 
-
     def get_dz_from_position(self, pos):
         """Get z-axis displacement for a focal plane position.
 
@@ -328,7 +368,6 @@ class CCDMisalignmentCalculator:
 
         return dz
 
-
     def get_zk4_from_position(self, pos):
         """Get defocus Zernike contribution from focal plane position.
 
@@ -343,11 +382,11 @@ class CCDMisalignmentCalculator:
             Zernike 4 value in wavediff convention corresponding to
             the delta z of the given input position `pos`.
         """
+        from wf_psf.data.data_zernike_utils import defocus_to_zk4_wavediff
 
         dz = self.get_dz_from_position(pos)
 
         return defocus_to_zk4_wavediff(dz, self.tel_focal_length, self.tel_diameter)
-
 
     @staticmethod
     def compute_z_from_plane_data(pos, normal, d):
@@ -373,12 +412,10 @@ class CCDMisalignmentCalculator:
         d : np.ndarray
             `d` value from the plane ecuation. Shape (3,)
         """
-
         z = (-normal[0] * pos[0] - normal[1] * pos[1] - d) * 1.0 / normal[2]
 
         return z
 
-        
     @staticmethod
     def check_position_format(pos):
         if type(pos) is list:

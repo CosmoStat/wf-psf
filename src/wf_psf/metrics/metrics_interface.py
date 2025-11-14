@@ -36,15 +36,12 @@ class MetricsParamsHandler:
         self.metrics_params = metrics_params
         self.trained_model = trained_model
 
-    def evaluate_metrics_polychromatic_lowres(self, 
-                                              psf_model: Any, 
-                                              simPSF: Any, 
-                                              data: Any, 
-                                              dataset: Dict[str, Any]
-                                             ) -> Dict[str, float]:
+    def evaluate_metrics_polychromatic_lowres(
+        self, psf_model: Any, simPSF: Any, data: Any, dataset: Dict[str, Any]
+    ) -> Dict[str, float]:
         """Evaluate RMSE metrics for low-resolution polychromatic PSF.
 
-        This method computes Root Mean Square Error (RMSE) metrics for a 
+        This method computes Root Mean Square Error (RMSE) metrics for a
         low-resolution polychromatic Point Spread Function (PSF) model.
 
         Parameters
@@ -62,14 +59,14 @@ class MetricsParamsHandler:
             - ``C_poly``  Tensor or None, optional
                 The Zernike coefficient matrix used in generating simulations of the PSF model. This
                 matrix defines the Zernike polynomials up to a given order used to simulate the PSF
-                field. It may be present in some datasets or only required for some classes. 
+                field. It may be present in some datasets or only required for some classes.
                 If not present or required, the model will proceed without it.
 
 
         Returns
         -------
         dict
-            A dictionary containing the RMSE, relative RMSE, and their 
+            A dictionary containing the RMSE, relative RMSE, and their
             corresponding standard deviation values.
 
             - ``rmse`` : float
@@ -113,17 +110,13 @@ class MetricsParamsHandler:
             "std_rel_rmse": std_rel_rmse,
         }
 
-
-    def evaluate_metrics_mono_rmse(self, 
-                                   psf_model: Any, 
-                                   simPSF: Any, 
-                                   data: Any, 
-                                   dataset: Dict[str, Any]
-                                  ) -> Dict[str, float]:
+    def evaluate_metrics_mono_rmse(
+        self, psf_model: Any, simPSF: Any, data: Any, dataset: Dict[str, Any]
+    ) -> Dict[str, float]:
         """Evaluate RMSE metrics for Monochromatic PSF.
 
-        This method computes Root Mean Square Error (RMSE) metrics for a 
-        monochromatic Point Spread Function (PSF) model across a range of 
+        This method computes Root Mean Square Error (RMSE) metrics for a
+        monochromatic Point Spread Function (PSF) model across a range of
         wavelengths.
 
         Parameters
@@ -140,13 +133,13 @@ class MetricsParamsHandler:
             - ``C_poly``  (Tensor or None, optional)
                 The Zernike coefficient matrix used in generating simulations of the PSF model. This
                 matrix defines the Zernike polynomials up to a given order used to simulate the PSF
-                field. It may be present in some datasets or only required for some classes. 
+                field. It may be present in some datasets or only required for some classes.
                 If not present or required, the model will proceed without it.
 
         Returns
         -------
         dict
-            A dictionary containing RMSE, relative RMSE, and their corresponding 
+            A dictionary containing RMSE, relative RMSE, and their corresponding
             standard deviation values computed over a wavelength range.
 
             - ``rmse_lda`` : float
@@ -187,17 +180,13 @@ class MetricsParamsHandler:
             "std_rmse_lda": std_rmse_lda,
             "std_rel_rmse_lda": std_rel_rmse_lda,
         }
-   
 
-    def evaluate_metrics_opd(self, 
-                             psf_model: Any, 
-                             simPSF: Any, 
-                             data: Any, 
-                             dataset: Dict[str, Any]
-                            ) -> Dict[str, float]:
+    def evaluate_metrics_opd(
+        self, psf_model: Any, simPSF: Any, data: Any, dataset: Dict[str, Any]
+    ) -> Dict[str, float]:
         """Evaluate Optical Path Difference (OPD) metrics.
-                
-        This method computes Root Mean Square Error (RMSE) and relative RMSE 
+
+        This method computes Root Mean Square Error (RMSE) and relative RMSE
         for Optical Path Differences (OPD), along with their standard deviations.
 
         Parameters
@@ -214,13 +203,13 @@ class MetricsParamsHandler:
             - ``C_poly`` (Tensor or None, optional)
                 The Zernike coefficient matrix used in generating simulations of the PSF model. This
                 matrix defines the Zernike polynomials up to a given order used to simulate the PSF
-                field. It may be present in some datasets or only required for some classes. 
+                field. It may be present in some datasets or only required for some classes.
                 If not present or required, the model will proceed without it.
 
         Returns
         -------
         dict
-            A dictionary containing RMSE, relative RMSE, and their corresponding 
+            A dictionary containing RMSE, relative RMSE, and their corresponding
             standard deviation values for OPD metrics.
 
             - ``rmse_opd`` : float
@@ -259,16 +248,12 @@ class MetricsParamsHandler:
             "rel_rmse_std_opd": rel_rmse_std_opd,
         }
 
-
-    def evaluate_metrics_shape(self, 
-                               psf_model: Any, 
-                               simPSF: Any, 
-                               data: Any, 
-                               dataset: Dict[str, Any]
-                              ) -> Dict[str, float]:
+    def evaluate_metrics_shape(
+        self, psf_model: Any, simPSF: Any, data: Any, dataset: Dict[str, Any]
+    ) -> Dict[str, float]:
         """Evaluate PSF Shape Metrics.
 
-        Computes shape-related metrics for the PSF model, including RMSE, 
+        Computes shape-related metrics for the PSF model, including RMSE,
         relative RMSE, and their standard deviations.
 
         Parameters
@@ -286,7 +271,7 @@ class MetricsParamsHandler:
             - ``C_poly`` (Tensor or None, optional)
                 The Zernike coefficient matrix used in generating simulations of the PSF model. This
                 matrix defines the Zernike polynomials up to a given order used to simulate the PSF
-                field. It may be present in some datasets or only required for some classes. 
+                field. It may be present in some datasets or only required for some classes.
                 If not present or required, the model will proceed without it.
 
         Returns
@@ -326,11 +311,10 @@ def evaluate_model(
     trained_model_params,
     data,
     psf_model,
-    weights_path,
     metrics_output,
 ):
     """Evaluate the trained model on both training and test datasets by computing various metrics.
-    
+
     The metrics to evaluate are determined by the configuration in `metrics_params` and `metric_evaluation_flags`.
     Metrics are computed for both the training and test datasets, and results are stored in a dictionary.
 
@@ -357,8 +341,8 @@ def evaluate_model(
     try:
         ## Load datasets
         # -----------------------------------------------------
-        # Get training data
-        logger.info("Fetching and preprocessing training and test data...")
+        # Get training and test data
+        logger.info("Fetching training and test data...")
 
         # Initialize metrics_handler
         metrics_handler = MetricsParamsHandler(metrics_params, trained_model_params)
@@ -366,14 +350,6 @@ def evaluate_model(
         ## Prepare models
         # Prepare np input
         simPSF_np = data.training_data.simPSF
-
-        ## Load the model's weights
-        try:
-            logger.info("Loading PSF model weights from {}".format(weights_path))
-            psf_model.load_weights(weights_path)
-        except Exception as e: 
-            logger.exception("An error occurred with the weights_path file: %s", e)
-            exit()
 
         # Define datasets
         datasets = {"test": data.test_data.dataset, "train": data.training_data.dataset}

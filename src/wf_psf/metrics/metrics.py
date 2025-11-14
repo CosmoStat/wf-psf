@@ -216,8 +216,8 @@ def compute_mono_metric(
         lambda_obs = lambda_list[it]
         phase_N = simPSF_np.feasible_N(lambda_obs)
 
-        residuals = np.zeros((total_samples))
-        gt_star_mean = np.zeros((total_samples))
+        residuals = np.zeros(total_samples)
+        gt_star_mean = np.zeros(total_samples)
 
         # Total number of epochs
         n_epochs = int(np.ceil(total_samples / batch_size))

@@ -16,6 +16,7 @@ from wf_psf.utils.utils import (
 )
 from wf_psf.sims.psf_simulator import PSFSimulator
 
+
 def test_initialization():
     """Test if NoiseEstimator initializes correctly."""
     img_dim = (50, 50)
@@ -26,6 +27,7 @@ def test_initialization():
     assert estimator.win_rad == win_rad
     assert isinstance(estimator.window, np.ndarray)
     assert estimator.window.shape == img_dim
+
 
 def test_init_window():
     """Test that the exclusion window is correctly initialized."""
@@ -41,12 +43,16 @@ def test_init_window():
             inside_radius = np.sqrt((x - mid_x) ** 2 + (y - mid_y) ** 2) <= win_rad
             assert estimator.window[x, y] == (not inside_radius)
 
+
 def test_sigma_mad():
     """Test the MAD-based standard deviation estimation."""
-    data = np.array([1, 1, 2, 2, 3, 3, 4, 4, 100])  # Outlier should not heavily influence MAD
+    data = np.array(
+        [1, 1, 2, 2, 3, 3, 4, 4, 100]
+    )  # Outlier should not heavily influence MAD
     expected_sigma = 1.4826 * np.median(np.abs(data - np.median(data)))
 
     assert np.isclose(NoiseEstimator.sigma_mad(data), expected_sigma, atol=1e-4)
+
 
 def test_estimate_noise_without_default_window():
     """Test noise estimation with the default exclusion window (no custom mask)."""
@@ -59,9 +65,10 @@ def test_estimate_noise_without_default_window():
     image = np.random.normal(0, 10, img_dim)
 
     noise_estimation = estimator.estimate_noise(image)
-    
+
     # The estimated noise should be close to 10 (the true std)
     assert np.isclose(noise_estimation, 10, atol=2)
+
 
 def test_estimate_noise_with_custom_mask():
     """Test noise estimation with a custom mask applied outside the exclusion radius."""
@@ -80,6 +87,7 @@ def test_estimate_noise_with_custom_mask():
 
     assert np.isclose(noise_estimation, 5, atol=1)
 
+
 def test_apply_mask_with_none_mask():
     """Test apply_mask when mask is None."""
     img_dim = (10, 10)
@@ -88,13 +96,16 @@ def test_apply_mask_with_none_mask():
     result = estimator.apply_mask(None)  # Pass None as the mask
 
     # It should return the window itself when no mask is provided
-    assert np.array_equal(result, estimator.window), "apply_mask should return the window when mask is None."
+    assert np.array_equal(
+        result, estimator.window
+    ), "apply_mask should return the window when mask is None."
+
 
 def test_apply_mask_with_valid_mask():
     """Test apply_mask when a valid mask is provided."""
     img_dim = (10, 10)
     estimator = NoiseEstimator(img_dim, win_rad=3)
-    
+
     # Create a custom mask
     custom_mask = np.ones(img_dim, dtype=bool)
     custom_mask[5, 5] = False  # Set a pixel to False to exclude it from the window
@@ -103,7 +114,10 @@ def test_apply_mask_with_valid_mask():
 
     # Check that the mask was applied correctly: pixel (5, 5) should be False, others True
     expected_result = estimator.window & custom_mask
-    assert np.array_equal(result, expected_result), "apply_mask did not apply the mask correctly."
+    assert np.array_equal(
+        result, expected_result
+    ), "apply_mask did not apply the mask correctly."
+
 
 def test_apply_mask_with_zeroed_mask():
     """Test apply_mask when a zeroed mask is provided."""
@@ -117,7 +131,9 @@ def test_apply_mask_with_zeroed_mask():
 
     # The result should be an array of False values, as the mask excludes all pixels
     expected_result = np.zeros(img_dim, dtype=bool)
-    assert np.array_equal(result, expected_result), "apply_mask did not handle the zeroed mask correctly."
+    assert np.array_equal(
+        result, expected_result
+    ), "apply_mask did not handle the zeroed mask correctly."
 
 
 def test_unobscured_zernike_projection():
@@ -180,7 +196,9 @@ def test_tf_decompose_obscured_opd_basis():
     tf_zernike_cube = tf.convert_to_tensor(np_zernike_cube, dtype=tf.float32)
 
     # Create obscurations
-    obscurations = PSFSimulator.generate_euclid_pupil_obscurations(N_pix=wfe_dim, N_filter=2)
+    obscurations = PSFSimulator.generate_euclid_pupil_obscurations(
+        N_pix=wfe_dim, N_filter=2
+    )
     tf_obscurations = tf.convert_to_tensor(obscurations, dtype=tf.float32)
 
     # Create random zernike coefficient array

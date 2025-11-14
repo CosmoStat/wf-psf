@@ -1,136 +1,11 @@
-"""Training Data Processing.
-
-A module to load and preprocess training and validation test data.
-
-:Authors: Jennifer Pollack <jennifer.pollack@cea.fr> and Tobias Liaudat <tobiasliaudat@gmail.com>
-
-"""
-
-import os
 import numpy as np
-import wf_psf.utils.utils as utils
 import tensorflow as tf
-from wf_psf.utils.ccd_misalignments import CCDMisalignmentCalculator
-from wf_psf.utils.centroids import compute_zernike_tip_tilt
+from wf_psf.instrument.ccd_misalignments import CCDMisalignmentCalculator
+from wf_psf.data.centroids import compute_zernike_tip_tilt
 from fractions import Fraction
 import logging
 
 logger = logging.getLogger(__name__)
-
-
-class DataHandler:
-    """Data Handler.
-
-    This class manages loading and processing of training and testing data for use during PSF model training and validation.
-    It provides methods to access and preprocess the data.
-
-    Parameters
-    ----------
-    dataset_type: str
-        A string indicating type of data ("train" or "test").
-    data_params: Recursive Namespace object
-        Recursive Namespace object containing training data parameters
-    simPSF: PSFSimulator
-        An instance of the PSFSimulator class for simulating a PSF.
-    n_bins_lambda: int
-        The number of bins in wavelength.
-    load_data: bool, optional
-        A flag used to control data loading steps. If True, data is loaded and processed
-        during initialization. If False, data loading is deferred until explicitly called.
-
-    Attributes
-    ----------
-    dataset_type: str
-        A string indicating the type of dataset ("train" or "test").
-    data_params: Recursive Namespace object
-        A Recursive Namespace object containing training or test data parameters.
-    dataset: dict
-        A dictionary containing the loaded dataset, including positions and stars/noisy_stars.
-    simPSF: object
-        An instance of the SimPSFToolkit class for simulating PSF.
-    n_bins_lambda: int
-        The number of bins in wavelength.
-    sed_data: tf.Tensor
-        A TensorFlow tensor containing the SED data for training/testing.
-    load_data_on_init: bool, optional
-        A flag used to control data loading steps. If True, data is loaded and processed
-        during initialization. If False, data loading is deferred until explicitly called.
-    """
-
-    def __init__(self, dataset_type, data_params, simPSF, n_bins_lambda, load_data: bool=True):
-        """
-        Initialize the dataset handler for PSF simulation.
-
-        Parameters
-        ----------
-        dataset_type : str
-            A string indicating the type of data ("train" or "test").
-        data_params : Recursive Namespace object
-            A Recursive Namespace object containing parameters for both 'train' and 'test' datasets.
-        simPSF : PSFSimulator
-            An instance of the PSFSimulator class for simulating a PSF.
-        n_bins_lambda : int
-            The number of bins in wavelength.
-        load_data : bool, optional
-            A flag to control whether data should be loaded and processed during initialization.
-            If True, data is loaded and processed during initialization; if False, data loading
-            is deferred until explicitly called.
-        """
-        self.dataset_type = dataset_type
-        self.data_params = data_params.__dict__[dataset_type]
-        self.simPSF = simPSF
-        self.n_bins_lambda = n_bins_lambda
-        self.dataset = None
-        self.sed_data = None
-        self.load_data_on_init = load_data
-        if self.load_data_on_init:
-            self.load_dataset()
-            self.process_sed_data()
-
-
-    def load_dataset(self):
-        """Load dataset.
-
-        Load the dataset based on the specified dataset type.
-
-        """
-        self.dataset = np.load(
-            os.path.join(self.data_params.data_dir, self.data_params.file),
-            allow_pickle=True,
-        )[()]
-        self.dataset["positions"] = tf.convert_to_tensor(
-            self.dataset["positions"], dtype=tf.float32
-        )
-        if self.dataset_type == "training":
-            if "noisy_stars" in self.dataset:
-                self.dataset["noisy_stars"] = tf.convert_to_tensor(
-                    self.dataset["noisy_stars"], dtype=tf.float32
-                )
-            else:
-                logger.warning(f"Missing 'noisy_stars' in {self.dataset_type} dataset.")
-        elif self.dataset_type == "test":
-            if "stars" in self.dataset:
-                self.dataset["stars"] = tf.convert_to_tensor(
-                    self.dataset["stars"], dtype=tf.float32
-                )
-            else:
-                logger.warning(f"Missing 'stars' in {self.dataset_type} dataset.")
-
-
-    def process_sed_data(self):
-        """Process SED Data.
-
-        A method to generate and process SED data.
-
-        """
-        self.sed_data = [
-            utils.generate_SED_elems_in_tensorflow(
-                _sed, self.simPSF, n_bins=self.n_bins_lambda, tf_dtype=tf.float64
-            )
-            for _sed in self.dataset["SEDs"]
-        ]
-        self.sed_data = tf.convert_to_tensor(self.sed_data, dtype=tf.float32)
-        self.sed_data = tf.transpose(self.sed_data, perm=[0, 2, 1])
 
 
 def get_np_obs_positions(data):
@@ -185,7 +60,7 @@ def get_obs_positions(data):
 
 def extract_star_data(data, train_key: str, test_key: str) -> np.ndarray:
     """Extract specific star-related data from training and test datasets.
-   
+
     This function retrieves and concatenates specific star-related data (e.g., stars, masks) from the
     star training and test datasets such as star stamps or masks, based on the provided keys.
 
@@ -215,10 +90,14 @@ def extract_star_data(data, train_key: str, test_key: str) -> np.ndarray:
     """
     # Ensure the requested keys exist in both training and test datasets
     missing_keys = [
-        key for key, dataset in [(train_key, data.training_data.dataset), (test_key, data.test_data.dataset)]
+        key
+        for key, dataset in [
+            (train_key, data.training_data.dataset),
+            (test_key, data.test_data.dataset),
+        ]
         if key not in dataset
     ]
-    
+
     if missing_keys:
         raise KeyError(f"Missing keys in dataset: {missing_keys}")
 
@@ -263,7 +142,7 @@ def get_np_zernike_prior(data):
     return zernike_prior
 
 
-def compute_centroid_correction(model_params, data, batch_size: int=1) -> np.ndarray:
+def compute_centroid_correction(model_params, data, batch_size: int = 1) -> np.ndarray:
     """Compute centroid corrections using Zernike polynomials.
 
     This function calculates the Zernike contributions required to match the centroid
@@ -285,22 +164,24 @@ def compute_centroid_correction(model_params, data, batch_size: int=1) -> np.nda
     Returns
     -------
     zernike_centroid_array : np.ndarray
-         A 2D NumPy array of shape `(n_stars, 3)`, where `n_stars` is the number of 
-        observed stars. The array contains the computed Zernike contributions, 
+         A 2D NumPy array of shape `(n_stars, 3)`, where `n_stars` is the number of
+        observed stars. The array contains the computed Zernike contributions,
         with zero padding applied to the first column to ensure a consistent shape.
     """
-    star_postage_stamps = extract_star_data(data=data, train_key="noisy_stars", test_key="stars")
-    
+    star_postage_stamps = extract_star_data(
+        data=data, train_key="noisy_stars", test_key="stars"
+    )
+
     # Get star mask catalogue only if "masks" exist in both training and test datasets
     star_masks = (
-    extract_star_data(data=data, train_key="masks", test_key="masks")
-    if (
-        data.training_data.dataset.get("masks") is not None 
-        and data.test_data.dataset.get("masks") is not None
-        and tf.size(data.training_data.dataset["masks"]) > 0  
-        and tf.size(data.test_data.dataset["masks"]) > 0 
-    )
-    else None
+        extract_star_data(data=data, train_key="masks", test_key="masks")
+        if (
+            data.training_data.dataset.get("masks") is not None
+            and data.test_data.dataset.get("masks") is not None
+            and tf.size(data.training_data.dataset["masks"]) > 0
+            and tf.size(data.test_data.dataset["masks"]) > 0
+        )
+        else None
     )
 
     pix_sampling = model_params.pix_sampling * 1e-6  # Change units from [um] to [m]
@@ -308,15 +189,17 @@ def compute_centroid_correction(model_params, data, batch_size: int=1) -> np.nda
     # Ensure star_masks is properly handled
     star_masks = star_masks if star_masks is not None else None
 
-    reference_shifts = [float(Fraction(value)) for value in model_params.reference_shifts]
+    reference_shifts = [
+        float(Fraction(value)) for value in model_params.reference_shifts
+    ]
 
     n_stars = len(star_postage_stamps)
     zernike_centroid_array = []
 
     # Batch process the stars
     for i in range(0, n_stars, batch_size):
-        batch_postage_stamps = star_postage_stamps[i:i + batch_size]
-        batch_masks = star_masks[i:i + batch_size] if star_masks is not None else None
+        batch_postage_stamps = star_postage_stamps[i : i + batch_size]
+        batch_masks = star_masks[i : i + batch_size] if star_masks is not None else None
 
         # Compute Zernike 1 and Zernike 2 for the batch
         zk1_2_batch = -1.0 * compute_zernike_tip_tilt(
@@ -324,7 +207,14 @@ def compute_centroid_correction(model_params, data, batch_size: int=1) -> np.nda
         )
 
         # Zero pad array for each batch and append
-        zernike_centroid_array.append(np.pad(zk1_2_batch, pad_width=[(0, 0), (1, 0)], mode="constant", constant_values=0))
+        zernike_centroid_array.append(
+            np.pad(
+                zk1_2_batch,
+                pad_width=[(0, 0), (1, 0)],
+                mode="constant",
+                constant_values=0,
+            )
+        )
 
     # Combine all batches into a single array
     return np.concatenate(zernike_centroid_array, axis=0)
@@ -370,7 +260,7 @@ def compute_ccd_misalignment(model_params, data):
     return zernike_ccd_misalignment_array
 
 
-def get_zernike_prior(model_params, data, batch_size: int=16):
+def get_zernike_prior(model_params, data, batch_size: int = 16):
     """Get Zernike priors from the provided dataset.
 
     This method concatenates the Zernike priors from both the training

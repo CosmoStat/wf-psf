@@ -9,7 +9,7 @@ to manage the parameters of the psf parametric model.
 
 import tensorflow as tf
 from wf_psf.psf_models.psf_models import register_psfclass
-from wf_psf.psf_models.tf_layers import (
+from wf_psf.psf_models.tf_modules.tf_layers import (
     TFPolynomialZernikeField,
     TFZernikeOPD,
     TFBatchPolychromaticPSF,
@@ -166,7 +166,6 @@ class TFParametricPSFFieldModel(tf.keras.Model):
             ``simPSF_np = wf_psf.sims.psf_simulator.PSFSimulator(...)``
             ``phase_N = simPSF_np.feasible_N(lambda_obs)``
         """
-
         # Initialise the monochromatic PSF batch calculator
         tf_batch_mono_psf = TFBatchMonochromaticPSF(
             obscurations=self.obscurations,
@@ -205,7 +204,7 @@ class TFParametricPSFFieldModel(tf.keras.Model):
 
         return opd_maps
 
-    def call(self, inputs):
+    def call(self, inputs, **kwargs):
         """Define the PSF field forward model.
 
         [1] From positions to Zernike coefficients

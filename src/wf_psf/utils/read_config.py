@@ -33,9 +33,9 @@ class RecursiveNamespace(SimpleNamespace):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         for key, val in kwargs.items():
-            if isinstance(val,dict):
+            if isinstance(val, dict):
                 setattr(self, key, RecursiveNamespace(**val))
-            elif isinstance(val,list):
+            elif isinstance(val, list):
                 setattr(self, key, list(map(self.map_entry, val)))
 
     @staticmethod
@@ -56,7 +56,6 @@ class RecursiveNamespace(SimpleNamespace):
         entry: type
             Original type of entry if type is not a dictionary
         """
-
         if isinstance(entry, dict):
             return RecursiveNamespace(**entry)
 
@@ -100,21 +99,19 @@ def read_conf(conf_file):
         Recursive Namespace object
 
     """
-    logger.info("Loading...{}".format(conf_file))
-    with open(conf_file, "r") as f:
+    logger.info(f"Loading...{conf_file}")
+    with open(conf_file) as f:
         try:
             my_conf = yaml.safe_load(f)
         except (ParserError, ScannerError, TypeError):
             logger.exception(
-                "There is a syntax problem with your config file. Please check {}.".format(
-                    conf_file
-                )
+                f"There is a syntax problem with your config file. Please check {conf_file}."
             )
             exit()
 
         if my_conf is None:
             raise TypeError(
-                "Config file {} is empty...Stopping Program.".format(conf_file)
+                f"Config file {conf_file} is empty...Stopping Program."
             )
             exit()
 
@@ -122,7 +119,7 @@ def read_conf(conf_file):
             return RecursiveNamespace(**my_conf)
         except TypeError as e:
             logger.exception(
-                "Check your config file for errors. Error Msg: {}.".format(e)
+                f"Check your config file for errors. Error Msg: {e}."
             )
             exit()
 
@@ -143,7 +140,7 @@ def read_stream(conf_file):
         A dictionary containing all config files.
 
     """
-    stream = open(conf_file, "r")
+    stream = open(conf_file)
     docs = yaml.load_all(stream, yaml.FullLoader)
 
     for doc in docs:
