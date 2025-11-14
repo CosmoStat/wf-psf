@@ -11,7 +11,7 @@ import numpy as np
 import tensorflow as tf
 from wf_psf.sims.psf_simulator import PSFSimulator
 from wf_psf.utils.utils import zernike_generator
-from wf_psf.utils.optimizer import get_optimizer
+from wf_psf.utils.optimizer import is_optimizer_instance, get_optimizer
 import glob
 import logging
 
@@ -162,11 +162,11 @@ def build_PSF_model(model_inst, optimizer=None, loss=None, metrics=None):
         loss = tf.keras.losses.MeanSquaredError()
 
     # Handle optimizer: either config object or a Keras optimizer instance
-    if isinstance(optimizer, tf.keras.optimizers.Optimizer):
-        optimizer = optimizer
+    if is_optimizer_instance(optimizer):
+        pass
     else:
         optimizer = get_optimizer(optimizer_config=optimizer)
-
+    
     # Define metric functions
     if metrics is None:
         metrics = [tf.keras.metrics.MeanSquaredError()]

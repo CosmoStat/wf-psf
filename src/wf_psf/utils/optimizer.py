@@ -9,6 +9,9 @@ This module provides utility functions to create optimizers for training or eval
 import tensorflow as tf
 
 
+def is_optimizer_instance(obj):
+    return hasattr(obj, "apply_gradients") and hasattr(obj, "get_config")
+
 def get_optimizer(optimizer_config=None, **overrides):
     """
     Return a compiled optimizer instance based on configuration or name.
