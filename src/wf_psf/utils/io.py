@@ -50,7 +50,7 @@ class FileIOHandler:
         self._psf_model = "psf_model"
 
     def setup_outputs(self):
-        """Setup Outputs.
+        """Set up Outputs.
 
         A function to call
         specific functions
@@ -89,7 +89,7 @@ class FileIOHandler:
         pathlib.Path(self._run_output_dir).mkdir(exist_ok=True)
 
     def _setup_dirs(self):
-        """Setup Directories.
+        """Set up Directories.
 
         A function to setup the output
         directories.
@@ -118,12 +118,11 @@ class FileIOHandler:
         timestamp: str
             A string representation of the date and time.
         """
-
         timestamp = datetime.now().strftime("%Y%m%d%H%M")
         return timestamp
 
     def _setup_logging(self):
-        """Setup Logger.
+        """Set up Logging.
 
         A function to set up
         logging.
@@ -190,7 +189,6 @@ class FileIOHandler:
         source_file: str
             Name of source file
         """
-
         source = os.path.join(self.config_path, source_file)
         destination = os.path.join(
             self.get_config_dir(self._run_output_dir), source_file

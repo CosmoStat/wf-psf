@@ -10,7 +10,6 @@ wf_psf utils package.
 
 import pytest
 import os
-from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.utils.io import FileIOHandler
 
 cwd = os.getcwd()

@@ -1,7 +1,13 @@
+"""Graph-related utility functions.
+
+:Authors: Tobias Liaudat <tobias.liaudat@cea.fr>
+
+"""
+
 import numpy as np
 
 
-class GraphBuilder(object):
+class GraphBuilder:
     r"""GraphBuilder class.
 
     This class computes the necessary quantities for RCA's graph constraint.
@@ -112,10 +118,10 @@ class GraphBuilder(object):
             R -= vect.T.dot(vect.dot(R))
             if self.verbose:
                 print(
-                    " > selected e: {}\tselected a:".format(e)
-                    + "{}\t chosen index: {}/{}".format(a, j, self.n_eigenvects)
+                    f" > selected e: {e}\tselected a:"
+                    + f"{a}\t chosen index: {j}/{self.n_eigenvects}"
                 )
-        self.VT = np.vstack((eigenvect for eigenvect in list_eigenvects))
+        self.VT = np.vstack(eigenvect for eigenvect in list_eigenvects)
         self.alpha = np.zeros((self.n_comp, self.VT.shape[0]))
         for i in range(self.n_comp):
             self.alpha[i, i * self.n_eigenvects + idx[i]] = 1
