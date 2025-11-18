@@ -1,12 +1,32 @@
-API Reference
-=============
+﻿wf\_psf
+=======
 
-This section contains the API reference for the main packages in WaveDiff.
+.. automodule:: wf_psf
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. rubric:: Modules
 
 .. autosummary::
-   :toctree: _autosummary
+   :toctree:
    :recursive:
-   
+
    wf_psf.data
    wf_psf.metrics
    wf_psf.plotting
@@ -15,3 +35,4 @@ This section contains the API reference for the main packages in WaveDiff.
    wf_psf.sims
    wf_psf.training
    wf_psf.utils
+

@@ -1,0 +1,31 @@
+wf\_psf.utils.preprocessing
+===========================
+
+.. automodule:: wf_psf.utils.preprocessing
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      defocus_to_zk4_wavediff
+      defocus_to_zk4_zemax
+      shift_x_y_to_zk1_2_wavediff
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
