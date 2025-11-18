@@ -1,0 +1,35 @@
+wf\_psf.metrics.metrics\_interface
+==================================
+
+.. automodule:: wf_psf.metrics.metrics_interface
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      evaluate_model
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      MetricsParamsHandler
+   
+   
+
+   
+   
+   
+
+
+
