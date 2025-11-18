@@ -19,7 +19,6 @@ If you use WaveDiff for your academic work, we ask you to please
 cite :cite:t:`Liaudat:23`.
 
 .. |link-to-cosmostat| raw:: html
-.. |link-to-cosmostat| raw:: html
 
   <a href="http://www.cosmostat.org/" target="_blank">CosmoStat</a>
 

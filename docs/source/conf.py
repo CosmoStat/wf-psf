@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.abspath("src/wf_psf"))
 project = "wf-psf"
 copyright = "2023, CosmoStat"
 author = "CosmoStat"
-release = "2.0.1"
+release = "3.0.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -31,6 +31,17 @@ extensions = [
     "numpydoc",
     "sphinx_rtd_theme",
 ]
+
+extensions += ["sphinx.ext.autosummary"]
+autosummary_generate = True
+autosummary_generate_overwrite = True
+# Ignore inherited members to reduce stub warnings
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": True,
+    "show-inheritance": True,
+    "inherited-members": False,  # This helps reduce warnings
+}
 
 templates_path = ["_templates"]
 exclude_patterns = []
@@ -53,6 +64,7 @@ master_doc = "index"
 
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
+html_css_files = ["custom.css"]
 html_logo = "imgs/cosmostat_logo.png"
 html_theme_options = {
     "analytics_id": "G-XXXXXXXXXX",  #  Provided by Google in your dashboard

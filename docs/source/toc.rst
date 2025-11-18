@@ -27,7 +27,7 @@
    :titlesonly:
    :caption: API Documentation
 
-   wf_psf
+  api
 
 .. toctree::
   :hidden:
