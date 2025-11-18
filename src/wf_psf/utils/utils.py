@@ -1,5 +1,10 @@
+"""utility functions for the PSF simulation and modeling.
+
+:Authors: Tobias Liaudat <tobias.liaudat@cea.fr>
+
+"""
+
 import numpy as np
-from typing import Optional, Tuple
 import tensorflow as tf
 import tensorflow_addons as tfa
 import PIL
@@ -12,26 +17,34 @@ except ModuleNotFoundError:
 import sys
 
 
-def scale_to_range(input_array, old_range, new_range):
-    # Scale to [0,1]
-    input_array = (input_array - old_range[0]) / (old_range[1] - old_range[0])
-    # Scale to new_range
-    input_array = input_array * (new_range[1] - new_range[0]) + new_range[0]
-    return input_array
-
-
-def calc_wfe(zernike_basis, zks):
-    wfe = np.einsum("ijk,ijk->jk", zernike_basis, zks.reshape(-1, 1, 1))
-    return wfe
-
-
-def calc_wfe_rms(zernike_basis, zks, pupil_mask):
-    wfe = calc_wfe(zernike_basis, zks)
-    wfe_rms = np.sqrt(np.mean((wfe[pupil_mask] - np.mean(wfe[pupil_mask])) ** 2))
-    return wfe_rms
-
-
 def generalised_sigmoid(x, max_val=1, power_k=1):
+    """
+    Apply a generalized sigmoid function to the input.
+
+    This function computes a smooth, S-shaped curve that generalizes the standard
+    sigmoid function. It's useful for scaling values while maintaining a bounded output.
+
+    Parameters
+    ----------
+    x : array_like
+        Input value(s) to which the generalized sigmoid is applied.
+    max_val : float, optional
+        Maximum output value. Default is 1.
+    power_k : float, optional
+        Power parameter controlling the steepness of the curve.
+        Default is 1. Higher values create steeper transitions.
+
+    Returns
+    -------
+    array_like
+        Output value(s) scaled by the generalized sigmoid function,
+        bounded between -max_val and max_val.
+
+    Notes
+    -----
+    When power_k=1, this reduces to a standard rational sigmoid function.
+    The function is odd, meaning generalised_sigmoid(-x) = -generalised_sigmoid(x).
+    """
     return max_val * x / np.power(1 + np.power(np.abs(x), power_k), 1 / power_k)
 
 
@@ -92,7 +105,6 @@ def generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
     n_bins: int
         Number of wavelength bins
     """
-
     feasible_wv, SED_norm = sim_psf_toolkit.calc_SED_wave_values(SED, n_bins)
     feasible_N = np.array([sim_psf_toolkit.feasible_N(_wv) for _wv in feasible_wv])
 
@@ -118,7 +130,6 @@ def generate_SED_elems_in_tensorflow(
     tf_dtype: tf.
         Tensor Flow data type
     """
-
     feasible_wv, SED_norm = sim_psf_toolkit.calc_SED_wave_values(SED, n_bins)
     feasible_N = np.array([sim_psf_toolkit.feasible_N(_wv) for _wv in feasible_wv])
 
@@ -126,26 +137,66 @@ def generate_SED_elems_in_tensorflow(
 
 
 def convert_to_tf(data, tf_dtype):
+    """
+    Convert a sequence of array-like objects to TensorFlow tensors with a specified dtype.
+
+    Parameters
+    ----------
+    data : Iterable
+        An iterable (e.g., list, tuple) of array-like objects (numpy arrays, Python
+        lists/tuples, tf.Tensor, etc.) to be converted to TensorFlow tensors.
+    tf_dtype : tf.DType
+        The TensorFlow dtype to cast each element to (for example `tf.float32`,
+        `tf.int32`, etc.).
+
+    Returns
+    -------
+    list of tf.Tensor
+        A list where each element is the result of calling
+        `tf.convert_to_tensor` on the corresponding item from `data`, cast to
+        `tf_dtype`.
+
+    Raises
+    ------
+    TypeError
+        If `data` is not an iterable. A `TypeError` may also be raised by
+        `tf.convert_to_tensor` for individual elements that cannot be converted.
+
+    Notes
+    -----
+    - The function preserves the top-level sequence structure by returning a
+      list regardless of the input sequence type.
+    - Element-wise conversion uses TensorFlow's conversion semantics; shape
+      inference and broadcasting follow TensorFlow rules.
+
+    """
     return [tf.convert_to_tensor(x, dtype=tf_dtype) for x in data]
 
 
 def generate_packed_elems(SED, sim_psf_toolkit, n_bins=20):
-    """Generate Packed Elements.
-    This name is too generic. may make obsolete
+    """
+    Generate packed SED elements as TensorFlow tensors.
 
-    A function to store the packed values for using the TF_poly_PSF.
+    Wrapper around generate_SED_elems(...) that converts the returned NumPy
+    arrays into TensorFlow tensors with dtype=tf.float64.
 
     Parameters
     ----------
-    SED:
-    sim_psf_toolkit:
-    n_bins: int
-        Number of wavelength bins
+    SED : object
+        Spectral energy distribution descriptor understood by
+        sim_psf_toolkit.calc_SED_wave_values.
+    sim_psf_toolkit : object
+        PSF simulator providing calc_SED_wave_values and feasible_N.
+    n_bins : int, optional
+        Number of wavelength bins used to sample the SED (default 20).
 
     Returns
     -------
-    list
-        List of tensors
+    list of tf.Tensor
+        [feasible_N, feasible_wv, SED_norm]:
+        - feasible_N : tf.Tensor, shape (n_bins,), dtype tf.float64
+        - feasible_wv : tf.Tensor, shape (n_bins,), dtype tf.float64
+        - SED_norm : tf.Tensor, scalar or array, dtype tf.float64
     """
     feasible_N, feasible_wv, SED_norm = generate_SED_elems(
         SED, sim_psf_toolkit, n_bins=n_bins
@@ -290,26 +341,50 @@ class NoiseEstimator:
         The radius of the exclusion window (in pixels).
     """
 
-    def __init__(self, img_dim: Tuple[int, int], win_rad: int) -> None:
+    def __init__(self, img_dim: tuple[int, int], win_rad: int) -> None:
         """
-        Initializes the NoiseEstimator instance.
+        Initialize a NoiseEstimator instance.
+
+        This constructor sets up the noise estimator by storing the image dimensions
+        and exclusion window radius, then initializes the exclusion window mask.
 
         Parameters
         ----------
         img_dim : tuple of int
             The dimensions of the image as (height, width).
         win_rad : int
-            The radius of the exclusion window (in pixels).
+            The radius of the exclusion window in pixels. Pixels within this radius
+            of the image center are excluded from noise estimation.
+
+        Notes
+        -----
+        The exclusion window is initialized automatically via _init_window(), creating
+        a boolean mask where pixels inside the exclusion radius are marked False
+        (excluded) and pixels outside are marked True (included).
         """
-        self.img_dim: Tuple[int, int] = img_dim
+        self.img_dim: tuple[int, int] = img_dim
         self.win_rad: int = win_rad
 
         self._init_window()  # Initialize self.window
 
     def _init_window(self):
         """
-        Initializes a boolean mask defining an exclusion window.
-        Pixels within the specified radius from the image center are excluded.
+        Initialize the exclusion window mask stored in self.window.
+
+        The mask is a boolean array of shape `self.img_dim` (rows, cols). Pixels
+        whose Euclidean distance from the image center is less than or equal to
+        `self.win_rad` are marked False (excluded); all other pixels are True
+        (included). The mask dtype is `bool`.
+
+        Notes
+        -----
+        - The image center is computed as (rows / 2, cols / 2). This yields a
+          floating-point center so the distance is computed with sub-pixel
+          precision; for even dimensions the center lies between pixels.
+        - The comparison uses "<=" so pixels exactly at distance `win_rad` are
+          excluded. Change to "<" if you prefer a strict interior exclusion.
+        - Time complexity is O(rows * cols) for mask construction.
+        - No return value; the constructed mask is assigned to `self.window`.
         """
         self.window = np.ones(self.img_dim, dtype=bool)
 
@@ -344,18 +419,32 @@ class NoiseEstimator:
     @staticmethod
     def sigma_mad(x):
         """
-        Computes a robust estimation of the standard deviation of a Gaussian distribution
-        using the Median Absolute Deviation (MAD) estimator.
+        Robustly estimate the standard deviation using the Median Absolute Deviation (MAD).
+
+        Computes MAD = median(|x - median(x)|) and scales it by 1.4826 to make the
+        estimator consistent with the standard deviation for a Gaussian distribution:
+
+            sigma ≈ 1.4826 * MAD
 
         Parameters
         ----------
-        x : np.ndarray
-            Input array from which to compute the noise estimate.
+        x : array-like
+            Input data. The values are flattened before computation. NaNs are not
+            specially handled and will propagate; remove or mask them prior to
+            calling if needed.
 
         Returns
         -------
         float
-            Estimated standard deviation of the noise.
+            Robust estimate of the standard deviation of the input data.
+
+        Notes
+        -----
+        - The MAD-based estimator is much less sensitive to outliers than the
+          sample standard deviation, making it appropriate for noisy data with
+          occasional large deviations.
+        - The constant 1.4826 is the scaling factor for consistency with the
+          standard deviation of a normal distribution.
         """
         return 1.4826 * np.median(np.abs(x - np.median(x)))
 
@@ -383,24 +472,49 @@ class NoiseEstimator:
         return self.sigma_mad(image[self.window])
 
 
-class ZernikeInterpolation(object):
-    """Interpolate zernikes
+class ZernikeInterpolation:
+    """Interpolate Zernike coefficients using K-nearest RBF splines.
 
-    This class helps to interpolate zernikes using only the closest K elements
-    in a given dataset using a RBF interpolation.
+    This class provides utilities to interpolate Zernike-coefficient vectors
+    defined at a set of source positions to arbitrary query positions using
+    a local RBF spline fitted to the K nearest source samples.
+
+    The interpolation pipeline:
+    - For a given query position, compute Euclidean distances to all source
+      positions and select the K nearest neighbors.
+    - Use tfa.image.interpolate_spline (RBF / spline interpolation) on the
+      selected neighbor positions and their Zernike coefficient vectors to
+      compute the interpolated coefficients at the query location.
 
     Parameters
     ----------
-    tf_pos: Tensor (n_sources, 2)
-        Positions
-    tf_zks: Tensor (n_sources, n_zernikes)
-        Zernike coefficients for each position
-    k: int
-        Number of elements to use for the interpolation.
-        Default is 50
-    order: int
-        Order of the RBF interpolation.
-        Default is 2, corresponds to thin plate interp (r^2*log(r))
+    tf_pos : tf.Tensor, shape (n_sources, 2)
+        Source/sample positions (x, y). Expected dtype float32 or convertible.
+    tf_zks : tf.Tensor, shape (n_sources, n_zernikes)
+        Zernike coefficient vectors at the source positions.
+    k : int, default 50
+        Number of nearest neighbors to use for the local interpolation. If
+        larger than the number of sources, all sources are used.
+    order : int, default 2
+        Spline order passed to tfa.image.interpolate_spline (e.g. 2 for thin
+        plate style interpolation).
+
+    Attributes
+    ----------
+    tf_pos, tf_zks, k, order
+        Stored copies of the constructor inputs.
+
+    Notes
+    -----
+    - This class relies on TensorFlow Addons' interpolate_spline, which requires
+      inputs to include a leading batch dimension; the implementation handles
+      that automatically.
+    - For best numerical stability and compatibility with TFA, use float32
+      tensors for inputs when possible.
+    - Two main methods are provided:
+        - interpolate_zk(single_pos): interpolate a single position -> 1D vector.
+        - interpolate_zks(interp_positions): vectorized interpolation for many
+          query positions (uses tf.map_fn under the hood).
 
     """
 
@@ -411,7 +525,21 @@ class ZernikeInterpolation(object):
         self.order = order
 
     def interpolate_zk(self, single_pos):
-        """Interpolate a single position"""
+        """Interpolate Zernike coefficients at a single query position using K-nearest neighbors.
+
+        Finds the K nearest training positions to the query position and uses RBF
+        spline interpolation to estimate Zernike coefficients at that location.
+
+        Parameters
+        ----------
+        single_pos : tf.Tensor, shape (2,)
+            Query position coordinates as (x, y).
+
+        Returns
+        -------
+        tf.Tensor, shape (n_zernikes,)
+            Interpolated Zernike coefficient vector at the query position.
+        """
         # Compute distance
         dist = tf.math.reduce_euclidean_norm(self.tf_pos - single_pos, axis=1) * -1.0
         # Get top K elements
@@ -445,7 +573,31 @@ class ZernikeInterpolation(object):
         return interp_zk
 
     def interpolate_zks(self, interp_positions):
-        """Vectorize to interpolate to each position"""
+        """Interpolate Zernike coefficient vectors at multiple query positions.
+
+        Vectorized wrapper that applies self.interpolate_zk to each row of
+        interp_positions using tf.map_fn.
+
+        Parameters
+        ----------
+        interp_positions : tf.Tensor, shape (n_targets, 2)
+            Query positions where Zernike coefficients should be interpolated.
+            Each row is an (x, y) coordinate.
+
+        Returns
+        -------
+        tf.Tensor, shape (n_targets, n_zernikes), dtype=tf.float32
+            Interpolated Zernike coefficient vectors for each query position.
+            tf.map_fn may introduce an extra singleton dimension; this is removed
+            by tf.squeeze before returning.
+
+        Notes
+        -----
+        - self.interpolate_zk expects a 1-D tensor of shape (2,) and returns a
+          1-D tensor of length n_zernikes.
+        - This function uses tf.map_fn with fn_output_signature=tf.float32 and
+          swap_memory=True for efficient batching.
+        """
         interp_zks = tf.map_fn(
             self.interpolate_zk,
             interp_positions,
@@ -456,8 +608,8 @@ class ZernikeInterpolation(object):
         return tf.squeeze(interp_zks, axis=1)
 
 
-class IndependentZernikeInterpolation(object):
-    """Interpolate each Zernike polynomial independently
+class IndependentZernikeInterpolation:
+    """Interpolate each Zernike polynomial independently.
 
     The interpolation is done independently for each Zernike polynomial.
 
@@ -481,7 +633,30 @@ class IndependentZernikeInterpolation(object):
         self.target_pos = None
 
     def interp_one_zk(self, zk_prior):
-        """Interpolate each Zerkine polynomial independently"""
+        """
+        Interpolate a single Zernike polynomial across target positions.
+
+        Each Zernike coefficient in `zk_prior` is interpolated independently
+        using a spline.
+
+        Parameters
+        ----------
+        zk_prior : tf.Tensor of shape (n_sources,)
+            Zernike coefficients for a single Zernike polynomial, defined at
+            the source positions `self.tf_pos`.
+
+        Returns
+        -------
+        tf.Tensor of shape (n_targets,)
+            Interpolated Zernike coefficients at the target positions
+            `self.target_pos`.
+
+        Notes
+        -----
+        This function uses `tfa.image.interpolate_spline`, which requires the
+        input to have a batch dimension. The extra dimension is removed before
+        returning the result.
+        """
         interp_zk = tfa.image.interpolate_spline(
             train_points=tf.expand_dims(self.tf_pos, axis=0),
             train_values=tf.expand_dims(zk_prior[:, tf.newaxis], axis=0),
@@ -494,9 +669,18 @@ class IndependentZernikeInterpolation(object):
         return tf.squeeze(interp_zk, axis=0)
 
     def interpolate_zks(self, target_pos):
-        """Vectorize to interpolate to each Zernike!
+        """Vectorize to interpolate to each Zernike.
 
         Each zernike is computed indepently from the others.
+
+        Parameters
+        ----------
+        target_pos: Tensor (n_targets, 2)
+            Positions to interpolate to.
+
+        Returns
+        -------
+        Tensor (n_targets, n_zernikes)
         """
         self.target_pos = target_pos
 

@@ -1,3 +1,10 @@
+"""PSF simulator module.
+
+A module to simulate PSFs from Zernike coefficients.
+
+:Authors: Tobias Liaudat <tobias.liaudat@cea.fr> & Jennifer Pollack <jennifer.pollack@cea.fr>
+"""
+
 import numpy as np
 import scipy.signal as spsig
 import scipy.interpolate as sinterp
@@ -19,7 +26,7 @@ except ImportError:
         print("Problem importing skimage..")
 
 
-class PSFSimulator(object):
+class PSFSimulator:
     """Simulate PSFs.
 
     In the future the zernike maps could be created with galsim or some other
@@ -30,7 +37,7 @@ class PSFSimulator(object):
     max_order: int
         Maximum Zernike polynomial order. Default is `45`.
     max_wfe_rms: float
-        Maximum allowed WFE in RMS. Used forvnormalization. Units in [\mu m].
+        Maximum allowed WFE in RMS. Used for normalization. Units in [μm].
         Default is ``0.1``.
     output_dim: int
         Output dimension of the square PSF stamp. Default is `64`.
@@ -189,6 +196,23 @@ class PSFSimulator(object):
 
     @staticmethod
     def fft_diffract(wf, output_Q, output_dim=64):
+        """Perform a fft-based diffraction.
+
+        Parameters
+        ----------
+        wf: np.ndarray
+            A complex 2D array that corresponds to the wavefront function.
+        output_Q: float
+            Downsampling rate to match the specified telescope's sampling.
+        output_dim: int
+            Output dimension of the square PSF stamp.
+
+        Returns
+        -------
+        psf: np.ndarray
+            A real 2D array corresponding to the PSF.
+
+        """
         # Perform the FFT-based diffraction operation
         fft_wf = np.fft.fftshift(np.fft.fft2(wf))
         psf = np.abs(fft_wf) ** 2
@@ -198,7 +222,7 @@ class PSFSimulator(object):
             start = int(psf.shape[0] // 2 - (output_dim * output_Q) // 2)
             stop = int(psf.shape[0] // 2 + (output_dim * output_Q) // 2)
         else:
-            start = int(0)
+            start = 0
             stop = psf.shape[0]
 
         # Crop psf
@@ -227,7 +251,7 @@ class PSFSimulator(object):
         """Generate Euclid like pupil obscurations.
 
         This method simulates the 2D pupil obscurations for the Euclid telescope,
-        considering the aperture stop, mirror obscurations, and spider arms. It does 
+        considering the aperture stop, mirror obscurations, and spider arms. It does
         not account for any 3D projections or the angle of the Field of View (FoV).
 
         Parameters
@@ -348,6 +372,20 @@ class PSFSimulator(object):
 
     @staticmethod
     def crop_img(to_crop_img, ref_im):
+        """Crop image.
+
+        Parameters
+        ----------
+        to_crop_img: np.ndarray
+            Image to be cropped.
+        ref_im: np.ndarray
+            Reference image to match the size.
+
+        Returns
+        -------
+        cropped_img: np.ndarray
+            Cropped image.
+        """
         cent_x = int(to_crop_img.shape[0] // 2)
         cent_y = int(to_crop_img.shape[1] // 2)
 
@@ -366,7 +404,6 @@ class PSFSimulator(object):
         Based on the PIL library using the default interpolator.
 
         """
-
         pil_im = PIL.Image.fromarray(input_im)
         (width, height) = (pil_im.width // decim_f, pil_im.height // decim_f)
         im_resized = pil_im.resize((width, height))
@@ -375,6 +412,18 @@ class PSFSimulator(object):
 
     @staticmethod
     def get_radial_idx(max_order=45):
+        """Get radial zernike indices.
+
+        Parameters
+        ----------
+        max_order: int
+            Maximum Zernike polynomial order.
+
+        Returns
+        -------
+        radial_idxs: np.ndarray
+            Array of radial indices up to the specified maximum order.
+        """
         it = 1
         radial_idxs = []
 
@@ -388,6 +437,19 @@ class PSFSimulator(object):
 
     @staticmethod
     def psf_plotter(psf, lambda_obs=0.000, cmap="gist_stern", save_img=False):
+        """Plot PSF maps.
+
+        Parameters
+        ----------
+        psf: np.ndarray
+            2D array corresponding to the PSF.
+        lambda_obs: float
+            Wavelength of observation in [um].
+        cmap: str
+            Colormap to be used for the plots.
+        save_img: bool
+            Whether to save the image as a PDF.
+        """
         fig = plt.figure(figsize=(18, 10))
 
         ax1 = fig.add_subplot(131)
@@ -397,14 +459,14 @@ class PSFSimulator(object):
         fig.colorbar(im1, cax=cax, orientation="vertical")
         ax1.set_xticks([])
         ax1.set_yticks([])
-        ax1.set_title("PSF (lambda=%.3f [um])" % (lambda_obs))
+        ax1.set_title(f"PSF (lambda={lambda_obs:.3f} [um])")
 
         ax2 = fig.add_subplot(132)
         im2 = ax2.imshow(np.sqrt(abs(psf)), cmap=cmap, interpolation="None")
         divider2 = make_axes_locatable(ax2)
         cax2 = divider2.append_axes("right", size="5%", pad=0.05)
         fig.colorbar(im2, cax=cax2, orientation="vertical")
-        ax2.set_title("sqrt PSF (lambda=%.3f [um])" % (lambda_obs))
+        ax2.set_title(f"sqrt PSF (lambda={lambda_obs:.3f} [um])")
         ax2.set_xticks([])
         ax2.set_yticks([])
 
@@ -413,12 +475,12 @@ class PSFSimulator(object):
         divider3 = make_axes_locatable(ax3)
         cax3 = divider3.append_axes("right", size="5%", pad=0.05)
         fig.colorbar(im3, cax=cax3, orientation="vertical")
-        ax3.set_title("log PSF (lambda=%.3f [um])" % (lambda_obs))
+        ax3.set_title(f"log PSF (lambda={lambda_obs:.3f} [um])")
         ax3.set_xticks([])
         ax3.set_yticks([])
 
         if save_img:
-            plt.savefig("./PSF_lambda_%.3f.pdf" % lambda_obs, bbox_inches="tight")
+            plt.savefig(f"./PSF_lambda_{lambda_obs:.3f}.pdf", bbox_inches="tight")
 
         plt.show()
 
@@ -426,6 +488,23 @@ class PSFSimulator(object):
     def opd_phase_plotter(
         pupil_mask, opd, phase, lambda_obs, cmap="viridis", save_img=False
     ):
+        """Plot OPD and phase maps.
+
+        Parameters
+        ----------
+        pupil_mask: np.ndarray
+            2D array corresponding to the pupil mask.
+        opd: np.ndarray
+            2D array corresponding to the Optical Path Differences map.
+        phase: np.ndarray
+            2D array corresponding to the wavefront phase map.
+        lambda_obs: float
+            Wavelength of observation in [um].
+        cmap: str
+            Colormap to be used for the plots.
+        save_img: bool
+            Whether to save the image as a PDF.
+        """
         fig = plt.figure(figsize=(18, 10))
 
         ax1 = fig.add_subplot(131)
@@ -455,28 +534,37 @@ class PSFSimulator(object):
         divider3 = make_axes_locatable(ax3)
         cax3 = divider3.append_axes("right", size="5%", pad=0.05)
         fig.colorbar(im3, cax=cax3, orientation="vertical")
-        ax3.set_title("W phase [rad](wv=%.2f[um])" % (lambda_obs))
+        ax3.set_title(f"W phase [rad](wv={lambda_obs:.2f}[um])")
         ax3.set_xticks([])
         ax3.set_yticks([])
 
         if save_img:
-            plt.savefig("./OPD_lambda_%.3f.pdf" % lambda_obs, bbox_inches="tight")
+            plt.savefig(f"./OPD_lambda_{lambda_obs:.3f}.pdf", bbox_inches="tight")
 
         plt.show()
 
     def get_psf(self):
+        """Get computed PSF.
+
+        Returns
+        -------
+        psf: np.ndarray
+            A real 2D array corresponding to the PSF.
+        """
         if self.psf is not None:
             return self.psf
         else:
             print("No PSF has been computed yet.")
 
     def plot_psf(self, cmap="gist_stern", save_img=False):
+        """Plot PSF maps."""
         if self.psf is not None:
             self.psf_plotter(self.psf, self.lambda_obs, cmap, save_img)
         else:
             print("No PSF has been computed yet.")
 
     def plot_opd_phase(self, cmap="viridis", save_img=False):
+        """Plot OPD and phase maps."""
         if self.opd is not None:
             self.opd_phase_plotter(
                 self.pupil_mask * self.obscurations,
@@ -540,7 +628,13 @@ class PSFSimulator(object):
             print("Random coeffs not generated.")
 
     def get_z_coeffs(self):
-        """Get random coefficients"""
+        """Get random coefficients.
+
+        Returns
+        -------
+        z_coeffs: list of floats
+            List containing the random coefficients.
+        """
         if self.z_coeffs is not None:
             return self.z_coeffs
         else:
@@ -551,10 +645,26 @@ class PSFSimulator(object):
         if len(z_coeffs) == self.max_order:
             self.z_coeffs = z_coeffs
         else:
-            print("Zernike coefficients should be of length %d" % (self.max_order))
+            print(f"Zernike coefficients should be of length {self.max_order}")
 
     def normalize_zernikes(self, z_coeffs=None, max_wfe_rms=None):
-        """Normalize zernike coefficients."""
+        """Normalize zernike coefficients.
+
+        Returns a set of zernike coefficients normalized to the maximum allowed WFE rms.
+
+        Parameters
+        ----------
+        z_coeffs: list of floats
+            List containing the zernike coefficients to be normalized.
+        max_wfe_rms: float
+            Maximum allowed WFE in RMS. Units in [μm].
+
+        Returns
+        -------
+        z_coeffs: list of floats
+            List containing the normalized zernike coefficients.
+
+        """
         if max_wfe_rms is None:
             max_wfe_rms = self.max_wfe_rms
 
@@ -568,7 +678,19 @@ class PSFSimulator(object):
         return z_coeffs
 
     def calculate_wfe_rms(self, z_coeffs=None):
-        """Calculate WFE rms from a set of zernike coefficients."""
+        """Calculate WFE rms from a set of zernike coefficients.
+
+        Parameters
+        ----------
+        z_coeffs: list of floats
+            List containing the zernike coefficients to be used.
+
+        Returns
+        -------
+        wfe_rms: float
+            Wavefront error in RMS [um].
+
+        """
         if z_coeffs is None:
             if self.z_coeffs is None:
                 self.gen_random_Z_coeffs(self.max_order, self.rand_seed)
@@ -593,7 +715,6 @@ class PSFSimulator(object):
 
     def check_wfe_rms(self, z_coeffs=None, max_wfe_rms=None):
         """Check if Zernike coefficients are within the maximum admitted error."""
-
         if max_wfe_rms is None:
             max_wfe_rms = self.max_wfe_rms
 
@@ -606,8 +727,7 @@ class PSFSimulator(object):
         """Generate monochromatic PSF."""
         if lambda_obs < 0.55 * 0.9 or lambda_obs > 0.9 * 1.1:
             print(
-                "WARNING: requested wavelength %.4f um is not in VIS passband [0.55,0.9]um"
-                % (lambda_obs)
+                f"WARNING: requested wavelength {lambda_obs:.4f} um is not in VIS passband [0.55,0.9]um"
             )
         self.lambda_obs = lambda_obs
 
@@ -655,8 +775,7 @@ class PSFSimulator(object):
                 lambda_obs = self.lambda_obs
         elif lambda_obs < 0.55 * 0.99 or lambda_obs > 0.9 * 1.01:
             print(
-                "WARNING: wavelength %.4f is not in VIS passband [0.55,0.9]um"
-                % (lambda_obs)
+                f"WARNING: wavelength {lambda_obs:.4f} is not in VIS passband [0.55,0.9]um"
             )
 
         # Calculate the feasible lambda closest to lambda_obs
@@ -727,7 +846,7 @@ class PSFSimulator(object):
         if self.verbose > 0:
             # print("Requested wavelength: %.5f \nRequired N: %.2f"%(lambda_obs, req_N))
             print(
-                "Possible wavelength: %.5f \nPossible N: %.2f"
+                f"Possible wavelength: {possible_lambda:.5f} \nPossible N: {possible_N:.2f}"
                 % (possible_lambda, possible_N)
             )
 

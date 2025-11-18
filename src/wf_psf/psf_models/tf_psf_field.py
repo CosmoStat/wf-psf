@@ -302,7 +302,7 @@ class TFGroundTruthPhysicalField(tf.keras.Model):
         )
 
     def predict_step(self, data: tuple, evaluate_step: bool = False) -> tf.Tensor:
-        """ "Apply custom prediction (inference) step for the PSF model.
+        """Apply custom prediction (inference) step for the PSF model.
 
         This method applies a specialized interpolation required by the physical layer, distinct from the training process. It processes the input data, computes the Zernike coefficients, propagates them to obtain the Optical Path Difference (OPD), and generates the corresponding polychromatic PSFs.
 

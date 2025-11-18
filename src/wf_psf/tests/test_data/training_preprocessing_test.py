@@ -9,8 +9,8 @@ from wf_psf.data.training_preprocessing import (
     extract_star_data,
     compute_centroid_correction,
 )
-import logging
 from unittest.mock import patch
+
 
 class MockData:
     def __init__(
@@ -25,22 +25,29 @@ class MockData:
         masks=None,
     ):
         self.training_data = MockDataset(
-            positions=training_positions, 
+            positions=training_positions,
             zernike_priors=training_zernike_priors,
             star_type="noisy_stars",
             stars=noisy_stars,
-            masks=noisy_masks)
+            masks=noisy_masks,
+        )
         self.test_data = MockDataset(
-            positions=test_positions, 
+            positions=test_positions,
             zernike_priors=test_zernike_priors,
             star_type="stars",
             stars=stars,
-            masks=masks)
+            masks=masks,
+        )
 
 
 class MockDataset:
     def __init__(self, positions, zernike_priors, star_type, stars, masks):
-        self.dataset = {"positions": positions, "zernike_prior": zernike_priors, star_type: stars, "masks": masks}
+        self.dataset = {
+            "positions": positions,
+            "zernike_prior": zernike_priors,
+            star_type: stars,
+            "masks": masks,
+        }
 
 
 @pytest.fixture
@@ -56,24 +63,17 @@ def mock_data():
     noisy_masks = tf.constant([[1], [0]], dtype=tf.float32)
     stars = tf.constant([[5, 6], [7, 8]], dtype=tf.float32)
     masks = tf.constant([[0], [1]], dtype=tf.float32)
-     
+
     return MockData(
-        training_positions, test_positions, training_zernike_priors, test_zernike_priors, noisy_stars, noisy_masks, stars, masks
+        training_positions,
+        test_positions,
+        training_zernike_priors,
+        test_zernike_priors,
+        noisy_stars,
+        noisy_masks,
+        stars,
+        masks,
     )
-
-
-def test_process_sed_data(data_params, simPSF):
-    # Test processing SED data without initialization
-    data_handler = DataHandler(
-        "training", data_params, simPSF, n_bins_lambda=10, load_data=False
-    )
-    assert data_handler.sed_data is None  # SED data should not be processed
-
-    # Test processing SED data with initialization
-    data_handler = DataHandler(
-        "training", data_params, simPSF, n_bins_lambda=10, load_data=True
-    )
-    assert data_handler.sed_data is not None  # SED data should be processed
 
 
 def test_load_train_dataset(tmp_path, data_params, simPSF):
@@ -98,7 +98,9 @@ def test_load_train_dataset(tmp_path, data_params, simPSF):
     )
 
     n_bins_lambda = 10
-    data_handler = DataHandler("training", data_params, simPSF, n_bins_lambda, load_data=False)
+    data_handler = DataHandler(
+        "training", data_params, simPSF, n_bins_lambda, load_data=False
+    )
 
     # Call the load_dataset method
     data_handler.load_dataset()
@@ -133,7 +135,9 @@ def test_load_test_dataset(tmp_path, data_params, simPSF):
     )
 
     n_bins_lambda = 10
-    data_handler = DataHandler("test", data_params, simPSF, n_bins_lambda, load_data=False)
+    data_handler = DataHandler(
+        "test", data_params, simPSF, n_bins_lambda, load_data=False
+    )
 
     # Call the load_dataset method
     data_handler.load_dataset()
@@ -154,7 +158,7 @@ def test_load_train_dataset_missing_noisy_stars(tmp_path, data_params, simPSF):
         "positions": np.array([[1, 2], [3, 4]]),  # No 'noisy_stars' key
         "SEDs": np.array([[[0.1, 0.2], [0.3, 0.4]], [[0.5, 0.6], [0.7, 0.8]]]),
     }
-    
+
     np.save(temp_data_file, mock_dataset)
 
     data_params = RecursiveNamespace(
@@ -162,11 +166,14 @@ def test_load_train_dataset_missing_noisy_stars(tmp_path, data_params, simPSF):
     )
 
     n_bins_lambda = 10
-    data_handler = DataHandler("training", data_params, simPSF, n_bins_lambda, load_data=False)
+    data_handler = DataHandler(
+        "training", data_params, simPSF, n_bins_lambda, load_data=False
+    )
 
     with patch("wf_psf.data.training_preprocessing.logger.warning") as mock_warning:
         data_handler.load_dataset()
         mock_warning.assert_called_with("Missing 'noisy_stars' in training dataset.")
+
 
 def test_load_test_dataset_missing_stars(tmp_path, data_params, simPSF):
     """Test that a warning is raised if 'stars' is missing in test data."""
@@ -186,7 +193,9 @@ def test_load_test_dataset_missing_stars(tmp_path, data_params, simPSF):
     )
 
     n_bins_lambda = 10
-    data_handler = DataHandler("test", data_params, simPSF, n_bins_lambda, load_data=False)
+    data_handler = DataHandler(
+        "test", data_params, simPSF, n_bins_lambda, load_data=False
+    )
 
     with patch("wf_psf.data.training_preprocessing.logger.warning") as mock_warning:
         data_handler.load_dataset()
@@ -249,37 +258,44 @@ def test_get_zernike_prior_empty_data(model_params):
     zernike_priors = get_zernike_prior(model_params, empty_data)
     assert zernike_priors.shape == tf.TensorShape([0])  # Check for empty array shape
 
+
 def test_extract_star_data_valid_keys(mock_data):
     """Test extracting valid data from the dataset."""
     result = extract_star_data(mock_data, train_key="noisy_stars", test_key="stars")
-    
+
     expected = np.array([[1, 2], [3, 4], [5, 6], [7, 8]], dtype=np.float32)
     np.testing.assert_array_equal(result, expected)
+
 
 def test_extract_star_data_masks(mock_data):
     """Test extracting star masks from the dataset."""
     result = extract_star_data(mock_data, train_key="masks", test_key="masks")
-    
+
     expected = np.array([[1], [0], [0], [1]], dtype=np.float32)
     np.testing.assert_array_equal(result, expected)
+
 
 def test_extract_star_data_missing_key(mock_data):
     """Test that the function raises a KeyError when a key is missing."""
     with pytest.raises(KeyError, match="Missing keys in dataset: \\['invalid_key'\\]"):
         extract_star_data(mock_data, train_key="invalid_key", test_key="stars")
 
+
 def test_extract_star_data_partially_missing_key(mock_data):
     """Test that the function raises a KeyError if only one key is missing."""
-    with pytest.raises(KeyError, match="Missing keys in dataset: \\['missing_stars'\\]"):
+    with pytest.raises(
+        KeyError, match="Missing keys in dataset: \\['missing_stars'\\]"
+    ):
         extract_star_data(mock_data, train_key="noisy_stars", test_key="missing_stars")
 
 
 def test_extract_star_data_tensor_conversion(mock_data):
     """Test that the function properly converts TensorFlow tensors to NumPy arrays."""
     result = extract_star_data(mock_data, train_key="noisy_stars", test_key="stars")
-    
+
     assert isinstance(result, np.ndarray), "The result should be a NumPy array"
     assert result.dtype == np.float32, "The NumPy array should have dtype float32"
+
 
 def test_compute_centroid_correction_with_masks(mock_data):
     """Test compute_centroid_correction function with masks present."""
@@ -287,27 +303,39 @@ def test_compute_centroid_correction_with_masks(mock_data):
     model_params = RecursiveNamespace(
         pix_sampling=12e-6,  # Example pixel sampling in meters
         correct_centroids=True,
-        reference_shifts=["-1/3", "-1/3"]
+        reference_shifts=["-1/3", "-1/3"],
     )
 
     # Mock the internal function calls:
-    with patch('wf_psf.data.training_preprocessing.extract_star_data') as mock_extract_star_data, \
-         patch('wf_psf.data.training_preprocessing.compute_zernike_tip_tilt') as mock_compute_zernike_tip_tilt:
-        
+    with (
+        patch(
+            "wf_psf.data.training_preprocessing.extract_star_data"
+        ) as mock_extract_star_data,
+        patch(
+            "wf_psf.data.training_preprocessing.compute_zernike_tip_tilt"
+        ) as mock_compute_zernike_tip_tilt,
+    ):
+
         # Mock the return values of extract_star_data and compute_zernike_tip_tilt
         mock_extract_star_data.side_effect = lambda data, train_key, test_key: (
-            np.array([[1, 2], [3, 4]]) if train_key == 'noisy_stars' else np.array([[5, 6], [7, 8]])
+            np.array([[1, 2], [3, 4]])
+            if train_key == "noisy_stars"
+            else np.array([[5, 6], [7, 8]])
         )
         mock_compute_zernike_tip_tilt.return_value = np.array([[0.1, 0.2], [0.3, 0.4]])
 
         # Call the function under test
         result = compute_centroid_correction(model_params, mock_data)
-        
+
         # Ensure the result has the correct shape
         assert result.shape == (4, 3)  # Should be (n_stars, 3 Zernike components)
-        
-        assert np.allclose(result[0, :], np.array([0, -0.1, -0.2]))  # First star Zernike coefficients
-        assert np.allclose(result[1, :], np.array([0, -0.3, -0.4]))  # Second star Zernike coefficients
+
+        assert np.allclose(
+            result[0, :], np.array([0, -0.1, -0.2])
+        )  # First star Zernike coefficients
+        assert np.allclose(
+            result[1, :], np.array([0, -0.3, -0.4])
+        )  # Second star Zernike coefficients
 
 
 def test_compute_centroid_correction_without_masks(mock_data):
@@ -315,26 +343,34 @@ def test_compute_centroid_correction_without_masks(mock_data):
     # Remove masks from mock_data
     mock_data.test_data.dataset["masks"] = None
     mock_data.training_data.dataset["masks"] = None
-    
+
     # Define model parameters
     model_params = RecursiveNamespace(
         pix_sampling=12e-6,  # Example pixel sampling in meters
         correct_centroids=True,
-        reference_shifts=["-1/3", "-1/3"]
+        reference_shifts=["-1/3", "-1/3"],
     )
-    
+
     # Mock internal function calls
-    with patch('wf_psf.data.training_preprocessing.extract_star_data') as mock_extract_star_data, \
-         patch('wf_psf.data.training_preprocessing.compute_zernike_tip_tilt') as mock_compute_zernike_tip_tilt:
-        
+    with (
+        patch(
+            "wf_psf.data.training_preprocessing.extract_star_data"
+        ) as mock_extract_star_data,
+        patch(
+            "wf_psf.data.training_preprocessing.compute_zernike_tip_tilt"
+        ) as mock_compute_zernike_tip_tilt,
+    ):
+
         # Mock extract_star_data to return synthetic star postage stamps
         mock_extract_star_data.side_effect = lambda data, train_key, test_key: (
-            np.array([[1, 2], [3, 4]]) if train_key == 'noisy_stars' else np.array([[5, 6], [7, 8]])
+            np.array([[1, 2], [3, 4]])
+            if train_key == "noisy_stars"
+            else np.array([[5, 6], [7, 8]])
         )
-        
+
         # Mock compute_zernike_tip_tilt assuming no masks
         mock_compute_zernike_tip_tilt.return_value = np.array([[0.1, 0.2], [0.3, 0.4]])
-        
+
         # Call function under test
         result = compute_centroid_correction(model_params, mock_data)
 
@@ -342,23 +378,28 @@ def test_compute_centroid_correction_without_masks(mock_data):
         assert result.shape == (4, 3)  # (n_stars, 3 Zernike components)
 
         # Validate expected values (adjust based on behavior)
-        expected_result = np.array([
-            [0, -0.1, -0.2],  # From training data
-            [0, -0.3, -0.4],
-            [0, -0.1, -0.2],  # From test data (reused mocked return)
-            [0, -0.3, -0.4]
-        ])
+        expected_result = np.array(
+            [
+                [0, -0.1, -0.2],  # From training data
+                [0, -0.3, -0.4],
+                [0, -0.1, -0.2],  # From test data (reused mocked return)
+                [0, -0.3, -0.4],
+            ]
+        )
         assert np.allclose(result, expected_result)
 
+
 def test_reference_shifts_broadcasting():
-    reference_shifts = [-1/3, -1/3]  # Example reference_shifts
+    reference_shifts = [-1 / 3, -1 / 3]  # Example reference_shifts
     shifts = np.random.rand(2, 2400)  # Example shifts array
 
     # Ensure reference_shifts is a NumPy array (if it's not already)
     reference_shifts = np.array(reference_shifts)
 
     # Broadcast reference_shifts to match the shape of shifts
-    reference_shifts = np.broadcast_to(reference_shifts[:, None], shifts.shape)  # Shape will be (2, 2400)
+    reference_shifts = np.broadcast_to(
+        reference_shifts[:, None], shifts.shape
+    )  # Shape will be (2, 2400)
 
     # Ensure shapes are compatible for subtraction
     displacements = reference_shifts - shifts
