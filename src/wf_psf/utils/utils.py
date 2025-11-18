@@ -15,10 +15,12 @@ _HAS_SKIMAGE = False
 
 try:
     import cv2
+
     _HAS_CV2 = True
 except ImportError:
     try:
         from skimage.transform import downscale_local_mean
+
         _HAS_SKIMAGE = True
     except ImportError:
         pass
@@ -338,6 +340,7 @@ def downsample_im(input_im, output_dim):
     raise ImportError(
         "Neither OpenCV nor scikit-image is available for image downsampling."
     )
+
 
 def zernike_generator(n_zernikes, wfe_dim):
     r"""

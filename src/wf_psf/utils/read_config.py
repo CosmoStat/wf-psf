@@ -140,4 +140,4 @@ def read_stream(conf_file):
     docs = yaml.load_all(stream, yaml.FullLoader)
 
     for doc in docs:  # noqa: UP028
-        yield doc  
+        yield doc
