@@ -98,7 +98,7 @@ def test_set_run_config():
 
 def test_get_run_config(path_to_repo_dir, path_to_tmp_output_dir, path_to_config_dir):
     test_file_handler = FileIOHandler(
-        path_to_repo_dir, path_to_tmp_output_dir, path_to_config_dir
+        path_to_tmp_output_dir, path_to_config_dir
     )
 
     config_class = configs_handler.get_run_config(
@@ -237,10 +237,10 @@ def test_run_method_calls_train_with_correct_arguments(
 
 
 def test_MetricsConfigHandler_weights_basename_filepath(
-    path_to_repo_dir, path_to_tmp_output_dir, path_to_config_dir
+    path_to_tmp_output_dir, path_to_config_dir
 ):
     test_file_handler = FileIOHandler(
-        path_to_repo_dir, path_to_tmp_output_dir, path_to_config_dir
+        path_to_tmp_output_dir, path_to_config_dir
     )
 
     metrics_config_file = "validation/main_random_seed/config/metrics_config.yaml"
