@@ -129,7 +129,7 @@ class FileIOHandler:
 
         """
         import logging.config
-        from importlib import resources
+        from importlib.resources import files, as_file 
         
         logfile = "wf-psf_" + self._timestamp + ".log"
         logfile = os.path.join(
@@ -138,14 +138,16 @@ class FileIOHandler:
             logfile,
         )
 
-        # Load the package-internal logging.conf
-        with resources.path("wf_psf.config", "logging.conf") as conf_path:
+        config_files = files("wf_psf.config")
+        conf_resource = config_files.joinpath("logging.conf")
+        
+        with as_file(conf_resource) as conf_path:
             logging.config.fileConfig(
                 conf_path,
                 defaults={"filename": logfile},
                 disable_existing_loggers=False,
             )
-
+    
     def _make_dir(self, dir_name):
         """Make Directory.
 
