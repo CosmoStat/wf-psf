@@ -22,11 +22,6 @@ def path_to_repo_dir():
 
 
 @pytest.fixture
-def path_to_test_dir(path_to_repo_dir):
-    return os.path.join(path_to_repo_dir, "src", "wf_psf", "tests")
-
-
-@pytest.fixture
 def path_to_tmp_output_dir(tmp_path):
     return tmp_path
 
@@ -44,7 +39,6 @@ def mock_file_handler(mocker, tmp_path):
 
     # Create a mock FileIOHandler instance
     mock_fh = FileIOHandler(
-        repodir_path="/path/to/repo",
         output_path="/path/to/output",
         config_path=str(temp_dir),
     )
