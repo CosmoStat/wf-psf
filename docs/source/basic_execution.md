@@ -1,6 +1,6 @@
 # Basic Execution
 
-The WaveDiff pipeline is launched by the Python script: `src/wf_psf/run.py` which is referenced by the command `wavediff`.
+The WaveDiff pipeline is launched by the entrypoint script: `src/wf_psf/run.py`, which is referenced by the command `wavediff`.
 
 A list of command-line arguments can be displayed using the `--help` option:
 
@@ -8,18 +8,17 @@ A list of command-line arguments can be displayed using the `--help` option:
 > wavediff --help
 usage: run.py [-h] --conffile CONFFILE --repodir REPODIR --outputdir OUTPUTDIR
 
-optional arguments:
-  -h, --help            show this help message and exit
+required arguments:
   --conffile CONFFILE, -c CONFFILE
                         a configuration file containing program settings.
   --repodir REPODIR, -r REPODIR
                         the path of the code repository directory.
   --outputdir OUTPUTDIR, -o OUTPUTDIR
                         the path of the output directory.
+
+optional arguments:
+  -h, --help            show this help message and exit
 ```
-
-There are three arguments, which the user should specify when launching the pipeline.
-
 The first argument: `--confile CONFFILE` specifies the path to the {ref}`master configuration file<master_config_file>` storing the pipeline tasks to be executed at runtime.
 
 The second argument: `--repodir REPODIR` is the path to the `wf-psf` repository.
@@ -32,13 +31,15 @@ To run `WaveDiff`, use the following command:
 > wavediff -c /path/to/config/file -r /path/to/wf-psf -o /path/to/output/dir
 ```
 
-WaveDiff begins with the input/output (i.e. retrieving and parsing the configuration file and creating a set of nested output of directories within the main output directory). The name of the top-level subdirectory is a composition of the string `wf-outputs-` and a timestamp of the current run, i.e. `wf-outputs-202310221632`. Each run of WaveDiff will produce its own unique subdirectory. Then within this subdirectory, further subdirectories are generated to store the corresponding output.
+## WaveDiff Output Directory Structure
+
+WaveDiff begins with processing the input configuration files and setting up the output file structure. The application proceeds then with creating a set of nested sub-directories in the location specified by  `--outputdir` to store various outputs (e.g. logfiles, model checkpoints, complete model graph, etc. described below). The name of the parent subdirectory is a composition of the string `wf-outputs-` and a timestamp of the current run accurate to the microsecond, i.e. `wf-outputs-20231119151932213823`. Within this subdirectory, further subdirectories are generated to store the corresponding output.
 
 Below is an example of the set of directories generated during each execution of the WaveDiff pipeline.
 
 (wf-outputs)=
 ```
-wf-outputs-202310211641
+wf-outputs-20231119151932213823
 ├── checkpoint
 ├── config
 ├── log-files
@@ -60,6 +61,7 @@ A description of each subdirectory is provided in the following table.
 | psf_models    |  Stores the final trained PSF models for each training cycle. |
 
 
-Next, we describe to some detail the configuration file structures and content.
+The next section covers the organisational structure of the configuration files.
+
 
 
