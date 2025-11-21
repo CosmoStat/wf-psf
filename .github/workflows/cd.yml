@@ -32,8 +32,8 @@ jobs:
      
       - name: Build API documentation
         run: |
-          sphinx-apidoc -Mfeo docs/source src/wf_psf
-          sphinx-build docs/source docs/build
+          make -C docs clean
+          make -C docs html
        
       - name: Deploy API documentation
         uses: peaceiris/actions-gh-pages@v3.5.9
