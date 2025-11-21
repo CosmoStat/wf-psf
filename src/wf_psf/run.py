@@ -10,7 +10,6 @@ import argparse
 from wf_psf.utils.read_config import read_stream
 from wf_psf.utils.io import FileIOHandler
 import os
-import logging.config
 import logging
 from wf_psf.utils.configs_handler import get_run_config
 
