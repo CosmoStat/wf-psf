@@ -1,4 +1,4 @@
-"""PSF simulator module.
+"""PSF simulator.
 
 A module to simulate PSFs from Zernike coefficients.
 
@@ -741,7 +741,18 @@ class PSFSimulator:
             return np.copy(self.psf)
 
     def calculate_opd(self, regen_sample=False):
-        """Calculate the OPD from the Zernike coefficients."""
+        """Calculate the OPD from the Zernike coefficients.
+
+        Parameters
+        ----------
+        regen_sample: bool
+            Whether to regenerate a new random sample of Zernike coefficients.
+
+        Returns
+        -------
+        opd: np.ndarray
+            2D array corresponding to the Optical Path Differences map.
+        """
         if self.z_coeffs is None or regen_sample is True:
             # Generate a random sample of coefficients
             self.gen_random_Z_coeffs(self.max_order, self.rand_seed)
@@ -766,7 +777,13 @@ class PSFSimulator:
         self.opd = opd
 
     def diffract_phase(self, lambda_obs=None):
-        """Diffract the phase map."""
+        """Diffract the phase map.
+
+        Parameters
+        ----------
+        lambda_obs: float
+            Wavelength of observation in [um]. If None, use the stored wavelength.
+        """
         if lambda_obs is None:
             if self.lambda_obs is None:
                 print("WARNING: No wavelength is defined. Using default value 0.8um.")
@@ -812,6 +829,11 @@ class PSFSimulator:
         """Calculate the feasible N for a lambda_obs diffraction.
 
         Input wavelength must be in [um].
+
+        Parameters
+        ----------
+        lambda_obs: float
+            Target wavelength in [um].
         """
         # Calculate the required N for the input lambda_obs
         req_N = (
@@ -833,6 +855,7 @@ class PSFSimulator:
         Parameters
         ----------
         lambda_obs: float
+            Target wavelength in [um].
 
         """
         # Calculate a feasible N for the input lambda_obs
@@ -857,6 +880,16 @@ class PSFSimulator:
         """Generate SED interpolator.
 
         Returns the interpolator and the wavelengths in [nm].
+
+        Parameters
+        ----------
+        SED: np.ndarray
+            The SED. In the first column it contains the wavelength positions. In the
+            second column the SED value at each wavelength.
+        n_bins: int
+            Number of desired bins for the SED interpolation.
+        interp_kind: str
+            Type of interpolation to be used. See scipy.interpolate.interp1d documentation.
         """
         wv_max = 900
         wv_min = 550
@@ -886,8 +919,8 @@ class PSFSimulator:
             Number of desired bins for the integrated SED. It should be less or equal to the bins
             of the unfilterd SED.
         SED: np.ndarray
-            The unfiltered SED. In the first column it contains the wavelength positions. In the
-            second column the SED value at each wavelength.
+            The unfiltered SED. The first column contains the wavelength positions. The
+            second column contains the SED value at each wavelength.
         filter_lims: list of np.ndarray
             Each element on the list contains the lower und upper integration limits for the bins.
             Midpoints of bins should be in increasing order. Bins can overlap or be disjoint.
@@ -958,8 +991,8 @@ class PSFSimulator:
         Parameters
         ----------
         SED_filt: np.ndarray
-            The filtered SED. In the first column it contains the wavelength positions. In the
-            second column the SED value for each bin.
+            The filtered SED. The first column contains the wavelength positions. The
+            second column contains the SED value for each bin.
         n_points: int
             Number of points to add in each of the filtered SED bins. It can only be 1 or 2.
 
@@ -1051,6 +1084,25 @@ class PSFSimulator:
         """Generate SED sampler.
 
         Returns the sampler and the wavelengths in [nm]
+
+        Parameters
+        ----------
+        SED: np.ndarray
+            Spectral energy distribution for a star. The first column contains the wavelength
+            positions. The second column contains the SED value at each wavelength.
+        n_bins: int
+            Number of bins
+        interp_kind: str
+            Interpolation kind for the SED sampler
+
+        Returns
+        -------
+        wvlength: np.ndarray
+            Wavelength positions in [nm]
+        SED_sampler: callable
+            Interpolator function for the SED
+        weights: np.ndarray
+            Weights for each wavelength bin in the SED
         """
         # Integrate SED into n_bins
         SED_filt = self.filter_SED(SED, n_bins)
@@ -1092,11 +1144,18 @@ class PSFSimulator:
 
         Parameters
         ----------
-        SED:
-            Spectral energy distribution for a star
+        SED: np.ndarray
+            Spectral energy distribution for a star at given wavelength positions. The first column contains the wavelength
+            positions; the second column contains the SED value at each wavelength.
         n_bins: int
             Number of bins
 
+        Returns
+        -------
+        feasible_wv: np.ndarray
+            Feasible wavelength positions in [um]
+        SED_norm: np.ndarray
+            Normalized SED values at each feasible wavelength position
         """
         # Generate SED interpolator and wavelength array (use new sampler method)
         wvlength, SED_interp, weights = self.gen_SED_sampler(SED, n_bins)
@@ -1130,7 +1189,7 @@ class PSFSimulator:
 
         if self.plot_opt:
             # Plot input SEDs and interpolated SEDs
-            wvlength, SED_interp = self.gen_SED_interp(SED, n_bins)
+            _, SED_interp = self.gen_SED_interp(SED, n_bins)
 
             fig = plt.figure(figsize=(14, 8))
             ax1 = fig.add_subplot(111)
@@ -1158,13 +1217,3 @@ class PSFSimulator:
         self.poly_psf = stacked_psf
 
         return stacked_psf
-
-
-# This pythonic version of the polychromatic calculation is not working
-# The parallelisation with the class with shared variables might not be working
-# It may work if we define a @staticmethod for the diffraction
-#         psf_cube = np.array([_sed*self.generate_mono_PSF(_wv, get_psf=True)
-#                              for _wv, _sed in zip(feasible_wv, SED_norm)])
-#         # Sum to obtain the polychromatic PSFs
-#         self.poly_psf = np.sum(np_psf_cube, axis=0)
-#         return np.copy(self.poly_psf)

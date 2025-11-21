@@ -1,4 +1,4 @@
-"""WF_PSF Run.
+"""Entry point and application runner.
 
 This module setups the run of the WF_PSF pipeline.
 

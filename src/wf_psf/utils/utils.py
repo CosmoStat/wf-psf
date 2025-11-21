@@ -60,7 +60,7 @@ def single_mask_generator(shape):
 
     Returns
     -------
-    mask: np.ndarray
+    cosine_wave: np.ndarray
         A 2D mask with random 2D cosine waves.
     """
     # 2D meshgrid between 0.5 and 1
@@ -86,33 +86,68 @@ def single_mask_generator(shape):
 
 
 def generate_n_mask(shape, n_masks=1):
-    """Generate n masks with random 2D cosine waves."""
-    return np.array([single_mask_generator(shape) for _ in range(n_masks)])
+    """Generate n masks with random 2D cosine waves.
 
-
-def generate_SED_elems(SED, sim_psf_toolkit, n_bins=20):
-    """Generate SED Elements.
-
-    A function to generate the SED elements needed for using the
-    Tensor Flow class: TF_poly_PSF.
+    A wrapper around single_mask_generator to generate multiple masks.
 
     Parameters
     ----------
-    SED:
-    sim_psf_toolkit:
-        An instance of the PSFSimulator class with the correct
-        initialization values.
-    n_bins: int
-        Number of wavelength bins
+    shape: tuple
+        Shape of the masks to be generated.
+    n_masks: int
+        Number of masks to be generated.
+
+    Returns
+    -------
+    np.ndarray
+        Array of shape (n_masks, shape[0], shape[1]) containing the generated masks.
     """
-    feasible_wv, SED_norm = sim_psf_toolkit.calc_SED_wave_values(SED, n_bins)
-    feasible_N = np.array([sim_psf_toolkit.feasible_N(_wv) for _wv in feasible_wv])
+    return np.array([single_mask_generator(shape) for _ in range(n_masks)])
+
+
+def generate_SED_elems(SED, psf_simulator, n_bins=20):
+    """Generate SED elements for PSF modeling.
+
+    Computes feasible Zernike mode numbers, wavelength values, and normalized
+    SED for a given spectral energy distribution (SED) sampled across specified
+    wavelength bins. These elements are required for PSF simulation and modeling
+    with the TensorFlow-based PSF classes.
+
+    Parameters
+    ----------
+    SED : np.ndarray
+        The unfiltered SED with shape (n_wavelengths, 2). The first column contains
+        wavelength positions (in wavelength units), and the second column contains
+        the corresponding SED flux values.
+    psf_simulator : PSFSimulator
+        An instance of the PSFSimulator class initialized with the correct
+        optical and instrumental parameters.
+    n_bins : int, optional
+        Number of wavelength bins to sample the SED. Default is 20.
+
+    Returns
+    -------
+    tuple of (np.ndarray, np.ndarray, np.ndarray or float)
+        - feasible_N : np.ndarray, shape (n_bins,)
+            Feasible Zernike mode numbers at each wavelength bin.
+        - feasible_wv : np.ndarray, shape (n_bins,)
+            Sampled wavelength values across the SED.
+        - SED_norm : np.ndarray or float
+            Normalized SED values corresponding to feasible wavelengths.
+
+    See Also
+    --------
+    generate_SED_elems_in_tensorflow : TensorFlow version of this function.
+    generate_packed_elems : Wrapper that converts output to TensorFlow tensors.
+    """
+    feasible_wv, SED_norm = psf_simulator.calc_SED_wave_values(SED, n_bins)
+    feasible_N = np.array([psf_simulator.feasible_N(_wv) for _wv in feasible_wv])
 
     return feasible_N, feasible_wv, SED_norm
 
 
 def generate_SED_elems_in_tensorflow(
-    SED, sim_psf_toolkit, n_bins=20, tf_dtype=tf.float64
+    SED, psf_simulator, n_bins=20, tf_dtype=tf.float64
 ):
     """Generate SED Elements in TensorFlow Units.
 
@@ -121,17 +156,26 @@ def generate_SED_elems_in_tensorflow(
 
     Parameters
     ----------
-    SED:
-    sim_psf_toolkit:
-        An instance of the PSFSimulator class with the correct
-        initialization values.
-    n_bins: int
+    SED : np.ndarray
+        The unfiltered SED. The first column contains the wavelength positions. The second column contains the SED value at each wavelength.
+    psf_simulator : PSFSimulator object
+        An instance of the PSFSimulator class with the correct initialization values.
+    n_bins : int
         Number of wavelength bins
-    tf_dtype: tf.
-        Tensor Flow data type
+    tf_dtype : tf.DType
+        The Tensor Flow dtype to cast each element to (for example `tf.float32`,
+        `tf.int32`, etc.).
+
+    Returns
+    -------
+    list of tf.Tensor
+        [feasible_N, feasible_wv, SED_norm]:
+        - feasible_N : tf.Tensor, shape (n_bins,), dtype tf_dtype
+        - feasible_wv : tf.Tensor, shape (n_bins,), dtype tf_dtype
+        - SED_norm : tf.Tensor, scalar or array, dtype tf_dtype
     """
-    feasible_wv, SED_norm = sim_psf_toolkit.calc_SED_wave_values(SED, n_bins)
-    feasible_N = np.array([sim_psf_toolkit.feasible_N(_wv) for _wv in feasible_wv])
+    feasible_wv, SED_norm = psf_simulator.calc_SED_wave_values(SED, n_bins)
+    feasible_N = np.array([psf_simulator.feasible_N(_wv) for _wv in feasible_wv])
 
     return convert_to_tf([feasible_N, feasible_wv, SED_norm], tf_dtype)
 
@@ -173,7 +217,7 @@ def convert_to_tf(data, tf_dtype):
     return [tf.convert_to_tensor(x, dtype=tf_dtype) for x in data]
 
 
-def generate_packed_elems(SED, sim_psf_toolkit, n_bins=20):
+def generate_packed_elems(SED, psf_simulator, n_bins=20):
     """
     Generate packed SED elements as TensorFlow tensors.
 
@@ -182,11 +226,11 @@ def generate_packed_elems(SED, sim_psf_toolkit, n_bins=20):
 
     Parameters
     ----------
-    SED : object
-        Spectral energy distribution descriptor understood by
-        sim_psf_toolkit.calc_SED_wave_values.
-    sim_psf_toolkit : object
-        PSF simulator providing calc_SED_wave_values and feasible_N.
+    SED : numpy.ndarray
+        The unfiltered SED with shape (n_wavelengths, 2). The first column contains the wavelength
+        positions (in wavelength units), and the second column contains the corresponding SED flux values.
+    psf_simulator : PSFSimulator object
+        An instance of the PSF simulator providing calc_SED_wave_values and feasible_N.
     n_bins : int, optional
         Number of wavelength bins used to sample the SED (default 20).
 
@@ -199,7 +243,7 @@ def generate_packed_elems(SED, sim_psf_toolkit, n_bins=20):
         - SED_norm : tf.Tensor, scalar or array, dtype tf.float64
     """
     feasible_N, feasible_wv, SED_norm = generate_SED_elems(
-        SED, sim_psf_toolkit, n_bins=n_bins
+        SED, psf_simulator, n_bins=n_bins
     )
 
     feasible_N = tf.convert_to_tensor(feasible_N, dtype=tf.float64)
@@ -421,7 +465,7 @@ class NoiseEstimator:
         """
         Robustly estimate the standard deviation using the Median Absolute Deviation (MAD).
 
-        Computes MAD = median(|x - median(x)|) and scales it by 1.4826 to make the
+        Computes MAD = ``median(|x - median(x)|)`` and scales it by 1.4826 to make the
         estimator consistent with the standard deviation for a Gaussian distribution:
 
             sigma ≈ 1.4826 * MAD
