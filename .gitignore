@@ -88,12 +88,13 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docs/_build/
+docs/build/
 docs/source/wf_psf*.rst
 docs/source/_static/file.png
 docs/source/_static/images/logo_colab.png
 docs/source/_static/minus.png
 docs/source/_static/plus.png
+docs/source/_autosummary/
 
 # PyBuilder
 target/
