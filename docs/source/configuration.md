@@ -20,7 +20,13 @@ You configure these tasks by passing a configuration file to the `wavediff` comm
 
 WaveDiff expects the following configuration files under the `config/` directory:
 
-```
+You configure these tasks by passing a configuration file to the `wavediff` command (e.g., `--config configs.yaml`).
+
+## Configuration File Structure
+
+WaveDiff expects the following configuration files under the `config/` directory:
+
+```arduino
 config
 ├── configs.yaml
 ├── data_config.yaml
@@ -42,7 +48,6 @@ Each of the configuration files is described in detail below.
 ### 1. Purpose
 Specifies where WaveDiff loads (or later versions may generate) the training and test datasets.  
 All training, evaluation, and metrics pipelines depend on this file for consistent dataset paths.
-
 
 ### 2. Key Fields
 - `data.training.data_dir` _(required)_ — directory containing training data
@@ -393,7 +398,10 @@ plotting_params:
 ### 4. Example Directory Structure
 Below is an example of three WaveDiff runs stored under a single parent directory:
 
-```
+**Example Directory Structure**
+Below is an example of three WaveDiff runs stored under a single parent directory:
+
+```arduino
 wf-outputs/
 ├── wf-outputs-202305271829
 │   ├── config
@@ -480,7 +488,8 @@ wf-outputs-20231119151932213823/
 ### 3 Example: Training + Metrics + Plotting
 To evaluate metrics and generate plots for each trained model, include the corresponding configuration files:
 
-```
+
+```arduino
 config/
 ├── configs.yaml
 ├── data_config.yaml
