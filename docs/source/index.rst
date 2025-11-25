@@ -27,15 +27,8 @@ cite :cite:t:`Liaudat:23`.
   <a href="https://github.com/CosmoStat/wf-psf/issues/new"
   target="_blank">open an issue</a>
 
-Contributing
-------------
+Developer Guide
+---------------
 
-For information on how to contribute to the development of WaveDiff, see
-|link-to-contribution|.
-
-
-
-.. |link-to-contribution| raw:: html
-
-  <a href="https://github.com/CosmoStat/wf-psf/blob/8186939e51a1bc2fa05a0e6bc830890b92170185/CONTRIBUTING.md"
-  target="_blank">Contributing to WaveDiff</a>
+For detailed guidance on contributing, development workflow, and code standards,
+see the :doc:`developer/index`.

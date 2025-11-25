@@ -28,6 +28,13 @@
    api
 
 .. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Developer Documentation
+
+   developer/index.md
+
+.. toctree::
    :hidden:
    :titlesonly:
    :caption: References
