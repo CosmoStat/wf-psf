@@ -1,4 +1,3 @@
-
 # Contributing to WaveDiff
 
 WaveDiff is a software development project aimed at modeling the point spread function of an optical system using auto differentiation techniques. These guidelines are designed to facilitate contributions to WaveDiff by providing clear instructions on issue reporting, pull request submission, and code style standards.
