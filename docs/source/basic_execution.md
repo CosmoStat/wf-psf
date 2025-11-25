@@ -34,7 +34,7 @@ WaveDiff creates an output directory at the location specified by `--outputdir` 
 Inside this directory, the following subdirectories are generated:
 
 (wf-outputs)=
-```arduino
+```
 wf-outputs-20231119151932213823
 ├── checkpoint
 ├── config
