@@ -84,7 +84,7 @@ Controls the training pipeline, including model selection, hyperparameters, opti
   - `multi_cycle_params.save_all_cycles`
 - Some parameters are specific to physical or polychromatic PSF models.
 - Example training configuration file is provided in the top-level root directory of the repository (`training_config.yaml`). Users can copy and adapt this template for their own runs.
-- If any descriptions are unclear, or unexpected behaviour occurs, please open a [Github issue](https://github.com/CosmoStat/wf-psf/issues).
+- If any descriptions are unclear, or unexpected behaviour occurs, please open a [GitHub issue](https://github.com/CosmoStat/wf-psf/issues/new).
 
 **Note:** The values in the examples shown below correspond to a typical WaveDiff training run. Users should adapt parameters such as `model_name`, telescope dimensions, pixel/field coordinates, and SED settings to match their own instrument or dataset. All required fields must still be specified.
 
@@ -501,4 +501,4 @@ Note: current WaveDiff versions generate one plot per metric per model. Creating
 - Tasks always execute **in the order they appear** in the file.
 - The current release runs all jobs on a single GPU, sequentially.
 - Parallel multi-GPU execution is planned for a future version.
-- For questions or feedback, please open a [Github issue](https://github.com/CosmoStat/wf-psf/issues).
+- For questions or feedback, please open a [GitHub issue](https://github.com/CosmoStat/wf-psf/issues/new).
