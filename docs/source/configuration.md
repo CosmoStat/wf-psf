@@ -399,7 +399,7 @@ plotting_params:
   plot_show: False
 ```
 
-**Example Directory Structure**
+### 4. Example Directory Structure
 Below is an example of three WaveDiff runs stored under a single parent directory:
 
 ```
@@ -424,7 +424,7 @@ wf-outputs/
 │   │   └── metrics-poly-coherent_euclid_1000stars.npy
 ```
 
-**Example: Plotting Multiple Runs**
+### 5. Plotting Multiple Runs
 To jointly plot metrics from the three runs shown above, the `plotting_config.yaml` would be:
 
 ```yaml
@@ -487,7 +487,6 @@ wf-outputs-20231119151932213823/
 ```
 
 ### 3 Example: Training + Metrics + Plotting
-
 To evaluate metrics and generate plots for each trained model, include the corresponding configuration files:
 
 ```
