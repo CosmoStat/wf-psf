@@ -56,6 +56,11 @@ sphinxemoji_style = "twemoji"
 #
 source_suffix = [".rst", ".md"]
 
+# Add MyST enable extensions
+myst_enable_extensions = [
+    "colon_fence",
+]
+
 # The master toctree document.
 master_doc = "index"
 
