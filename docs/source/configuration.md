@@ -399,7 +399,7 @@ plotting_params:
   plot_show: False
 ```
 
-### 4. Example Directory Structure
+**Example Directory Structure**
 Below is an example of three WaveDiff runs stored under a single parent directory:
 
 ```
@@ -490,7 +490,6 @@ wf-outputs-20231119151932213823/
 
 To evaluate metrics and generate plots for each trained model, include the corresponding configuration files:
 
-
 ```
 config/
 ├── configs.yaml
@@ -502,7 +501,7 @@ config/
 └── training_config_n.yaml
 ```
 
-Note: current WaveDiff versions generate one plot per metric per model. Creating combined plots requires a separate run [Plot Configuration](section-plotting-config). . A future update will support automatic combined plots.
+Note: current WaveDiff versions generate one plot per metric per model. Creating combined plots requires a separate run [Plot Configuration](section-plotting-config). A future update will support automatic combined plots.
 
 ### 4 General Notes
 
