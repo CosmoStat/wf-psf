@@ -282,11 +282,11 @@ model_params:
   # Telescope parameters
   tel_diameter: 1.2      # [m]
   tel_focal_length: 24.5 # [m]
-  euclid_obsc: True
+  euclid_obsc: True.     # Use Euclid-specific obscuration mask. Set to False for other instruments or custom masks.
   LP_filter_length: 3    # Low-pass filter for obscurations
 ```
 
-### 4. Parametric Model Hyperparameters (`param_hparams`)
+### 5. Parametric Model Hyperparameters (`param_hparams`)
 
 ```yaml
 param_hparams:
@@ -297,7 +297,7 @@ param_hparams:
   save_optim_history_param: true
 ```
 
-### 5. Non-Parametric Model Hyperparameters (`nonparam_hparams`)
+### 6. Non-Parametric Model Hyperparameters (`nonparam_hparams`)
 
 ```yaml
 nonparam_hparams:
@@ -309,7 +309,7 @@ nonparam_hparams:
   save_optim_history_nonparam: true
 ```
 
-### 6. Training Hyperparameters (`training_hparams`)
+### 7. Training Hyperparameters (`training_hparams`)
 
 Controls batches, loss, and multi-cycle learning:
 
@@ -515,7 +515,7 @@ Below is an example of three WaveDiff runs stored under a single parent director
 **Example Directory Structure**
 Below is an example of three WaveDiff runs stored under a single parent directory:
 
-```arduino
+```
 wf-outputs/
 ├── wf-outputs-202305271829
 │   ├── config
