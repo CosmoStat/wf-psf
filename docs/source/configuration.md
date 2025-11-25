@@ -221,6 +221,7 @@ Note
 ## `metrics_config.yaml`  — Metrics Configuration
  
 ### 1. Purpose
+
 Defines how a trained PSF model is evaluated. This configuration specifies which metrics to compute, which model weights to use, and how ground truth stars are obtained. It allows you to:
 - Select a fully trained PSF model or a checkpoint for evaluation.
 - Specify which training cycle’s weights to evaluate.
@@ -398,10 +399,7 @@ plotting_params:
 ### 4. Example Directory Structure
 Below is an example of three WaveDiff runs stored under a single parent directory:
 
-**Example Directory Structure**
-Below is an example of three WaveDiff runs stored under a single parent directory:
-
-```arduino
+```
 wf-outputs/
 ├── wf-outputs-202305271829
 │   ├── config
@@ -448,12 +446,14 @@ This configuration instructs the plotting pipeline to load the metrics from each
 ## Master Configuration
 
 ### 1. Purpose
+
 The `configs.yaml` file is the _master controller_ for WaveDiff.
 It defines **which pipeline tasks** should be executed (training, metrics evaluation, plotting) and in which order.
 
 Each task points to a dedicated YAML configuration file—allowing WaveDiff to run multiple jobs sequentially using a single entry point.
 
 ### 2. Example: Multiple Training Runs
+
 To launch a sequence of training runs (models 1…n), list each task and its corresponding configuration file:
 
 ```yaml
@@ -486,10 +486,10 @@ wf-outputs-20231119151932213823/
 ```
 
 ### 3 Example: Training + Metrics + Plotting
+
 To evaluate metrics and generate plots for each trained model, include the corresponding configuration files:
 
-
-```arduino
+```
 config/
 ├── configs.yaml
 ├── data_config.yaml
@@ -503,6 +503,7 @@ config/
 Note: current WaveDiff versions generate one plot per metric per model. Creating combined plots requires a separate run [Plot Configuration](section-plotting-config). . A future update will support automatic combined plots.
 
 ### 4 General Notes
+
 - `configs.yaml` may contain **any combination** of the three task types:
   - `training`
   - `metrics`
