@@ -462,7 +462,6 @@ def calculate_sample_weights(
         An array of sample weights, or None if `use_sample_weights` is False.
     """
     if use_sample_weights:
-
         # Compute noise standard deviation from images
         if loss is not None and (
             (isinstance(loss, str) and loss == "masked_mean_squared_error")

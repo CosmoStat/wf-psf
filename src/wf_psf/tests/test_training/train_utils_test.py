@@ -178,9 +178,21 @@ def test_calculate_sample_weights_integration(
 @pytest.mark.parametrize(
     "loss", [None, "mean_squared_error", "masked_mean_squared_error"]
 )
-def test_calculate_sample_weights_unit(mock_noise_estimator, loss):
+def test_calculate_sample_weights_unit(loss):
     """Test sample weighting strategy with random images."""
-    outputs = np.random.rand(10, 32, 32)  # 10 images of size 32x32
+    # Generate dummy image data
+    batch_size, height, width = 10, 32, 32
+
+    if loss == "masked_mean_squared_error":
+        # Create image-mask pairs: last dimension has [image, mask]
+        outputs = np.random.rand(batch_size, height, width, 2)
+        outputs[..., 1] = np.random.randint(
+            0, 2, size=(batch_size, height, width)
+        )  # Binary mask
+    else:
+        outputs = np.random.rand(batch_size, height, width)
+
+    # Calculate sample weights
     result = train_utils.calculate_sample_weights(
         outputs, use_sample_weights=True, loss=loss
     )
@@ -199,10 +211,28 @@ def test_calculate_sample_weights_unit(mock_noise_estimator, loss):
 @pytest.mark.parametrize(
     "loss", [None, "mean_squared_error", "masked_mean_squared_error"]
 )
-def test_calculate_sample_weights_high_variance(mock_noise_estimator, loss):
+def test_calculate_sample_weights_high_variance(loss):
     """Test case for high variance (noisy images)."""
     # Create high variance images with more noise
-    outputs = np.random.normal(loc=0.0, scale=10.0, size=(5, 32, 32))  # Larger noise
+    # Generate dummy image data
+    batch_size, height, width = 10, 32, 32
+
+    if loss == "masked_mean_squared_error":
+        # Create image-mask pairs: last dimension has [image, mask]
+        outputs = np.zeros((batch_size, height, width, 2), dtype=np.float32)
+        mask_prob: float = 0.5  # Probability of a pixel being unmasked
+        # High variance images
+        outputs[..., 0] = np.random.normal(
+            loc=0.0, scale=10.0, size=(batch_size, height, width)
+        )
+        # Random masks with adjustable sparsity
+        outputs[..., 1] = (
+            np.random.rand(batch_size, height, width) < mask_prob
+        ).astype(np.float32)
+    else:
+        outputs = np.random.normal(
+            loc=0.0, scale=10.0, size=(batch_size, height, width)
+        )  # Larger noise
 
     # Calculate sample weights
     weights = train_utils.calculate_sample_weights(
