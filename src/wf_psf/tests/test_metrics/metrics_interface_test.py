@@ -68,6 +68,10 @@ def test_evaluate_model(
             new_callable=MagicMock,
         ) as mock_evaluate_poly_metric,
         patch(
+            "wf_psf.metrics.metrics_interface.MetricsParamsHandler.evaluate_metrics_chi2",
+            new_callable=MagicMock,
+        ) as mock_evaluate_chi2_metric,
+        patch(
             "wf_psf.metrics.metrics_interface.MetricsParamsHandler.evaluate_metrics_mono_rmse",
             new_callable=MagicMock,
         ) as mock_evaluate_mono_metric,
@@ -97,6 +101,9 @@ def test_evaluate_model(
         # Assertions for metric functions
         assert (
             mock_evaluate_poly_metric.call_count == 2
+        )  # Called twice, once for each dataset
+        assert (
+            mock_evaluate_chi2_metric.call_count == 2
         )  # Called twice, once for each dataset
         assert (
             mock_evaluate_mono_metric.call_count == 2
