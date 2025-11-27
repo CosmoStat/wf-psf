@@ -4,14 +4,22 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 import sys
 import os
+from datetime import datetime
+
+current_year = datetime.now().year
 
 sys.path.insert(0, os.path.abspath("src/wf_psf"))
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+start_year = 2023
+current_year = datetime.now().year
 
 project = "wf-psf"
-copyright = "2023, CosmoStat"
+if current_year > start_year:
+    copyright = f"{start_year}–{current_year}, CosmoStat"
+else:
+    copyright = f"{start_year}, CosmoStat"
 author = "CosmoStat"
 release = "3.0.0"
 
