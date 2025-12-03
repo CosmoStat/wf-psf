@@ -29,8 +29,7 @@ class FileIOHandler:
 
     """
 
-    def __init__(self, repodir_path, output_path, config_path):
-        self.repodir_path = repodir_path
+    def __init__(self, output_path, config_path):
         self.output_path = output_path
         self.config_path = config_path
         self._timestamp = self.get_timestamp()
@@ -129,18 +128,26 @@ class FileIOHandler:
         logging.
 
         """
+        import logging.config
+        from importlib.resources import files, as_file 
+        
         logfile = "wf-psf_" + self._timestamp + ".log"
         logfile = os.path.join(
             self._run_output_dir,
             self._log_files,
             logfile,
         )
-        logging.config.fileConfig(
-            os.path.join(self.repodir_path, "config/logging.conf"),
-            defaults={"filename": logfile},
-            disable_existing_loggers=False,
-        )
 
+        config_files = files("wf_psf.config")
+        conf_resource = config_files.joinpath("logging.conf")
+        
+        with as_file(conf_resource) as conf_path:
+            logging.config.fileConfig(
+                conf_path,
+                defaults={"filename": logfile},
+                disable_existing_loggers=False,
+            )
+    
     def _make_dir(self, dir_name):
         """Make Directory.
 

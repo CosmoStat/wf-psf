@@ -25,7 +25,7 @@ dependencies = [
     "seaborn",
 ]
 
-version = "2.0.1"
+version = "3.0.0"
 
 [project.optional-dependencies]
 docs = [
@@ -83,6 +83,8 @@ quote-style = "double"
 indent-style = "space"
 line-ending = "lf"
 
+[tool.setuptools.package-data]
+"wf_psf.config" = ["*.conf"]
 
 [tool.pytest.ini_options]
 addopts = [

@@ -96,10 +96,8 @@ def test_set_run_config():
     assert config_class == configs_handler.PlottingConfigHandler
 
 
-def test_get_run_config(path_to_repo_dir, path_to_tmp_output_dir, path_to_config_dir):
-    test_file_handler = FileIOHandler(
-        path_to_repo_dir, path_to_tmp_output_dir, path_to_config_dir
-    )
+def test_get_run_config(path_to_tmp_output_dir, path_to_config_dir):
+    test_file_handler = FileIOHandler(path_to_tmp_output_dir, path_to_config_dir)
 
     config_class = configs_handler.get_run_config(
         "test_conf", "fake_config.yaml", test_file_handler
@@ -108,9 +106,7 @@ def test_get_run_config(path_to_repo_dir, path_to_tmp_output_dir, path_to_config
     assert type(config_class) is RegisterConfigClass
 
 
-def test_data_config_handler_init(
-    mock_training_conf, mock_data_read_conf, mocker
-):
+def test_data_config_handler_init(mock_training_conf, mock_data_read_conf, mocker):
     # Mock read_conf function
     mock_data_read_conf()
 
@@ -126,7 +122,7 @@ def test_data_config_handler_init(
 
     # Create DataConfigHandler instance
     data_config_handler = DataConfigHandler(
-        "/path/to/data_config.yaml", 
+        "/path/to/data_config.yaml",
         mock_training_conf.training.model_params,
         mock_training_conf.training.training_hparams.batch_size,
     )
@@ -142,7 +138,10 @@ def test_data_config_handler_init(
         data_config_handler.test_data.n_bins_lambda
         == mock_training_conf.training.model_params.n_bins_lda
     )
-    assert (data_config_handler.batch_size == mock_training_conf.training.training_hparams.batch_size)  # Default value
+    assert (
+        data_config_handler.batch_size
+        == mock_training_conf.training.training_hparams.batch_size
+    )  # Default value
 
 
 def test_training_config_handler_init(mocker, mock_training_conf, mock_file_handler):
@@ -180,10 +179,6 @@ def test_training_config_handler_init(mocker, mock_training_conf, mock_file_hand
     )
     assert training_config_handler.training_conf == mock_training_conf
     assert training_config_handler.file_handler == mock_file_handler
-    assert (
-        training_config_handler.file_handler.repodir_path
-        == mock_file_handler.repodir_path
-    )
 
     mock_data_conf.assert_called_once_with(
         os.path.join(
@@ -237,11 +232,9 @@ def test_run_method_calls_train_with_correct_arguments(
 
 
 def test_MetricsConfigHandler_weights_basename_filepath(
-    path_to_repo_dir, path_to_tmp_output_dir, path_to_config_dir
+    path_to_tmp_output_dir, path_to_config_dir
 ):
-    test_file_handler = FileIOHandler(
-        path_to_repo_dir, path_to_tmp_output_dir, path_to_config_dir
-    )
+    test_file_handler = FileIOHandler(path_to_tmp_output_dir, path_to_config_dir)
 
     metrics_config_file = "validation/main_random_seed/config/metrics_config.yaml"
 

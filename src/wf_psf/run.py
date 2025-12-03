@@ -38,14 +38,6 @@ def setProgramOptions():
     )
 
     parser.add_argument(
-        "--repodir",
-        "-r",
-        type=str,
-        required=True,
-        help="the path of the code repository directory.",
-    )
-
-    parser.add_argument(
         "--outputdir",
         "-o",
         type=str,
@@ -71,7 +63,7 @@ def mainMethod():
     configs = read_stream(args.conffile)
     configs_file = os.path.basename(args.conffile)
 
-    file_handler = FileIOHandler(args.repodir, args.outputdir, configs_path)
+    file_handler = FileIOHandler(args.outputdir, configs_path)
     file_handler.setup_outputs()
     file_handler.copy_conffile_to_output_dir(configs_file)
 
