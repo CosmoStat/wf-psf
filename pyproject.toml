@@ -83,6 +83,8 @@ quote-style = "double"
 indent-style = "space"
 line-ending = "lf"
 
+[tool.setuptools.package-data]
+"wf_psf.config" = ["*.conf"]
 
 [tool.pytest.ini_options]
 addopts = [
