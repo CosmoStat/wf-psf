@@ -26,13 +26,8 @@ def path_to_tmp_output_dir(tmp_path):
 
 
 @pytest.fixture
-def path_to_test_dir(path_to_repo_dir):
-    return os.path.join(path_to_repo_dir, "src", "wf_psf", "tests")
-
-
-@pytest.fixture
-def path_to_config_dir(path_to_test_dir):
-    return os.path.join(path_to_test_dir, "data")
+def path_to_config_dir(path_to_repo_dir):
+    return os.path.join(path_to_repo_dir, "src", "wf_psf", "tests", "data")
 
 
 @pytest.fixture
