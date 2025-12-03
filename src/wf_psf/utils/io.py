@@ -118,7 +118,7 @@ class FileIOHandler:
             A string representation of the date and time.
         """
 
-        timestamp = datetime.now().strftime("%Y%m%d%H%M")
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")
         return timestamp
 
     def _setup_logging(self):
