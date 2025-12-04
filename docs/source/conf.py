@@ -101,3 +101,9 @@ html_theme_options = {
 bibtex_bibfiles = ["refs.bib"]
 bibtex_default_style = "unsrt"
 bibtex_reference_style = "author_year"
+
+# -- Mock imports for documentation ------------------------------------------
+autodoc_mock_imports = [
+    "tensorflow",
+    "tensorflow_addons",
+]
