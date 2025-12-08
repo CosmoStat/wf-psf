@@ -1,5 +1,7 @@
-[![arXiv:2203.04908](https://img.shields.io/badge/astro--ph.IM-arXiv%3A2203.04908-B31B1B.svg)](http://arxiv.org/abs/2203.04908) [![yapf](https://img.shields.io/badge/code%20style-yapf-blue.svg)](https://www.python.org/dev/peps/pep-0008/) [![License](https://img.shields.io/badge/License-MIT-brigthgreen.svg)](https://github.com/tobias-liaudat/wf-psf/tree/master/LICENSE)
-
+[![arXiv:2203.04908](https://img.shields.io/badge/astro--ph.IM-arXiv%3A2203.04908-B31B1B.svg)](http://arxiv.org/abs/2203.04908) 
+[![yapf](https://img.shields.io/badge/code%20style-yapf-blue.svg)](https://www.python.org/dev/peps/pep-0008/) 
+[![License](https://img.shields.io/badge/License-MIT-brigthgreen.svg)](https://github.com/tobias-liaudat/wf-psf/tree/master/LICENSE)
+[![Documentation](https://img.shields.io/badge/docs-online-blue)](https://cosmostat.github.io/wf-psf/)
 <h1 align='center'>WaveDiff</h1>
 <h2 align='center'>A differentiable data-driven wavefront-based PSF modelling framework.</h2>
 

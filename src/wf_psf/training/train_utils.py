@@ -34,13 +34,6 @@ class L1ParamScheduler(tf.keras.callbacks.Callback):
 
         The function should return a new L1 rate (float) to be applied at the next epoch.
 
-    Example
-    -------
-    def schedule_fn(epoch, current_l1_rate):
-        # Example schedule function
-        return current_l1_rate * 0.95  # Decaying the rate by 5% every epoch
-
-    l1_scheduler = L1ParamScheduler(l1_schedule_rule=schedule_fn)
     """
 
     def __init__(self, l1_schedule_rule):
@@ -307,9 +300,6 @@ def l1_schedule_rule(epoch_n: int, l1_rate: float) -> float:
     float
         The updated L1 rate for the given epoch.
 
-    Example
-    -------
-    For `epoch_n = 10` and `l1_rate = 0.01`, the function returns `0.005`.
     """
     if epoch_n != 0 and epoch_n % 10 == 0:
         scheduled_l1_rate = l1_rate / 2

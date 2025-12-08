@@ -9,8 +9,13 @@ various wf_psf packages.
 """
 
 import pytest
+import numpy as np
+import tensorflow as tf
+from types import SimpleNamespace
+
 from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.psf_models import psf_models
+from wf_psf.tests.test_data.test_data_utils import MockData
 
 training_config = RecursiveNamespace(
     id_name="-coherent_euclid_200stars",
@@ -91,6 +96,76 @@ data = RecursiveNamespace(
         file="coherent_euclid_dataset/test_Euclid_res_id_001.npy",
     ),
 )
+
+
+@pytest.fixture
+def mock_data(scope="module"):
+    """Fixture to provide mock data for testing."""
+    # Mock positions and Zernike priors
+    training_positions = tf.constant([[1, 2], [3, 4]])
+    test_positions = tf.constant([[5, 6], [7, 8]])
+    training_zernike_priors = tf.constant([[0.1, 0.2], [0.3, 0.4]])
+    test_zernike_priors = tf.constant([[0.5, 0.6], [0.7, 0.8]])
+
+    # Define dummy 5x5 image patches for stars (mock star images)
+    # Define varied values for 5x5 star images
+    noisy_stars = tf.constant(
+        [np.arange(25).reshape(5, 5), np.arange(25, 50).reshape(5, 5)], dtype=tf.float32
+    )
+
+    noisy_masks = tf.constant([np.eye(5), np.ones((5, 5))], dtype=tf.float32)
+
+    stars = tf.constant([np.full((5, 5), 100), np.full((5, 5), 200)], dtype=tf.float32)
+
+    masks = tf.constant([np.zeros((5, 5)), np.tri(5)], dtype=tf.float32)
+
+    return MockData(
+        training_positions,
+        test_positions,
+        training_zernike_priors,
+        test_zernike_priors,
+        noisy_stars,
+        noisy_masks,
+        stars,
+        masks,
+    )
+
+
+@pytest.fixture
+def mock_data_inference():
+    """Flat dataset for inference path only."""
+    return SimpleNamespace(
+        dataset={
+            "positions": np.array([[9, 9], [10, 10]]),
+            "zernike_prior": np.array([[0.9, 0.9]]),
+            # no "missing_key" → used to trigger allow_missing behavior
+        }
+    )
+
+
+@pytest.fixture
+def simple_image(scope="module"):
+    """Fixture for a simple star image."""
+    num_images = 1  # Change this to test with multiple images
+    image = np.zeros((num_images, 5, 5))  # Create a 3D array
+    image[:, 2, 2] = 1  # Place the star at the center for each image
+    return image
+
+
+@pytest.fixture
+def identity_mask(scope="module"):
+    """Creates a mask where all pixels are fully considered."""
+    return np.ones((5, 5))
+
+
+@pytest.fixture
+def multiple_images(scope="module"):
+    """Fixture for a batch of images with stars at different positions."""
+    images = np.zeros((3, 5, 5))  # 3 images, each of size 5x5
+    images[0, 2, 2] = 1  # Star at center of image 0
+    images[1, 1, 3] = 1  # Star at (1, 3) in image 1
+    images[2, 3, 1] = 1  # Star at (3, 1) in image 2
+    return images
 
 
 @pytest.fixture(scope="module", params=[data])

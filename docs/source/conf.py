@@ -4,16 +4,24 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 import sys
 import os
+from datetime import datetime
+
+current_year = datetime.now().year
 
 sys.path.insert(0, os.path.abspath("src/wf_psf"))
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+start_year = 2023
+current_year = datetime.now().year
 
 project = "wf-psf"
-copyright = "2023, CosmoStat"
+if current_year > start_year:
+    copyright = f"{start_year}–{current_year}, CosmoStat"
+else:
+    copyright = f"{start_year}, CosmoStat"
 author = "CosmoStat"
-release = "2.0.1"
+release = "3.0.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -32,6 +40,17 @@ extensions = [
     "sphinx_rtd_theme",
 ]
 
+extensions += ["sphinx.ext.autosummary"]
+autosummary_generate = True
+autosummary_generate_overwrite = True
+# Ignore inherited members to reduce stub warnings
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": True,
+    "show-inheritance": True,
+    "inherited-members": False,  # This helps reduce warnings
+}
+
 templates_path = ["_templates"]
 exclude_patterns = []
 intersphinx_mapping = {
@@ -45,6 +64,11 @@ sphinxemoji_style = "twemoji"
 #
 source_suffix = [".rst", ".md"]
 
+# Add MyST enable extensions
+myst_enable_extensions = [
+    "colon_fence",
+]
+
 # The master toctree document.
 master_doc = "index"
 
@@ -53,6 +77,7 @@ master_doc = "index"
 
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
+html_css_files = ["custom.css"]
 html_logo = "imgs/cosmostat_logo.png"
 html_theme_options = {
     "analytics_id": "G-XXXXXXXXXX",  #  Provided by Google in your dashboard
@@ -76,3 +101,9 @@ html_theme_options = {
 bibtex_bibfiles = ["refs.bib"]
 bibtex_default_style = "unsrt"
 bibtex_reference_style = "author_year"
+
+# -- Mock imports for documentation ------------------------------------------
+autodoc_mock_imports = [
+    "tensorflow",
+    "tensorflow_addons",
+]

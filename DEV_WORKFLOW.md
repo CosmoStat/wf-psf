@@ -27,13 +27,13 @@ Make a milestone related to a release on possibly a minor release schedule (e.g.
 ## 3.  **New Branch naming conventions**
     
 
-Branches created for the purpose of a Pull Request should be directly related to an open issue within the project’s issue tracker.  This ensures that all code changes are tied to specific tasks or features, facilitating better organisation and tracking of contributions.Below are the branch naming conventions:
+Branches created for the purpose of a Pull Request should be directly related to an open issue within the project’s issue tracker.  This ensures that all code changes are tied to specific tasks or features, facilitating better organisation and tracking of contributions. Below are the branch naming conventions:
 
-   *   **Feature**: feature/issue-/short-description
+   *   **Feature**: feature/<issue number>/short-description
     
-   *   **Bug**: bug/issue-/short-description
+   *   **Bug**: bug/<issue number>/short-description
     
-   *   **Hotfix**: hotfix/issue-/short-description
+   *   **Hotfix**: hotfix/<issue number>/short-description
     
 
 Replace with the corresponding issue number and provide a brief description of the changes in \`short\_description\`.

@@ -151,8 +151,8 @@ def compute_poly_metric(
     std_rel_rmse = 100.0 * np.std(residuals / gt_star_mean)
 
     # Print RMSE values
-    logger.info("Absolute RMSE:\t %.4e \t +/- %.4e" % (rmse, std_rmse))
-    logger.info("Relative RMSE:\t %.4e %% \t +/- %.4e %%" % (rel_rmse, std_rel_rmse))
+    logger.info("Absolute RMSE:\t %.4e \t +/- %.4e", rmse, std_rmse)
+    logger.info("Relative RMSE:\t %.4e %% \t +/- %.4e %%", rel_rmse, std_rel_rmse)
 
     return rmse, rel_rmse, std_rmse, std_rel_rmse
 
@@ -216,8 +216,8 @@ def compute_mono_metric(
         lambda_obs = lambda_list[it]
         phase_N = simPSF_np.feasible_N(lambda_obs)
 
-        residuals = np.zeros((total_samples))
-        gt_star_mean = np.zeros((total_samples))
+        residuals = np.zeros(total_samples)
+        gt_star_mean = np.zeros(total_samples)
 
         # Total number of epochs
         n_epochs = int(np.ceil(total_samples / batch_size))
@@ -364,8 +364,8 @@ def compute_opd_metrics(tf_semiparam_field, gt_tf_semiparam_field, pos, batch_si
     rel_rmse_std = np.std(rel_rmse_vals)
 
     # Print RMSE values
-    logger.info("Absolute RMSE:\t %.4e \t +/- %.4e" % (rmse, rmse_std))
-    logger.info("Relative RMSE:\t %.4e %% \t +/- %.4e %%" % (rel_rmse, rel_rmse_std))
+    logger.info("Absolute RMSE:\t %.4e %% \t +/- %.4e %%", rmse, rmse_std)
+    logger.info("Relative RMSE:\t %.4e %% \t +/- %.4e %%", rel_rmse, rel_rmse_std)
 
     return rmse, rel_rmse, rmse_std, rel_rmse_std
 
@@ -512,11 +512,10 @@ def compute_shape_metrics(
 
     # Print pixel RMSE values
     logger.info(
-        "\nPixel star absolute RMSE:\t %.4e \t +/- %.4e " % (pix_rmse, pix_rmse_std)
+        f"\nPixel star absolute RMSE:\t {pix_rmse:.4e} \t +/- {pix_rmse_std:.4e} "
     )
     logger.info(
-        "Pixel star relative RMSE:\t %.4e %% \t +/- %.4e %%"
-        % (rel_pix_rmse, rel_pix_rmse_std)
+        f"Pixel star relative RMSE:\t {rel_pix_rmse:.4e} %% \t +/- {rel_pix_rmse_std:.4e} %%"
     )
 
     # Measure shapes of the reconstructions
@@ -581,27 +580,24 @@ def compute_shape_metrics(
     std_rmse_R2_meanR2 = np.std(R2_res / gt_pred_R2_HSM)
 
     # Print shape/size errors
-    logger.info("\nsigma(e1) RMSE =\t\t %.4e \t +/- %.4e " % (rmse_e1, std_rmse_e1))
-    logger.info("sigma(e2) RMSE =\t\t %.4e \t +/- %.4e " % (rmse_e2, std_rmse_e2))
+    logger.info(f"\nsigma(e1) RMSE =\t\t {rmse_e1:.4e} \t +/- {std_rmse_e1:.4e} ")
+    logger.info(f"sigma(e2) RMSE =\t\t {rmse_e2:.4e} \t +/- {std_rmse_e2:.4e} ")
     logger.info(
-        "sigma(R2)/<R2> =\t\t %.4e \t +/- %.4e " % (rmse_R2_meanR2, std_rmse_R2_meanR2)
+        f"sigma(R2)/<R2> =\t\t {rmse_R2_meanR2:.4e} \t +/- {std_rmse_R2_meanR2:.4e} "
     )
 
     # Print relative shape/size errors
     logger.info(
-        "\nRelative sigma(e1) RMSE =\t %.4e %% \t +/- %.4e %%"
-        % (rel_rmse_e1, std_rel_rmse_e1)
+        f"\nRelative sigma(e1) RMSE =\t {rel_rmse_e1:.4e} %% \t +/- {std_rel_rmse_e1:.4e} %%"
     )
     logger.info(
-        "Relative sigma(e2) RMSE =\t %.4e %% \t +/- %.4e %%"
-        % (rel_rmse_e2, std_rel_rmse_e2)
+        f"Relative sigma(e2) RMSE =\t {rel_rmse_e2:.4e} %% \t +/- {std_rel_rmse_e2:.4e} %%"
     )
 
     # Print number of stars
-    logger.info("\nTotal number of stars: \t\t%d" % (len(gt_pred_moments)))
+    logger.info(f"\nTotal number of stars: \t\t {len(gt_pred_moments)}")
     logger.info(
-        "Problematic number of stars: \t%d"
-        % (len(gt_pred_moments) - gt_pred_e1_HSM.shape[0])
+        f"Problematic number of stars: \t {len(gt_pred_moments) - gt_pred_e1_HSM.shape[0]}"
     )
 
     # Re-et the original output_Q and output_dim parameters in the models
