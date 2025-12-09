@@ -160,9 +160,6 @@ def test_plotting_config_passed(
             "wf_psf.metrics.metrics_interface.MetricsParamsHandler.evaluate_metrics_polychromatic_lowres"
         ) as mock_poly,
         patch(
-            "wf_psf.metrics.metrics_interface.MetricsParamsHandler.evaluate_metrics_polychromatic_lowres"
-        ) as mock_poly,
-        patch(
             "wf_psf.metrics.metrics_interface.MetricsParamsHandler.evaluate_metrics_shape"
         ) as mock_shape,
         patch("numpy.save") as mock_np_save,
