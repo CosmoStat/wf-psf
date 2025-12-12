@@ -202,9 +202,6 @@ def test_evaluate_model(
         patch("numpy.save", new_callable=MagicMock) as mock_np_save,
     ):
 
-        # Mock the logger
-        logger = mocker.patch("wf_psf.metrics.metrics_interface.logger")
-
         # Call evaluate_model
         evaluate_model(
             metrics_params=mock_metrics_params,
