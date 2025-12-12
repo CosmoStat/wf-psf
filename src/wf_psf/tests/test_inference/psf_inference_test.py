@@ -159,6 +159,44 @@ def psf_single_star_setup(mock_inference_config):
     }
 
 
+@pytest.fixture
+def mock_compute_psfs_with_cache(psf_test_setup):
+    """
+    Fixture that patches PSFInferenceEngine.compute_psfs with a side effect
+    that populates the engine's cache.
+
+    Returns
+    -------
+    dict
+        Dictionary containing:
+        - 'mock': The mock object for compute_psfs
+        - 'inference': The PSFInference instance
+        - 'positions': Mock positions tensor
+        - 'seds': Mock SEDs tensor
+        - 'expected_psfs': Expected PSF array
+    """
+    inference = psf_test_setup["inference"]
+    mock_positions = psf_test_setup["mock_positions"]
+    mock_seds = psf_test_setup["mock_seds"]
+    expected_psfs = psf_test_setup["expected_psfs"]
+
+    with patch.object(PSFInferenceEngine, "compute_psfs") as mock_compute_psfs:
+
+        def fake_compute_psfs(positions, seds):
+            inference.engine._inferred_psfs = expected_psfs
+            return expected_psfs
+
+        mock_compute_psfs.side_effect = fake_compute_psfs
+
+        yield {
+            "mock": mock_compute_psfs,
+            "inference": inference,
+            "positions": mock_positions,
+            "seds": mock_seds,
+            "expected_psfs": expected_psfs,
+        }
+
+
 def test_set_config_paths(mock_inference_config):
     """Test setting configuration paths."""
     # Initialize handler and inject mock config
@@ -365,22 +403,17 @@ def test_simpsf_uses_updated_model_params(
 
 
 @patch.object(PSFInference, "_prepare_positions_and_seds")
-@patch.object(PSFInferenceEngine, "compute_psfs")
 def test_get_psfs_runs_inference(
-    mock_compute_psfs, mock_prepare_positions_and_seds, psf_test_setup
+    mock_prepare_positions_and_seds, mock_compute_psfs_with_cache
 ):
-    inference = psf_test_setup["inference"]
-    mock_positions = psf_test_setup["mock_positions"]
-    mock_seds = psf_test_setup["mock_seds"]
-    expected_psfs = psf_test_setup["expected_psfs"]
+    """Test that get_psfs uses cached PSFs after first computation."""
+    mock = mock_compute_psfs_with_cache["mock"]
+    inference = mock_compute_psfs_with_cache["inference"]
+    mock_positions = mock_compute_psfs_with_cache["positions"]
+    mock_seds = mock_compute_psfs_with_cache["seds"]
+    expected_psfs = mock_compute_psfs_with_cache["expected_psfs"]
 
     mock_prepare_positions_and_seds.return_value = (mock_positions, mock_seds)
-
-    def fake_compute_psfs(positions, seds):
-        inference.engine._inferred_psfs = expected_psfs
-        return expected_psfs
-
-    mock_compute_psfs.side_effect = fake_compute_psfs
 
     psfs_1 = inference.get_psfs()
     assert np.all(psfs_1 == expected_psfs)
@@ -388,7 +421,7 @@ def test_get_psfs_runs_inference(
     psfs_2 = inference.get_psfs()
     assert np.all(psfs_2 == expected_psfs)
 
-    assert mock_compute_psfs.call_count == 1
+    assert mock.call_count == 1
 
 
 def test_single_star_inference_shape(psf_single_star_setup):
@@ -483,3 +516,55 @@ def test_valueerror_on_mismatched_positions(psf_single_star_setup):
             inference._prepare_positions_and_seds()
     finally:
         patcher.stop()
+
+
+def test_inference_clear_cache(psf_test_setup):
+    """Test that PSFInference clear_cache resets the instance of PSFInference."""
+    inference = psf_test_setup["inference"]
+    inference._simPSF = MagicMock()
+    inference._data_handler = MagicMock()
+    inference._trained_psf_model = MagicMock()
+    inference._n_bins_lambda = MagicMock()
+    inference._batch_size = MagicMock()
+    inference._cycle = MagicMock()
+    inference._output_dim = MagicMock()
+    inference.engine = MagicMock()
+
+    # Clear the cache
+    inference.clear_cache()
+
+    # Check that the internal cache is None
+    assert (
+        inference._config_handler == None,
+        inference._simPSF == None,
+        inference._data_handler == None,
+        inference._trained_psf_model == None,
+        inference._n_bins_lambda == None,
+        inference._batch_size == None,
+        inference._cycle == None,
+        inference._output_dim == None,
+        inference.engine == None,
+    ), "Inference attributes should be cleared to None"  # type: ignore
+
+
+def test_engine_clear_cache(psf_test_setup):
+    """Test that clear_cache resets the internal PSF cache."""
+    inference = psf_test_setup["inference"]
+    expected_psfs = psf_test_setup["expected_psfs"]
+
+    # Create the engine and compute PSFs
+    inference.engine = PSFInferenceEngine(
+        trained_model=inference.trained_psf_model,
+        batch_size=inference.batch_size,
+        output_dim=inference.output_dim,
+    )
+
+    inference.engine._inferred_psfs = expected_psfs
+
+    # Clear the cache
+    inference.engine.clear_cache()
+
+    # Check that the internal cache is None
+    assert (
+        inference.engine._inferred_psfs is None
+    ), "PSF cache should be cleared to None"
