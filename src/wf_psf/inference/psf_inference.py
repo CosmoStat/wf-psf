@@ -151,7 +151,7 @@ class PSFInference:
         Corresponding masks for the sources (same shape as sources). Defaults to None.
 
 
-        Attributes
+    Attributes
     ----------
     inference_config_path : str
         Path to the inference configuration file.
@@ -170,14 +170,18 @@ class PSFInference:
 
     Examples
     --------
-    >>> psf_inf = PSFInference(
-    ...     inference_config_path="config.yaml",
-    ...     x_field=[100.5, 200.3],
-    ...     y_field=[150.2, 250.8],
-    ...     seds=sed_array
-    ... )
-    >>> psf_inf.run_inference()
-    >>> psf = psf_inf.get_psf(0)
+    Basic usage with position coordinates and SEDs:
+
+    .. code-block:: python
+
+        psf_inf = PSFInference(
+            inference_config_path="config.yaml",
+            x_field=[100.5, 200.3],
+            y_field=[150.2, 250.8],
+            seds=sed_array
+        )
+        psf_inf.run_inference()
+        psf = psf_inf.get_psf(0)
     """
 
     def __init__(
@@ -633,9 +637,11 @@ class PSFInferenceEngine:
 
     Examples
     --------
-    >>> engine = PSFInferenceEngine(model, batch_size=32, output_dim=64)
-    >>> psfs = engine.compute_psfs(positions, seds)
-    >>> single_psf = engine.get_psf(0)
+    .. code-block:: python
+
+        >>> engine = PSFInferenceEngine(model, batch_size=32, output_dim=64)
+        >>> psfs = engine.compute_psfs(positions, seds)
+        >>> single_psf = engine.get_psf(0)
     """
 
     def __init__(self, trained_model, batch_size: int, output_dim: int):
