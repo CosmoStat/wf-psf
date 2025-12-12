@@ -8,6 +8,7 @@ This section contains the API reference for the main packages in WaveDiff.
    :recursive:
    
    wf_psf.data
+   wf_psf.inference
    wf_psf.metrics
    wf_psf.plotting
    wf_psf.psf_models
