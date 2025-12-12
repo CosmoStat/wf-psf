@@ -20,6 +20,37 @@ import tensorflow as tf
 
 
 class InferenceConfigHandler:
+    """
+    Handle configuration loading and management for PSF inference.
+
+    This class manages the loading of inference, training, and data configuration
+    files required for PSF inference operations.
+
+    Parameters
+    ----------
+    inference_config_path : str
+        Path to the inference configuration YAML file.
+
+    Attributes
+    ----------
+    inference_config_path : str
+        Path to the inference configuration file.
+    inference_config : RecursiveNamespace or None
+        Loaded inference configuration.
+    training_config : RecursiveNamespace or None
+        Loaded training configuration.
+    data_config : RecursiveNamespace or None
+        Loaded data configuration.
+    trained_model_path : Path
+        Path to the trained model directory.
+    model_subdir : str
+        Subdirectory name for model files.
+    trained_model_config_path : Path
+        Path to the training configuration file.
+    data_config_path : str or None
+        Path to the data configuration file.
+    """
+
     ids = ("inference_conf",)
 
     def __init__(self, inference_config_path: str):
@@ -29,7 +60,20 @@ class InferenceConfigHandler:
         self.data_config = None
 
     def load_configs(self):
-        """Load configuration files based on the inference config."""
+        """
+        Load configuration files based on the inference config.
+
+        Loads the inference configuration first, then uses it to determine and load
+        the training and data configurations.
+
+        Notes
+        -----
+        Updates the following attributes in-place:
+        - inference_config
+        - training_config
+        - data_config (if data_config_path is specified)
+        """
+
         self.inference_config = read_conf(self.inference_config_path)
         self.set_config_paths()
         self.training_config = read_conf(self.trained_model_config_path)
@@ -39,7 +83,15 @@ class InferenceConfigHandler:
             self.data_config = read_conf(self.data_config_path)
 
     def set_config_paths(self):
-        """Extract and set the configuration paths."""
+        """
+        Extract and set the configuration paths from the inference config.
+
+        Sets the following attributes:
+        - trained_model_path
+        - model_subdir
+        - trained_model_config_path
+        - data_config_path
+        """
         # Set config paths
         config_paths = self.inference_config.inference.configs
 
@@ -97,6 +149,35 @@ class PSFInference:
         Postage stamps of sources, e.g. star images (shape: [n_stars, h, w]).
     masks : array-like, optional
         Corresponding masks for the sources (same shape as sources). Defaults to None.
+
+
+        Attributes
+    ----------
+    inference_config_path : str
+        Path to the inference configuration file.
+    x_field : array-like or None
+        x coordinates for PSF positions.
+    y_field : array-like or None
+        y coordinates for PSF positions.
+    seds : array-like or None
+        Spectral energy distributions.
+    sources : array-like or None
+        Source postage stamps.
+    masks : array-like or None
+        Source masks.
+    engine : PSFInferenceEngine or None
+        The inference engine instance.
+
+    Examples
+    --------
+    >>> psf_inf = PSFInference(
+    ...     inference_config_path="config.yaml",
+    ...     x_field=[100.5, 200.3],
+    ...     y_field=[150.2, 250.8],
+    ...     seds=sed_array
+    ... )
+    >>> psf_inf.run_inference()
+    >>> psf = psf_inf.get_psf(0)
     """
 
     def __init__(
@@ -133,13 +214,25 @@ class PSFInference:
 
     @property
     def config_handler(self):
+        """
+        Get or create the configuration handler.
+
+        Returns
+        -------
+        InferenceConfigHandler
+            The configuration handler instance with loaded configs.
+        """
         if self._config_handler is None:
             self._config_handler = InferenceConfigHandler(self.inference_config_path)
             self._config_handler.load_configs()
         return self._config_handler
 
     def prepare_configs(self):
-        """Prepare the configuration for inference."""
+        """
+        Prepare the configuration for inference.
+
+        Overwrites training model parameters with inference configuration values.
+        """
         # Overwrite model parameters with inference config
         self.config_handler.overwrite_model_params(
             self.training_config, self.inference_config
@@ -147,24 +240,63 @@ class PSFInference:
 
     @property
     def inference_config(self):
+        """
+        Get the inference configuration.
+
+        Returns
+        -------
+        RecursiveNamespace
+            The inference configuration object.
+        """
         return self.config_handler.inference_config
 
     @property
     def training_config(self):
+        """
+        Get the training configuration.
+
+        Returns
+        -------
+        RecursiveNamespace
+            The training configuration object.
+        """
         return self.config_handler.training_config
 
     @property
     def data_config(self):
+        """
+        Get the data configuration.
+
+        Returns
+        -------
+        RecursiveNamespace or None
+            The data configuration object, or None if not available.
+        """
         return self.config_handler.data_config
 
     @property
     def simPSF(self):
+        """
+        Get or create the PSF simulator.
+
+        Returns
+        -------
+        simPSF
+            The PSF simulator instance.
+        """
         if self._simPSF is None:
             self._simPSF = psf_models.simPSF(self.training_config.training.model_params)
         return self._simPSF
 
     def _prepare_dataset_for_inference(self):
-        """Prepare dataset dictionary for inference, returning None if positions are invalid."""
+        """
+        Prepare dataset dictionary for inference.
+
+        Returns
+        -------
+        dict or None
+            Dictionary containing positions, sources, and masks, or None if positions are invalid.
+        """
         positions = self.get_positions()
         if positions is None:
             return None
@@ -172,6 +304,14 @@ class PSFInference:
 
     @property
     def data_handler(self):
+        """
+        Get or create the data handler.
+
+        Returns
+        -------
+        DataHandler
+            The data handler instance configured for inference.
+        """
         if self._data_handler is None:
             # Instantiate the data handler
             self._data_handler = DataHandler(
@@ -188,6 +328,14 @@ class PSFInference:
 
     @property
     def trained_psf_model(self):
+        """
+        Get or load the trained PSF model.
+
+        Returns
+        -------
+        Model
+            The loaded trained PSF model.
+        """
         if self._trained_psf_model is None:
             self._trained_psf_model = self.load_inference_model()
         return self._trained_psf_model
@@ -229,7 +377,19 @@ class PSFInference:
         return np.column_stack((x_flat, y_flat))
 
     def load_inference_model(self):
-        """Load the trained PSF model based on the inference configuration."""
+        """Load the trained PSF model based on the inference configuration.
+
+        Returns
+        -------
+        Model
+            The loaded trained PSF model.
+
+        Notes
+        -----
+        Constructs the weights path pattern based on the trained model path,
+        model subdirectory, model name, id name, and cycle number specified in the
+        configuration files.
+        """
         model_path = self.config_handler.trained_model_path
         model_dir = self.config_handler.model_subdir
         model_name = self.training_config.training.model_params.model_name
@@ -250,6 +410,12 @@ class PSFInference:
 
     @property
     def n_bins_lambda(self):
+        """Get the number of wavelength bins for inference.
+
+        Returns
+        -------
+        int
+            The number of wavelength bins used during inference."""
         if self._n_bins_lambda is None:
             self._n_bins_lambda = (
                 self.inference_config.inference.model_params.n_bins_lda
@@ -258,6 +424,14 @@ class PSFInference:
 
     @property
     def batch_size(self):
+        """
+        Get the batch size for inference.
+
+        Returns
+        -------
+        int
+            The batch size for processing during inference.
+        """
         if self._batch_size is None:
             self._batch_size = self.inference_config.inference.batch_size
             assert self._batch_size > 0, "Batch size must be greater than 0."
@@ -265,12 +439,26 @@ class PSFInference:
 
     @property
     def cycle(self):
+        """Get the cycle number for inference.
+
+        Returns
+        -------
+        int
+            The cycle number used for loading the trained model.
+        """
         if self._cycle is None:
             self._cycle = self.inference_config.inference.cycle
         return self._cycle
 
     @property
     def output_dim(self):
+        """Get the output dimension for PSF inference.
+
+        Returns
+        -------
+        int
+            The output dimension (height and width) of the inferred PSFs.
+        """
         if self._output_dim is None:
             self._output_dim = self.inference_config.inference.model_params.output_dim
         return self._output_dim
@@ -317,7 +505,18 @@ class PSFInference:
         return positions, sed_data_tensor
 
     def run_inference(self):
-        """Run PSF inference and return the full PSF array."""
+        """Run PSF inference and return the full PSF array.
+
+        Returns
+        -------
+        numpy.ndarray
+            Array of inferred PSFs with shape (n_samples, output_dim, output_dim).
+
+        Notes
+        -----
+        Prepares configurations and input data, initializes the inference engine,
+        and computes the PSF for all input positions.
+        """
         # Prepare the configuration for inference
         self.prepare_configs()
 
@@ -332,10 +531,25 @@ class PSFInference:
         return self.engine.compute_psfs(positions, sed_data)
 
     def _ensure_psf_inference_completed(self):
+        """Ensure that PSF inference has been completed.
+
+        Runs inference if it has not been done yet.
+        """
         if self.engine is None or self.engine.inferred_psfs is None:
             self.run_inference()
 
     def get_psfs(self):
+        """Get all inferred PSFs.
+
+        Returns
+        -------
+        numpy.ndarray
+            Array of inferred PSFs with shape (n_samples, output_dim, output_dim).
+
+        Notes
+        -----
+        Ensures automatically that inference has been completed before accessing the PSFs.
+        """
         self._ensure_psf_inference_completed()
         return self.engine.get_psfs()
 
@@ -343,7 +557,21 @@ class PSFInference:
         """
         Get the PSF at a specific index.
 
-        If only a single star was passed during instantiation, the index defaults to 0.
+        Parameters
+        ----------
+        index : int, optional
+            Index of the PSF to retrieve (default is 0).
+
+        Returns
+        -------
+        numpy.ndarray
+            The inferred PSF at the specified index with shape (output_dim, output_dim).
+
+        Notes
+        -----
+        Ensures automatically that inference has been completed before accessing the PSF.
+        If only a single star was passed during instantiation, the index defaults to 0
+        and bounds checking is relaxed.
         """
         self._ensure_psf_inference_completed()
 
@@ -356,8 +584,60 @@ class PSFInference:
         # Otherwise, return the PSF at the requested index
         return inferred_psfs[index]
 
+    def clear_cache(self):
+        """
+        Clear all cached properties and reset the instance.
+
+        This method resets all lazy-loaded properties, including the config handler,
+        PSF simulator, data handler, trained model, and inference engine. Useful for
+        freeing memory or forcing a fresh initialization.
+
+        Notes
+        -----
+        After calling this method, accessing any property will trigger re-initialization.
+        """
+        self._config_handler = None
+        self._simPSF = None
+        self._data_handler = None
+        self._trained_psf_model = None
+        self._n_bins_lambda = None
+        self._batch_size = None
+        self._cycle = None
+        self._output_dim = None
+        self.engine = None
+
 
 class PSFInferenceEngine:
+    """Engine to perform PSF inference using a trained model.
+
+    This class handles the batch-wise computation of PSFs using a trained PSF model.
+    It manages the batching of input positions and SEDs, and caches the inferred PSFs for later access.
+
+    Parameters
+    ----------
+    trained_model : Model
+        The trained PSF model to use for inference.
+    batch_size : int
+        The batch size for processing during inference.
+    output_dim : int
+        The output dimension (height and width) of the inferred PSFs.
+
+    Attributes
+    ----------
+    trained_model : Model
+        The trained PSF model used for inference.
+    batch_size : int
+        The batch size for processing during inference.
+    output_dim : int
+        The output dimension (height and width) of the inferred PSFs.
+
+    Examples
+    --------
+    >>> engine = PSFInferenceEngine(model, batch_size=32, output_dim=64)
+    >>> psfs = engine.compute_psfs(positions, seds)
+    >>> single_psf = engine.get_psf(0)
+    """
+
     def __init__(self, trained_model, batch_size: int, output_dim: int):
         self.trained_model = trained_model
         self.batch_size = batch_size
@@ -366,11 +646,35 @@ class PSFInferenceEngine:
 
     @property
     def inferred_psfs(self) -> np.ndarray:
-        """Access the cached inferred PSFs, if available."""
+        """Access the cached inferred PSFs, if available.
+
+        Returns
+        -------
+        numpy.ndarray or None
+            The cached inferred PSFs, or None if not yet computed.
+        """
         return self._inferred_psfs
 
     def compute_psfs(self, positions: tf.Tensor, sed_data: tf.Tensor) -> np.ndarray:
-        """Compute and cache PSFs for the input source parameters."""
+        """Compute and cache PSFs for the input source parameters.
+
+        Parameters
+        ----------
+        positions : tf.Tensor
+            Tensor of shape (n_samples, 2) containing the (x, y) positions
+        sed_data : tf.Tensor
+            Tensor of shape (n_samples, n_bins, 2) containing the SEDs
+
+        Returns
+        -------
+        numpy.ndarray
+            Array of inferred PSFs with shape (n_samples, output_dim, output_dim).
+
+        Notes
+        -----
+        PSFs are computed in batches according to the specified batch_size.
+        Results are cached internally for subsequent access via get_psfs() or get_psf().
+        """
         n_samples = positions.shape[0]
         self._inferred_psfs = np.zeros(
             (n_samples, self.output_dim, self.output_dim), dtype=np.float32
@@ -397,13 +701,39 @@ class PSFInferenceEngine:
         return self._inferred_psfs
 
     def get_psfs(self) -> np.ndarray:
-        """Get all the generated PSFs."""
+        """Get all the generated PSFs.
+
+        Returns
+        -------
+        numpy.ndarray
+            Array of inferred PSFs with shape (n_samples, output_dim, output_dim).
+        """
         if self._inferred_psfs is None:
             raise ValueError("PSFs not yet computed. Call compute_psfs() first.")
         return self._inferred_psfs
 
     def get_psf(self, index: int) -> np.ndarray:
-        """Get the PSF at a specific index."""
+        """Get the PSF at a specific index.
+
+        Returns
+        -------
+            numpy.ndarray
+            The inferred PSF at the specified index with shape (output_dim, output_dim).
+
+        Raises
+        ------
+        ValueError
+            If PSFs have not yet been computed.
+        """
         if self._inferred_psfs is None:
             raise ValueError("PSFs not yet computed. Call compute_psfs() first.")
         return self._inferred_psfs[index]
+
+    def clear_cache(self):
+        """
+        Clear cached inferred PSFs.
+
+        Resets the internal PSF cache to free memory. After calling this method,
+        compute_psfs() must be called again before accessing PSFs.
+        """
+        self._inferred_psfs = None
