@@ -38,7 +38,7 @@ docs = [
     "sphinx-gallery",
     "sphinxemoji",
     "sphinx_rtd_theme",
-
+    "scriv",
 ]
 
 lint = [
