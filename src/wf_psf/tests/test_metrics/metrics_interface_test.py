@@ -1,6 +1,6 @@
 from unittest.mock import patch, MagicMock
 import pytest
-from wf_psf.metrics.metrics_interface import evaluate_model, MetricsParamsHandler
+from wf_psf.metrics.metrics_interface import evaluate_model
 from wf_psf.data.training_preprocessing import DataHandler
 
 

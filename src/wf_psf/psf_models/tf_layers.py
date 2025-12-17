@@ -1,3 +1,11 @@
+"""TensorFlow layers for PSF modelling.
+
+This module contains TensorFlow layers to model PSF variations across
+the field of view.
+
+:Author: Tobias Liaudat <tobias.liaudat@cea.fr>
+"""
+
 import tensorflow as tf
 import tensorflow_addons as tfa
 from wf_psf.psf_models.tf_modules import TFMonochromaticPSF
@@ -90,10 +98,11 @@ class TFPolynomialZernikeField(tf.keras.layers.Layer):
 
 
 class TFZernikeOPD(tf.keras.layers.Layer):
-    """Turn zernike coefficients into an OPD.
+    """Calculate the OPD from Zernike maps and coefficients.
 
-    Will use all of the Zernike maps provided.
-    Both the Zernike maps and the Zernike coefficients must be provided.
+    This class generates OPD maps from Zernike coefficients and Zernike maps.
+    Both Zernike maps and Zernike coefficients must be provided
+    to the class.
 
     Parameters
     ----------
@@ -188,7 +197,6 @@ class TFBatchPolychromaticPSF(tf.keras.layers.Layer):
 
     def calculate_polychromatic_PSF(self, packed_elems):
         """Calculate a polychromatic PSF."""
-
         self.current_opd = packed_elems[0][tf.newaxis, :, :]
         SED_pack_data = packed_elems[1]
 
@@ -213,7 +221,6 @@ class TFBatchPolychromaticPSF(tf.keras.layers.Layer):
 
     def call(self, inputs):
         """Calculate the batch polychromatic PSFs."""
-
         # Unpack Inputs
         opd_batch = inputs[0]
         packed_SED_data = inputs[1]
@@ -298,7 +305,6 @@ class TFBatchMonochromaticPSF(tf.keras.layers.Layer):
 
     def call(self, opd_batch):
         """Calculate the batch poly PSFs."""
-
         if self.phase_N is None:
             self.set_lambda_phaseN()
 
@@ -311,14 +317,13 @@ class TFBatchMonochromaticPSF(tf.keras.layers.Layer):
                 swap_memory=True,
             )
 
-        mono_psf_batch = _calculate_PSF_batch((opd_batch))
+        mono_psf_batch = _calculate_PSF_batch(opd_batch)
 
         return mono_psf_batch
 
 
 class TFNonParametricPolynomialVariationsOPD(tf.keras.layers.Layer):
     """Non-parametric OPD generation with polynomial variations.
-
 
     Parameters
     ----------
@@ -422,7 +427,6 @@ class TFNonParametricPolynomialVariationsOPD(tf.keras.layers.Layer):
 
 class TFNonParametricMCCDOPDv2(tf.keras.layers.Layer):
     """Non-parametric OPD generation with hybrid-MCCD variations.
-
 
     Parameters
     ----------
@@ -641,7 +645,6 @@ class TFNonParametricMCCDOPDv2(tf.keras.layers.Layer):
 class TFNonParametricGraphOPD(tf.keras.layers.Layer):
     """Non-parametric OPD generation with only graph-cosntraint variations.
 
-
     Parameters
     ----------
     obs_pos: tensor(n_stars, 2)
@@ -749,7 +752,6 @@ class TFNonParametricGraphOPD(tf.keras.layers.Layer):
 
     def predict(self, positions):
         """Prediction step."""
-
         ## Graph part
         A_graph_train = tf.linalg.matmul(self.graph_dic, self.alpha_graph)
         # RBF interpolation
@@ -818,10 +820,11 @@ class TFNonParametricGraphOPD(tf.keras.layers.Layer):
 
 
 class TFPhysicalLayer(tf.keras.layers.Layer):
-    """Store and calculate the zernike coefficients for a given position
+    """The Zernike physical layer.
 
     This layer gives the Zernike contribution of the physical layer.
-    It is fixed and not trainable.
+    It is fixed and not trainable. It can interpolate the Zernike coefficients
+    at the input positions using different interpolation schemes.
 
     Parameters
     ----------
@@ -870,10 +873,22 @@ class TFPhysicalLayer(tf.keras.layers.Layer):
             self.predict = self.interpolate_independent_Zk
 
     def interpolate_all(self, positions):
-        """Zernike interpolation
+        """Interpolate using all the input elements.
 
-        Right now all the input elements are used to build the RBF interpolant
-        that is going to be used for the interpolation.
+        The TensorFlow Addons function `tfa.image.interpolate_spline` is used
+        to perform the RBF interpolation of the Zernike coefficients.
+
+        Parameters
+        ----------
+        positions : tf.Tensor
+            Tensor of shape (batch_size, 2) representing the positions.
+            The first element represents the x-axis, and the second element represents the y-axis.
+
+        Returns
+        -------
+        interp_zks : tf.Tensor
+            Tensor of shape (batch_size, n_zernikes, 1, 1) containing the interpolated Zernike coefficients
+            corresponding to the input positions.
 
         """
         # RBF interpolation of prior Zernikes
@@ -893,11 +908,22 @@ class TFPhysicalLayer(tf.keras.layers.Layer):
         return interp_zks[:, :, tf.newaxis, tf.newaxis]
 
     def interpolate_top_K(self, positions):
-        """Zernike interpolation
+        """Interpolate using only the K closest elements.
 
-        The class wf.utils.ZernikeInterpolation allows to use only the K closest
-        elements for the interpolation. Even though, the interpolation error is smaller
-        the computing time is bigger.
+        The class wf.utils.ZernikeInterpolation allows to interpolate the Zernike
+        coefficients using only the K closest points to build the interpolant.
+
+        Parameters
+        ----------
+        positions : tf.Tensor
+            Tensor of shape (batch_size, 2) representing the positions.
+            The first element represents the x-axis, and the second element represents the y-axis.
+
+        Returns
+        -------
+        interp_zks : tf.Tensor
+            Tensor of shape (batch_size, n_zernikes, 1, 1) containing the interpolated Zernike coefficients
+            corresponding to the input positions.
 
         """
         zk_interpolator = utils.ZernikeInterpolation(
@@ -911,11 +937,23 @@ class TFPhysicalLayer(tf.keras.layers.Layer):
         return interp_zks[:, :, tf.newaxis, tf.newaxis]
 
     def interpolate_independent_Zk(self, positions):
-        """Zernike interpolation
+        """Interpolate each Zernike independently.
 
         The class wf.utils.IndependentZernikeInterpolation allows to interpolate each
         order of the Zernike polynomials independently using all the points avaialble to build
         the interpolant.
+
+        Parameters
+        ----------
+        positions : tf.Tensor
+            Tensor of shape (batch_size, 2) representing the positions.
+            The first element represents the x-axis, and the second element represents the y-axis.
+
+        Returns
+        -------
+        interp_zks : tf.Tensor
+            Tensor of shape (batch_size, n_zernikes, 1, 1) containing the interpolated Zernike coefficients
+            corresponding to the input positions.
 
         """
         zk_interpolator = utils.IndependentZernikeInterpolation(

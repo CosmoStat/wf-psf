@@ -367,8 +367,10 @@ class MonochromaticMetricsPlotHandler:
 
 class ShapeMetricsPlotHandler:
     """ShapeMetricsPlotHandler class.
+
     A class to handle plot parameters shape
     metrics results.
+
     Parameters
     ----------
     id: str
@@ -526,6 +528,7 @@ def get_number_of_stars(metrics):
     ----------
     metrics: dict
         A dictionary containig the metrics results per run
+
     Returns
     -------
     list_of_stars: list

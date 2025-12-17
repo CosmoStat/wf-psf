@@ -1,1 +1,1 @@
-"""Package initialization for the wf_psf.training module."""
+"""Training routines and utilities for PSF models."""

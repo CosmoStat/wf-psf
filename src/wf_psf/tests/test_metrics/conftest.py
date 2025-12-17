@@ -9,7 +9,6 @@ wf_psf metrics package.
 """
 import pytest
 from unittest.mock import patch, MagicMock
-import numpy as np
 import tensorflow as tf
 
 

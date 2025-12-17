@@ -33,6 +33,7 @@ def get_gpu_info():
     device_name = tf.test.gpu_device_name()
     return device_name
 
+
 def setup_training():
     """Set up Training.
 
@@ -272,8 +273,11 @@ class TrainingParamsHandler:
 
 
 def get_loss_metrics_monitor_and_outputs(training_handler, data_conf):
-    """Factory to return fresh loss, metrics (param & non-param), monitor, and outputs for the current cycle.
-    
+    """Generate factory for loss, metrics, monitor, and outputs.
+
+    A function to generate loss, metrics, monitor, and outputs
+    for training.
+
     Parameters
     ----------
     training_handler: TrainingParamsHandler
@@ -295,19 +299,26 @@ def get_loss_metrics_monitor_and_outputs(training_handler, data_conf):
         Tensor containing the outputs for training
     output_val: tf.Tensor
         Tensor containing the outputs for validation
-    
-    """
 
+    """
     if training_handler.training_hparams.loss == "mask_mse":
         loss = train_utils.MaskedMeanSquaredError()
         monitor = "loss"
         param_metrics = [train_utils.MaskedMeanSquaredErrorMetric()]
         non_param_metrics = [train_utils.MaskedMeanSquaredErrorMetric()]
         outputs = tf.stack(
-            [data_conf.training_data.dataset["noisy_stars"], data_conf.training_data.dataset["masks"]], axis=-1
+            [
+                data_conf.training_data.dataset["noisy_stars"],
+                data_conf.training_data.dataset["masks"],
+            ],
+            axis=-1,
         )
         output_val = tf.stack(
-            [data_conf.test_data.dataset["stars"], data_conf.test_data.dataset["masks"]], axis=-1
+            [
+                data_conf.test_data.dataset["stars"],
+                data_conf.test_data.dataset["masks"],
+            ],
+            axis=-1,
         )
     else:
         loss = tf.keras.losses.MeanSquaredError()
@@ -332,7 +343,7 @@ def train(
 
     This function manages multi-cycle training of a parametric + non-parametric PSF model,
     including initialization, loss/metric configuration, optimizer setup, model checkpointing,
-    and optional projection or resetting of non-parametric features. Each cycle can include 
+    and optional projection or resetting of non-parametric features. Each cycle can include
     both parametric and non-parametric training stages, and training history is saved for each.
 
     Parameters
@@ -358,12 +369,12 @@ def train(
     psf_model_dir : str
         Directory where the final trained PSF model weights will be saved per cycle.
 
-    Returns
-    -------
-    None
-
-    Side Effects
-    ------------ 
+    Notes
+    -----
+    - Utilizes TensorFlow and TensorFlow Addons for model training and optimization.
+    - Supports masked mean squared error loss for training with masked data.
+    - Allows for projection of data-driven features onto parametric models between cycles.
+    - Supports resetting of non-parametric features to initial states.
     - Saves model weights to `psf_model_dir` per training cycle (or final one if not all saved)
     - Saves optimizer histories to `optimizer_dir`
     - Logs cycle information and time durations
@@ -391,10 +402,10 @@ def train(
         current_cycle += 1
 
         # Instantiate fresh loss, monitor, and independent metric objects per training phase (param / non-param)
-        loss, param_metrics, non_param_metrics, monitor, outputs, output_val = get_loss_metrics_monitor_and_outputs(
-            training_handler, data_conf
+        loss, param_metrics, non_param_metrics, monitor, outputs, output_val = (
+            get_loss_metrics_monitor_and_outputs(training_handler, data_conf)
         )
-        
+
         # If projected learning is enabled project DD_features.
         if hasattr(psf_model, "project_dd_features") and psf_model.project_dd_features:
             if current_cycle > 1:

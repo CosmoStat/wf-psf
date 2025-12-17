@@ -19,7 +19,7 @@ from wf_psf.psf_models.tf_layers import (
 
 @register_psfclass
 class TFParametricPSFFieldModel(tf.keras.Model):
-    """Parametric PSF field model!
+    """Parametric PSF field model.
 
     Fully parametric model based on the Zernike polynomial basis.
 
@@ -79,7 +79,7 @@ class TFParametricPSFFieldModel(tf.keras.Model):
         coeff_mat=None,
         name="TF_PSF_field_model",
     ):
-        super(TFParametricPSFFieldModel, self).__init__()
+        super().__init__(name=name)
 
         self.output_Q = output_Q
 
@@ -140,8 +140,19 @@ class TFParametricPSFFieldModel(tf.keras.Model):
 
     def set_output_Q(self, output_Q, output_dim=None):
         """Set the value of the output_Q parameter.
+
         Useful for generating/predicting PSFs at a different sampling wrt the
         observation sampling.
+
+        Parameters
+        ----------
+        output_Q: float
+            New value of the output_Q parameter.
+        output_dim: int or None
+            New value of the output_dim parameter. If None, the output_dim
+            parameter is not changed.
+
+
         """
         self.output_Q = output_Q
         if output_dim is not None:
@@ -166,7 +177,6 @@ class TFParametricPSFFieldModel(tf.keras.Model):
             ``simPSF_np = wf_psf.sims.psf_simulator.PSFSimulator(...)``
             ``phase_N = simPSF_np.feasible_N(lambda_obs)``
         """
-
         # Initialise the monochromatic PSF batch calculator
         tf_batch_mono_psf = TFBatchMonochromaticPSF(
             obscurations=self.obscurations,
