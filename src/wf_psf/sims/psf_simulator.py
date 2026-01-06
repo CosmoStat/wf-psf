@@ -11,19 +11,7 @@ import scipy.interpolate as sinterp
 import PIL
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from wf_psf.utils.utils import zernike_generator
-
-try:
-    from cv2 import resize, INTER_AREA
-except ImportError:
-    print("Problem importing opencv..")
-    try:
-        from skimage.transform import downscale_local_mean
-
-        print("Falling back to skimage.")
-        print("Only integer downsampling allowed with this method.")
-    except ImportError:
-        print("Problem importing skimage..")
+from wf_psf.utils.utils import downsample_im, zernike_generator
 
 
 class PSFSimulator:
@@ -225,26 +213,8 @@ class PSFSimulator:
             start = 0
             stop = psf.shape[0]
 
-        # Crop psf
-        psf = psf[start:stop, start:stop]
-
-        # Downsample the image depending on `self.output_Q`
-        try:
-            psf = resize(
-                src=psf,
-                dsize=(int(output_dim), int(output_dim)),
-                interpolation=INTER_AREA,
-            )
-        except NameError:
-            print("INTER_AREA constant is not defined. Falling back to default.")
-            f_x = int(psf.shape[0] / output_dim)
-            f_y = int(psf.shape[1] / output_dim)
-            psf = downscale_local_mean(
-                image=psf,
-                factors=(f_x, f_y),
-            )
-
-        return psf
+        # Crop & Downsample PSF to match telescope sampling
+        return downsample_im(psf[start:stop, start:stop], output_dim)
 
     @staticmethod
     def generate_euclid_pupil_obscurations(N_pix=1024, N_filter=3, rotation_angle=0):

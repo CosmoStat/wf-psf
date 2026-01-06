@@ -1,4 +1,4 @@
-"""utility functions for the PSF simulation and modeling.
+"""Utility functions for the PSF simulation and modeling.
 
 :Authors: Tobias Liaudat <tobias.liaudat@cea.fr>
 
@@ -10,11 +10,18 @@ import tensorflow_addons as tfa
 import PIL
 import zernike as zk
 
+_HAS_CV2 = False
+_HAS_SKIMAGE = False
+
 try:
-    from cv2 import resize, INTER_AREA
-except ModuleNotFoundError:
-    print("Problem importing opencv..")
-import sys
+    import cv2
+    _HAS_CV2 = True
+except ImportError:
+    try:
+        from skimage.transform import downscale_local_mean
+        _HAS_SKIMAGE = True
+    except ImportError:
+        pass
 
 
 def generalised_sigmoid(x, max_val=1, power_k=1):
@@ -292,32 +299,45 @@ def decimate_im(input_im, decim_f):
 
 
 def downsample_im(input_im, output_dim):
-    r"""Downsample image.
+    """Downsample image to (output_dim, output_dim).
 
-    Based on opencv function resize.
-    [doc](https://docs.opencv.org/2.4/modules/imgproc/doc/geometric_transformations.html#void%20resize(InputArray%20src,%20OutputArray%20dst,%20Size%20dsize,%20double%20fx,%20double%20fy,%20int%20interpolation))
-    The input image is downsampled to the dimensions specified in `output_dim`.
-    The downsampling method is based on the `INTER_AREA` method.
-    See [tensorflow_doc](https://www.tensorflow.org/api_docs/cc/class/tensorflow/ops/resize-area)
-    Each output pixel is computed by first transforming the pixel's footprint
-    into the input tensor and then averaging the pixels that intersect the
-    footprint. An input pixel's contribution to the average is weighted by the
-    fraction of its area that intersects the footprint.
-    This is the same as OpenCV's INTER_AREA.
-    An explanation of the INTER_AREA method can be found in the next
-    [link](https://medium.com/@wenrudong/what-is-opencvs-inter-area-actually-doing-282a626a09b3).
-
-    This version should be consistent with the tensorflow one.
+    Uses OpenCV INTER_AREA when available, otherwise falls back
+    to scikit-image local mean downsampling.
 
     Parameters
     ----------
-    input_im: np.ndarray (dim_x, dim_y)
-        input image
-    output_dim: int
-        Contains the dimension of the square output image.
-    """
-    return resize(input_im, (output_dim, output_dim), interpolation=INTER_AREA)
+    input_im : np.ndarray
+        Input 2D image to be downsampled.
+    output_dim : int
+        Desired output dimension (both height and width).
 
+    Returns
+    -------
+    np.ndarray
+        Downsampled 2D image of shape (output_dim, output_dim).
+    """
+    if _HAS_CV2:
+        return cv2.resize(
+            input_im,
+            (int(output_dim), int(output_dim)),
+            interpolation=cv2.INTER_AREA,
+        )
+
+    if _HAS_SKIMAGE:
+        f_x = int(input_im.shape[0] / output_dim)
+        f_y = int(input_im.shape[1] / output_dim)
+
+        if f_x <= 0 or f_y <= 0:
+            raise ValueError("Invalid downsampling factors.")
+
+        return downscale_local_mean(
+            input_im,
+            factors=(f_x, f_y),
+        )
+
+    raise ImportError(
+        "Neither OpenCV nor scikit-image is available for image downsampling."
+    )
 
 def zernike_generator(n_zernikes, wfe_dim):
     r"""
