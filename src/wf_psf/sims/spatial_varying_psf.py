@@ -1,3 +1,12 @@
+"""Spatially Varying PSF Simulator.
+
+This module contains classes and methods for simulating spatially varying
+Point Spread Functions (PSFs) using polynomial variations of Zernike coefficients.
+
+:Authors: Tobias Liaudat <tobias.liaudat@cea.fr> & Jennifer Pollack <jennifer.pollack@cea.fr>
+
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -131,7 +140,7 @@ class CoordinateHelper:
     def add_random_shift_to_positions(
         xv_grid, yv_grid, grid_points, x_lims, y_lims, seed=None
     ):
-        """Add Random Shift to Positions
+        """Add Random Shift to Positions.
 
         Add random shifts to positions within each grid cell,
         ensuring no overlap between neighboring cells.
@@ -240,20 +249,17 @@ class CoordinateHelper:
         None
 
         """
-
         x_check = np.sum(xv >= x_lims[1] * 1.1) + np.sum(xv <= x_lims[0] * 1.1)
         y_check = np.sum(yv >= y_lims[1] * 1.1) + np.sum(yv <= y_lims[0] * 1.1)
 
         if verbose and x_check > 0:
             logger.warning(
-                "WARNING! x value is outside the limits [%f, %f]"
-                % (x_lims[0], x_lims[1])
+                f"WARNING! x value is outside the limits [ {x_lims[0]}, {x_lims[1]}]"
             )
 
         if verbose and y_check > 0:
             logger.warning(
-                "WARNING! y value is outside the limits [%f, %f]"
-                % (y_lims[0], y_lims[1])
+                f"WARNING! y value is outside the limits [{y_lims[0]}, {y_lims[0]}]"
             )
 
 
@@ -480,7 +486,7 @@ class ZernikeHelper:
         )
 
 
-class SpatialVaryingPSF(object):
+class SpatialVaryingPSF:
     """Spatial Varying PSF.
 
     Generate PSF field with polynomial variations of Zernike coefficients.
@@ -621,7 +627,6 @@ class SpatialVaryingPSF(object):
         numpy.ndarray
             An array containing the WFE RMS values for the provided positions.
         """
-
         Z = ZernikeHelper.generate_zernike_polynomials(
             xv, yv, self.x_lims, self.y_lims, self.d_max, polynomial_coeffs
         )
@@ -645,7 +650,6 @@ class SpatialVaryingPSF(object):
         -------
         None
         """
-
         # Build mesh
         xv_grid, yv_grid = MeshHelper.build_mesh(
             self.x_lims, self.y_lims, self.grid_points

@@ -6,15 +6,19 @@ This module contains unit tests for the wf_psf.utils utils module.
 
 """
 
+import pytest
 import tensorflow as tf
 import numpy as np
 from wf_psf.utils.utils import (
+    downsample_im,
     NoiseEstimator,
     zernike_generator,
     compute_unobscured_zernike_projection,
     decompose_tf_obscured_opd_basis,
 )
 from wf_psf.sims.psf_simulator import PSFSimulator
+from unittest import mock
+
 
 def test_initialization():
     """Test if NoiseEstimator initializes correctly."""
@@ -208,3 +212,55 @@ def test_tf_decompose_obscured_opd_basis():
     rmse_error = np.linalg.norm(obsc_coeffs - zk_array[0, :, 0, 0])
 
     assert rmse_error < tol
+
+def test_downsample_basic():
+    """Downsample a small array to a smaller square size."""
+    arr = np.arange(16).reshape(4, 4).astype(np.float32)
+    output_dim = 2
+    result = downsample_im(arr, output_dim)
+
+    # Check shape
+    assert result.shape == (output_dim, output_dim), "Output shape mismatch"
+
+    # Values should be averaged/downsampled; simple check
+    assert np.all(result >= arr.min()) and np.all(result <= arr.max()), \
+        "Values outside input range"
+    
+
+def test_downsample_identity():
+    """Downsample to the same size should return same array (approximately)."""
+    arr = np.random.rand(5, 5).astype(np.float32)
+    output_dim = 5
+    result = downsample_im(arr, output_dim)
+    # Since OpenCV / skimage may do minor interpolation, allow small tolerance
+    np.testing.assert_allclose(result, arr, rtol=1e-6, atol=1e-6)
+
+# ----------------------------
+# Backend fallback tests
+# ----------------------------
+
+@mock.patch("wf_psf.utils.utils._HAS_CV2", False)
+@mock.patch("wf_psf.utils.utils._HAS_SKIMAGE", False)
+def test_downsample_no_backend():
+    """Ensure ImportError is raised if no backend is available."""
+    arr = np.ones((4, 4), dtype=np.float32)
+    with pytest.raises(ImportError):
+        downsample_im(arr, 2)
+
+
+@mock.patch("wf_psf.utils.utils._HAS_CV2", True)
+def test_downsample_values_average():
+    """Check that downsampling preserves approximate average value."""
+    arr = np.ones((4, 4), dtype=np.float32) * 3
+    output_dim = 2
+    result = downsample_im(arr, output_dim)
+    # All output values should be close to input value
+    np.testing.assert_allclose(result, 3.0, rtol=1e-6, atol=1e-6)
+
+@mock.patch("wf_psf.utils.utils._HAS_CV2", True)
+def test_downsample_non_square_array():
+    """Check downsampling works for non-square arrays."""
+    arr = np.arange(12).reshape(3, 4).astype(np.float32)
+    output_dim = 2
+    result = downsample_im(arr, output_dim)
+    assert result.shape == (2, 2)

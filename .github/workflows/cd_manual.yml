@@ -28,11 +28,11 @@ jobs:
      
       - name: Build API documentation
         run: |
-          sphinx-apidoc -Mfeo docs/source src/wf_psf
-          sphinx-build docs/source docs/build
+          make -C docs clean
+          make -C docs html
        
       - name: Archive documentation as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: api-docs
-          path: docs/build
+          publish_dir: docs/build/html

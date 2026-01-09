@@ -120,7 +120,7 @@ class DataConfigHandler:
     training_model_params : Recursive Namespace object
         Recursive Namespace object containing the training model parameters
     batch_size : int
-       Training hyperparameter used for batched pre-processing of data.  
+       Training hyperparameter used for batched pre-processing of data.
 
     """
 
@@ -203,7 +203,6 @@ class TrainingConfigHandler:
         input configuration.
 
         """
-
         train.train(
             self.training_conf.training,
             self.data_conf,
@@ -260,26 +259,81 @@ class MetricsConfigHandler:
 
     @property
     def metrics_conf(self):
+        """Get Metrics Conf.
+
+        A function to return the metrics configuration file name.
+
+        Returns
+        -------
+        RecursiveNamespace
+            An instance of the metrics configuration file.
+        """
         return self._metrics_conf
 
     @property
     def metrics_dir(self):
+        """Get Metrics Directory.
+
+        A function that returns path
+        of metrics directory.
+
+        Returns
+        -------
+        str
+            Absolute path to metrics directory
+        """
         return self._file_handler.get_metrics_dir(self._file_handler._run_output_dir)
 
     @property
     def training_conf(self):
+        """Get Training Conf.
+
+        A function to return the training configuration file name.
+
+        Returns
+        -------
+        RecursiveNamespace
+            An instance of the training configuration file.
+        """
         return self._training_conf
 
     @property
     def plotting_conf(self):
+        """Get Plotting Conf.
+
+        A function to return the plotting configuration file name.
+
+        Returns
+        -------
+        str
+            Name of plotting configuration file
+        """
         return self.metrics_conf.metrics.plotting_config
 
     @property
     def data_conf(self):
+        """Get Data Conf.
+
+        A function to return an instance of the DataConfigHandler class.
+
+        Returns
+        -------
+        An instance of the DataConfigHandler class.
+        """
         return self._load_data_conf()
 
     @property
     def psf_model(self):
+        """Get PSF Model.
+
+        A function to return an instance of the PSF model
+        to be evaluated.
+
+        Returns
+        -------
+        psf_model: obj
+            An instance of the PSF model to be evaluated.
+        """
         return psf_models.get_psf_model(
             self.training_conf.training.model_params,
             self.training_conf.training.training_hparams,
@@ -288,6 +342,16 @@ class MetricsConfigHandler:
 
     @property
     def weights_path(self):
+        """Get Weights Path.
+
+        A function to return the full path
+        of the user-specified psf model weights to be loaded.
+
+        Returns
+        -------
+        str
+            A string representing the full path to the psf model weights to be loaded.
+        """
         return psf_models.get_psf_model_weights_filepath(self.weights_basename_filepath)
 
     def _get_trained_model_path(self, training_conf):
@@ -324,6 +388,7 @@ class MetricsConfigHandler:
 
     def _load_training_conf(self, training_conf):
         """Load Training Conf.
+
         Load the training configuration if training_conf is not provided.
 
         Parameters
@@ -442,7 +507,7 @@ class MetricsConfigHandler:
 
         """
         logger.info(
-            "Running metrics evaluation on psf model: {}".format(self.weights_path)
+            f"Running metrics evaluation on psf model: {self.weights_path}"
         )
 
         model_metrics = evaluate_model(
@@ -555,7 +620,6 @@ class PlottingConfigHandler:
         metrics_run_id_name: list
             List containing the model name and id for each training run
         """
-
         try:
             training_conf = read_conf(
                 os.path.join(
@@ -570,9 +634,7 @@ class PlottingConfigHandler:
         except (TypeError, FileNotFoundError):
             logger.info("Trained model path not provided...")
             logger.info(
-                "Trying to retrieve training config file from workdir: {}".format(
-                    wf_outdir
-                )
+                f"Trying to retrieve training config file from workdir: {wf_outdir}"
             )
 
             training_confs = [
@@ -623,9 +685,7 @@ class PlottingConfigHandler:
                     "metrics-" + run_id_name + ".npy",
                 )
                 logger.info(
-                    "Attempting to read in trained model config file...{}".format(
-                        output_path
-                    )
+                    f"Attempting to read in trained model config file...{output_path}"
                 )
                 try:
                     metrics_dict[k].append(
