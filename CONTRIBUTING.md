@@ -14,7 +14,8 @@ WaveDiff is a software development project aimed at modeling the point spread fu
    4. [After a PR is Merged](#after-a-pr-is-merged)
 5. [Content](#content)
 6. [CI Tests](#ci-tests)
-7. [Style Guide](#style-guide)
+7. [Changelog entries](#changelog-entries)
+8. [Style Guide](#style-guide)
 
 ## Introduction
 
@@ -128,6 +129,21 @@ Every PR should correspond to a specific issue in the issue tracker. Tag the iss
 ## CI Tests
 
 All PRs must pass CI tests before being merged. Resolve any issues causing test failures and justify any modifications to unit tests in the PR description.
+
+## Changelog entries
+
+WaveDiff uses [Scriv](https://scriv.readthedocs.io/en/latest/index.html) to manage its changelog and release notes.
+
+If your pull request introduces user-visible changes (features, bug fixes, performance improvements, or breaking changes), you must **add** and **commit a changelog fragment**.
+
+To create a fragment, run from the repository root:
+
+```bash
+scriv create
+```
+
+Edit the generated file in `changelog.d/` by uncommenting exactly one relevant section and adding a short description.  
+Release maintainers collect fragments when preparing a release; contributors should not run `scriv collect`.
 
 ## Style Guide
 
