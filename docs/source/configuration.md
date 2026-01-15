@@ -71,7 +71,6 @@ data:
 
 Controls the training pipeline, including model selection, hyperparameters, optional metrics evaluation, and data loading behavior.
 
----
 
 ### 2. General Notes
 
@@ -210,11 +209,11 @@ training_hparams:
     n_epochs_non_params: [100, 120]
 ```
 
+
 (metrics_config)=
 ## `metrics_config.yaml`  — Metrics Configuration
  
 ### 1. Purpose
-
 Defines how a trained PSF model is evaluated. This configuration specifies which metrics to compute, which model weights to use, and how ground truth stars are obtained. It allows you to:
 - Select a fully trained PSF model or a checkpoint for evaluation.
 - Specify which training cycle’s weights to evaluate.
@@ -439,14 +438,12 @@ This configuration instructs the plotting pipeline to load the metrics from each
 ## Master Configuration
 
 ### 1. Purpose
-
 The `configs.yaml` file is the _master controller_ for WaveDiff.
 It defines **which pipeline tasks** should be executed (training, metrics evaluation, plotting) and in which order.
 
 Each task points to a dedicated YAML configuration file—allowing WaveDiff to run multiple jobs sequentially using a single entry point.
 
 ### 2. Example: Multiple Training Runs
-
 To launch a sequence of training runs (models 1…n), list each task and its corresponding configuration file:
 
 ```yaml
@@ -481,6 +478,7 @@ wf-outputs-20231119151932213823/
 ### 3 Example: Training + Metrics + Plotting
 
 To evaluate metrics and generate plots for each trained model, include the corresponding configuration files:
+
 
 ```
 config/

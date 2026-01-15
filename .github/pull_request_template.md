@@ -1,29 +1,67 @@
 ## Summary
 
-> Developers should provide a summary of the proposed changes here and include "closes #<ISSUE NUMBER>" if this addresses an open issue.
+> Provide a concise description of the proposed changes.  
+> Include "closes #<ISSUE_NUMBER>" if this addresses an open issue <br>
+> **Note:** Validation tests and plots should **not** be added to the PR; they should be documented in the dedicated issue instead.
 
-## Validation Test Reports
 
-> Developers should include training and metrics validation test reports demonstrating that all tests passed.
+## What’s changed
 
-(Copy and paste the output of validation tests report here in markdown.)
+> Describe the main changes introduced by this PR.  
+> Focus on user-visible changes, bug fixes, performance improvements, or internal changes.
+
+- Example bullet 1
+- Example bullet 2
+
+
+## How to test / verify
+
+> Outline steps for reviewers or maintainers to validate the changes.  
+> Include commands, scripts, or datasets if relevant.  
+> Full validation results should be referenced in the associated issue, not pasted here.
+
+- Step 1
+- Step 2
+
+
+## Scope
+
+> Indicate the type of PR:
+
+- [ ] Feature  
+- [ ] Bug fix  
+- [ ] Hotfix  
+- [ ] Documentation / process change  
+- [ ] Internal / refactor  
+
+> Optionally, note if this PR is part of a larger milestone or set of related PRs.
+
+
+## Changelog
+
+> Did this PR introduce user-visible changes?  
+> If yes, a **Scriv changelog fragment** must be added and committed.
+
+- [ ] Changelog fragment added (if applicable)
+
 
 ## Reviewer Checklist
 
-> Reviewers should tick the following boxes before approving and merging the PR.
+> Reviewers should confirm the following before approving and merging:
 
 - [ ] The PR targets the `develop` branch
 - [ ] The PR is assigned to the developer
-- [ ] The PR has appropriate labels
-- [ ] The PR is included in appropriate projects and/or milestones
-- [ ] The PR includes a clear description of the proposed changes
-- [ ] If the PR addresses an open issue the description includes "closes #<ISSUE NUMBER>"
-- [ ] The code and documentation style match the current standards
-- [ ] Documentation has been added/updated consistently with the code
-- [ ] All CI tests are passing
-- [ ] API docs have been built and checked at least once (if relevant)
-- [ ] All changed files have been checked and comments provided to the developer
-- [ ] All of the reviewer's comments have been satisfactorily addressed by the developer
-- [ ] All Validation tests for the reported error are passing
-- [ ] Changelog fragment added (if applicable)
-- [ ] I have reviewed the CI log to verify if any files require formatting with Black. If any files are found to be improperly formatted, I have provided comments indicating the need for formatting.
+- [ ] Appropriate labels are applied
+- [ ] The PR is included in relevant projects and/or milestones
+- [ ] Description clearly explains what has changed
+- [ ] Issue references included, if applicable
+- [ ] Code and documentation adhere to current standards (`ruff`)
+- [ ] Documentation updates included, if relevant
+- [ ] CI tests are passing
+- [ ] All reviewer comments have been addressed
+
+
+## Next Steps / Notes (if applicable)
+
+> Any follow-up actions, known issues, or reminders for maintainers.
+
