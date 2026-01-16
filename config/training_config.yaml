@@ -49,16 +49,14 @@ training:
     add_ccd_misalignments: False
 
     # CCD misalignments input file path
-    # This should be refactored. It might be better to directly look for the `tiles.npy` in 
-    # the `data/assets/` directory in the repository
-    ccd_misalignments_input_path: /Users/tl255879/Documents/research/Euclid/real_data/CCD_missalignments/tiles.npy
+    ccd_misalignments_input_path: /path/to/ccd_misalignments_file.txt
 
-    # Boolean to define if we use sample weights based on the noise standard deviation estimation
+    # Boolean to use sample weights based on the noise standard deviation estimation
     use_sample_weights: True 
 
     # Sample weight generalised sigmoid function
     sample_weights_sigmoid:
-      # Boolean to define if we apply the sigmoid function to the sample weights
+      # Boolean to apply the sigmoid function to the sample weights
       apply_sigmoid: False
       # Maximum value of the sigmoid function and consequently the maximum value of the sample weights
       sigmoid_max_val: 5.0
