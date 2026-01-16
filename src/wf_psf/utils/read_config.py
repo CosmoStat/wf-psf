@@ -127,7 +127,7 @@ def read_stream(conf_file):
 
     Parameters
     ----------
-    conf_file
+    conf_file : str
         Name of configuration file
 
     Yields
@@ -139,5 +139,5 @@ def read_stream(conf_file):
     stream = open(conf_file)
     docs = yaml.load_all(stream, yaml.FullLoader)
 
-    for doc in docs:
-        yield from doc
+    for doc in docs:  # noqa: UP028
+        yield doc  
