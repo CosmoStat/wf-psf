@@ -1,0 +1,578 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.psf_models.tf_modules &mdash; wf-psf 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../_static/twemoji.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="wf_psf.psf_models.tf_psf_field" href="wf_psf.psf_models.tf_psf_field.html" />
+    <link rel="prev" title="wf_psf.psf_models.tf_layers" href="wf_psf.psf_models.tf_layers.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.data.html">wf_psf.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.metrics.html">wf_psf.metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.plotting.html">wf_psf.plotting</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="wf_psf.psf_models.html">wf_psf.psf_models</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_parametric.html">wf_psf.psf_models.psf_model_parametric</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_physical_polychromatic.html">wf_psf.psf_models.psf_model_physical_polychromatic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_semiparametric.html">wf_psf.psf_models.psf_model_semiparametric</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_models.html">wf_psf.psf_models.psf_models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html">wf_psf.psf_models.tf_layers</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">wf_psf.psf_models.tf_modules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.tf_modules.TFBuildPhase"><code class="docutils literal notranslate"><span class="pre">TFBuildPhase</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.tf_modules.TFFftDiffract"><code class="docutils literal notranslate"><span class="pre">TFFftDiffract</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.tf_modules.TFMonochromaticPSF"><code class="docutils literal notranslate"><span class="pre">TFMonochromaticPSF</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.tf_modules.TFZernikeMonochromaticPSF"><code class="docutils literal notranslate"><span class="pre">TFZernikeMonochromaticPSF</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.tf_modules.TFZernikeOPD"><code class="docutils literal notranslate"><span class="pre">TFZernikeOPD</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html">wf_psf.psf_models.tf_psf_field</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.zernikes.html">wf_psf.psf_models.zernikes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.run.html">wf_psf.run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.sims.html">wf_psf.sims</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.training.html">wf_psf.training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.utils.html">wf_psf.utils</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="wf_psf.psf_models.html">wf_psf.psf_models</a></li>
+      <li class="breadcrumb-item active">wf_psf.psf_models.tf_modules</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/wf_psf.psf_models.tf_modules.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-wf_psf.psf_models.tf_modules">
+<span id="wf-psf-psf-models-tf-modules"></span><h1>wf_psf.psf_models.tf_modules<a class="headerlink" href="#module-wf_psf.psf_models.tf_modules" title="Link to this heading"></a></h1>
+<p>TensorFlow-Based PSF Modeling.</p>
+<p>A module containing TensorFlow implementations for modeling monochromatic PSFs using Zernike polynomials and Fourier optics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Author<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tobias Liaudat &lt;<a class="reference external" href="mailto:tobiasliaudat&#37;&#52;&#48;gmail&#46;com">tobiasliaudat<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</p>
+</dd>
+</dl>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.TFBuildPhase" title="wf_psf.psf_models.tf_modules.TFBuildPhase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TFBuildPhase</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Build a complex phase map from an Optical Path Difference (OPD) map.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.TFFftDiffract" title="wf_psf.psf_models.tf_modules.TFFftDiffract"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TFFftDiffract</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Diffract the wavefront into a monochromatic PSF.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.TFMonochromaticPSF" title="wf_psf.psf_models.tf_modules.TFMonochromaticPSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TFMonochromaticPSF</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Calculate a monochromatic Point Spread Function (PSF) from an OPD map.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.TFZernikeMonochromaticPSF" title="wf_psf.psf_models.tf_modules.TFZernikeMonochromaticPSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TFZernikeMonochromaticPSF</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Build a monochromatic Point Spread Function (PSF) from Zernike coefficients.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.TFZernikeOPD" title="wf_psf.psf_models.tf_modules.TFZernikeOPD"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TFZernikeOPD</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Convert Zernike coefficients into an Optical Path Difference (OPD).</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_modules.TFBuildPhase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.tf_modules.</span></span><span class="sig-name descname"><span class="pre">TFBuildPhase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_modules.html#TFBuildPhase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_modules.TFBuildPhase" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Build a complex phase map from an Optical Path Difference (OPD) map.</p>
+<p>This class takes an OPD map and converts it into a complex phase map. It applies
+necessary obscurations (such as apertures or masks) and zero-padding to match the
+required size for diffraction simulations. The resulting phase map is essential for
+further optical modeling, such as diffraction simulations or other optical system analysis.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_modules.TFBuildPhase.phase_N">
+<span class="sig-name descname"><span class="pre">phase_N</span></span><a class="headerlink" href="#wf_psf.psf_models.tf_modules.TFBuildPhase.phase_N" title="Link to this definition"></a></dt>
+<dd><p>The desired size of the phase map (e.g., pixel count for height and width).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_modules.TFBuildPhase.lambda_obs">
+<span class="sig-name descname"><span class="pre">lambda_obs</span></span><a class="headerlink" href="#wf_psf.psf_models.tf_modules.TFBuildPhase.lambda_obs" title="Link to this definition"></a></dt>
+<dd><p>The observed wavelength used for phase calculations, typically in meters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_modules.TFBuildPhase.obscurations">
+<span class="sig-name descname"><span class="pre">obscurations</span></span><a class="headerlink" href="#wf_psf.psf_models.tf_modules.TFBuildPhase.obscurations" title="Link to this definition"></a></dt>
+<dd><p>A tensor representing the obscurations (e.g., apertures or masks) to be applied to the phase.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(opd)</p></td>
+<td><p>Convert an OPD map to a padded and obscured phase map.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.TFBuildPhase.apply_obscurations" title="wf_psf.psf_models.tf_modules.TFBuildPhase.apply_obscurations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_obscurations</span></code></a>(phase)</p></td>
+<td><p>Apply obscurations to the phase map.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.TFBuildPhase.opd_to_phase" title="wf_psf.psf_models.tf_modules.TFBuildPhase.opd_to_phase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">opd_to_phase</span></code></a>(opd)</p></td>
+<td><p>Convert an OPD map to a complex phase map.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.TFBuildPhase.zero_padding_diffraction" title="wf_psf.psf_models.tf_modules.TFBuildPhase.zero_padding_diffraction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">zero_padding_diffraction</span></code></a>(no_pad_phase)</p></td>
+<td><p>Pad the phase map with zeros based on the required size.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_modules.TFBuildPhase.apply_obscurations">
+<span class="sig-name descname"><span class="pre">apply_obscurations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phase</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tensorflow.Tensor</span></span></span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_modules.html#TFBuildPhase.apply_obscurations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_modules.TFBuildPhase.apply_obscurations" title="Link to this definition"></a></dt>
+<dd><p>Apply obscurations to the phase map.</p>
+<p>This method multiplies the phase map element-wise with the obscurations
+tensor. The obscurations tensor can represent apertures or masks that block
+or modify portions of the phase map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>phase</strong> (<em>tf.Tensor</em>) – The phase map to which obscurations will be applied. Expected shape is [batch_size, height, width].</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The phase map after applying the obscurations.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_modules.TFBuildPhase.opd_to_phase">
+<span class="sig-name descname"><span class="pre">opd_to_phase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">opd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tensorflow.Tensor</span></span></span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_modules.html#TFBuildPhase.opd_to_phase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_modules.TFBuildPhase.opd_to_phase" title="Link to this definition"></a></dt>
+<dd><p>Convert an OPD map to a complex phase map.</p>
+<p>This method takes an optical path difference (OPD) map and converts it into a complex phase map using the formula: phase = exp(i * (2 * pi / lambda_obs) * opd).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>opd</strong> (<em>tf.Tensor</em>) – The optical path difference map. Expected shape is [batch_size, height, width].</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The complex phase map resulting from the OPD.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_modules.TFBuildPhase.zero_padding_diffraction">
+<span class="sig-name descname"><span class="pre">zero_padding_diffraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">no_pad_phase</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_modules.html#TFBuildPhase.zero_padding_diffraction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_modules.TFBuildPhase.zero_padding_diffraction" title="Link to this definition"></a></dt>
+<dd><p>Pad the phase map with zeros based on the required size.</p>
+<p>This method adds zero-padding to the input phase map to match the required
+size for diffraction calculations. The padding is computed based on the
+<cite>phase_N</cite> attribute and the input phase map size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>no_pad_phase</strong> (<em>tf.Tensor</em>) – The phase map that needs to be padded. Expected shape is [batch_size, height, width].</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>padded_phase</strong> – The padded phase map with shape [batch_size, phase_N, phase_N].</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_modules.TFFftDiffract">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.tf_modules.</span></span><span class="sig-name descname"><span class="pre">TFFftDiffract</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_modules.html#TFFftDiffract"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_modules.TFFftDiffract" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Diffract the wavefront into a monochromatic PSF.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_modules.TFFftDiffract.output_dim">
+<span class="sig-name descname"><span class="pre">output_dim</span></span><a class="headerlink" href="#wf_psf.psf_models.tf_modules.TFFftDiffract.output_dim" title="Link to this definition"></a></dt>
+<dd><p>Dimension of the output square postage stamp</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_modules.TFFftDiffract.output_Q">
+<span class="sig-name descname"><span class="pre">output_Q</span></span><a class="headerlink" href="#wf_psf.psf_models.tf_modules.TFFftDiffract.output_Q" title="Link to this definition"></a></dt>
+<dd><p>Downsampling factor. Must be integer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(input_phase)</p></td>
+<td><p>Calculate the normalized Point Spread Function (PSF) from a phase array.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.TFFftDiffract.normalize_psf" title="wf_psf.psf_models.tf_modules.TFFftDiffract.normalize_psf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_psf</span></code></a>(psf)</p></td>
+<td><p>Normalize the Point Spread Function (PSF).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.TFFftDiffract.tf_crop_img" title="wf_psf.psf_models.tf_modules.TFFftDiffract.tf_crop_img"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tf_crop_img</span></code></a>(image, output_crop_dim)</p></td>
+<td><p>Crop images using TensorFlow methods.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_modules.TFFftDiffract.normalize_psf">
+<span class="sig-name descname"><span class="pre">normalize_psf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psf</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_modules.html#TFFftDiffract.normalize_psf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_modules.TFFftDiffract.normalize_psf" title="Link to this definition"></a></dt>
+<dd><p>Normalize the Point Spread Function (PSF).</p>
+<p>This function normalizes a given Point Spread Function (PSF) by summing over the spatial dimensions and dividing the PSF by the resulting sum. The PSF is expected to have at least 3 dimensions, with the first dimension representing the batch size and the remaining two dimensions representing the spatial dimensions (height and width).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>psf</strong> (<em>tf.Tensor</em>) – A tensor representing the Point Spread Function (PSF) with shape [batch, height, width].
+The PSF is expected to be a 3D tensor, where the first dimension corresponds to the batch size, and the other two dimensions represent the spatial dimensions of the PSF.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The normalized PSF with the same shape as the input, [batch, height, width], where each PSF has been normalized by the sum of the PSF over the spatial dimensions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_modules.TFFftDiffract.tf_crop_img">
+<span class="sig-name descname"><span class="pre">tf_crop_img</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_crop_dim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_modules.html#TFFftDiffract.tf_crop_img"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_modules.TFFftDiffract.tf_crop_img" title="Link to this definition"></a></dt>
+<dd><p>Crop images using TensorFlow methods.</p>
+<p>This method handles a batch of 2D images and crops them to the specified dimension.
+The images are expected to have the shape [batch, width, height], and the method
+uses TensorFlow’s <cite>crop_to_bounding_box</cite> to crop each image in the batch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>tf.Tensor</em>) – A batch of 2D images with shape [batch, height, width]. The images are expected
+to be 3D tensors where the second and third dimensions represent the height and width.</p></li>
+<li><p><strong>output_crop_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The dimension of the square crop. The image will be cropped to this dimension.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The cropped images with shape [batch, output_crop_dim, output_crop_dim].</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_modules.TFMonochromaticPSF">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.tf_modules.</span></span><span class="sig-name descname"><span class="pre">TFMonochromaticPSF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_modules.html#TFMonochromaticPSF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_modules.TFMonochromaticPSF" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Calculate a monochromatic Point Spread Function (PSF) from an OPD map.</p>
+<p>This class computes the monochromatic Point Spread Function (PSF) by first
+converting the Optical Path Difference (OPD) map into a phase map. Then, it
+applies diffraction using Fast Fourier Transform (FFT) techniques to simulate
+the PSF, which is essential in optical system simulations.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_modules.TFMonochromaticPSF.output_Q">
+<span class="sig-name descname"><span class="pre">output_Q</span></span><a class="headerlink" href="#wf_psf.psf_models.tf_modules.TFMonochromaticPSF.output_Q" title="Link to this definition"></a></dt>
+<dd><p>The output quality factor used for diffraction simulations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_modules.TFMonochromaticPSF.tf_build_phase">
+<span class="sig-name descname"><span class="pre">tf_build_phase</span></span><a class="headerlink" href="#wf_psf.psf_models.tf_modules.TFMonochromaticPSF.tf_build_phase" title="Link to this definition"></a></dt>
+<dd><p>A module that builds the phase map from the OPD map, applying necessary
+zero-padding and obscurations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.TFBuildPhase" title="wf_psf.psf_models.tf_modules.TFBuildPhase">TFBuildPhase</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_modules.TFMonochromaticPSF.tf_fft_diffract">
+<span class="sig-name descname"><span class="pre">tf_fft_diffract</span></span><a class="headerlink" href="#wf_psf.psf_models.tf_modules.TFMonochromaticPSF.tf_fft_diffract" title="Link to this definition"></a></dt>
+<dd><p>A module that performs the diffraction simulation using FFT.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.TFFftDiffract" title="wf_psf.psf_models.tf_modules.TFFftDiffract">TFFftDiffract</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>phase_N</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The size of the phase map (e.g., pixel count for the height and width).</p></li>
+<li><p><strong>lambda_obs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The observed wavelength used for phase calculations.</p></li>
+<li><p><strong>obscurations</strong> (<em>tf.Tensor</em>) – A tensor representing the obscurations (e.g., apertures or masks) to be
+applied to the phase.</p></li>
+<li><p><strong>output_Q</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The output quality factor used for diffraction simulations.</p></li>
+<li><p><strong>output_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – The output dimension for the PSF, by default 64.</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The name for the TensorFlow module, by default None.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(opd)</p></td>
+<td><p>Compute the PSF from an OPD map.</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_modules.TFZernikeMonochromaticPSF">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.tf_modules.</span></span><span class="sig-name descname"><span class="pre">TFZernikeMonochromaticPSF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_modules.html#TFZernikeMonochromaticPSF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_modules.TFZernikeMonochromaticPSF" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Build a monochromatic Point Spread Function (PSF) from Zernike coefficients.</p>
+<p>This class computes the monochromatic PSF by following the Zernike model. It
+involves multiple stages, including the calculation of the OPD (Optical Path
+Difference), the phase from the OPD, and diffraction via FFT-based operations.
+The Zernike coefficients are used to generate the PSF.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>phase_N</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The size of the phase grid, typically a square matrix dimension.</p></li>
+<li><p><strong>lambda_obs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The wavelength of the observed light.</p></li>
+<li><p><strong>obscurations</strong> (<em>tf.Tensor</em>) – A tensor representing the obscurations in the system, which will be applied
+to the phase.</p></li>
+<li><p><strong>zernike_maps</strong> (<em>tf.Tensor</em>) – A tensor containing the Zernike maps, with the shape (num_coeffs, x_dim, y_dim),
+where <cite>num_coeffs</cite> is the number of Zernike coefficients and <cite>x_dim</cite>, <cite>y_dim</cite> are
+the dimensions of the Zernike maps.</p></li>
+<li><p><strong>output_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em><em>, </em><em>default=64</em>) – The output dimension of the PSF, i.e., the size of the resulting image.</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The name of the module. Default is <cite>None</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_modules.TFZernikeMonochromaticPSF.tf_build_opd_zernike">
+<span class="sig-name descname"><span class="pre">tf_build_opd_zernike</span></span><a class="headerlink" href="#wf_psf.psf_models.tf_modules.TFZernikeMonochromaticPSF.tf_build_opd_zernike" title="Link to this definition"></a></dt>
+<dd><p>A module used to generate the OPD from the Zernike coefficients.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.TFZernikeOPD" title="wf_psf.psf_models.tf_modules.TFZernikeOPD">TFZernikeOPD</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_modules.TFZernikeMonochromaticPSF.tf_build_phase">
+<span class="sig-name descname"><span class="pre">tf_build_phase</span></span><a class="headerlink" href="#wf_psf.psf_models.tf_modules.TFZernikeMonochromaticPSF.tf_build_phase" title="Link to this definition"></a></dt>
+<dd><p>A module used to compute the phase from the OPD.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.TFBuildPhase" title="wf_psf.psf_models.tf_modules.TFBuildPhase">TFBuildPhase</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_modules.TFZernikeMonochromaticPSF.tf_fft_diffract">
+<span class="sig-name descname"><span class="pre">tf_fft_diffract</span></span><a class="headerlink" href="#wf_psf.psf_models.tf_modules.TFZernikeMonochromaticPSF.tf_fft_diffract" title="Link to this definition"></a></dt>
+<dd><p>A module that performs the diffraction calculation using FFT-based methods.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.TFFftDiffract" title="wf_psf.psf_models.tf_modules.TFFftDiffract">TFFftDiffract</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(z_coeffs)</p></td>
+<td><p>Compute the monochromatic PSF from Zernike coefficients.</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_modules.TFZernikeOPD">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.tf_modules.</span></span><span class="sig-name descname"><span class="pre">TFZernikeOPD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_modules.html#TFZernikeOPD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_modules.TFZernikeOPD" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Convert Zernike coefficients into an Optical Path Difference (OPD).</p>
+<p>This class performs the weighted sum of Zernike coefficients and Zernike maps
+to compute the OPD. The Zernike maps and the corresponding Zernike coefficients
+are required to perform the calculation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>zernike_maps</strong> (<em>tf.Tensor</em>) – A tensor containing the Zernike maps. The shape should be
+(num_coeffs, x_dim, y_dim), where <cite>num_coeffs</cite> is the number of Zernike coefficients
+and <cite>x_dim</cite>, <cite>y_dim</cite> are the dimensions of each map.</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – The name of the module. Default is <cite>None</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor representing the OPD, with shape (num_star, x_dim, y_dim),
+where <cite>num_star</cite> corresponds to the number of stars and <cite>x_dim</cite>, <cite>y_dim</cite> are
+the dimensions of the OPD map.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(z_coeffs)</p></td>
+<td><p>Compute the OPD from Zernike coefficients and maps.</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="wf_psf.psf_models.tf_layers.html" class="btn btn-neutral float-left" title="wf_psf.psf_models.tf_layers" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wf_psf.psf_models.tf_psf_field.html" class="btn btn-neutral float-right" title="wf_psf.psf_models.tf_psf_field" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

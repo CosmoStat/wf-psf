@@ -1,0 +1,1019 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.sims.spatial_varying_psf &mdash; wf-psf 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../../../_static/twemoji.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../../../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">wf_psf.sims.spatial_varying_psf</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for wf_psf.sims.spatial_varying_psf</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Spatially Varying PSF Simulator.</span>
+
+<span class="sd">This module contains classes and methods for simulating spatially varying</span>
+<span class="sd">Point Spread Functions (PSFs) using polynomial variations of Zernike coefficients.</span>
+
+<span class="sd">:Authors: Tobias Liaudat &lt;tobias.liaudat@cea.fr&gt; &amp; Jennifer Pollack &lt;jennifer.pollack@cea.fr&gt;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mpl_toolkits.axes_grid1</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_axes_locatable</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="MeshHelper">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.sims.spatial_varying_psf.html#wf_psf.sims.spatial_varying_psf.MeshHelper">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MeshHelper</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Mesh Helper.</span>
+
+<span class="sd">    A utility class for generating mesh grids.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="MeshHelper.build_mesh">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.sims.spatial_varying_psf.html#wf_psf.sims.spatial_varying_psf.MeshHelper.build_mesh">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">build_mesh</span><span class="p">(</span><span class="n">x_lims</span><span class="p">,</span> <span class="n">y_lims</span><span class="p">,</span> <span class="n">grid_points</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">grid_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build Mesh.</span>
+
+<span class="sd">        A method to build a mesh.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x_lims: list</span>
+<span class="sd">            A list representing the lower and upper limits along the x-axis.</span>
+<span class="sd">        y_lims: list</span>
+<span class="sd">            A list representing the lower and upper limits along the y-axis.</span>
+<span class="sd">        grid_points: list or None, optional</span>
+<span class="sd">            List defining the size of each axis grid for constructing the mesh grid.</span>
+<span class="sd">            If provided and `grid_size` is also provided, `grid_size` will</span>
+<span class="sd">            override this parameter. (default is None)</span>
+<span class="sd">        grid_size: int or None, optional</span>
+<span class="sd">            Number of points to generate for each axis of the grid. If None and `grid_points`</span>
+<span class="sd">            is not provided, the default grid size is used. (default is None)</span>
+<span class="sd">        endpoint: bool, optional</span>
+<span class="sd">            If True, `stop` is the last sample. Otherwise, it is not included. (default is True).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple</span>
+<span class="sd">            A tuple containing two 2-dimensional arrays for x- and y-coordinate axes.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">grid_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">grid_points</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;At least one of &#39;grid_points&#39; or &#39;grid_size&#39; must be provided.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">num_x</span><span class="p">,</span> <span class="n">num_y</span> <span class="o">=</span> <span class="n">grid_points</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">num_x</span> <span class="o">=</span> <span class="n">grid_size</span>
+            <span class="n">num_y</span> <span class="o">=</span> <span class="n">grid_size</span>
+
+        <span class="c1"># Choose the anchor points on a regular grid</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">x_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">num</span><span class="o">=</span><span class="n">num_x</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="n">endpoint</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">y_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">num</span><span class="o">=</span><span class="n">num_y</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="n">endpoint</span><span class="p">)</span>
+
+        <span class="c1"># Build mesh</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="CoordinateHelper">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.sims.spatial_varying_psf.html#wf_psf.sims.spatial_varying_psf.CoordinateHelper">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CoordinateHelper</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Coordinate Helper.</span>
+
+<span class="sd">    A utility class for handling coordinate operations.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CoordinateHelper.scale_positions">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.sims.spatial_varying_psf.html#wf_psf.sims.spatial_varying_psf.CoordinateHelper.scale_positions">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">scale_positions</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x_lims</span><span class="p">,</span> <span class="n">y_lims</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Scale Positions.</span>
+
+<span class="sd">        A method to scale x- and y- positions.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x: numpy.ndarray</span>
+<span class="sd">            A 1-dimensional numpy ndarray denoting a vector of x positions.</span>
+<span class="sd">        y: numpy.ndarray</span>
+<span class="sd">            A 1-dimensional numpy ndarray denoting a vector of y positions.</span>
+<span class="sd">        x_lims: list</span>
+<span class="sd">            A list representing the lower and upper limits along the x-axis.</span>
+<span class="sd">        y_lims: list</span>
+<span class="sd">            A list representing the lower and upper limits along the y-axis.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        scaled_x: numpy.ndarray</span>
+<span class="sd">            Scaled x positions.</span>
+
+<span class="sd">        scaled_y: numpy.ndarray</span>
+<span class="sd">            Scaled y positions.</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Scale positions to the square [-1,1] x [-1,1]</span>
+        <span class="n">scaled_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">x_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">x_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">scaled_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">scaled_x</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="n">scaled_y</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">y_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">y_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">y_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">scaled_y</span> <span class="o">=</span> <span class="p">(</span><span class="n">scaled_y</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
+
+        <span class="k">return</span> <span class="n">scaled_x</span><span class="p">,</span> <span class="n">scaled_y</span></div>
+
+
+<div class="viewcode-block" id="CoordinateHelper.calculate_shift">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.sims.spatial_varying_psf.html#wf_psf.sims.spatial_varying_psf.CoordinateHelper.calculate_shift">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_shift</span><span class="p">(</span><span class="n">x_lims</span><span class="p">,</span> <span class="n">y_lims</span><span class="p">,</span> <span class="n">grid_points</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate Shift.</span>
+
+<span class="sd">        A method to calcuate the step size for shifting positions</span>
+<span class="sd">        based on the specified coordinate limits and grid points.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">         x_lims: list</span>
+<span class="sd">            A list representing the lower and upper limits along the x-axis.</span>
+<span class="sd">        y_lims: list</span>
+<span class="sd">            A list representing the lower and upper limits along the y-axis.</span>
+<span class="sd">        grid_points: list</span>
+<span class="sd">            List defining the size of each axis grid.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        xstep: int</span>
+<span class="sd">        ystep: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">x_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">grid_points</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">y_step</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">y_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">grid_points</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">x_step</span><span class="p">,</span> <span class="n">y_step</span></div>
+
+
+<div class="viewcode-block" id="CoordinateHelper.add_random_shift_to_positions">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.sims.spatial_varying_psf.html#wf_psf.sims.spatial_varying_psf.CoordinateHelper.add_random_shift_to_positions">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_random_shift_to_positions</span><span class="p">(</span>
+        <span class="n">xv_grid</span><span class="p">,</span> <span class="n">yv_grid</span><span class="p">,</span> <span class="n">grid_points</span><span class="p">,</span> <span class="n">x_lims</span><span class="p">,</span> <span class="n">y_lims</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add Random Shift to Positions.</span>
+
+<span class="sd">        Add random shifts to positions within each grid cell,</span>
+<span class="sd">        ensuring no overlap between neighboring cells.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xv_grid: Numpy array</span>
+<span class="sd">            Grid of x-coordinates.</span>
+<span class="sd">        yv_grid: Numpy array</span>
+<span class="sd">            Grid of y-coordinates.</span>
+<span class="sd">        grid_points : list</span>
+<span class="sd">            A list defining the size of each axis grid</span>
+<span class="sd">        x_lims: list</span>
+<span class="sd">            Lower and upper limits along the x-axis.</span>
+<span class="sd">        y_lims: list</span>
+<span class="sd">            Lower and upper limits along the y-axis.</span>
+<span class="sd">        seed: int</span>
+<span class="sd">            Seed for random number generation.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        xv_s: numpy.ndarray</span>
+<span class="sd">            Positions with added random shifts along the x-axis.</span>
+<span class="sd">        yv_s: numpy.ndarray</span>
+<span class="sd">            Positions with added random shifts along the y-axis.</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">## Random position shift</span>
+        <span class="c1"># It is done as a random shift defined in a</span>
+        <span class="c1"># square centred in each grid position so that there is</span>
+        <span class="c1"># no overlapping between the squares.</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+        <span class="n">xv_rand</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">grid_points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">grid_points</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">yv_rand</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">grid_points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">grid_points</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="c1"># Calculate the shift length</span>
+        <span class="n">x_step</span><span class="p">,</span> <span class="n">y_step</span> <span class="o">=</span> <span class="n">CoordinateHelper</span><span class="o">.</span><span class="n">calculate_shift</span><span class="p">(</span><span class="n">x_lims</span><span class="p">,</span> <span class="n">y_lims</span><span class="p">,</span> <span class="n">grid_points</span><span class="p">)</span>
+        <span class="c1"># Center and scale shifts</span>
+        <span class="n">xv_rand</span> <span class="o">=</span> <span class="p">(</span><span class="n">xv_rand</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">x_step</span>
+        <span class="n">yv_rand</span> <span class="o">=</span> <span class="p">(</span><span class="n">yv_rand</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">y_step</span>
+        <span class="c1"># Add the shift to the grid values</span>
+        <span class="n">xv</span> <span class="o">=</span> <span class="n">xv_grid</span> <span class="o">+</span> <span class="n">xv_rand</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">yv</span> <span class="o">=</span> <span class="n">yv_grid</span> <span class="o">+</span> <span class="n">yv_rand</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="n">xv_s</span><span class="p">,</span> <span class="n">yv_s</span> <span class="o">=</span> <span class="n">CoordinateHelper</span><span class="o">.</span><span class="n">check_and_adjust_coordinate_limits</span><span class="p">(</span>
+            <span class="n">xv</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">yv</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">x_lims</span><span class="p">,</span> <span class="n">y_lims</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">xv_s</span><span class="p">,</span> <span class="n">yv_s</span></div>
+
+
+<div class="viewcode-block" id="CoordinateHelper.check_and_adjust_coordinate_limits">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.sims.spatial_varying_psf.html#wf_psf.sims.spatial_varying_psf.CoordinateHelper.check_and_adjust_coordinate_limits">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_and_adjust_coordinate_limits</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x_lims</span><span class="p">,</span> <span class="n">y_lims</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check and adjust coordinate limits.</span>
+
+<span class="sd">        A method to check and adjust coordinate limits to within</span>
+<span class="sd">        the range of x_lims and y_lims, respectively.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x: numpy.ndarray</span>
+<span class="sd">            A 1-dimensional numpy-ndarray containing positions along x-axis.</span>
+<span class="sd">        y: numpy.ndarray</span>
+<span class="sd">            A 1-dimensional numpy-ndarray containing positions along y-axis.</span>
+<span class="sd">        x_lims: list</span>
+<span class="sd">            Lower and upper limits along the x-axis.</span>
+<span class="sd">        y_lims: list</span>
+<span class="sd">            Lower and upper limits along the y-axis.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        x: numpy.ndarray</span>
+<span class="sd">            A numpy.ndarraycontaining adjusted positions along the x-axis within the specified limits.</span>
+<span class="sd">        y: numpy.ndarray</span>
+<span class="sd">            A numpy.ndarraycontaining adjusted positions along the x-axis within the specified limits.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span><span class="p">[</span><span class="n">x</span> <span class="o">&gt;</span> <span class="n">x_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">x_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">x</span><span class="p">[</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">x_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">x_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">y</span><span class="p">[</span><span class="n">y</span> <span class="o">&gt;</span> <span class="n">y_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">y_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">y</span><span class="p">[</span><span class="n">y</span> <span class="o">&lt;</span> <span class="n">y_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">y_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span></div>
+
+
+<div class="viewcode-block" id="CoordinateHelper.check_position_coordinate_limits">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.sims.spatial_varying_psf.html#wf_psf.sims.spatial_varying_psf.CoordinateHelper.check_position_coordinate_limits">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_position_coordinate_limits</span><span class="p">(</span><span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">x_lims</span><span class="p">,</span> <span class="n">y_lims</span><span class="p">,</span> <span class="n">verbose</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check Position Coordinate Limits.</span>
+
+<span class="sd">        This function checks if the given position coordinates (xv, yv) are within the specified limits</span>
+<span class="sd">        (x_lims, y_lims). It raises a warning if any coordinate is outside the limits.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xv: numpy.ndarray</span>
+<span class="sd">            The x coordinates to be checked.</span>
+<span class="sd">        yv: numpy.ndarray</span>
+<span class="sd">            The y coordinates to be checked.</span>
+<span class="sd">        x_lims: tuple</span>
+<span class="sd">            A tuple (min, max) specifying the lower and upper limits for x coordinates.</span>
+<span class="sd">        y_lims: tuple</span>
+<span class="sd">            A tuple (min, max) specifying the lower and upper limits for y coordinates.</span>
+<span class="sd">        verbose: bool</span>
+<span class="sd">            If True, print warning messages when coordinates are outside the limits.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x_check</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">xv</span> <span class="o">&gt;=</span> <span class="n">x_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1.1</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">xv</span> <span class="o">&lt;=</span> <span class="n">x_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1.1</span><span class="p">)</span>
+        <span class="n">y_check</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">yv</span> <span class="o">&gt;=</span> <span class="n">y_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1.1</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">yv</span> <span class="o">&lt;=</span> <span class="n">y_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mf">1.1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">verbose</span> <span class="ow">and</span> <span class="n">x_check</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;WARNING! x value is outside the limits [ </span><span class="si">{</span><span class="n">x_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">x_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">]&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">verbose</span> <span class="ow">and</span> <span class="n">y_check</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;WARNING! y value is outside the limits [</span><span class="si">{</span><span class="n">y_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">y_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">]&quot;</span>
+            <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PolynomialMatrixHelper">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.sims.spatial_varying_psf.html#wf_psf.sims.spatial_varying_psf.PolynomialMatrixHelper">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PolynomialMatrixHelper</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;PolynomialMatrixHelper.</span>
+
+<span class="sd">    Helper class with methods for generating polynomial matrices of positions.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PolynomialMatrixHelper.generate_polynomial_matrix">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.sims.spatial_varying_psf.html#wf_psf.sims.spatial_varying_psf.PolynomialMatrixHelper.generate_polynomial_matrix">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_polynomial_matrix</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x_lims</span><span class="p">,</span> <span class="n">y_lims</span><span class="p">,</span> <span class="n">d_max</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate polynomial matrix of positions.</span>
+
+<span class="sd">        This method constructs a polynomial matrix representing spatial variations</span>
+<span class="sd">        in a two-dimensional field. The polynomial matrix is generated based on the</span>
+<span class="sd">        given x and y positions, considering a maximum polynomial degree specified</span>
+<span class="sd">        by d_max.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x: numpy.ndarray</span>
+<span class="sd">            A 1-dimensional numpy ndarray denoting a vector of x positions.</span>
+<span class="sd">        y: numpy.ndarray</span>
+<span class="sd">            A 1-dimensional numpy ndarray denoting a vector of y positions.</span>
+<span class="sd">        x_lims: list</span>
+<span class="sd">            Lower and upper limits along the x-axis.</span>
+<span class="sd">        y_lims: list</span>
+<span class="sd">            Lower and upper limits along the y-axis.</span>
+<span class="sd">        d_max: int</span>
+<span class="sd">            The maximum polynomial degree for the spatial variation of the field.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Pi: numpy.ndarray</span>
+<span class="sd">            A 2-dimensional polynomial matrix representing the spatial variations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n_mono</span> <span class="o">=</span> <span class="p">(</span><span class="n">d_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">d_max</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="n">Pi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_mono</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Pi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_mono</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+        <span class="c1"># Scale positions to the square [-1,1] x [-1,1]</span>
+        <span class="n">scaled_x</span><span class="p">,</span> <span class="n">scaled_y</span> <span class="o">=</span> <span class="n">CoordinateHelper</span><span class="o">.</span><span class="n">scale_positions</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x_lims</span><span class="p">,</span> <span class="n">y_lims</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">row_idx</span> <span class="o">=</span> <span class="n">d</span> <span class="o">*</span> <span class="p">(</span><span class="n">d</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="n">Pi</span><span class="p">[</span><span class="n">row_idx</span> <span class="o">+</span> <span class="n">p</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">scaled_x</span> <span class="o">**</span> <span class="p">(</span><span class="n">d</span> <span class="o">-</span> <span class="n">p</span><span class="p">)</span> <span class="o">*</span> <span class="n">scaled_y</span><span class="o">**</span><span class="n">p</span>
+
+        <span class="k">return</span> <span class="n">Pi</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ZernikeHelper">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.sims.spatial_varying_psf.html#wf_psf.sims.spatial_varying_psf.ZernikeHelper">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ZernikeHelper</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;ZernikeHelper.</span>
+
+<span class="sd">    Helper class for generating Zernike Polynomials.</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ZernikeHelper.initialize_Z_matrix">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.sims.spatial_varying_psf.html#wf_psf.sims.spatial_varying_psf.ZernikeHelper.initialize_Z_matrix">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">initialize_Z_matrix</span><span class="p">(</span><span class="n">max_order</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize Zernike Matrix.</span>
+
+<span class="sd">        This method initializes a Zernike matrix with a specified size determined by</span>
+<span class="sd">        the maximum order of Zernike polynomials and the length of the position vector</span>
+<span class="sd">        along the x-coordinate axis. The matrix is populated with random values sampled</span>
+<span class="sd">        from a standard normal distribution.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        max_order: int</span>
+<span class="sd">            The maximum order of Zernike polynomials to be used in the simulation.</span>
+<span class="sd">        size: int</span>
+<span class="sd">            An integer representing the size of the position vector.</span>
+<span class="sd">        seed: int</span>
+<span class="sd">            Seed for random number generation.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            An array of shape (max_order, size) containing randomly generated values</span>
+<span class="sd">        from a standard normal distribution to initialize the Zernike matrix.</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">max_order</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ZernikeHelper.normalize_Z_matrix">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.sims.spatial_varying_psf.html#wf_psf.sims.spatial_varying_psf.ZernikeHelper.normalize_Z_matrix">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">normalize_Z_matrix</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">lim_max_wfe_rms</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalize Zernike Matrix.</span>
+
+<span class="sd">        This method performs normalization on the Zernike matrix. It calculates</span>
+<span class="sd">        normalization weights as the square root of the sum of squares of the</span>
+<span class="sd">        Zernike matrix along the second axis. Each row of the matrix is then</span>
+<span class="sd">        divided by its corresponding normalization weight, scaled by the maximum</span>
+<span class="sd">        allowed Wave Front Error (WFE) Root-Mean-Square (RMS) error.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        Z: numpy.ndarray</span>
+<span class="sd">            A numpy ndarray representing the Zernike matrix.</span>
+<span class="sd">        lim_max_wfe_rms: int</span>
+<span class="sd">            The upper maximum value limit for the Wave Front Error (WFE) Root-Mean-Square (RMS) error.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Z: numpy.ndarray</span>
+<span class="sd">             The normalized Zernike matrix after applying the normalization process.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">norm_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Z</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">Z</span> <span class="o">/=</span> <span class="n">norm_weights</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">lim_max_wfe_rms</span>
+        <span class="k">return</span> <span class="n">Z</span></div>
+
+
+<div class="viewcode-block" id="ZernikeHelper.initialize_normalized_zernike_matrix">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.sims.spatial_varying_psf.html#wf_psf.sims.spatial_varying_psf.ZernikeHelper.initialize_normalized_zernike_matrix">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">initialize_normalized_zernike_matrix</span><span class="p">(</span>
+        <span class="n">max_order</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">lim_max_wfe_rms</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize Normalized Zernike Matrix.</span>
+
+<span class="sd">        This method initializes a normalized Zernike matrix.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        max_order: int</span>
+<span class="sd">            The maximum order of Zernike polynomials to be used in the simulation.</span>
+<span class="sd">        size: int</span>
+<span class="sd">            An integer representing the size of the position vector.</span>
+<span class="sd">        lim_max_wfe_rms: int</span>
+<span class="sd">            The upper maximum value limit for the Wave Front Error (WFE) Root-Mean-Square (RMS) error.</span>
+<span class="sd">        seed: int</span>
+<span class="sd">            Seed for random number generation.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            A normalized Zernike matrix.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ZernikeHelper</span><span class="o">.</span><span class="n">normalize_Z_matrix</span><span class="p">(</span>
+            <span class="n">ZernikeHelper</span><span class="o">.</span><span class="n">initialize_Z_matrix</span><span class="p">(</span><span class="n">max_order</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">seed</span><span class="p">),</span> <span class="n">lim_max_wfe_rms</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ZernikeHelper.generate_zernike_polynomials">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.sims.spatial_varying_psf.html#wf_psf.sims.spatial_varying_psf.ZernikeHelper.generate_zernike_polynomials">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_zernike_polynomials</span><span class="p">(</span><span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">x_lims</span><span class="p">,</span> <span class="n">y_lims</span><span class="p">,</span> <span class="n">d_max</span><span class="p">,</span> <span class="n">polynomial_coeffs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate Zernike Polynomials.</span>
+
+<span class="sd">        [old name: zernike_poly_gen] This method calculates Zernike polynomials based on the given x and y positions,</span>
+<span class="sd">        considering a maximum polynomial degree specified by d_max and a set of polynomial</span>
+<span class="sd">        coefficients.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xv: np.ndarray (dim,)</span>
+<span class="sd">            x positions.</span>
+<span class="sd">        yv: np.ndarray (dim,)</span>
+<span class="sd">            y positions.</span>
+<span class="sd">        x_lims: list</span>
+<span class="sd">            Lower and upper limits along the x-axis.</span>
+<span class="sd">        y_lims: list</span>
+<span class="sd">            Lower and upper limits along the y-axis.</span>
+<span class="sd">        d_max: int</span>
+<span class="sd">            The maximum polynomial degree for the spatial variation of the field.s</span>
+<span class="sd">        polynomial_coeffs: numpy.ndarray</span>
+<span class="sd">             An array containing the polynomial coefficients.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            A 1-dimensional numpy ndarray representing the spatial polynomials generated</span>
+<span class="sd">        from the given positions and polynomial coefficients.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Generate the polynomial matrix</span>
+        <span class="n">Pi_samples</span> <span class="o">=</span> <span class="n">PolynomialMatrixHelper</span><span class="o">.</span><span class="n">generate_polynomial_matrix</span><span class="p">(</span>
+            <span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">x_lims</span><span class="p">,</span> <span class="n">y_lims</span><span class="p">,</span> <span class="n">d_max</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">polynomial_coeffs</span> <span class="o">@</span> <span class="n">Pi_samples</span></div>
+
+
+<div class="viewcode-block" id="ZernikeHelper.calculate_zernike">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.sims.spatial_varying_psf.html#wf_psf.sims.spatial_varying_psf.ZernikeHelper.calculate_zernike">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_zernike</span><span class="p">(</span>
+        <span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">x_lims</span><span class="p">,</span> <span class="n">y_lims</span><span class="p">,</span> <span class="n">d_max</span><span class="p">,</span> <span class="n">polynomial_coeffs</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate Zernikes for a specific position.</span>
+
+<span class="sd">        This method computes Zernike polynomials for given positions (xv, yv).</span>
+<span class="sd">        The positions (xv, yv) should lie within the specified limits:</span>
+<span class="sd">        [x_lims[0], x_lims[1]] along the x-axis and [y_lims[0], y_lims[1]] along the y-axis.</span>
+<span class="sd">        Additionally, the positions should be normalized to the range [-1, +1] along both axes.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xv: numpy.ndarray</span>
+<span class="sd">            Array containing positions along the x-axis.</span>
+<span class="sd">        yv: numpy.ndarray</span>
+<span class="sd">            Array containing positions along the y-axis.</span>
+<span class="sd">        x_lims: list</span>
+<span class="sd">            Lower and upper limits along the x-axis.</span>
+<span class="sd">        y_lims: list</span>
+<span class="sd">            Lower and upper limits along the y-axis.</span>
+<span class="sd">        verbose: bool</span>
+<span class="sd">            Flag to indicate whether to print warning messages when positions are outside the specified limits.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            Array containing the computed Zernike polynomials for the given positions.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check limits</span>
+        <span class="n">CoordinateHelper</span><span class="o">.</span><span class="n">check_position_coordinate_limits</span><span class="p">(</span>
+            <span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">x_lims</span><span class="p">,</span> <span class="n">y_lims</span><span class="p">,</span> <span class="n">verbose</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Return Zernikes</span>
+        <span class="c1"># The position scaling is done inside generate_zernike_polynomials</span>
+        <span class="k">return</span> <span class="n">ZernikeHelper</span><span class="o">.</span><span class="n">generate_zernike_polynomials</span><span class="p">(</span>
+            <span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">x_lims</span><span class="p">,</span> <span class="n">y_lims</span><span class="p">,</span> <span class="n">d_max</span><span class="p">,</span> <span class="n">polynomial_coeffs</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="SpatialVaryingPSF">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.sims.spatial_varying_psf.html#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SpatialVaryingPSF</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Spatial Varying PSF.</span>
+
+<span class="sd">    Generate PSF field with polynomial variations of Zernike coefficients.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    psf_simulator: PSFSimulator object</span>
+<span class="sd">        Class instance of the PSFSimulator</span>
+<span class="sd">    d_max: int</span>
+<span class="sd">        Integer representing the maximum polynomial degree for the FOV spatial variation of WFE.</span>
+<span class="sd">    grid_points: list</span>
+<span class="sd">        List defining the size of each axis grid for constructing the (constrained random realisation) polynomial coefficient matrix.</span>
+<span class="sd">    grid_size: int or None, optional</span>
+<span class="sd">        Number of points to generate for the grid. If None, the value from</span>
+<span class="sd">        grid_points attribute will be used. (default is None)</span>
+<span class="sd">    max_order: int</span>
+<span class="sd">        The maximum order of Zernike polynomials to be used in the simulation.</span>
+<span class="sd">    x_lims: list</span>
+<span class="sd">        A list representing the lower and upper limits along the x-axis.</span>
+<span class="sd">    y_lims: list</span>
+<span class="sd">        A list representing the lower and upper limits along the y-axis.</span>
+<span class="sd">    n_bins: int</span>
+<span class="sd">        An integer representing the number of equidistant bins to partition the passband to compute polychromatic PSFs.</span>
+<span class="sd">    lim_max_wfe_rms: float</span>
+<span class="sd">        The upper maximum value limit for the Wave Front Error (WFE) Root-Mean-Square (RMS) error.</span>
+<span class="sd">    verbose: bool</span>
+<span class="sd">        A flag to determine whether to print warning messages.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">psf_simulator</span><span class="p">,</span>
+        <span class="n">d_max</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">grid_points</span><span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+        <span class="n">grid_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_order</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span>
+        <span class="n">x_lims</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e3</span><span class="p">],</span>
+        <span class="n">y_lims</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e3</span><span class="p">],</span>
+        <span class="n">n_bins</span><span class="o">=</span><span class="mi">35</span><span class="p">,</span>
+        <span class="n">lim_max_wfe_rms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="c1"># Input attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">psf_simulator</span> <span class="o">=</span> <span class="n">psf_simulator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_order</span> <span class="o">=</span> <span class="n">max_order</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d_max</span> <span class="o">=</span> <span class="n">d_max</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_lims</span> <span class="o">=</span> <span class="n">x_lims</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_lims</span> <span class="o">=</span> <span class="n">y_lims</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid_points</span> <span class="o">=</span> <span class="n">grid_points</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid_size</span> <span class="o">=</span> <span class="n">grid_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_bins</span> <span class="o">=</span> <span class="n">n_bins</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seed</span> <span class="o">=</span> <span class="n">seed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lim_max_wfe_rms</span> <span class="o">=</span> <span class="n">lim_max_wfe_rms</span>
+
+        <span class="c1"># Class attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">polynomial_coeffs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">WFE_RMS</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Build coefficient polynomial matrix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">build_polynomial_coeffs</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">lim_max_wfe_rms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the upper limit for Wave Front Error (WFE) Root-Mean-Square (RMS).</span>
+
+<span class="sd">        If the custom upper limit `lim_max_wfe_rms` is not set, this property returns</span>
+<span class="sd">        the maximum WFE RMS value from the PSF simulator. Otherwise, it returns the</span>
+<span class="sd">        custom upper limit.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The upper limit for Wave Front Error (WFE) Root-Mean-Square (RMS).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lim_max_wfe_rms</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">psf_simulator</span><span class="o">.</span><span class="n">max_wfe_rms</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lim_max_wfe_rms</span>
+
+    <span class="nd">@lim_max_wfe_rms</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">lim_max_wfe_rms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the upper limit for the Wave Front Error (WFE) Root-Mean-Square (RMS).</span>
+
+<span class="sd">        This setter method allows you to specify a custom upper limit for the</span>
+<span class="sd">        Wave Front Error (WFE) Root-Mean-Square (RMS). Once set, this custom limit</span>
+<span class="sd">        will be used instead of the default limit from the PSF simulator.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        value: float</span>
+<span class="sd">            The new upper limit value to be set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lim_max_wfe_rms</span> <span class="o">=</span> <span class="n">value</span>
+
+<div class="viewcode-block" id="SpatialVaryingPSF.estimate_polynomial_coeffs">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.sims.spatial_varying_psf.html#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.estimate_polynomial_coeffs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">estimate_polynomial_coeffs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">Z</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Estimate polynomial coefficients using least squares.</span>
+
+<span class="sd">        This method estimates the polynomial coefficients using the least squares</span>
+<span class="sd">        method based on the provided positions along the x and y axes.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xv: numpy.ndarray</span>
+<span class="sd">            A 1-dimensional numpy ndarray representing positions along the x-axis.</span>
+<span class="sd">        yv: numpy.ndarray</span>
+<span class="sd">            A 1-dimensional numpy ndarray representing positions along the y-axis.</span>
+
+<span class="sd">        Z: numpy.ndarray</span>
+<span class="sd">           A something numpy ndarray representing the Zernike coefficients.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Pi</span> <span class="o">=</span> <span class="n">PolynomialMatrixHelper</span><span class="o">.</span><span class="n">generate_polynomial_matrix</span><span class="p">(</span>
+            <span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_lims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_lims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_max</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">Z</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">Pi</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SpatialVaryingPSF.calculate_wfe_rms">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.sims.spatial_varying_psf.html#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.calculate_wfe_rms">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_wfe_rms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">polynomial_coeffs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the Wave Front Error (WFE) Root-Mean-Square (RMS).</span>
+
+<span class="sd">        This method calculates the WFE RMS for a specific position using the provided</span>
+<span class="sd">        x and y coordinates and polynomial coefficients.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xv: numpy.ndarray</span>
+<span class="sd">            A 1-dimensional numpy ndarray representing positions along the x-axis.</span>
+<span class="sd">        yv: numpy.ndarray</span>
+<span class="sd">            A 1-dimensional numpy ndarray representing positions along the y-axis.</span>
+<span class="sd">        polynomial_coeffs: numpy.ndarray</span>
+<span class="sd">            A numpy ndarray containing the polynomial coefficients.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            An array containing the WFE RMS values for the provided positions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Z</span> <span class="o">=</span> <span class="n">ZernikeHelper</span><span class="o">.</span><span class="n">generate_zernike_polynomials</span><span class="p">(</span>
+            <span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_lims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_lims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_max</span><span class="p">,</span> <span class="n">polynomial_coeffs</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Z</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="SpatialVaryingPSF.build_polynomial_coeffs">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.sims.spatial_varying_psf.html#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.build_polynomial_coeffs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">build_polynomial_coeffs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build polynomial coefficients for spatial variation.</span>
+
+<span class="sd">        This method constructs polynomial coefficients for spatial variation by following these steps:</span>
+<span class="sd">        1. Build a mesh based on the provided limits and grid points.</span>
+<span class="sd">        2. Apply random position shifts to the mesh coordinates.</span>
+<span class="sd">        3. Estimate polynomial coefficients using the shifted positions.</span>
+<span class="sd">        4. Choose anchor points on a regular grid and calculate the Wave Front Error (WFE) Root-Mean-Square (RMS)</span>
+<span class="sd">           on this new grid.</span>
+<span class="sd">        5. Scale the polynomial coefficients to ensure that the mean WFE RMS over the field of view is 80% of the</span>
+<span class="sd">           maximum allowed WFE RMS per position.</span>
+<span class="sd">        6. Recalculate the Zernike coefficients using the scaled polynomial coefficients.</span>
+<span class="sd">        7. Calculate and save the WFE RMS map of the polynomial coefficient values.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Build mesh</span>
+        <span class="n">xv_grid</span><span class="p">,</span> <span class="n">yv_grid</span> <span class="o">=</span> <span class="n">MeshHelper</span><span class="o">.</span><span class="n">build_mesh</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x_lims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_lims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_points</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Apply random position shifts</span>
+        <span class="n">xv</span><span class="p">,</span> <span class="n">yv</span> <span class="o">=</span> <span class="n">CoordinateHelper</span><span class="o">.</span><span class="n">add_random_shift_to_positions</span><span class="p">(</span>
+            <span class="n">xv_grid</span><span class="p">,</span> <span class="n">yv_grid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_points</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_lims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_lims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">seed</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Generate normalized Z matrix</span>
+        <span class="n">Z</span> <span class="o">=</span> <span class="n">ZernikeHelper</span><span class="o">.</span><span class="n">initialize_normalized_zernike_matrix</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">max_order</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">xv</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">lim_max_wfe_rms</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">seed</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Generate Polynomial coefficients for each Zernike</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">polynomial_coeffs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimate_polynomial_coeffs</span><span class="p">(</span><span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">Z</span><span class="p">)</span>
+
+        <span class="c1">## Sampling the space</span>
+        <span class="c1"># Choose the anchor points on a regular grid</span>
+        <span class="n">xv_grid</span><span class="p">,</span> <span class="n">yv_grid</span> <span class="o">=</span> <span class="n">MeshHelper</span><span class="o">.</span><span class="n">build_mesh</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x_lims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_lims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_points</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid_size</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+        <span class="c1">## Renormalize and check that the WFE RMS has a max value near the expected one</span>
+        <span class="c1"># Calculate the WFE_RMS on the new grid</span>
+        <span class="n">xv</span> <span class="o">=</span> <span class="n">xv_grid</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="n">yv</span> <span class="o">=</span> <span class="n">yv_grid</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+        <span class="n">calc_wfe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_wfe_rms</span><span class="p">(</span><span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">polynomial_coeffs</span><span class="p">)</span>
+
+        <span class="c1"># Due to the polynomial behaviour, set the mean WFE_RMS over the field of view to be 80% of</span>
+        <span class="c1"># the maximum allowed WFE_RMS per position.</span>
+        <span class="n">scale_factor</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.8</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">lim_max_wfe_rms</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">calc_wfe</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">polynomial_coeffs</span> <span class="o">*=</span> <span class="n">scale_factor</span>
+
+        <span class="c1"># Scale the Z coefficients</span>
+        <span class="n">ZernikeHelper</span><span class="o">.</span><span class="n">generate_zernike_polynomials</span><span class="p">(</span>
+            <span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_lims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_lims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_max</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">polynomial_coeffs</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Calculate and save the WFE_RMS map of the polynomial coefficients values.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">WFE_RMS</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_wfe_rms</span><span class="p">(</span><span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">polynomial_coeffs</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+            <span class="n">xv_grid</span><span class="o">.</span><span class="n">shape</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SpatialVaryingPSF.plot_WFE_RMS">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.sims.spatial_varying_psf.html#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.plot_WFE_RMS">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_WFE_RMS</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_img</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">save_name</span><span class="o">=</span><span class="s2">&quot;WFE_field_meshdim&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot the Wave Front Error (WFE) Root-Mean-Square (RMS) map.</span>
+
+<span class="sd">        This method generates a plot of the WFE RMS map for the Point Spread Function (PSF) field. The plot</span>
+<span class="sd">        visualizes the distribution of WFE RMS values across the field of view.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        save_img: bool, optional</span>
+<span class="sd">            Flag indicating whether to save the plot as an image file. Default is False.</span>
+<span class="sd">        save_name: str, optional</span>
+<span class="sd">            Name of the image file to save. Default is &#39;WFE_field_meshdim&#39;.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+        <span class="n">ax1</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+        <span class="n">im1</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">WFE_RMS</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s2">&quot;None&quot;</span><span class="p">)</span>
+        <span class="n">divider</span> <span class="o">=</span> <span class="n">make_axes_locatable</span><span class="p">(</span><span class="n">ax1</span><span class="p">)</span>
+        <span class="n">cax</span> <span class="o">=</span> <span class="n">divider</span><span class="o">.</span><span class="n">append_axes</span><span class="p">(</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="s2">&quot;5%&quot;</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im1</span><span class="p">,</span> <span class="n">cax</span><span class="o">=</span><span class="n">cax</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s2">&quot;vertical&quot;</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;PSF field WFE RMS [um]&quot;</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;x axis&quot;</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;y axis&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">save_img</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;./&quot;</span> <span class="o">+</span> <span class="n">save_name</span> <span class="o">+</span> <span class="s2">&quot;.pdf&quot;</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="SpatialVaryingPSF.get_monochromatic_PSF">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.sims.spatial_varying_psf.html#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.get_monochromatic_PSF">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_monochromatic_PSF</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">lambda_obs</span><span class="o">=</span><span class="mf">0.725</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the monochromatic Point Spread Function (PSF) at a specific position and wavelength.</span>
+
+<span class="sd">        This method calculates the monochromatic PSF for a given position and wavelength. It utilizes the</span>
+<span class="sd">        Zernike coefficients of the specific field to generate the PSF using the PSF toolkit generator.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xv: numpy.ndarray</span>
+<span class="sd">            1-dimensional numpy array containing the x positions.</span>
+<span class="sd">        yv: numpy.ndarray</span>
+<span class="sd">            1-dimensional numpy array containing the y positions.</span>
+<span class="sd">        lambda_obs: float, optional</span>
+<span class="sd">            Wavelength of observation for which the PSF is calculated. Default is 0.725 micrometers.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The generated monochromatic PSF.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The PSF generator&#39;s Zernike coefficients are set based on the provided positions before generating the PSF.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Calculate the specific field&#39;s zernike coeffs</span>
+        <span class="n">zernikes</span> <span class="o">=</span> <span class="n">ZernikeHelper</span><span class="o">.</span><span class="n">calculate_zernike</span><span class="p">(</span>
+            <span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_lims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_lims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_max</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">polynomial_coeffs</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Set the Z coefficients to the PSF toolkit generator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">psf_simulator</span><span class="o">.</span><span class="n">set_z_coeffs</span><span class="p">(</span><span class="n">zernikes</span><span class="p">)</span>
+        <span class="c1"># Generate the monochromatic psf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">psf_simulator</span><span class="o">.</span><span class="n">generate_mono_PSF</span><span class="p">(</span><span class="n">lambda_obs</span><span class="o">=</span><span class="n">lambda_obs</span><span class="p">,</span> <span class="n">regen_sample</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="c1"># Return the generated PSF</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">psf_simulator</span><span class="o">.</span><span class="n">get_psf</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="SpatialVaryingPSF.get_polychromatic_PSF">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.sims.spatial_varying_psf.html#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.get_polychromatic_PSF">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_polychromatic_PSF</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">SED</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the polychromatic Point Spread Function (PSF) for a specific position and Spectral Energy Distribution (SED).</span>
+
+<span class="sd">        This method calculates the polychromatic PSF for a given position and SED. It utilizes the Zernike coefficients</span>
+<span class="sd">        of the specific field to generate the PSF using the PSF Simulator generator.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        xv: numpy.ndarray</span>
+<span class="sd">            1-dimensional numpy array containing the x positions.</span>
+<span class="sd">        yv: numpy.ndarray</span>
+<span class="sd">            1-dimensional numpy array containing the y positions.</span>
+<span class="sd">        SED: array_like</span>
+<span class="sd">            Spectral Energy Distribution (SED) describing the relative intensity of light at different wavelengths.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple</span>
+<span class="sd">            A tuple containing:</span>
+<span class="sd">            - polychromatic_psf : numpy.ndarray</span>
+<span class="sd">                The generated polychromatic PSF.</span>
+<span class="sd">            - zernikes : numpy.ndarray</span>
+<span class="sd">                The Zernike coefficients corresponding to the specific field.</span>
+<span class="sd">            - opd : numpy.ndarray</span>
+<span class="sd">                The Optical Path Difference (OPD) corresponding to the generated PSF.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The PSF generator&#39;s Zernike coefficients are set based on the provided positions before generating the PSF.</span>
+<span class="sd">        The SED is used to compute the polychromatic PSF by integrating the monochromatic PSFs over the spectral range.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Calculate the specific field&#39;s zernike coeffs</span>
+        <span class="n">zernikes</span> <span class="o">=</span> <span class="n">ZernikeHelper</span><span class="o">.</span><span class="n">calculate_zernike</span><span class="p">(</span>
+            <span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_lims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_lims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_max</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">polynomial_coeffs</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Set the Z coefficients to the PSF Simulator generator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">psf_simulator</span><span class="o">.</span><span class="n">set_z_coeffs</span><span class="p">(</span><span class="n">zernikes</span><span class="p">)</span>
+        <span class="n">polychromatic_psf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">psf_simulator</span><span class="o">.</span><span class="n">generate_poly_PSF</span><span class="p">(</span>
+            <span class="n">SED</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bins</span>
+        <span class="p">)</span>
+        <span class="n">opd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">psf_simulator</span><span class="o">.</span><span class="n">opd</span>
+
+        <span class="k">return</span> <span class="n">polychromatic_psf</span><span class="p">,</span> <span class="n">zernikes</span><span class="p">,</span> <span class="n">opd</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

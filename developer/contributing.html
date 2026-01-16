@@ -1,0 +1,357 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contributing to WaveDiff &mdash; wf-psf 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../_static/twemoji.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="WaveDiff Development Plan" href="dev_workflow.html" />
+    <link rel="prev" title="Contributor Covenant Code of Conduct" href="code_of_conduct.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Developer Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="code_of_conduct.html">Code of Conduct</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Contributing to WaveDiff</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#contents">Contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#workflow">Workflow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#issues">Issues</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pull-requests">Pull Requests</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#before-opening-a-pr">Before Opening a PR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#opening-a-pr">Opening a PR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#revising-a-pr">Revising a PR</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#after-a-pr-is-merged">After a PR is Merged</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#content">Content</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ci-tests">CI Tests</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#changelog-entries">Changelog entries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#style-guide">Style Guide</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dev_workflow.html">Dev Workflow</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Developer Guide</a></li>
+      <li class="breadcrumb-item active">Contributing to WaveDiff</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/developer/contributing.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="contributing-to-wavediff">
+<h1>Contributing to WaveDiff<a class="headerlink" href="#contributing-to-wavediff" title="Link to this heading"></a></h1>
+<p>WaveDiff is a software development project aimed at modeling the point spread function of an optical system using auto differentiation techniques. These guidelines are designed to facilitate contributions to WaveDiff by providing clear instructions on issue reporting, pull request submission, and code style standards.</p>
+<section id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="#introduction"><span class="std std-ref">Introduction</span></a></p></li>
+<li><p><a class="reference internal" href="#workflow"><span class="std std-ref">Workflow</span></a></p></li>
+<li><p><a class="reference internal" href="#issues"><span class="std std-ref">Issues</span></a></p></li>
+<li><p><a class="reference internal" href="#pull-requests"><span class="xref myst">Pull Requests</span></a></p>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="#before-opening-a-pr"><span class="xref myst">Before Opening a PR</span></a></p></li>
+<li><p><a class="reference internal" href="#opening-a-pr"><span class="xref myst">Opening a PR</span></a></p></li>
+<li><p><a class="reference internal" href="#revising-a-pr"><span class="xref myst">Revising a PR</span></a></p></li>
+<li><p><a class="reference internal" href="#after-a-pr-is-merged"><span class="xref myst">After a PR is Merged</span></a></p></li>
+</ol>
+</li>
+<li><p><a class="reference internal" href="#content"><span class="std std-ref">Content</span></a></p></li>
+<li><p><a class="reference internal" href="#ci-tests"><span class="xref myst">CI Tests</span></a></p></li>
+<li><p><a class="reference internal" href="#changelog-entries"><span class="xref myst">Changelog entries</span></a></p></li>
+<li><p><a class="reference internal" href="#style-guide"><span class="xref myst">Style Guide</span></a></p></li>
+</ol>
+</section>
+<section id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Link to this heading"></a></h2>
+<p>Welcome to the WaveDiff project! We appreciate your interest in contributing to our software development efforts. Before you get started, please take a moment to review and adhere to these guidelines and our <a class="reference internal" href="#./CODE_OF_CONDUCT.md"><span class="xref myst">code of conduct</span></a>.</p>
+</section>
+<section id="workflow">
+<h2>Workflow<a class="headerlink" href="#workflow" title="Link to this heading"></a></h2>
+<p>The WaveDiff project follows a <a class="reference internal" href="#./DEV_WORKFLOW.md"><span class="xref myst">specific workflow</span></a> to streamline the development process. Familiarize yourself with the following workflow guidelines:</p>
+<ol class="arabic simple">
+<li><p><strong>Milestone Definition</strong>: Define milestones to mark the completion of project cycles, such as feature development or testing phases. Milestones are typically scheduled releases, such as monthly releases, and can include different types such as minor, major, or patch releases.</p></li>
+<li><p><strong>Git Branching Model</strong>: WaveDiff follows a Git branching model to manage code changes efficiently. The main branches include:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">main</span></code>: Stores official release history, with each commit tagged with a version number.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">develop</span></code>: Integration branch for features.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">feature</span></code>: Branches for developing new features, created from the <code class="docutils literal notranslate"><span class="pre">develop</span></code> branch.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bug</span></code>: Branches for fixing specific bugs, created from the <code class="docutils literal notranslate"><span class="pre">develop</span></code> branch.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hotfix</span></code>: Branches for quickly correcting bugs in the latest release version, created from the <code class="docutils literal notranslate"><span class="pre">main</span></code> branch.</p></li>
+</ul>
+</li>
+<li><p><strong>Branch Naming Conventions</strong>: Use specific naming conventions for branches to indicate their purpose and associated issue. For example:</p>
+<ul class="simple">
+<li><p>Feature branch: <code class="docutils literal notranslate"><span class="pre">feature/issue-&lt;issue_number&gt;/short-description</span></code></p></li>
+<li><p>Bug branch: <code class="docutils literal notranslate"><span class="pre">bug/issue-&lt;issue_number&gt;/short-description</span></code></p></li>
+<li><p>Hotfix branch: <code class="docutils literal notranslate"><span class="pre">hotfix/issue-&lt;issue_number&gt;/short-description</span></code></p></li>
+</ul>
+</li>
+<li><p><strong>Pull Request Process</strong>: Follow a structured process when opening and reviewing pull requests. Include steps for opening a PR, revising it based on feedback, and merging it into the appropriate branch.</p></li>
+<li><p><strong>Preparing for a Release</strong>: Outline the steps to prepare for a release, including merging changes into the main branch and tagging the release.</p></li>
+</ol>
+<p>These workflow guidelines ensure consistency and efficiency in the development process and help maintain a high-quality codebase for the WaveDiff project.</p>
+</section>
+<section id="issues">
+<h2>Issues<a class="headerlink" href="#issues" title="Link to this heading"></a></h2>
+<p>Reporting issues is a valuable way to contribute to the improvement of WaveDiff. Follow these guidelines when reporting issues:</p>
+<ul class="simple">
+<li><p>Use the <a class="reference external" href="https://github.com/CosmoStat/wf-psf/issues/new/choose">issue tracker</a> to report bugs, request features, or ask questions.</p></li>
+<li><p>Provide clear and descriptive titles and descriptions for your issues.</p></li>
+<li><p>Search existing issues to avoid duplicates before submitting a new one.</p></li>
+</ul>
+</section>
+<section id="pull-requests">
+<h2>Pull Requests<a class="headerlink" href="#pull-requests" title="Link to this heading"></a></h2>
+<p>To contribute code changes or new features to WaveDiff, please follow these steps:</p>
+<section id="before-opening-a-pr">
+<h3>Before Opening a PR<a class="headerlink" href="#before-opening-a-pr" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Log in to your GitHub account or create one if you don’t have one already.</p></li>
+<li><p>Navigate to the <a class="reference external" href="https://github.com/CosmoStat/wf-psf/">WaveDiff repository</a>.</p></li>
+<li><p>Check if an <a class="reference internal" href="#issues"><span class="std std-ref">issue</span></a> exists for the changes you plan to make. If not, <a class="reference external" href="https://github.com/CosmoStat/wf-psf/issues/new/choose">open one</a> and specify that you plan to open a PR to address it.</p></li>
+<li><p>Fork the repository to create your own copy.</p></li>
+<li><p>Clone your fork of WaveDiff to your local machine.</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:&lt;your-username&gt;/wf-psf.git
+</pre></div>
+</div>
+<ol class="arabic simple" start="6">
+<li><p>Add the original repository (upstream) as a remote.</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>remote<span class="w"> </span>add<span class="w"> </span>upstream<span class="w"> </span>git@github.com:CosmoStat/wf-psf.git
+</pre></div>
+</div>
+</section>
+<section id="opening-a-pr">
+<h3>Opening a PR<a class="headerlink" href="#opening-a-pr" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Pull the latest updates from the original repository.</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>pull<span class="w"> </span>upstream<span class="w"> </span>develop
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>Create a new branch for your modifications.</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>&lt;branch-name&gt;
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p>Make the desired modifications to the codebase.</p></li>
+<li><p>Add and commit your changes.</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>add<span class="w"> </span>.
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Description of the changes&quot;</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="5">
+<li><p>Push your changes to your fork on GitHub.</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>&lt;branch-name&gt;
+</pre></div>
+</div>
+<ol class="arabic simple" start="6">
+<li><p>Open a <a class="reference external" href="https://github.com/CosmoStat/wf-psf/compare">pull request</a> with a clear description of your changes and reference any related issues.</p></li>
+</ol>
+</section>
+<section id="revising-a-pr">
+<h3>Revising a PR<a class="headerlink" href="#revising-a-pr" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>After opening a PR, a project maintainer will review your changes and provide feedback.</p></li>
+<li><p>Address any comments or requested changes in your PR.</p></li>
+<li><p>Push your changes to the same branch in your fork.</p></li>
+<li><p>The reviewer will merge your PR into the main branch once it’s approved.</p></li>
+</ol>
+</section>
+<section id="after-a-pr-is-merged">
+<h3>After a PR is Merged<a class="headerlink" href="#after-a-pr-is-merged" title="Link to this heading"></a></h3>
+<p>After your PR is merged, follow these steps to keep your fork up to date:</p>
+<ol class="arabic simple">
+<li><p>Switch to your local develop branch.</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>checkout<span class="w"> </span>develop
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>Delete the branch you used for the PR.</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>branch<span class="w"> </span>-d<span class="w"> </span>&lt;branch-name&gt;
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p>Pull the latest updates from the original repository.</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>pull<span class="w"> </span>upstream<span class="w"> </span>develop
+</pre></div>
+</div>
+<ol class="arabic simple" start="4">
+<li><p>Push the changes to your fork.</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>develop
+</pre></div>
+</div>
+</section>
+</section>
+<section id="content">
+<h2>Content<a class="headerlink" href="#content" title="Link to this heading"></a></h2>
+<p>Every PR should correspond to a specific issue in the issue tracker. Tag the issue that the PR resolves (e.g., “This PR closes #1”). Keep PR content concise and focused on resolving a single issue. Additional changes should be made in separate PRs.</p>
+</section>
+<section id="ci-tests">
+<h2>CI Tests<a class="headerlink" href="#ci-tests" title="Link to this heading"></a></h2>
+<p>All PRs must pass CI tests before being merged. Resolve any issues causing test failures and justify any modifications to unit tests in the PR description.</p>
+</section>
+<section id="changelog-entries">
+<h2>Changelog entries<a class="headerlink" href="#changelog-entries" title="Link to this heading"></a></h2>
+<p>WaveDiff uses <a class="reference external" href="https://scriv.readthedocs.io/en/latest/index.html">Scriv</a> to manage its changelog and release notes.</p>
+<p>If your pull request introduces user-visible changes (features, bug fixes, performance improvements, or breaking changes), you must <strong>add</strong> and <strong>commit a changelog fragment</strong>.</p>
+<p>To create a fragment, run from the repository root:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>scriv<span class="w"> </span>create
+</pre></div>
+</div>
+<p>Edit the generated file in <code class="docutils literal notranslate"><span class="pre">changelog.d/</span></code> by uncommenting exactly one relevant section and adding a short description.<br />
+Release maintainers collect fragments when preparing a release; contributors should not run <code class="docutils literal notranslate"><span class="pre">scriv</span> <span class="pre">collect</span></code>.</p>
+</section>
+<section id="style-guide">
+<h2>Style Guide<a class="headerlink" href="#style-guide" title="Link to this heading"></a></h2>
+<p>Adhere to the following style guidelines when contributing to WaveDiff:</p>
+<ol class="arabic simple">
+<li><p>Compatibility: Ensure compatibility with specified Python package versions.</p></li>
+<li><p>PEP8 Standards: Follow PEP8 standards for code formatting.</p></li>
+<li><p>Docstrings: Provide docstrings for all modules, methods, and classes following numpydoc standards.</p></li>
+<li><p>Existing Code: Use existing code as a reference for style conventions.</p></li>
+<li><p>String Formatting: Prefer single quotes over double quotes for strings, and use explicit floats.</p></li>
+<li><p>Line Length: Split long lines (&gt;79 characters) using parentheses for readability.</p></li>
+<li><p>String Concatenation: Use f-strings for string formatting and explicit concatenation with a <code class="docutils literal notranslate"><span class="pre">+</span></code> at the beginning of each line.</p></li>
+</ol>
+<p>These guidelines will help maintain code consistency and readability throughout the project.</p>
+<p>Feel free to customize these guidelines further to better suit the specific needs and conventions of the WaveDiff project.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="code_of_conduct.html" class="btn btn-neutral float-left" title="Contributor Covenant Code of Conduct" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="dev_workflow.html" class="btn btn-neutral float-right" title="WaveDiff Development Plan" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

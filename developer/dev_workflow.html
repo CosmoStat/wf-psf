@@ -1,0 +1,304 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WaveDiff Development Plan &mdash; wf-psf 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../_static/twemoji.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="References" href="../z_ref.html" />
+    <link rel="prev" title="Contributing to WaveDiff" href="contributing.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Developer Guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="code_of_conduct.html">Code of Conduct</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html">Contributing to WaveDiff</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Dev Workflow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#define-a-milestone">1.  <strong>Define a Milestone</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#git-workflow-branching-model-made-with-mermaid">2.  <strong>Git Workflow Branching Model (Made with</strong> <strong>mermaid</strong><strong>)</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#new-branch-naming-conventions">3.  <strong>New Branch naming conventions</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#feature-branch-creation">4.  <strong>Feature branch creation</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#completion-of-development">5.  <strong>Completion of development</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#merging-pull-requests">6.  <strong>Merging Pull Requests</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#changelog-and-release-notes">7.  <strong>Changelog and release notes</strong></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#changelog-fragments">Changelog fragments</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#branching-and-scope">Branching and scope</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#preparing-for-a-release">8.  <strong>Preparing for a Release</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#continuous-improvement">9.  <strong>Continuous Improvement</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#documentation-and-training">10.  <strong>Documentation and Training</strong></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#automation-and-tooling">11.  <strong>Automation and Tooling</strong></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Developer Guide</a></li>
+      <li class="breadcrumb-item active"><strong>WaveDiff Development Plan</strong></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/developer/dev_workflow.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="wavediff-development-plan">
+<h1><strong>WaveDiff Development Plan</strong><a class="headerlink" href="#wavediff-development-plan" title="Link to this heading"></a></h1>
+<section id="define-a-milestone">
+<h2>1.  <strong>Define a Milestone</strong><a class="headerlink" href="#define-a-milestone" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Purpose</strong>: Milestones mark the completion of project cycles and achievement of predefined goals. A milestone is a timeline point marking the end of a project cycle, where a set of goals defined at the start of the cycle have been completed.  Goals could be tasks associated with feature development, testing phase completion, etc. List &amp; Open issues.</p></li>
+<li><p><strong>Types of Milestones:</strong> Differentiate between major, minor and patch release releases to track progress effectively.</p></li>
+</ul>
+<p>Make a milestone related to a release on possibly a minor release schedule (e.g. monthly schedule). Differentiate between the different types of releases (minor, major, patch).</p>
+</section>
+<section id="git-workflow-branching-model-made-with-mermaid">
+<h2>2.  <strong>Git Workflow Branching Model (Made with</strong> <a class="reference external" href="https://mermaid.js.org"><strong>mermaid</strong></a><strong>)</strong><a class="headerlink" href="#git-workflow-branching-model-made-with-mermaid" title="Link to this heading"></a></h2>
+<p><img alt="" src="../_images/branching_model.png" /></p>
+<ul class="simple">
+<li><p><strong>main</strong>: Stores official release history with tagged version numbers (see top row in the diagram above).</p></li>
+<li><p><strong>develop</strong>: This branch is the integration branch for features.</p></li>
+<li><p><strong>feature</strong>: Branch off of develop for new feature development.  Features get merged to develop (never to main).</p></li>
+<li><p><strong>bug</strong>: For fixing specific bugs introduced during the production phase.</p></li>
+<li><p><strong>hotfix</strong>: Quickly corrects bugs in the latest release version; branched off main.</p></li>
+</ul>
+</section>
+<section id="new-branch-naming-conventions">
+<h2>3.  <strong>New Branch naming conventions</strong><a class="headerlink" href="#new-branch-naming-conventions" title="Link to this heading"></a></h2>
+<p>Branches created for the purpose of a Pull Request should be directly related to an open issue within the project’s issue tracker.  This ensures that all code changes are tied to specific tasks or features, facilitating better organisation and tracking of contributions. Below are the branch naming conventions:</p>
+<ul class="simple">
+<li><p><strong>Feature</strong>: feature/<issue number>/short-description</p></li>
+<li><p><strong>Bug</strong>: bug/<issue number>/short-description</p></li>
+<li><p><strong>Hotfix</strong>: hotfix/<issue number>/short-description</p></li>
+</ul>
+<p>Replace with the corresponding issue number and provide a brief description of the changes in `short_description`.</p>
+</section>
+<section id="feature-branch-creation">
+<h2>4.  <strong>Feature branch creation</strong><a class="headerlink" href="#feature-branch-creation" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Pull the latest changes from the remote repository</p></li>
+<li><p>Checkout develop</p></li>
+<li><p>Create a new feature branch</p></li>
+<li><p>Ensure the feature branch’s commits align with the defined scope</p></li>
+</ul>
+<p><strong>Tip</strong>: Keep feature branch development focused on the defined scope outlined in the corresponding issue. Avoid introducing unrelated changes. Instead, open a new issue for out-of-scope features or bugs, creating a separate branch for their development.</p>
+</section>
+<section id="completion-of-development">
+<h2>5.  <strong>Completion of development</strong><a class="headerlink" href="#completion-of-development" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Run training and metrics validation tests locally to confirm no breaking behaviour or errors were introduced.  Include test reports as per the PR template.</p></li>
+<li><p>Open a Pull Request to start the review process, ensuring to map the branch correctly to the target branch (i.e. feature_branch -&gt; develop or hotfix_branch -&gt; main).</p></li>
+<li><p>In the description of the Pull Request, explicitly state whether the PR resolves or closes an open issue by using one of the following formats:</p>
+<ul>
+<li><p>“Solves #”</p></li>
+<li><p>“Closes #”</p></li>
+</ul>
+</li>
+</ul>
+<p>Example: “Solves #12345” or “Closes #8679”.</p>
+<ul class="simple">
+<li><p>Ensure that the PR meets the defined requirements and passes Continuous Integration (CI) tests.</p></li>
+<li><p>Assign a reviewer, assign yourself as assignee, select the correct project, choose the correct label that describes the nature of the issue (e.g. bug, enhancement, etc), choose Milestone if applicable if the issue is associated with a specific milestone or target release.</p></li>
+<li><p>Address reviewer feedback in threads and iterate as needed, implementing the requested changes or explaining why the task is implemented in the manner it is.  Respect the rule: Whoever opens the thread/conversation in the Pull Request is responsible for closing it.</p></li>
+</ul>
+</section>
+<section id="merging-pull-requests">
+<h2>6.  <strong>Merging Pull Requests</strong><a class="headerlink" href="#merging-pull-requests" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Approval and Merging: Once the reviewer approves the PR and all feedback is addressed, merge the feature branch into develop.  Note, it is the reviewer who is responsible for merging the PR when satisfied with the changes.</p></li>
+</ul>
+</section>
+<section id="changelog-and-release-notes">
+<h2>7.  <strong>Changelog and release notes</strong><a class="headerlink" href="#changelog-and-release-notes" title="Link to this heading"></a></h2>
+<p>WaveDiff uses <strong>Scriv</strong> to manage its changelog and release notes.</p>
+<p>Instead of editing <code class="docutils literal notranslate"><span class="pre">CHANGELOG.md</span></code> directly during development, contributors add small <strong>changelog fragments</strong> describing user-visible changes. These fragments are committed alongside pull requests and collected automatically when preparing a release.</p>
+<p>This approach:</p>
+<ul class="simple">
+<li><p>Avoids merge conflicts on the changelog</p></li>
+<li><p>Ensures consistent, structured release notes</p></li>
+<li><p>Keeps release notes focused on user impact</p></li>
+</ul>
+<section id="changelog-fragments">
+<h3>Changelog fragments<a class="headerlink" href="#changelog-fragments" title="Link to this heading"></a></h3>
+<ul>
+<li><p>Fragments are stored in <code class="docutils literal notranslate"><span class="pre">changelog.d/</span></code></p></li>
+<li><p>Each fragment corresponds to a single pull request</p></li>
+<li><p>Fragments must be <strong>staged and committed</strong> as part of the PR</p></li>
+<li><p>Contributors create fragments using:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>scriv<span class="w"> </span>create
+</pre></div>
+</div>
+</li>
+</ul>
+<p>Fragment creation and writing guidelines are documented in <a class="reference internal" href="#./CONTRIBUTING.md"><span class="xref myst">CONTRIBUTING.md</span></a>.</p>
+</section>
+<section id="branching-and-scope">
+<h3>Branching and scope<a class="headerlink" href="#branching-and-scope" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Changelog fragments should reflect <strong>what is merged</strong>, not how it is implemented.</p></li>
+<li><p>Feature branches should include only feature-related fragments</p></li>
+<li><p>Bug fixes discovered during feature development should be moved to a <strong>separate branch and pull request</strong>, with their own fragment
+This separation keeps release notes accurate and enables clean backports</p></li>
+</ul>
+</section>
+</section>
+<section id="preparing-for-a-release">
+<h2>8.  <strong>Preparing for a Release</strong><a class="headerlink" href="#preparing-for-a-release" title="Link to this heading"></a></h2>
+<ul>
+<li><p>Each milestone targets a release (feature, patch, etc).</p></li>
+<li><p>Open a PR from develop to main upon completing a milestone</p></li>
+<li><p>Collect changelog fragments and generate release notes using:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>scriv<span class="w"> </span>collect<span class="w"> </span>--version<span class="w"> </span>vX.Y.Z
+</pre></div>
+</div>
+</li>
+<li><p>Ensure all checklist items for the release are completed.</p></li>
+<li><p>Merge the PR into main and tag the release.</p></li>
+</ul>
+</section>
+<section id="continuous-improvement">
+<h2>9.  <strong>Continuous Improvement</strong><a class="headerlink" href="#continuous-improvement" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Regularly review and refine the workflow based on team feedback and lessons learned.</p></li>
+<li><p>Encourage collaboration and communication among team members to streamline processes and enhance productivity.</p></li>
+</ul>
+</section>
+<section id="documentation-and-training">
+<h2>10.  <strong>Documentation and Training</strong><a class="headerlink" href="#documentation-and-training" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Maintain up-to-date documentation outlining the development workflow and procedures.</p></li>
+<li><p>Provide training to new team members and ensure existing members are familiar with the workflow and best practices.</p></li>
+</ul>
+</section>
+<section id="automation-and-tooling">
+<h2>11.  <strong>Automation and Tooling</strong><a class="headerlink" href="#automation-and-tooling" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Explore automation tools to streamline repetitive tasks, such as testing, code formatting, and deployment.</p></li>
+<li><p>Integrate with CI/CD pipelines for automated testing and deployment processes.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="contributing.html" class="btn btn-neutral float-left" title="Contributing to WaveDiff" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../z_ref.html" class="btn btn-neutral float-right" title="References" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

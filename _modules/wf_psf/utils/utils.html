@@ -1,25 +1,24 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wf_psf.utils.utils &mdash; wf-psf 2.0.1 documentation</title>
+  <title>wf_psf.utils.utils &mdash; wf-psf 3.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9570fddd" />
       <link rel="stylesheet" type="text/css" href="../../../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=309026bb" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
-        <script src="../../../_static/doctools.js?v=888ff710"></script>
-        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
-        <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"></script>
-        <script src="../../../_static/twemoji.js"></script>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../../../_static/twemoji.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="../../../about.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -62,7 +61,11 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../wf_psf.html">wf_psf package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer/index.html">Developer Guide</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">References</span></p>
 <ul>
@@ -94,130 +97,279 @@
            <div itemprop="articleBody">
              
   <h1>Source code for wf_psf.utils.utils</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
-<span class="kn">import</span> <span class="nn">tensorflow_addons</span> <span class="k">as</span> <span class="nn">tfa</span>
-<span class="kn">import</span> <span class="nn">PIL</span>
-<span class="kn">import</span> <span class="nn">zernike</span> <span class="k">as</span> <span class="nn">zk</span>
+<span></span><span class="sd">&quot;&quot;&quot;Utility functions for the PSF simulation and modeling.</span>
+
+<span class="sd">:Authors: Tobias Liaudat &lt;tobias.liaudat@cea.fr&gt;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow_addons</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tfa</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">PIL</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">zernike</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">zk</span>
+
+<span class="n">_HAS_CV2</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">_HAS_SKIMAGE</span> <span class="o">=</span> <span class="kc">False</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">cv2</span> <span class="kn">import</span> <span class="n">resize</span><span class="p">,</span> <span class="n">INTER_AREA</span>
-<span class="k">except</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Problem importing opencv..&quot;</span><span class="p">)</span>
-<span class="kn">import</span> <span class="nn">sys</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
+    <span class="n">_HAS_CV2</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">skimage.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">downscale_local_mean</span>
+        <span class="n">_HAS_SKIMAGE</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">pass</span>
 
 
-<div class="viewcode-block" id="scale_to_range">
-<a class="viewcode-back" href="../../../wf_psf.utils.utils.html#wf_psf.utils.utils.scale_to_range">[docs]</a>
-<span class="k">def</span> <span class="nf">scale_to_range</span><span class="p">(</span><span class="n">input_array</span><span class="p">,</span> <span class="n">old_range</span><span class="p">,</span> <span class="n">new_range</span><span class="p">):</span>
-    <span class="c1"># Scale to [0,1]</span>
-    <span class="n">input_array</span> <span class="o">=</span> <span class="p">(</span><span class="n">input_array</span> <span class="o">-</span> <span class="n">old_range</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">old_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">old_range</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="c1"># Scale to new_range</span>
-    <span class="n">input_array</span> <span class="o">=</span> <span class="n">input_array</span> <span class="o">*</span> <span class="p">(</span><span class="n">new_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">new_range</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">new_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">input_array</span></div>
+<div class="viewcode-block" id="generalised_sigmoid">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.generalised_sigmoid">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generalised_sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">max_val</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">power_k</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply a generalized sigmoid function to the input.</span>
+
+<span class="sd">    This function computes a smooth, S-shaped curve that generalizes the standard</span>
+<span class="sd">    sigmoid function. It&#39;s useful for scaling values while maintaining a bounded output.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : array_like</span>
+<span class="sd">        Input value(s) to which the generalized sigmoid is applied.</span>
+<span class="sd">    max_val : float, optional</span>
+<span class="sd">        Maximum output value. Default is 1.</span>
+<span class="sd">    power_k : float, optional</span>
+<span class="sd">        Power parameter controlling the steepness of the curve.</span>
+<span class="sd">        Default is 1. Higher values create steeper transitions.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    array_like</span>
+<span class="sd">        Output value(s) scaled by the generalized sigmoid function,</span>
+<span class="sd">        bounded between -max_val and max_val.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    When power_k=1, this reduces to a standard rational sigmoid function.</span>
+<span class="sd">    The function is odd, meaning generalised_sigmoid(-x) = -generalised_sigmoid(x).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">max_val</span> <span class="o">*</span> <span class="n">x</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">power_k</span><span class="p">),</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">power_k</span><span class="p">)</span></div>
 
 
 
-<div class="viewcode-block" id="calc_wfe">
-<a class="viewcode-back" href="../../../wf_psf.utils.utils.html#wf_psf.utils.utils.calc_wfe">[docs]</a>
-<span class="k">def</span> <span class="nf">calc_wfe</span><span class="p">(</span><span class="n">zernike_basis</span><span class="p">,</span> <span class="n">zks</span><span class="p">):</span>
-    <span class="n">wfe</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;ijk,ijk-&gt;jk&quot;</span><span class="p">,</span> <span class="n">zernike_basis</span><span class="p">,</span> <span class="n">zks</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">wfe</span></div>
+<div class="viewcode-block" id="single_mask_generator">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.single_mask_generator">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">single_mask_generator</span><span class="p">(</span><span class="n">shape</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a single mask with random 2D cosine waves.</span>
+
+<span class="sd">    Note: These masks simulate the effect of cosmic rays on the observations.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    shape: tuple</span>
+<span class="sd">        Shape of the mask to be generated.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    cosine_wave: np.ndarray</span>
+<span class="sd">        A 2D mask with random 2D cosine waves.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># 2D meshgrid between 0.5 and 1</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">,</span> <span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="c1"># random pair of 2D frequencies, xy shifts and flip flag</span>
+    <span class="n">fxy_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="o">*</span> <span class="mi">6</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)]</span>
+    <span class="c1"># 2D cosine waves</span>
+    <span class="n">cosine_wave_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">fxy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">fxy</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="mi">50</span><span class="p">)</span> <span class="o">+</span> <span class="n">fxy</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">fxy</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">/</span> <span class="mi">50</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">fxy</span> <span class="ow">in</span> <span class="n">fxy_list</span>
+    <span class="p">]</span>
+    <span class="c1"># Sum of all cosine waves with random orientation</span>
+    <span class="n">cosine_wave_tot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">cosine_wave_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">cosine_wave</span><span class="p">,</span> <span class="n">fxy</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">cosine_wave_list</span><span class="p">,</span> <span class="n">fxy_list</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">fxy</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">cosine_wave</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">cosine_wave</span><span class="p">)</span>
+        <span class="n">cosine_wave_tot</span> <span class="o">+=</span> <span class="n">cosine_wave</span>
+    <span class="c1"># normalize</span>
+    <span class="n">cosine_wave</span> <span class="o">=</span> <span class="n">cosine_wave_tot</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">cosine_wave_tot</span><span class="p">)</span>
+
+    <span class="c1"># detect values less than 0.6</span>
+    <span class="k">return</span> <span class="n">cosine_wave</span> <span class="o">&lt;</span> <span class="mf">0.6</span></div>
 
 
 
-<div class="viewcode-block" id="calc_wfe_rms">
-<a class="viewcode-back" href="../../../wf_psf.utils.utils.html#wf_psf.utils.utils.calc_wfe_rms">[docs]</a>
-<span class="k">def</span> <span class="nf">calc_wfe_rms</span><span class="p">(</span><span class="n">zernike_basis</span><span class="p">,</span> <span class="n">zks</span><span class="p">,</span> <span class="n">pupil_mask</span><span class="p">):</span>
-    <span class="n">wfe</span> <span class="o">=</span> <span class="n">calc_wfe</span><span class="p">(</span><span class="n">zernike_basis</span><span class="p">,</span> <span class="n">zks</span><span class="p">)</span>
-    <span class="n">wfe_rms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">wfe</span><span class="p">[</span><span class="n">pupil_mask</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">wfe</span><span class="p">[</span><span class="n">pupil_mask</span><span class="p">]))</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">wfe_rms</span></div>
+<div class="viewcode-block" id="generate_n_mask">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.generate_n_mask">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_n_mask</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">n_masks</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate n masks with random 2D cosine waves.</span>
+
+<span class="sd">    A wrapper around single_mask_generator to generate multiple masks.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    shape: tuple</span>
+<span class="sd">        Shape of the masks to be generated.</span>
+<span class="sd">    n_masks: int</span>
+<span class="sd">        Number of masks to be generated.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        Array of shape (n_masks, shape[0], shape[1]) containing the generated masks.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">single_mask_generator</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_masks</span><span class="p">)])</span></div>
 
 
 
 <div class="viewcode-block" id="generate_SED_elems">
-<a class="viewcode-back" href="../../../wf_psf.utils.utils.html#wf_psf.utils.utils.generate_SED_elems">[docs]</a>
-<span class="k">def</span> <span class="nf">generate_SED_elems</span><span class="p">(</span><span class="n">SED</span><span class="p">,</span> <span class="n">sim_psf_toolkit</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate SED Elements.</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.generate_SED_elems">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_SED_elems</span><span class="p">(</span><span class="n">SED</span><span class="p">,</span> <span class="n">psf_simulator</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate SED elements for PSF modeling.</span>
 
-<span class="sd">    A function to generate the SED elements needed for using the</span>
-<span class="sd">    Tensor Flow class: TF_poly_PSF.</span>
+<span class="sd">    Computes feasible Zernike mode numbers, wavelength values, and normalized</span>
+<span class="sd">    SED for a given spectral energy distribution (SED) sampled across specified</span>
+<span class="sd">    wavelength bins. These elements are required for PSF simulation and modeling</span>
+<span class="sd">    with the TensorFlow-based PSF classes.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    SED:</span>
-<span class="sd">    sim_psf_toolkit:</span>
-<span class="sd">        An instance of the SimPSFToolkit class with the correct</span>
-<span class="sd">    initialization values.</span>
-<span class="sd">    n_bins: int</span>
-<span class="sd">        Number of wavelength bins</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    SED : np.ndarray</span>
+<span class="sd">        The unfiltered SED with shape (n_wavelengths, 2). The first column contains</span>
+<span class="sd">        wavelength positions (in wavelength units), and the second column contains</span>
+<span class="sd">        the corresponding SED flux values.</span>
+<span class="sd">    psf_simulator : PSFSimulator</span>
+<span class="sd">        An instance of the PSFSimulator class initialized with the correct</span>
+<span class="sd">        optical and instrumental parameters.</span>
+<span class="sd">    n_bins : int, optional</span>
+<span class="sd">        Number of wavelength bins to sample the SED. Default is 20.</span>
 
-    <span class="n">feasible_wv</span><span class="p">,</span> <span class="n">SED_norm</span> <span class="o">=</span> <span class="n">sim_psf_toolkit</span><span class="o">.</span><span class="n">calc_SED_wave_values</span><span class="p">(</span><span class="n">SED</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">)</span>
-    <span class="n">feasible_N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">sim_psf_toolkit</span><span class="o">.</span><span class="n">feasible_N</span><span class="p">(</span><span class="n">_wv</span><span class="p">)</span> <span class="k">for</span> <span class="n">_wv</span> <span class="ow">in</span> <span class="n">feasible_wv</span><span class="p">])</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple of (np.ndarray, np.ndarray, np.ndarray or float)</span>
+<span class="sd">        - feasible_N : np.ndarray, shape (n_bins,)</span>
+<span class="sd">            Feasible Zernike mode numbers at each wavelength bin.</span>
+<span class="sd">        - feasible_wv : np.ndarray, shape (n_bins,)</span>
+<span class="sd">            Sampled wavelength values across the SED.</span>
+<span class="sd">        - SED_norm : np.ndarray or float</span>
+<span class="sd">            Normalized SED values corresponding to feasible wavelengths.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    generate_SED_elems_in_tensorflow : TensorFlow version of this function.</span>
+<span class="sd">    generate_packed_elems : Wrapper that converts output to TensorFlow tensors.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">feasible_wv</span><span class="p">,</span> <span class="n">SED_norm</span> <span class="o">=</span> <span class="n">psf_simulator</span><span class="o">.</span><span class="n">calc_SED_wave_values</span><span class="p">(</span><span class="n">SED</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">)</span>
+    <span class="n">feasible_N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">psf_simulator</span><span class="o">.</span><span class="n">feasible_N</span><span class="p">(</span><span class="n">_wv</span><span class="p">)</span> <span class="k">for</span> <span class="n">_wv</span> <span class="ow">in</span> <span class="n">feasible_wv</span><span class="p">])</span>
 
     <span class="k">return</span> <span class="n">feasible_N</span><span class="p">,</span> <span class="n">feasible_wv</span><span class="p">,</span> <span class="n">SED_norm</span></div>
 
 
 
 <div class="viewcode-block" id="generate_SED_elems_in_tensorflow">
-<a class="viewcode-back" href="../../../wf_psf.utils.utils.html#wf_psf.utils.utils.generate_SED_elems_in_tensorflow">[docs]</a>
-<span class="k">def</span> <span class="nf">generate_SED_elems_in_tensorflow</span><span class="p">(</span>
-    <span class="n">SED</span><span class="p">,</span> <span class="n">sim_psf_toolkit</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">tf_dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float64</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.generate_SED_elems_in_tensorflow">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_SED_elems_in_tensorflow</span><span class="p">(</span>
+    <span class="n">SED</span><span class="p">,</span> <span class="n">psf_simulator</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">tf_dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float64</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate SED Elements in Tensor Flow Units.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate SED Elements in TensorFlow Units.</span>
 
 <span class="sd">    A function to generate the SED elements needed for using the</span>
-<span class="sd">    Tensor Flow class: TF_poly_PSF.</span>
+<span class="sd">    TensorFlow class: TF_poly_PSF.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    SED:</span>
-<span class="sd">    sim_psf_toolkit:</span>
-<span class="sd">        An instance of the SimPSFToolkit class with the correct</span>
-<span class="sd">    initialization values.</span>
-<span class="sd">    n_bins: int</span>
+<span class="sd">    SED : np.ndarray</span>
+<span class="sd">        The unfiltered SED. The first column contains the wavelength positions. The second column contains the SED value at each wavelength.</span>
+<span class="sd">    psf_simulator : PSFSimulator object</span>
+<span class="sd">        An instance of the PSFSimulator class with the correct initialization values.</span>
+<span class="sd">    n_bins : int</span>
 <span class="sd">        Number of wavelength bins</span>
-<span class="sd">    tf_dtype: tf.</span>
-<span class="sd">        Tensor Flow data type</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    tf_dtype : tf.DType</span>
+<span class="sd">        The Tensor Flow dtype to cast each element to (for example `tf.float32`,</span>
+<span class="sd">        `tf.int32`, etc.).</span>
 
-    <span class="n">feasible_wv</span><span class="p">,</span> <span class="n">SED_norm</span> <span class="o">=</span> <span class="n">sim_psf_toolkit</span><span class="o">.</span><span class="n">calc_SED_wave_values</span><span class="p">(</span><span class="n">SED</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">)</span>
-    <span class="n">feasible_N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">sim_psf_toolkit</span><span class="o">.</span><span class="n">feasible_N</span><span class="p">(</span><span class="n">_wv</span><span class="p">)</span> <span class="k">for</span> <span class="n">_wv</span> <span class="ow">in</span> <span class="n">feasible_wv</span><span class="p">])</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of tf.Tensor</span>
+<span class="sd">        [feasible_N, feasible_wv, SED_norm]:</span>
+<span class="sd">        - feasible_N : tf.Tensor, shape (n_bins,), dtype tf_dtype</span>
+<span class="sd">        - feasible_wv : tf.Tensor, shape (n_bins,), dtype tf_dtype</span>
+<span class="sd">        - SED_norm : tf.Tensor, scalar or array, dtype tf_dtype</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">feasible_wv</span><span class="p">,</span> <span class="n">SED_norm</span> <span class="o">=</span> <span class="n">psf_simulator</span><span class="o">.</span><span class="n">calc_SED_wave_values</span><span class="p">(</span><span class="n">SED</span><span class="p">,</span> <span class="n">n_bins</span><span class="p">)</span>
+    <span class="n">feasible_N</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">psf_simulator</span><span class="o">.</span><span class="n">feasible_N</span><span class="p">(</span><span class="n">_wv</span><span class="p">)</span> <span class="k">for</span> <span class="n">_wv</span> <span class="ow">in</span> <span class="n">feasible_wv</span><span class="p">])</span>
 
     <span class="k">return</span> <span class="n">convert_to_tf</span><span class="p">([</span><span class="n">feasible_N</span><span class="p">,</span> <span class="n">feasible_wv</span><span class="p">,</span> <span class="n">SED_norm</span><span class="p">],</span> <span class="n">tf_dtype</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="convert_to_tf">
-<a class="viewcode-back" href="../../../wf_psf.utils.utils.html#wf_psf.utils.utils.convert_to_tf">[docs]</a>
-<span class="k">def</span> <span class="nf">convert_to_tf</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">tf_dtype</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.convert_to_tf">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_to_tf</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">tf_dtype</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a sequence of array-like objects to TensorFlow tensors with a specified dtype.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : Iterable</span>
+<span class="sd">        An iterable (e.g., list, tuple) of array-like objects (numpy arrays, Python</span>
+<span class="sd">        lists/tuples, tf.Tensor, etc.) to be converted to TensorFlow tensors.</span>
+<span class="sd">    tf_dtype : tf.DType</span>
+<span class="sd">        The TensorFlow dtype to cast each element to (for example `tf.float32`,</span>
+<span class="sd">        `tf.int32`, etc.).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of tf.Tensor</span>
+<span class="sd">        A list where each element is the result of calling</span>
+<span class="sd">        `tf.convert_to_tensor` on the corresponding item from `data`, cast to</span>
+<span class="sd">        `tf_dtype`.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    TypeError</span>
+<span class="sd">        If `data` is not an iterable. A `TypeError` may also be raised by</span>
+<span class="sd">        `tf.convert_to_tensor` for individual elements that cannot be converted.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - The function preserves the top-level sequence structure by returning a</span>
+<span class="sd">      list regardless of the input sequence type.</span>
+<span class="sd">    - Element-wise conversion uses TensorFlow&#39;s conversion semantics; shape</span>
+<span class="sd">      inference and broadcasting follow TensorFlow rules.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf_dtype</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span></div>
 
 
 
 <div class="viewcode-block" id="generate_packed_elems">
-<a class="viewcode-back" href="../../../wf_psf.utils.utils.html#wf_psf.utils.utils.generate_packed_elems">[docs]</a>
-<span class="k">def</span> <span class="nf">generate_packed_elems</span><span class="p">(</span><span class="n">SED</span><span class="p">,</span> <span class="n">sim_psf_toolkit</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate Packed Elements.</span>
-<span class="sd">    This name is too generic. may make obsolete</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.generate_packed_elems">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_packed_elems</span><span class="p">(</span><span class="n">SED</span><span class="p">,</span> <span class="n">psf_simulator</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate packed SED elements as TensorFlow tensors.</span>
 
-<span class="sd">    A function to store the packed values for using the TF_poly_PSF.</span>
+<span class="sd">    Wrapper around generate_SED_elems(...) that converts the returned NumPy</span>
+<span class="sd">    arrays into TensorFlow tensors with dtype=tf.float64.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    SED:</span>
-<span class="sd">    sim_psf_toolkit:</span>
-<span class="sd">    n_bins: int</span>
-<span class="sd">        Number of wavelength bins</span>
+<span class="sd">    SED : numpy.ndarray</span>
+<span class="sd">        The unfiltered SED with shape (n_wavelengths, 2). The first column contains the wavelength</span>
+<span class="sd">        positions (in wavelength units), and the second column contains the corresponding SED flux values.</span>
+<span class="sd">    psf_simulator : PSFSimulator object</span>
+<span class="sd">        An instance of the PSF simulator providing calc_SED_wave_values and feasible_N.</span>
+<span class="sd">    n_bins : int, optional</span>
+<span class="sd">        Number of wavelength bins used to sample the SED (default 20).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    list</span>
-<span class="sd">        List of tensors</span>
+<span class="sd">    list of tf.Tensor</span>
+<span class="sd">        [feasible_N, feasible_wv, SED_norm]:</span>
+<span class="sd">        - feasible_N : tf.Tensor, shape (n_bins,), dtype tf.float64</span>
+<span class="sd">        - feasible_wv : tf.Tensor, shape (n_bins,), dtype tf.float64</span>
+<span class="sd">        - SED_norm : tf.Tensor, scalar or array, dtype tf.float64</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">feasible_N</span><span class="p">,</span> <span class="n">feasible_wv</span><span class="p">,</span> <span class="n">SED_norm</span> <span class="o">=</span> <span class="n">generate_SED_elems</span><span class="p">(</span>
-        <span class="n">SED</span><span class="p">,</span> <span class="n">sim_psf_toolkit</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="n">n_bins</span>
+        <span class="n">SED</span><span class="p">,</span> <span class="n">psf_simulator</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="n">n_bins</span>
     <span class="p">)</span>
 
     <span class="n">feasible_N</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">feasible_N</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -230,8 +382,8 @@
 
 
 <div class="viewcode-block" id="calc_poly_position_mat">
-<a class="viewcode-back" href="../../../wf_psf.utils.utils.html#wf_psf.utils.utils.calc_poly_position_mat">[docs]</a>
-<span class="k">def</span> <span class="nf">calc_poly_position_mat</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">x_lims</span><span class="p">,</span> <span class="n">y_lims</span><span class="p">,</span> <span class="n">d_max</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.calc_poly_position_mat">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">calc_poly_position_mat</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">x_lims</span><span class="p">,</span> <span class="n">y_lims</span><span class="p">,</span> <span class="n">d_max</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculate a matrix with position polynomials.</span>
 
 <span class="sd">    Scale positions to the square:</span>
@@ -247,7 +399,7 @@
     <span class="n">poly_list</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d_max</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-        <span class="n">row_idx</span> <span class="o">=</span> <span class="n">d</span> <span class="o">*</span> <span class="p">(</span><span class="n">d</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="c1"># row_idx = d * (d + 1) // 2</span>
         <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
             <span class="n">poly_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scaled_pos_x</span> <span class="o">**</span> <span class="p">(</span><span class="n">d</span> <span class="o">-</span> <span class="n">p</span><span class="p">)</span> <span class="o">*</span> <span class="n">scaled_pos_y</span><span class="o">**</span><span class="n">p</span><span class="p">)</span>
 
@@ -256,8 +408,8 @@
 
 
 <div class="viewcode-block" id="decimate_im">
-<a class="viewcode-back" href="../../../wf_psf.utils.utils.html#wf_psf.utils.utils.decimate_im">[docs]</a>
-<span class="k">def</span> <span class="nf">decimate_im</span><span class="p">(</span><span class="n">input_im</span><span class="p">,</span> <span class="n">decim_f</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.decimate_im">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">decimate_im</span><span class="p">(</span><span class="n">input_im</span><span class="p">,</span> <span class="n">decim_f</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Decimate image.</span>
 
 <span class="sd">    Decimated by a factor of decim_f.</span>
@@ -273,39 +425,52 @@
 
 
 <div class="viewcode-block" id="downsample_im">
-<a class="viewcode-back" href="../../../wf_psf.utils.utils.html#wf_psf.utils.utils.downsample_im">[docs]</a>
-<span class="k">def</span> <span class="nf">downsample_im</span><span class="p">(</span><span class="n">input_im</span><span class="p">,</span> <span class="n">output_dim</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Downsample image.</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.downsample_im">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">downsample_im</span><span class="p">(</span><span class="n">input_im</span><span class="p">,</span> <span class="n">output_dim</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Downsample image to (output_dim, output_dim).</span>
 
-<span class="sd">    Based on opencv function resize.</span>
-<span class="sd">    [doc](https://docs.opencv.org/2.4/modules/imgproc/doc/geometric_transformations.html#void%20resize(InputArray%20src,%20OutputArray%20dst,%20Size%20dsize,%20double%20fx,%20double%20fy,%20int%20interpolation))</span>
-<span class="sd">    The input image is downsampled to the dimensions specified in `output_dim`.</span>
-<span class="sd">    The downsampling method is based on the `INTER_AREA` method.</span>
-<span class="sd">    See [tensorflow_doc](https://www.tensorflow.org/api_docs/cc/class/tensorflow/ops/resize-area)</span>
-<span class="sd">    Each output pixel is computed by first transforming the pixel&#39;s footprint</span>
-<span class="sd">    into the input tensor and then averaging the pixels that intersect the</span>
-<span class="sd">    footprint. An input pixel&#39;s contribution to the average is weighted by the</span>
-<span class="sd">    fraction of its area that intersects the footprint.</span>
-<span class="sd">    This is the same as OpenCV&#39;s INTER_AREA.</span>
-<span class="sd">    An explanation of the INTER_AREA method can be found in the next</span>
-<span class="sd">    [link](https://medium.com/@wenrudong/what-is-opencvs-inter-area-actually-doing-282a626a09b3).</span>
-
-<span class="sd">    This version should be consistent with the tensorflow one.</span>
+<span class="sd">    Uses OpenCV INTER_AREA when available, otherwise falls back</span>
+<span class="sd">    to scikit-image local mean downsampling.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    input_im: np.ndarray (dim_x, dim_y)</span>
-<span class="sd">        input image</span>
-<span class="sd">    output_dim: int</span>
-<span class="sd">        Contains the dimension of the square output image.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">resize</span><span class="p">(</span><span class="n">input_im</span><span class="p">,</span> <span class="p">(</span><span class="n">output_dim</span><span class="p">,</span> <span class="n">output_dim</span><span class="p">),</span> <span class="n">interpolation</span><span class="o">=</span><span class="n">INTER_AREA</span><span class="p">)</span></div>
+<span class="sd">    input_im : np.ndarray</span>
+<span class="sd">        Input 2D image to be downsampled.</span>
+<span class="sd">    output_dim : int</span>
+<span class="sd">        Desired output dimension (both height and width).</span>
 
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        Downsampled 2D image of shape (output_dim, output_dim).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">_HAS_CV2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span>
+            <span class="n">input_im</span><span class="p">,</span>
+            <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">output_dim</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">output_dim</span><span class="p">)),</span>
+            <span class="n">interpolation</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">INTER_AREA</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">_HAS_SKIMAGE</span><span class="p">:</span>
+        <span class="n">f_x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">input_im</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">output_dim</span><span class="p">)</span>
+        <span class="n">f_y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">input_im</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">output_dim</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">f_x</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">f_y</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid downsampling factors.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">downscale_local_mean</span><span class="p">(</span>
+            <span class="n">input_im</span><span class="p">,</span>
+            <span class="n">factors</span><span class="o">=</span><span class="p">(</span><span class="n">f_x</span><span class="p">,</span> <span class="n">f_y</span><span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+        <span class="s2">&quot;Neither OpenCV nor scikit-image is available for image downsampling.&quot;</span>
+    <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="zernike_generator">
-<a class="viewcode-back" href="../../../wf_psf.utils.utils.html#wf_psf.utils.utils.zernike_generator">[docs]</a>
-<span class="k">def</span> <span class="nf">zernike_generator</span><span class="p">(</span><span class="n">n_zernikes</span><span class="p">,</span> <span class="n">wfe_dim</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.zernike_generator">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">zernike_generator</span><span class="p">(</span><span class="n">n_zernikes</span><span class="p">,</span> <span class="n">wfe_dim</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generate Zernike maps.</span>
 
@@ -352,8 +517,8 @@
 
 
 <div class="viewcode-block" id="add_noise">
-<a class="viewcode-back" href="../../../wf_psf.utils.utils.html#wf_psf.utils.utils.add_noise">[docs]</a>
-<span class="k">def</span> <span class="nf">add_noise</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">desired_SNR</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.add_noise">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_noise</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">desired_SNR</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Add noise to an image to obtain a desired SNR.&quot;&quot;&quot;</span>
     <span class="n">sigma_noise</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
         <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">image</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">desired_SNR</span> <span class="o">*</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
@@ -364,32 +529,64 @@
 
 
 <div class="viewcode-block" id="NoiseEstimator">
-<a class="viewcode-back" href="../../../wf_psf.utils.utils.html#wf_psf.utils.utils.NoiseEstimator">[docs]</a>
-<span class="k">class</span> <span class="nc">NoiseEstimator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Noise estimator.</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.NoiseEstimator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NoiseEstimator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class for estimating noise levels in an image.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    img_dim: tuple of int</span>
-<span class="sd">        Image size</span>
-<span class="sd">    win_rad: int</span>
-<span class="sd">        window radius in pixels</span>
-
+<span class="sd">    img_dim : tuple of int</span>
+<span class="sd">        The dimensions of the image as (height, width).</span>
+<span class="sd">    win_rad : int</span>
+<span class="sd">        The radius of the exclusion window (in pixels).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img_dim</span><span class="p">,</span> <span class="n">win_rad</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">img_dim</span> <span class="o">=</span> <span class="n">img_dim</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">win_rad</span> <span class="o">=</span> <span class="n">win_rad</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">window</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img_dim</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">win_rad</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a NoiseEstimator instance.</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_init_window</span><span class="p">()</span>
+<span class="sd">        This constructor sets up the noise estimator by storing the image dimensions</span>
+<span class="sd">        and exclusion window radius, then initializes the exclusion window mask.</span>
 
-    <span class="k">def</span> <span class="nf">_init_window</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c1"># Calculate window function for estimating the noise</span>
-        <span class="c1"># We couldn&#39;t use Galsim to estimate the moments, so we chose to work</span>
-        <span class="c1"># with the real center of the image (25.5,25.5)</span>
-        <span class="c1"># instead of using the real centroid. Also, we use 13 instead of</span>
-        <span class="c1"># 5 * obs_sigma, so that we are sure to cut all the flux from the star</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        img_dim : tuple of int</span>
+<span class="sd">            The dimensions of the image as (height, width).</span>
+<span class="sd">        win_rad : int</span>
+<span class="sd">            The radius of the exclusion window in pixels. Pixels within this radius</span>
+<span class="sd">            of the image center are excluded from noise estimation.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The exclusion window is initialized automatically via _init_window(), creating</span>
+<span class="sd">        a boolean mask where pixels inside the exclusion radius are marked False</span>
+<span class="sd">        (excluded) and pixels outside are marked True (included).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">img_dim</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">img_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">win_rad</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">win_rad</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_window</span><span class="p">()</span>  <span class="c1"># Initialize self.window</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_window</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the exclusion window mask stored in self.window.</span>
+
+<span class="sd">        The mask is a boolean array of shape `self.img_dim` (rows, cols). Pixels</span>
+<span class="sd">        whose Euclidean distance from the image center is less than or equal to</span>
+<span class="sd">        `self.win_rad` are marked False (excluded); all other pixels are True</span>
+<span class="sd">        (included). The mask dtype is `bool`.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        - The image center is computed as (rows / 2, cols / 2). This yields a</span>
+<span class="sd">          floating-point center so the distance is computed with sub-pixel</span>
+<span class="sd">          precision; for even dimensions the center lies between pixels.</span>
+<span class="sd">        - The comparison uses &quot;&lt;=&quot; so pixels exactly at distance `win_rad` are</span>
+<span class="sd">          excluded. Change to &quot;&lt;&quot; if you prefer a strict interior exclusion.</span>
+<span class="sd">        - Time complexity is O(rows * cols) for mask construction.</span>
+<span class="sd">        - No return value; the constructed mask is assigned to `self.window`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">window</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img_dim</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
 
         <span class="n">mid_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">img_dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span>
@@ -397,63 +594,167 @@
 
         <span class="k">for</span> <span class="n">_x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img_dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
             <span class="k">for</span> <span class="n">_y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img_dim</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="c1"># If pixel is within the exclusion radius, set it to False</span>
                 <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">_x</span> <span class="o">-</span> <span class="n">mid_x</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">_y</span> <span class="o">-</span> <span class="n">mid_y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">win_rad</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="p">[</span><span class="n">_x</span><span class="p">,</span> <span class="n">_y</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
 
+<div class="viewcode-block" id="NoiseEstimator.apply_mask">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.NoiseEstimator.apply_mask">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">apply_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Apply a given mask to the exclusion window.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        mask : np.ndarray, optional</span>
+<span class="sd">            A boolean mask to apply to the exclusion window. If None, the exclusion</span>
+<span class="sd">            window is returned without any modification.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.ndarray</span>
+<span class="sd">            The resulting boolean array after applying the mask to the exclusion window.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">window</span>  <span class="c1"># Return just the window if no mask is provided</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">window</span> <span class="o">&amp;</span> <span class="n">mask</span>  <span class="c1"># Otherwise, apply the mask as usual</span></div>
+
+
 <div class="viewcode-block" id="NoiseEstimator.sigma_mad">
-<a class="viewcode-back" href="../../../wf_psf.utils.utils.html#wf_psf.utils.utils.NoiseEstimator.sigma_mad">[docs]</a>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.NoiseEstimator.sigma_mad">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">sigma_mad</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute an estimation of the standard deviation</span>
-<span class="sd">        of a Gaussian distribution using the robust</span>
-<span class="sd">        MAD (Median Absolute Deviation) estimator.&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sigma_mad</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Robustly estimate the standard deviation using the Median Absolute Deviation (MAD).</span>
+
+<span class="sd">        Computes MAD = ``median(|x - median(x)|)`` and scales it by 1.4826 to make the</span>
+<span class="sd">        estimator consistent with the standard deviation for a Gaussian distribution:</span>
+
+<span class="sd">            sigma ≈ 1.4826 * MAD</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array-like</span>
+<span class="sd">            Input data. The values are flattened before computation. NaNs are not</span>
+<span class="sd">            specially handled and will propagate; remove or mask them prior to</span>
+<span class="sd">            calling if needed.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            Robust estimate of the standard deviation of the input data.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        - The MAD-based estimator is much less sensitive to outliers than the</span>
+<span class="sd">          sample standard deviation, making it appropriate for noisy data with</span>
+<span class="sd">          occasional large deviations.</span>
+<span class="sd">        - The constant 1.4826 is the scaling factor for consistency with the</span>
+<span class="sd">          standard deviation of a normal distribution.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="mf">1.4826</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span></div>
 
 
 <div class="viewcode-block" id="NoiseEstimator.estimate_noise">
-<a class="viewcode-back" href="../../../wf_psf.utils.utils.html#wf_psf.utils.utils.NoiseEstimator.estimate_noise">[docs]</a>
-    <span class="k">def</span> <span class="nf">estimate_noise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">):</span>
-<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Estimate the noise level of the image.&quot;&quot;&quot;</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.NoiseEstimator.estimate_noise">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">estimate_noise</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Estimates the noise level of an image using the MAD estimator.</span>
 
-        <span class="c1"># Calculate noise std dev</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        image : np.ndarray</span>
+<span class="sd">            The input image for noise estimation.</span>
+<span class="sd">        mask : np.ndarray, optional</span>
+<span class="sd">            A boolean mask specifying which pixels to include in the noise estimation.</span>
+<span class="sd">            If None, the default exclusion window is used. The mask should have the same shape as `image`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The estimated noise standard deviation (MAD of the image pixels within the window or mask).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_mad</span><span class="p">(</span><span class="n">image</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">apply_mask</span><span class="p">(</span><span class="n">mask</span><span class="p">)])</span>
+
+        <span class="c1"># Use the default window if no mask is provided</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_mad</span><span class="p">(</span><span class="n">image</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">window</span><span class="p">])</span></div>
 </div>
 
 
 
 <div class="viewcode-block" id="ZernikeInterpolation">
-<a class="viewcode-back" href="../../../wf_psf.utils.utils.html#wf_psf.utils.utils.ZernikeInterpolation">[docs]</a>
-<span class="k">class</span> <span class="nc">ZernikeInterpolation</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interpolate zernikes</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.ZernikeInterpolation">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ZernikeInterpolation</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interpolate Zernike coefficients using K-nearest RBF splines.</span>
 
-<span class="sd">    This class helps to interpolate zernikes using only the closest K elements</span>
-<span class="sd">    in a given dataset using a RBF interpolation.</span>
+<span class="sd">    This class provides utilities to interpolate Zernike-coefficient vectors</span>
+<span class="sd">    defined at a set of source positions to arbitrary query positions using</span>
+<span class="sd">    a local RBF spline fitted to the K nearest source samples.</span>
+
+<span class="sd">    The interpolation pipeline:</span>
+<span class="sd">    - For a given query position, compute Euclidean distances to all source</span>
+<span class="sd">      positions and select the K nearest neighbors.</span>
+<span class="sd">    - Use tfa.image.interpolate_spline (RBF / spline interpolation) on the</span>
+<span class="sd">      selected neighbor positions and their Zernike coefficient vectors to</span>
+<span class="sd">      compute the interpolated coefficients at the query location.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    tf_pos: Tensor (n_sources, 2)</span>
-<span class="sd">        Positions</span>
-<span class="sd">    tf_zks: Tensor (n_sources, n_zernikes)</span>
-<span class="sd">        Zernike coefficients for each position</span>
-<span class="sd">    k: int</span>
-<span class="sd">        Number of elements to use for the interpolation.</span>
-<span class="sd">        Default is 50</span>
-<span class="sd">    order: int</span>
-<span class="sd">        Order of the RBF interpolation.</span>
-<span class="sd">        Default is 2, corresponds to thin plate interp (r^2*log(r))</span>
+<span class="sd">    tf_pos : tf.Tensor, shape (n_sources, 2)</span>
+<span class="sd">        Source/sample positions (x, y). Expected dtype float32 or convertible.</span>
+<span class="sd">    tf_zks : tf.Tensor, shape (n_sources, n_zernikes)</span>
+<span class="sd">        Zernike coefficient vectors at the source positions.</span>
+<span class="sd">    k : int, default 50</span>
+<span class="sd">        Number of nearest neighbors to use for the local interpolation. If</span>
+<span class="sd">        larger than the number of sources, all sources are used.</span>
+<span class="sd">    order : int, default 2</span>
+<span class="sd">        Spline order passed to tfa.image.interpolate_spline (e.g. 2 for thin</span>
+<span class="sd">        plate style interpolation).</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tf_pos, tf_zks, k, order</span>
+<span class="sd">        Stored copies of the constructor inputs.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - This class relies on TensorFlow Addons&#39; interpolate_spline, which requires</span>
+<span class="sd">      inputs to include a leading batch dimension; the implementation handles</span>
+<span class="sd">      that automatically.</span>
+<span class="sd">    - For best numerical stability and compatibility with TFA, use float32</span>
+<span class="sd">      tensors for inputs when possible.</span>
+<span class="sd">    - Two main methods are provided:</span>
+<span class="sd">        - interpolate_zk(single_pos): interpolate a single position -&gt; 1D vector.</span>
+<span class="sd">        - interpolate_zks(interp_positions): vectorized interpolation for many</span>
+<span class="sd">          query positions (uses tf.map_fn under the hood).</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tf_pos</span><span class="p">,</span> <span class="n">tf_zks</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tf_pos</span><span class="p">,</span> <span class="n">tf_zks</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tf_pos</span> <span class="o">=</span> <span class="n">tf_pos</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tf_zks</span> <span class="o">=</span> <span class="n">tf_zks</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="n">k</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">order</span>
 
 <div class="viewcode-block" id="ZernikeInterpolation.interpolate_zk">
-<a class="viewcode-back" href="../../../wf_psf.utils.utils.html#wf_psf.utils.utils.ZernikeInterpolation.interpolate_zk">[docs]</a>
-    <span class="k">def</span> <span class="nf">interpolate_zk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">single_pos</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Interpolate a single position&quot;&quot;&quot;</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.ZernikeInterpolation.interpolate_zk">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">interpolate_zk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">single_pos</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Interpolate Zernike coefficients at a single query position using K-nearest neighbors.</span>
+
+<span class="sd">        Finds the K nearest training positions to the query position and uses RBF</span>
+<span class="sd">        spline interpolation to estimate Zernike coefficients at that location.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        single_pos : tf.Tensor, shape (2,)</span>
+<span class="sd">            Query position coordinates as (x, y).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tf.Tensor, shape (n_zernikes,)</span>
+<span class="sd">            Interpolated Zernike coefficient vector at the query position.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Compute distance</span>
         <span class="n">dist</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">reduce_euclidean_norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tf_pos</span> <span class="o">-</span> <span class="n">single_pos</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="o">-</span><span class="mf">1.0</span>
         <span class="c1"># Get top K elements</span>
@@ -488,9 +789,33 @@
 
 
 <div class="viewcode-block" id="ZernikeInterpolation.interpolate_zks">
-<a class="viewcode-back" href="../../../wf_psf.utils.utils.html#wf_psf.utils.utils.ZernikeInterpolation.interpolate_zks">[docs]</a>
-    <span class="k">def</span> <span class="nf">interpolate_zks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interp_positions</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Vectorize to interpolate to each position&quot;&quot;&quot;</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.ZernikeInterpolation.interpolate_zks">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">interpolate_zks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interp_positions</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Interpolate Zernike coefficient vectors at multiple query positions.</span>
+
+<span class="sd">        Vectorized wrapper that applies self.interpolate_zk to each row of</span>
+<span class="sd">        interp_positions using tf.map_fn.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        interp_positions : tf.Tensor, shape (n_targets, 2)</span>
+<span class="sd">            Query positions where Zernike coefficients should be interpolated.</span>
+<span class="sd">            Each row is an (x, y) coordinate.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tf.Tensor, shape (n_targets, n_zernikes), dtype=tf.float32</span>
+<span class="sd">            Interpolated Zernike coefficient vectors for each query position.</span>
+<span class="sd">            tf.map_fn may introduce an extra singleton dimension; this is removed</span>
+<span class="sd">            by tf.squeeze before returning.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        - self.interpolate_zk expects a 1-D tensor of shape (2,) and returns a</span>
+<span class="sd">          1-D tensor of length n_zernikes.</span>
+<span class="sd">        - This function uses tf.map_fn with fn_output_signature=tf.float32 and</span>
+<span class="sd">          swap_memory=True for efficient batching.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">interp_zks</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">map_fn</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">interpolate_zk</span><span class="p">,</span>
             <span class="n">interp_positions</span><span class="p">,</span>
@@ -504,9 +829,9 @@
 
 
 <div class="viewcode-block" id="IndependentZernikeInterpolation">
-<a class="viewcode-back" href="../../../wf_psf.utils.utils.html#wf_psf.utils.utils.IndependentZernikeInterpolation">[docs]</a>
-<span class="k">class</span> <span class="nc">IndependentZernikeInterpolation</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interpolate each Zernike polynomial independently</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.IndependentZernikeInterpolation">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">IndependentZernikeInterpolation</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interpolate each Zernike polynomial independently.</span>
 
 <span class="sd">    The interpolation is done independently for each Zernike polynomial.</span>
 
@@ -522,7 +847,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tf_pos</span><span class="p">,</span> <span class="n">tf_zks</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tf_pos</span><span class="p">,</span> <span class="n">tf_zks</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tf_pos</span> <span class="o">=</span> <span class="n">tf_pos</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tf_zks</span> <span class="o">=</span> <span class="n">tf_zks</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">order</span>
@@ -530,9 +855,32 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">target_pos</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="IndependentZernikeInterpolation.interp_one_zk">
-<a class="viewcode-back" href="../../../wf_psf.utils.utils.html#wf_psf.utils.utils.IndependentZernikeInterpolation.interp_one_zk">[docs]</a>
-    <span class="k">def</span> <span class="nf">interp_one_zk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zk_prior</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Interpolate each Zerkine polynomial independently&quot;&quot;&quot;</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.IndependentZernikeInterpolation.interp_one_zk">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">interp_one_zk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zk_prior</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Interpolate a single Zernike polynomial across target positions.</span>
+
+<span class="sd">        Each Zernike coefficient in `zk_prior` is interpolated independently</span>
+<span class="sd">        using a spline.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        zk_prior : tf.Tensor of shape (n_sources,)</span>
+<span class="sd">            Zernike coefficients for a single Zernike polynomial, defined at</span>
+<span class="sd">            the source positions `self.tf_pos`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tf.Tensor of shape (n_targets,)</span>
+<span class="sd">            Interpolated Zernike coefficients at the target positions</span>
+<span class="sd">            `self.target_pos`.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        This function uses `tfa.image.interpolate_spline`, which requires the</span>
+<span class="sd">        input to have a batch dimension. The extra dimension is removed before</span>
+<span class="sd">        returning the result.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">interp_zk</span> <span class="o">=</span> <span class="n">tfa</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">interpolate_spline</span><span class="p">(</span>
             <span class="n">train_points</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tf_pos</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
             <span class="n">train_values</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">zk_prior</span><span class="p">[:,</span> <span class="n">tf</span><span class="o">.</span><span class="n">newaxis</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
@@ -546,11 +894,20 @@
 
 
 <div class="viewcode-block" id="IndependentZernikeInterpolation.interpolate_zks">
-<a class="viewcode-back" href="../../../wf_psf.utils.utils.html#wf_psf.utils.utils.IndependentZernikeInterpolation.interpolate_zks">[docs]</a>
-    <span class="k">def</span> <span class="nf">interpolate_zks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_pos</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Vectorize to interpolate to each Zernike!</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.IndependentZernikeInterpolation.interpolate_zks">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">interpolate_zks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_pos</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Vectorize to interpolate to each Zernike.</span>
 
 <span class="sd">        Each zernike is computed indepently from the others.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        target_pos: Tensor (n_targets, 2)</span>
+<span class="sd">            Positions to interpolate to.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Tensor (n_targets, n_zernikes)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">target_pos</span> <span class="o">=</span> <span class="n">target_pos</span>
 
@@ -569,8 +926,8 @@
 
 
 <div class="viewcode-block" id="load_multi_cycle_params_click">
-<a class="viewcode-back" href="../../../wf_psf.utils.utils.html#wf_psf.utils.utils.load_multi_cycle_params_click">[docs]</a>
-<span class="k">def</span> <span class="nf">load_multi_cycle_params_click</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.load_multi_cycle_params_click">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">load_multi_cycle_params_click</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Load multiple cycle training parameters.</span>
 
@@ -647,19 +1004,95 @@
 
 
 
-<div class="viewcode-block" id="PI_zernikes">
-<a class="viewcode-back" href="../../../wf_psf.utils.utils.html#wf_psf.utils.utils.PI_zernikes">[docs]</a>
-<span class="k">def</span> <span class="nf">PI_zernikes</span><span class="p">(</span><span class="n">tf_z1</span><span class="p">,</span> <span class="n">tf_z2</span><span class="p">,</span> <span class="n">norm_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute internal product between zernikes and OPDs</span>
+<div class="viewcode-block" id="compute_unobscured_zernike_projection">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.compute_unobscured_zernike_projection">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_unobscured_zernike_projection</span><span class="p">(</span><span class="n">tf_z1</span><span class="p">,</span> <span class="n">tf_z2</span><span class="p">,</span> <span class="n">norm_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute a zernike projection for unobscured wavefronts (OPDs).</span>
 
-<span class="sd">    Defined such that Zernikes are orthonormal to each other</span>
+<span class="sd">    Compute internal product between zernikes and OPDs.</span>
 
-<span class="sd">    First one should compute: norm_factor =  PI_zernikes(tf_zernike,tf_zernike)</span>
-<span class="sd">    for futur calls: PI_zernikes(OPD,tf_zernike_k, norm_factor)</span>
+<span class="sd">    Defined such that Zernikes are orthonormal to each other.</span>
+
+<span class="sd">    First one should compute: norm_factor =  unobscured_zernike_projection(tf_zernike,tf_zernike)</span>
+<span class="sd">    for futur calls: unobscured_zernike_projection(OPD,tf_zernike_k, norm_factor)</span>
+
+<span class="sd">    If the OPD has obscurations, or is not an unobscured circular aperture,</span>
+<span class="sd">    the Zernike polynomials are no longer orthonormal. Therefore, you should consider</span>
+<span class="sd">    using the function `tf_decompose_obscured_opd_basis` that takes into account the</span>
+<span class="sd">    obscurations in the projection.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">norm_factor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">norm_factor</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">tf_z1</span><span class="p">,</span> <span class="n">tf_z2</span><span class="p">))</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span> <span class="o">/</span> <span class="p">(</span><span class="n">norm_factor</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="decompose_tf_obscured_opd_basis">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.utils.html#wf_psf.utils.utils.decompose_tf_obscured_opd_basis">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">decompose_tf_obscured_opd_basis</span><span class="p">(</span>
+    <span class="n">tf_opd</span><span class="p">,</span> <span class="n">tf_obscurations</span><span class="p">,</span> <span class="n">tf_zk_basis</span><span class="p">,</span> <span class="n">n_zernike</span><span class="p">,</span> <span class="n">iters</span><span class="o">=</span><span class="mi">20</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decompose obscured OPD into a basis using an iterative algorithm.</span>
+
+<span class="sd">    Tensorflow implementation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tf_opd : tf.Tensor</span>
+<span class="sd">        Input OPD that requires to be decomposed on `tf_zk_basis`. The tensor shape is (opd_dim, opd_dim).</span>
+<span class="sd">    tf_obscurations : tf.Tensor</span>
+<span class="sd">        Tensor with the obscuration map.  The tensor shape is (opd_dim, opd_dim).</span>
+<span class="sd">    tf_zk_basis : tf.Tensor</span>
+<span class="sd">        Zernike polynomial maps. The tensor shape is (n_batch, opd_dim, opd_dim)</span>
+<span class="sd">    n_zernike : int</span>
+<span class="sd">        Number of Zernike polynomials to project on.</span>
+<span class="sd">    iters : int</span>
+<span class="sd">        Number of iterations of the algorithm.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    obsc_coeffs : np.ndarray</span>
+<span class="sd">        Array of size `n_zernike` with projected Zernike coefficients</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If `n_zernike` is bigger than tf_zk_basis.shape[0].</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">n_zernike</span> <span class="o">&gt;</span> <span class="n">tf_zk_basis</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Number of Zernike polynomials to project (n_zernike) exceeds the available Zernike elements in the provided basis (tf_zk_basis). Please ensure that n_zernike is less than or equal to the number of Zernike elements in tf_zk_basis.&quot;</span>
+        <span class="p">)</span>
+    <span class="c1"># Clone input OPD</span>
+    <span class="n">input_tf_opd</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">tf_opd</span><span class="p">)</span>
+    <span class="c1"># Clone obscurations and project</span>
+    <span class="n">input_tf_obscurations</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">tf_obscurations</span><span class="p">))</span>
+    <span class="c1"># Compute normalisation factor</span>
+    <span class="n">ngood</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">input_tf_obscurations</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+    <span class="n">obsc_coeffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_zernike</span><span class="p">)</span>
+    <span class="n">new_coeffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_zernike</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">count</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iters</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tf_zk_basis</span><span class="p">):</span>
+            <span class="n">this_coeff</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span>
+                    <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">input_tf_opd</span><span class="p">,</span> <span class="n">b</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">False</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+                <span class="o">/</span> <span class="n">ngood</span>
+            <span class="p">)</span>
+            <span class="n">new_coeffs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">this_coeff</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tf_zk_basis</span><span class="p">):</span>
+            <span class="n">input_tf_opd</span> <span class="o">=</span> <span class="n">input_tf_opd</span> <span class="o">-</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
+                <span class="n">new_coeffs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">b</span><span class="p">,</span> <span class="n">input_tf_obscurations</span>
+            <span class="p">)</span>
+
+        <span class="n">obsc_coeffs</span> <span class="o">+=</span> <span class="n">new_coeffs</span>
+        <span class="n">new_coeffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_zernike</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">obsc_coeffs</span></div>
 
 </pre></div>
 
@@ -670,7 +1103,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, CosmoStat.</p>
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

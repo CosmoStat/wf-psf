@@ -1,0 +1,444 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.utils.centroids &mdash; wf-psf 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../_static/twemoji.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="wf_psf.utils.configs_handler" href="wf_psf.utils.configs_handler.html" />
+    <link rel="prev" title="wf_psf.utils.ccd_misalignments" href="wf_psf.utils.ccd_misalignments.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.data.html">wf_psf.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.metrics.html">wf_psf.metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.plotting.html">wf_psf.plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.html">wf_psf.psf_models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.run.html">wf_psf.run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.sims.html">wf_psf.sims</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.training.html">wf_psf.training</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="wf_psf.utils.html">wf_psf.utils</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.ccd_misalignments.html">wf_psf.utils.ccd_misalignments</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">wf_psf.utils.centroids</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.centroids.CentroidEstimator"><code class="docutils literal notranslate"><span class="pre">CentroidEstimator</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.centroids.compute_zernike_tip_tilt"><code class="docutils literal notranslate"><span class="pre">compute_zernike_tip_tilt()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.centroids.decim"><code class="docutils literal notranslate"><span class="pre">decim()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.centroids.degradation_op"><code class="docutils literal notranslate"><span class="pre">degradation_op()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.centroids.lanczos"><code class="docutils literal notranslate"><span class="pre">lanczos()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.centroids.shift_ker_stack"><code class="docutils literal notranslate"><span class="pre">shift_ker_stack()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.configs_handler.html">wf_psf.utils.configs_handler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.graph_utils.html">wf_psf.utils.graph_utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.io.html">wf_psf.utils.io</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.preprocessing.html">wf_psf.utils.preprocessing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.read_config.html">wf_psf.utils.read_config</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.utils.html">wf_psf.utils.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="wf_psf.utils.html">wf_psf.utils</a></li>
+      <li class="breadcrumb-item active">wf_psf.utils.centroids</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/wf_psf.utils.centroids.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-wf_psf.utils.centroids">
+<span id="wf-psf-utils-centroids"></span><h1>wf_psf.utils.centroids<a class="headerlink" href="#module-wf_psf.utils.centroids" title="Link to this heading"></a></h1>
+<p>Centroids.</p>
+<p>A module with utils to handle PSF centroids.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Author<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tobias Liaudat &lt;<a class="reference external" href="mailto:tobias&#46;liaudat&#37;&#52;&#48;cea&#46;fr">tobias<span>&#46;</span>liaudat<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt; and Jennifer Pollack &lt;<a class="reference external" href="mailto:jennifer&#46;pollack&#37;&#52;&#48;cea&#46;fr">jennifer<span>&#46;</span>pollack<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;</p>
+</dd>
+</dl>
+<p class="rubric">Functions</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.utils.centroids.compute_zernike_tip_tilt" title="wf_psf.utils.centroids.compute_zernike_tip_tilt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_zernike_tip_tilt</span></code></a>(star_images[, ...])</p></td>
+<td><p>Compute Zernike tip-tilt corrections for a batch of PSF images.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.utils.centroids.decim" title="wf_psf.utils.centroids.decim"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decim</span></code></a>(im, d[, av_en, fft])</p></td>
+<td><p>Decimate image to lower resolution.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.utils.centroids.degradation_op" title="wf_psf.utils.centroids.degradation_op"><code class="xref py py-obj docutils literal notranslate"><span class="pre">degradation_op</span></code></a>(X, shift_ker, D)</p></td>
+<td><p>Shift and decimate fine-grid image.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.utils.centroids.lanczos" title="wf_psf.utils.centroids.lanczos"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lanczos</span></code></a>(U[, n, n2])</p></td>
+<td><p>Generate Lanczos kernel for a given shift.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.utils.centroids.shift_ker_stack" title="wf_psf.utils.centroids.shift_ker_stack"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shift_ker_stack</span></code></a>(shifts, upfact[, lanc_rad])</p></td>
+<td><p>Generate shifting kernels and rotated shifting kernels.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.utils.centroids.CentroidEstimator" title="wf_psf.utils.centroids.CentroidEstimator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CentroidEstimator</span></code></a>(im[, mask, sigma_init, ...])</p></td>
+<td><p>Calculate centroids and estimate intra-pixel shifts for a batch of star images.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.utils.centroids.CentroidEstimator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.utils.centroids.</span></span><span class="sig-name descname"><span class="pre">CentroidEstimator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">7.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_run</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/centroids.html#CentroidEstimator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.centroids.CentroidEstimator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Calculate centroids and estimate intra-pixel shifts for a batch of star images.</p>
+<p>This class estimates the centroid of each star in a batch of images using an
+iterative process that fits an elliptical Gaussian model to the star images.
+The estimated centroids are returned along with the intra-pixel shifts, which
+represent the difference between the estimated centroid and the center of the
+image grid (or pixel grid).</p>
+<p>The process is vectorized, allowing multiple star images to be processed in
+parallel, which significantly improves performance when working with large batches.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>im</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – A 3D numpy array of star image stamps. The shape of the array should be
+(n_images, height, width), where n_images is the number of stars, and
+height and width are the dimensions of each star’s image.</p></li>
+<li><p><strong>mask</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a><em>, </em><em>optional</em>) – A 3D numpy array of the same shape as <cite>im</cite>, representing the mask for each star image.
+A mask value of <cite>0</cite> indicates that the pixel is fully considered (unmasked), while a value of <cite>1</cite> means the pixel is completely ignored (masked).
+Values between <cite>0</cite> and <cite>1</cite> act as weights, allowing partial consideration of the pixel.
+If not provided, no mask is applied.</p></li>
+<li><p><strong>sigma_init</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – The initial guess for the standard deviation (sigma) of the elliptical Gaussian
+that models the star. Default is 7.5.</p></li>
+<li><p><strong>n_iter</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – The number of iterations for the iterative centroid estimation procedure.
+Default is 5.</p></li>
+<li><p><strong>auto_run</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, the centroid estimation procedure will be automatically run upon
+initialization. Default is True.</p></li>
+<li><p><strong>xc</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – The initial guess for the x-component of the centroid. If None, it is set
+to the center of the image. Default is None.</p></li>
+<li><p><strong>yc</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – The initial guess for the y-component of the centroid. If None, it is set
+to the center of the image. Default is None.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.utils.centroids.CentroidEstimator.xc">
+<span class="sig-name descname"><span class="pre">xc</span></span><a class="headerlink" href="#wf_psf.utils.centroids.CentroidEstimator.xc" title="Link to this definition"></a></dt>
+<dd><p>The x-components of the estimated centroids for each image. Shape is (n_images,).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.utils.centroids.CentroidEstimator.yc">
+<span class="sig-name descname"><span class="pre">yc</span></span><a class="headerlink" href="#wf_psf.utils.centroids.CentroidEstimator.yc" title="Link to this definition"></a></dt>
+<dd><p>The y-components of the estimated centroids for each image. Shape is (n_images,).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.utils.centroids.CentroidEstimator.update_grid">
+<span class="sig-name descname"><span class="pre">update_grid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/centroids.html#CentroidEstimator.update_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.centroids.CentroidEstimator.update_grid" title="Link to this definition"></a></dt>
+<dd><p>Updates the grid of pixel positions based on the current centroid estimates.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.utils.centroids.CentroidEstimator.elliptical_gaussian">
+<span class="sig-name descname"><span class="pre">elliptical_gaussian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/centroids.html#CentroidEstimator.elliptical_gaussian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.centroids.CentroidEstimator.elliptical_gaussian" title="Link to this definition"></a></dt>
+<dd><p>Computes an elliptical 2D Gaussian with the specified shear parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.utils.centroids.CentroidEstimator.compute_moments">
+<span class="sig-name descname"><span class="pre">compute_moments</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/centroids.html#CentroidEstimator.compute_moments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.centroids.CentroidEstimator.compute_moments" title="Link to this definition"></a></dt>
+<dd><p>Computes the first-order moments of the star images and updates the centroid estimates.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.utils.centroids.CentroidEstimator.estimate">
+<span class="sig-name descname"><span class="pre">estimate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/centroids.html#CentroidEstimator.estimate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.centroids.CentroidEstimator.estimate" title="Link to this definition"></a></dt>
+<dd><p>Runs the iterative centroid estimation procedure for all images.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.utils.centroids.CentroidEstimator.get_centroids">
+<span class="sig-name descname"><span class="pre">get_centroids</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/centroids.html#CentroidEstimator.get_centroids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.centroids.CentroidEstimator.get_centroids" title="Link to this definition"></a></dt>
+<dd><p>Returns the estimated centroids for all images as a 2D numpy array.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.utils.centroids.CentroidEstimator.get_intra_pixel_shifts">
+<span class="sig-name descname"><span class="pre">get_intra_pixel_shifts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/centroids.html#CentroidEstimator.get_intra_pixel_shifts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.centroids.CentroidEstimator.get_intra_pixel_shifts" title="Link to this definition"></a></dt>
+<dd><p>Gets the intra-pixel shifts for all images as a list of x and y displacements.</p>
+</dd></dl>
+
+<p class="rubric">Notes</p>
+<p>The iterative centroid estimation procedure fits an elliptical Gaussian to each
+star image and computes the centroid by calculating the weighted moments. The
+<cite>estimate()</cite> method performs the centroid calculation for a batch of images using
+the iterative approach defined by the <cite>n_iter</cite> parameter. This class is designed
+to be efficient and scalable when processing large batches of star images.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id0" title="wf_psf.utils.centroids.CentroidEstimator.compute_moments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_moments</span></code></a>()</p></td>
+<td><p>Compute the moments for multiple PSFs at once.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#id1" title="wf_psf.utils.centroids.CentroidEstimator.elliptical_gaussian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">elliptical_gaussian</span></code></a>([e1, e2])</p></td>
+<td><p>Compute an elliptical 2D Gaussian with arbitrary centroid.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id2" title="wf_psf.utils.centroids.CentroidEstimator.estimate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate</span></code></a>()</p></td>
+<td><p>Estimate centroids for all images.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#id3" title="wf_psf.utils.centroids.CentroidEstimator.get_centroids"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_centroids</span></code></a>()</p></td>
+<td><p>Return centroids for all images.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id4" title="wf_psf.utils.centroids.CentroidEstimator.get_intra_pixel_shifts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_intra_pixel_shifts</span></code></a>()</p></td>
+<td><p>Get intra-pixel shifts for all images.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#id5" title="wf_psf.utils.centroids.CentroidEstimator.update_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_grid</span></code></a>()</p></td>
+<td><p>Vectorized update of the grid coordinates for multiple star stamps.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">compute_moments</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/centroids.html#CentroidEstimator.compute_moments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd><p>Compute the moments for multiple PSFs at once.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">elliptical_gaussian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/centroids.html#CentroidEstimator.elliptical_gaussian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd><p>Compute an elliptical 2D Gaussian with arbitrary centroid.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">estimate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/centroids.html#CentroidEstimator.estimate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
+<dd><p>Estimate centroids for all images.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">get_centroids</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/centroids.html#CentroidEstimator.get_centroids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
+<dd><p>Return centroids for all images.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">get_intra_pixel_shifts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/centroids.html#CentroidEstimator.get_intra_pixel_shifts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id4" title="Link to this definition"></a></dt>
+<dd><p>Get intra-pixel shifts for all images.</p>
+<p>Intra-pixel shifts are the differences between the estimated centroid and the center of the image stamp (or pixel grid). These shifts are calculated for all images in the batch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A 2D array of shape (num_of_images, 2), where each row corresponds to the x and y shifts for each image.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">update_grid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/centroids.html#CentroidEstimator.update_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id5" title="Link to this definition"></a></dt>
+<dd><p>Vectorized update of the grid coordinates for multiple star stamps.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.utils.centroids.compute_zernike_tip_tilt">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.utils.centroids.</span></span><span class="sig-name descname"><span class="pre">compute_zernike_tip_tilt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">star_images</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">star_masks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_sampling</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.2e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reference_shifts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[-0.3333333333333333,</span> <span class="pre">-0.3333333333333333]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_init</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/utils/centroids.html#compute_zernike_tip_tilt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.centroids.compute_zernike_tip_tilt" title="Link to this definition"></a></dt>
+<dd><p>Compute Zernike tip-tilt corrections for a batch of PSF images.</p>
+<p>This function estimates the centroid shifts of multiple PSFs and computes
+the corresponding Zernike tip-tilt corrections to align them with a reference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>star_images</strong> (<em>np.ndarray</em>) – A batch of PSF images (3D array of shape <cite>(num_images, height, width)</cite>).</p></li>
+<li><p><strong>star_masks</strong> (<em>np.ndarray</em><em>, </em><em>optional</em>) – A batch of masks (same shape as <cite>star_postage_stamps</cite>). Each mask can have:
+- <cite>0</cite> to ignore the pixel.
+- <cite>1</cite> to fully consider the pixel.
+- Values in <cite>(0,1]</cite> as weights for partial consideration.
+Defaults to None.</p></li>
+<li><p><strong>pixel_sampling</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – The pixel size in meters. Defaults to <cite>12e-6 m</cite> (12 microns).</p></li>
+<li><p><strong>reference_shifts</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>]</em><em>, </em><em>optional</em>) – The target centroid shifts in pixels, specified as <cite>[dy, dx]</cite>.
+Defaults to <cite>[-1/3, -1/3]</cite> (nominal Euclid conditions).</p></li>
+<li><p><strong>sigma_init</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Initial standard deviation for centroid estimation. Default is <cite>2.5</cite>.</p></li>
+<li><p><strong>n_iter</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Number of iterations for centroid refinement. Default is <cite>20</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An array of shape <cite>(num_images, 2)</cite>, where:
+- Column 0 contains <cite>Zk1</cite> (tip) values.
+- Column 1 contains <cite>Zk2</cite> (tilt) values.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>This function processes all images at once using vectorized operations.</p></li>
+<li><p>The Zernike coefficients are computed in the WaveDiff convention.</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.utils.centroids.decim">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.utils.centroids.</span></span><span class="sig-name descname"><span class="pre">decim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">im</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">av_en</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/centroids.html#decim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.centroids.decim" title="Link to this definition"></a></dt>
+<dd><p>Decimate image to lower resolution.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.utils.centroids.degradation_op">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.utils.centroids.</span></span><span class="sig-name descname"><span class="pre">degradation_op</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift_ker</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">D</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/centroids.html#degradation_op"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.centroids.degradation_op" title="Link to this definition"></a></dt>
+<dd><p>Shift and decimate fine-grid image.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.utils.centroids.lanczos">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.utils.centroids.</span></span><span class="sig-name descname"><span class="pre">lanczos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">U</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/centroids.html#lanczos"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.centroids.lanczos" title="Link to this definition"></a></dt>
+<dd><p>Generate Lanczos kernel for a given shift.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.utils.centroids.shift_ker_stack">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.utils.centroids.</span></span><span class="sig-name descname"><span class="pre">shift_ker_stack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shifts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upfact</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lanc_rad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/centroids.html#shift_ker_stack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.centroids.shift_ker_stack" title="Link to this definition"></a></dt>
+<dd><p>Generate shifting kernels and rotated shifting kernels.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="wf_psf.utils.ccd_misalignments.html" class="btn btn-neutral float-left" title="wf_psf.utils.ccd_misalignments" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wf_psf.utils.configs_handler.html" class="btn btn-neutral float-right" title="wf_psf.utils.configs_handler" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

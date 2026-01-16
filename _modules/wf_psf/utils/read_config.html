@@ -1,25 +1,24 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wf_psf.utils.read_config &mdash; wf-psf 2.0.1 documentation</title>
+  <title>wf_psf.utils.read_config &mdash; wf-psf 3.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9570fddd" />
       <link rel="stylesheet" type="text/css" href="../../../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=309026bb" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
-        <script src="../../../_static/doctools.js?v=888ff710"></script>
-        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
-        <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"></script>
-        <script src="../../../_static/twemoji.js"></script>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../../../_static/twemoji.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="../../../about.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -62,7 +61,11 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../wf_psf.html">wf_psf package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer/index.html">Developer Guide</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">References</span></p>
 <ul>
@@ -103,19 +106,18 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">yaml</span>
-<span class="kn">from</span> <span class="nn">yaml.scanner</span> <span class="kn">import</span> <span class="n">ScannerError</span>
-<span class="kn">from</span> <span class="nn">yaml.parser</span> <span class="kn">import</span> <span class="n">ParserError</span>
-<span class="kn">import</span> <span class="nn">pprint</span>
-<span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">SimpleNamespace</span>
-<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">yaml</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">yaml.scanner</span><span class="w"> </span><span class="kn">import</span> <span class="n">ScannerError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">yaml.parser</span><span class="w"> </span><span class="kn">import</span> <span class="n">ParserError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleNamespace</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="RecursiveNamespace">
-<a class="viewcode-back" href="../../../wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace">[docs]</a>
-<span class="k">class</span> <span class="nc">RecursiveNamespace</span><span class="p">(</span><span class="n">SimpleNamespace</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RecursiveNamespace</span><span class="p">(</span><span class="n">SimpleNamespace</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;RecursiveNamespace.</span>
 
 <span class="sd">    A child class of the type SimpleNamespace to</span>
@@ -129,18 +131,18 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">==</span> <span class="nb">dict</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">RecursiveNamespace</span><span class="p">(</span><span class="o">**</span><span class="n">val</span><span class="p">))</span>
-            <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
                 <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">map_entry</span><span class="p">,</span> <span class="n">val</span><span class="p">)))</span>
 
 <div class="viewcode-block" id="RecursiveNamespace.map_entry">
-<a class="viewcode-back" href="../../../wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace.map_entry">[docs]</a>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace.map_entry">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">map_entry</span><span class="p">(</span><span class="n">entry</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">map_entry</span><span class="p">(</span><span class="n">entry</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Map Entry.</span>
 
 <span class="sd">        A function to map a dictionary to a</span>
@@ -157,7 +159,6 @@
 <span class="sd">        entry: type</span>
 <span class="sd">            Original type of entry if type is not a dictionary</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">RecursiveNamespace</span><span class="p">(</span><span class="o">**</span><span class="n">entry</span><span class="p">)</span>
 
@@ -167,8 +168,8 @@
 
 
 <div class="viewcode-block" id="read_yaml">
-<a class="viewcode-back" href="../../../wf_psf.utils.read_config.html#wf_psf.utils.read_config.read_yaml">[docs]</a>
-<span class="k">def</span> <span class="nf">read_yaml</span><span class="p">(</span><span class="n">conf_file</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.read_config.html#wf_psf.utils.read_config.read_yaml">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_yaml</span><span class="p">(</span><span class="n">conf_file</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read Yaml.</span>
 
 <span class="sd">    A function to read a YAML file.</span>
@@ -191,8 +192,8 @@
 
 
 <div class="viewcode-block" id="read_conf">
-<a class="viewcode-back" href="../../../wf_psf.utils.read_config.html#wf_psf.utils.read_config.read_conf">[docs]</a>
-<span class="k">def</span> <span class="nf">read_conf</span><span class="p">(</span><span class="n">conf_file</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.read_config.html#wf_psf.utils.read_config.read_conf">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_conf</span><span class="p">(</span><span class="n">conf_file</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read Conf.</span>
 
 <span class="sd">    A function to read a yaml configuration file, recursively.</span>
@@ -208,44 +209,38 @@
 <span class="sd">        Recursive Namespace object</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Loading...</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conf_file</span><span class="p">))</span>
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">conf_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading...</span><span class="si">{</span><span class="n">conf_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">conf_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">my_conf</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
         <span class="k">except</span> <span class="p">(</span><span class="n">ParserError</span><span class="p">,</span> <span class="n">ScannerError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
-                <span class="s2">&quot;There is a syntax problem with your config file. Please check </span><span class="si">{}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="n">conf_file</span>
-                <span class="p">)</span>
+                <span class="sa">f</span><span class="s2">&quot;There is a syntax problem with your config file. Please check </span><span class="si">{</span><span class="n">conf_file</span><span class="si">}</span><span class="s2">.&quot;</span>
             <span class="p">)</span>
             <span class="n">exit</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="n">my_conf</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="s2">&quot;Config file </span><span class="si">{}</span><span class="s2"> is empty...Stopping Program.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conf_file</span><span class="p">)</span>
-            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">my_conf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Config file </span><span class="si">{</span><span class="n">conf_file</span><span class="si">}</span><span class="s2"> is empty...Stopping Program.&quot;</span><span class="p">)</span>
             <span class="n">exit</span><span class="p">()</span>
 
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">RecursiveNamespace</span><span class="p">(</span><span class="o">**</span><span class="n">my_conf</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
-                <span class="s2">&quot;Check your config file for errors. Error Msg: </span><span class="si">{}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-            <span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Check your config file for errors. Error Msg: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
             <span class="n">exit</span><span class="p">()</span></div>
 
 
 
 <div class="viewcode-block" id="read_stream">
-<a class="viewcode-back" href="../../../wf_psf.utils.read_config.html#wf_psf.utils.read_config.read_stream">[docs]</a>
-<span class="k">def</span> <span class="nf">read_stream</span><span class="p">(</span><span class="n">conf_file</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.read_config.html#wf_psf.utils.read_config.read_stream">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">read_stream</span><span class="p">(</span><span class="n">conf_file</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read Stream.</span>
 
 <span class="sd">    A generator to read multiple docs in a yaml config.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    conf_file</span>
+<span class="sd">    conf_file : str</span>
 <span class="sd">        Name of configuration file</span>
 
 <span class="sd">    Yields</span>
@@ -254,11 +249,11 @@
 <span class="sd">        A dictionary containing all config files.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">stream</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">conf_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+    <span class="n">stream</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">conf_file</span><span class="p">)</span>
     <span class="n">docs</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load_all</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">yaml</span><span class="o">.</span><span class="n">FullLoader</span><span class="p">)</span>
 
-    <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">docs</span><span class="p">:</span>
-        <span class="k">yield</span> <span class="n">doc</span></div>
+    <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">docs</span><span class="p">:</span>  <span class="c1"># noqa: UP028</span>
+        <span class="k">yield</span> <span class="n">doc</span>  </div>
 
 </pre></div>
 
@@ -269,7 +264,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, CosmoStat.</p>
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

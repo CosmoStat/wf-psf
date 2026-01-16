@@ -1,0 +1,22 @@
+wf\_psf.training.train
+======================
+
+.. automodule:: wf_psf.training.train
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      filepath_chkp_callback
+      get_gpu_info
+      get_loss_metrics_monitor_and_outputs
+      setup_training
+      train
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      TrainingParamsHandler
+   

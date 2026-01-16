@@ -1,25 +1,24 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wf_psf.run &mdash; wf-psf 2.0.1 documentation</title>
+  <title>wf_psf.run &mdash; wf-psf 3.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9570fddd" />
       <link rel="stylesheet" type="text/css" href="../../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=309026bb" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=af2ce170"></script>
-        <script src="../../_static/doctools.js?v=888ff710"></script>
-        <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
-        <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"></script>
-        <script src="../../_static/twemoji.js"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../../_static/twemoji.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="../../about.html" />
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -62,7 +61,11 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../wf_psf.html">wf_psf package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../developer/index.html">Developer Guide</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">References</span></p>
 <ul>
@@ -94,25 +97,25 @@
            <div itemprop="articleBody">
              
   <h1>Source code for wf_psf.run</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;WF_PSF Run.</span>
+<span></span><span class="sd">&quot;&quot;&quot;Entry point and application runner.</span>
 
 <span class="sd">This module setups the run of the WF_PSF pipeline.</span>
 
 <span class="sd">:Author: Jennifer Pollack &lt;jennifer.pollack@cea.fr&gt;</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">argparse</span>
-<span class="kn">from</span> <span class="nn">wf_psf.utils.read_config</span> <span class="kn">import</span> <span class="n">read_stream</span>
-<span class="kn">from</span> <span class="nn">wf_psf.utils.io</span> <span class="kn">import</span> <span class="n">FileIOHandler</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">logging.config</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">from</span> <span class="nn">wf_psf.utils.configs_handler</span> <span class="kn">import</span> <span class="n">get_run_config</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.utils.read_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_stream</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.utils.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">FileIOHandler</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.utils.configs_handler</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_run_config</span>
 
 
 <div class="viewcode-block" id="setProgramOptions">
-<a class="viewcode-back" href="../../wf_psf.run.html#wf_psf.run.setProgramOptions">[docs]</a>
-<span class="k">def</span> <span class="nf">setProgramOptions</span><span class="p">():</span>
+<a class="viewcode-back" href="../../_autosummary/wf_psf.run.html#wf_psf.run.setProgramOptions">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">setProgramOptions</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Define Program Options.</span>
 
 <span class="sd">    Set command-line options for</span>
@@ -135,14 +138,6 @@
     <span class="p">)</span>
 
     <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
-        <span class="s2">&quot;--repodir&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;-r&quot;</span><span class="p">,</span>
-        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-        <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;the path of the code repository directory.&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
-
-    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
         <span class="s2">&quot;--outputdir&quot;</span><span class="p">,</span>
         <span class="s2">&quot;-o&quot;</span><span class="p">,</span>
         <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
@@ -157,12 +152,11 @@
 
 
 <div class="viewcode-block" id="mainMethod">
-<a class="viewcode-back" href="../../wf_psf.run.html#wf_psf.run.mainMethod">[docs]</a>
-<span class="k">def</span> <span class="nf">mainMethod</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Main Method.</span>
+<a class="viewcode-back" href="../../_autosummary/wf_psf.run.html#wf_psf.run.mainMethod">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">mainMethod</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run the main entry point of the wavediff program.</span>
 
-<span class="sd">    The main entry point to wavediff program.</span>
-
+<span class="sd">    The main entry point to the wavediff program.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">args</span> <span class="o">=</span> <span class="n">setProgramOptions</span><span class="p">()</span>
@@ -171,7 +165,7 @@
     <span class="n">configs</span> <span class="o">=</span> <span class="n">read_stream</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">conffile</span><span class="p">)</span>
     <span class="n">configs_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">conffile</span><span class="p">)</span>
 
-    <span class="n">file_handler</span> <span class="o">=</span> <span class="n">FileIOHandler</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">repodir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">outputdir</span><span class="p">,</span> <span class="n">configs_path</span><span class="p">)</span>
+    <span class="n">file_handler</span> <span class="o">=</span> <span class="n">FileIOHandler</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">outputdir</span><span class="p">,</span> <span class="n">configs_path</span><span class="p">)</span>
     <span class="n">file_handler</span><span class="o">.</span><span class="n">setup_outputs</span><span class="p">()</span>
     <span class="n">file_handler</span><span class="o">.</span><span class="n">copy_conffile_to_output_dir</span><span class="p">(</span><span class="n">configs_file</span><span class="p">)</span>
 
@@ -193,9 +187,7 @@
 
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
-            <span class="s2">&quot;Check your config file </span><span class="si">{}</span><span class="s2"> for errors. Error Msg: </span><span class="si">{}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                <span class="n">args</span><span class="o">.</span><span class="n">conffile</span><span class="p">,</span> <span class="n">e</span>
-            <span class="p">),</span>
+            <span class="sa">f</span><span class="s2">&quot;Check your config file </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">conffile</span><span class="si">}</span><span class="s2"> for errors. Error Msg: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">,</span>
             <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -216,7 +208,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, CosmoStat.</p>
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

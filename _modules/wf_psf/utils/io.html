@@ -1,25 +1,24 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wf_psf.utils.io &mdash; wf-psf 2.0.1 documentation</title>
+  <title>wf_psf.utils.io &mdash; wf-psf 3.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9570fddd" />
       <link rel="stylesheet" type="text/css" href="../../../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=309026bb" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
-        <script src="../../../_static/doctools.js?v=888ff710"></script>
-        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
-        <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"></script>
-        <script src="../../../_static/twemoji.js"></script>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../../../_static/twemoji.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="../../../about.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -62,7 +61,11 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../wf_psf.html">wf_psf package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer/index.html">Developer Guide</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">References</span></p>
 <ul>
@@ -103,16 +106,16 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">pathlib</span>
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
 
 
 <div class="viewcode-block" id="FileIOHandler">
-<a class="viewcode-back" href="../../../wf_psf.utils.io.html#wf_psf.utils.io.FileIOHandler">[docs]</a>
-<span class="k">class</span> <span class="nc">FileIOHandler</span><span class="p">:</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.io.html#wf_psf.utils.io.FileIOHandler">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FileIOHandler</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;FileIOHandler.</span>
 
 <span class="sd">    A class to manage the output</span>
@@ -127,8 +130,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">repodir_path</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">config_path</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">repodir_path</span> <span class="o">=</span> <span class="n">repodir_path</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">config_path</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">output_path</span> <span class="o">=</span> <span class="n">output_path</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config_path</span> <span class="o">=</span> <span class="n">config_path</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_timestamp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_timestamp</span><span class="p">()</span>
@@ -148,9 +150,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_psf_model</span> <span class="o">=</span> <span class="s2">&quot;psf_model&quot;</span>
 
 <div class="viewcode-block" id="FileIOHandler.setup_outputs">
-<a class="viewcode-back" href="../../../wf_psf.utils.io.html#wf_psf.utils.io.FileIOHandler.setup_outputs">[docs]</a>
-    <span class="k">def</span> <span class="nf">setup_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup Outputs.</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.io.html#wf_psf.utils.io.FileIOHandler.setup_outputs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up Outputs.</span>
 
 <span class="sd">        A function to call</span>
 <span class="sd">        specific functions</span>
@@ -169,7 +171,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_setup_logging</span><span class="p">()</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_make_output_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_output_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Make Output Directory.</span>
 
 <span class="sd">        A function to make the parent</span>
@@ -180,7 +182,7 @@
             <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span>
         <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_make_run_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_run_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Make Run Directory.</span>
 
 <span class="sd">        A function to make a unique directory</span>
@@ -189,8 +191,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_run_output_dir</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_setup_dirs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup Directories.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_setup_dirs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up Directories.</span>
 
 <span class="sd">        A function to setup the output</span>
 <span class="sd">        directories.</span>
@@ -209,8 +211,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_make_dir</span><span class="p">(</span><span class="nb">dir</span><span class="p">)</span>
 
 <div class="viewcode-block" id="FileIOHandler.get_timestamp">
-<a class="viewcode-back" href="../../../wf_psf.utils.io.html#wf_psf.utils.io.FileIOHandler.get_timestamp">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_timestamp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.io.html#wf_psf.utils.io.FileIOHandler.get_timestamp">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_timestamp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get Timestamp.</span>
 
 <span class="sd">        A function to return the date and</span>
@@ -222,17 +224,20 @@
 <span class="sd">            A string representation of the date and time.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H%M&quot;</span><span class="p">)</span>
+        <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">%H%M%S</span><span class="si">%f</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">timestamp</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_setup_logging</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup Logger.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_setup_logging</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up Logging.</span>
 
 <span class="sd">        A function to set up</span>
 <span class="sd">        logging.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">logging.config</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">importlib.resources</span><span class="w"> </span><span class="kn">import</span> <span class="n">files</span><span class="p">,</span> <span class="n">as_file</span>
+
         <span class="n">logfile</span> <span class="o">=</span> <span class="s2">&quot;wf-psf_&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timestamp</span> <span class="o">+</span> <span class="s2">&quot;.log&quot;</span>
         <span class="n">logfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_run_output_dir</span><span class="p">,</span>
@@ -240,13 +245,17 @@
             <span class="n">logfile</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="n">logging</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">fileConfig</span><span class="p">(</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">repodir_path</span><span class="p">,</span> <span class="s2">&quot;config/logging.conf&quot;</span><span class="p">),</span>
-            <span class="n">defaults</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="n">logfile</span><span class="p">},</span>
-            <span class="n">disable_existing_loggers</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="n">config_files</span> <span class="o">=</span> <span class="n">files</span><span class="p">(</span><span class="s2">&quot;wf_psf.config&quot;</span><span class="p">)</span>
+        <span class="n">conf_resource</span> <span class="o">=</span> <span class="n">config_files</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;logging.conf&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_make_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dir_name</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">as_file</span><span class="p">(</span><span class="n">conf_resource</span><span class="p">)</span> <span class="k">as</span> <span class="n">conf_path</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">fileConfig</span><span class="p">(</span>
+                <span class="n">conf_path</span><span class="p">,</span>
+                <span class="n">defaults</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;filename&quot;</span><span class="p">:</span> <span class="n">logfile</span><span class="p">},</span>
+                <span class="n">disable_existing_loggers</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dir_name</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Make Directory.</span>
 
 <span class="sd">        A function to make a subdirectory</span>
@@ -266,8 +275,8 @@
         <span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <div class="viewcode-block" id="FileIOHandler.get_config_dir">
-<a class="viewcode-back" href="../../../wf_psf.utils.io.html#wf_psf.utils.io.FileIOHandler.get_config_dir">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_config_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_output_dir</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.io.html#wf_psf.utils.io.FileIOHandler.get_config_dir">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_config_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_output_dir</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get Config Directory.</span>
 
 <span class="sd">        A function that returns path</span>
@@ -286,8 +295,8 @@
 
 
 <div class="viewcode-block" id="FileIOHandler.copy_conffile_to_output_dir">
-<a class="viewcode-back" href="../../../wf_psf.utils.io.html#wf_psf.utils.io.FileIOHandler.copy_conffile_to_output_dir">[docs]</a>
-    <span class="k">def</span> <span class="nf">copy_conffile_to_output_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source_file</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.io.html#wf_psf.utils.io.FileIOHandler.copy_conffile_to_output_dir">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy_conffile_to_output_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source_file</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Write File.</span>
 
 <span class="sd">        A function to copy a file to</span>
@@ -300,7 +309,6 @@
 <span class="sd">        source_file: str</span>
 <span class="sd">            Name of source file</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="n">source</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="p">,</span> <span class="n">source_file</span><span class="p">)</span>
         <span class="n">destination</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">get_config_dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_run_output_dir</span><span class="p">),</span> <span class="n">source_file</span>
@@ -310,8 +318,8 @@
 
 
 <div class="viewcode-block" id="FileIOHandler.get_checkpoint_dir">
-<a class="viewcode-back" href="../../../wf_psf.utils.io.html#wf_psf.utils.io.FileIOHandler.get_checkpoint_dir">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_checkpoint_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint_dir</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.io.html#wf_psf.utils.io.FileIOHandler.get_checkpoint_dir">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_checkpoint_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checkpoint_dir</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get Checkpoint Directory.</span>
 
 <span class="sd">        A function that returns path</span>
@@ -335,8 +343,8 @@
 
 
 <div class="viewcode-block" id="FileIOHandler.get_optimizer_dir">
-<a class="viewcode-back" href="../../../wf_psf.utils.io.html#wf_psf.utils.io.FileIOHandler.get_optimizer_dir">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_optimizer_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optimizer_dir</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.io.html#wf_psf.utils.io.FileIOHandler.get_optimizer_dir">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_optimizer_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optimizer_dir</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get Optimizer Directory.</span>
 
 <span class="sd">        A function that returns path</span>
@@ -360,8 +368,8 @@
 
 
 <div class="viewcode-block" id="FileIOHandler.get_psf_model_dir">
-<a class="viewcode-back" href="../../../wf_psf.utils.io.html#wf_psf.utils.io.FileIOHandler.get_psf_model_dir">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_psf_model_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">psf_model_dir</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.io.html#wf_psf.utils.io.FileIOHandler.get_psf_model_dir">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_psf_model_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">psf_model_dir</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get PSF Model Directory.</span>
 
 <span class="sd">        A function that returns path</span>
@@ -385,8 +393,8 @@
 
 
 <div class="viewcode-block" id="FileIOHandler.get_metrics_dir">
-<a class="viewcode-back" href="../../../wf_psf.utils.io.html#wf_psf.utils.io.FileIOHandler.get_metrics_dir">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_metrics_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrics_dir</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.io.html#wf_psf.utils.io.FileIOHandler.get_metrics_dir">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_metrics_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrics_dir</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get Metrics Directory.</span>
 
 <span class="sd">        A function that returns path</span>
@@ -410,8 +418,8 @@
 
 
 <div class="viewcode-block" id="FileIOHandler.get_plots_dir">
-<a class="viewcode-back" href="../../../wf_psf.utils.io.html#wf_psf.utils.io.FileIOHandler.get_plots_dir">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_plots_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plots_dir</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.io.html#wf_psf.utils.io.FileIOHandler.get_plots_dir">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_plots_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plots_dir</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get Plots Directory.</span>
 
 <span class="sd">        A function that returns path</span>
@@ -443,7 +451,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, CosmoStat.</p>
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

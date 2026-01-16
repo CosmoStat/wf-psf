@@ -1,0 +1,571 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.utils.ccd_misalignments &mdash; wf-psf 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../../../_static/twemoji.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../../../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">wf_psf.utils.ccd_misalignments</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for wf_psf.utils.ccd_misalignments</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;CCD misalignments.</span>
+
+<span class="sd">A module with utilities to handle CCD missalignments.</span>
+
+<span class="sd">:Author: Tobias Liaudat &lt;tobias.liaudat@cea.fr&gt;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.path</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mpltPath</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.spatial</span><span class="w"> </span><span class="kn">import</span> <span class="n">KDTree</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.utils.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">defocus_to_zk4_wavediff</span>
+
+
+<div class="viewcode-block" id="CCDMisalignmentCalculator">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.ccd_misalignments.html#wf_psf.utils.ccd_misalignments.CCDMisalignmentCalculator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CCDMisalignmentCalculator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;CCD Misalignment Calculator.</span>
+
+<span class="sd">    This class processes and analyzes CCD misalignment data using tile position information.</span>
+
+<span class="sd">    The `tiles_data` array is a data cube where each slice is a 4×3 matrix representing</span>
+<span class="sd">    the four corners of a tile. The first two columns correspond to x/y coordinates (in mm),</span>
+<span class="sd">    and the third column represents z displacement (in µm).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tiles_path : str</span>
+<span class="sd">        Path to the stored tiles data file.</span>
+<span class="sd">    x_lims : Union[list[float], np.ndarray] = [0, 1e3], optional</span>
+<span class="sd">        x-coordinate limits in the WaveDiff coordinate system (focal plane). Shape: (2,).</span>
+<span class="sd">        Defaults to [0, 1e3].</span>
+<span class="sd">    y_lims : Union[list[float], np.ndarray] = [0, 1e3], optional</span>
+<span class="sd">        y-coordinate limits in the WaveDiff coordinate system (focal plane). Shape: (2,).</span>
+<span class="sd">        Defaults to [0, 1e3].</span>
+<span class="sd">    tel_focal_length : float, optional</span>
+<span class="sd">        Telescope focal length in meters. Defaults to 24.5.</span>
+<span class="sd">    tel_diameter : float, optional</span>
+<span class="sd">        Telescope aperture diameter in meters. Defaults to 1.2.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tiles_data : np.ndarray</span>
+<span class="sd">        Loaded tile data from the specified file.</span>
+<span class="sd">    tiles_x_lims : np.ndarray</span>
+<span class="sd">        Minimum and maximum x-coordinate values from `tiles_data`.</span>
+<span class="sd">    tiles_y_lims : np.ndarray</span>
+<span class="sd">        Minimum and maximum y-coordinate values from `tiles_data`.</span>
+<span class="sd">    tiles_z_lims : np.ndarray</span>
+<span class="sd">        Minimum and maximum z-coordinate values from `tiles_data`.</span>
+<span class="sd">    tiles_z_average : float</span>
+<span class="sd">        Average z-coordinate value across all tiles.</span>
+<span class="sd">    ccd_polygons : list[mpltPath.Path]</span>
+<span class="sd">        List of CCD boundary polygons.</span>
+<span class="sd">    scaled_data : np.ndarray</span>
+<span class="sd">        Scaled tile data.</span>
+<span class="sd">    n_points_per_ccd : int</span>
+<span class="sd">        Number of points per CCD.</span>
+<span class="sd">    kdtree : KDTree</span>
+<span class="sd">        KDTree structure for spatial queries.</span>
+<span class="sd">    normal_list : np.ndarray</span>
+<span class="sd">        List of normal vectors for CCD planes.</span>
+<span class="sd">    d_list : np.ndarray</span>
+<span class="sd">        List of plane offset values for CCD planes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tiles_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">x_lims</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e3</span><span class="p">],</span>
+        <span class="n">y_lims</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1e3</span><span class="p">],</span>
+        <span class="n">tel_focal_length</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">24.5</span><span class="p">,</span>
+        <span class="n">tel_diameter</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.2</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tiles_path</span> <span class="o">=</span> <span class="n">tiles_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_lims</span> <span class="o">=</span> <span class="n">x_lims</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_lims</span> <span class="o">=</span> <span class="n">y_lims</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tel_focal_length</span> <span class="o">=</span> <span class="n">tel_focal_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tel_diameter</span> <span class="o">=</span> <span class="n">tel_diameter</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tiles_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tiles_path</span><span class="p">,</span> <span class="n">allow_pickle</span><span class="o">=</span><span class="kc">True</span><span class="p">)[()][</span><span class="s2">&quot;tile&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Tile data must have three coordinate columns (x, y, z).&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Initialize attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tiles_x_lims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles_y_lims</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles_z_lims</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tiles_z_average</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ccd_polygons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">mpltPath</span><span class="o">.</span><span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scaled_data</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_points_per_ccd</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kdtree</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">KDTree</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">normal_list</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run all required initialization steps.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_preprocess_tile_data</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_polygons</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_kdtree</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_precompute_CCD_planes</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_preprocess_tile_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Preprocess tile data by computing spatial limits and averages.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tiles_x_lims</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tiles_data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tiles_data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:])]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tiles_y_lims</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tiles_data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tiles_data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:])]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tiles_z_lims</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tiles_data</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="p">:]),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tiles_data</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">,</span> <span class="p">:])]</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tiles_z_average</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tiles_z_lims</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_initialize_polygons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize polygons to look for CCD IDs.</span>
+
+<span class="sd">        Each CCD is represented by a polygon defined by its corner points.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Build polygon list corresponding to each CCD</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ccd_polygons</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">scaled_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tiles_data</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tiles_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
+            <span class="c1"># Scale positions to wavediff reference</span>
+            <span class="k">for</span> <span class="n">jj</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scaled_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scaled_data</span><span class="p">[</span><span class="n">jj</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="n">it</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">scale_position_to_wavediff_reference</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">scaled_data</span><span class="p">[</span><span class="n">jj</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="n">it</span><span class="p">]</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="c1"># Build polygons point list</span>
+            <span class="n">curr_polygon</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="p">[</span><span class="n">_x</span><span class="p">,</span> <span class="n">_y</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">_x</span><span class="p">,</span> <span class="n">_y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">scaled_data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">it</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaled_data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">it</span><span class="p">]</span>
+                <span class="p">)</span>
+            <span class="p">]</span>
+            <span class="c1"># Build and add polygons to list</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ccd_polygons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mpltPath</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">curr_polygon</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_initialize_kdtree</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">flattened_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scaled_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaled_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_points_per_ccd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaled_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">it_p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scaled_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
+            <span class="n">idx_start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">it_p</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_points_per_ccd</span><span class="p">)</span>
+            <span class="n">idx_end</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">it_p</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_points_per_ccd</span><span class="p">)</span>
+            <span class="n">flattened_points</span><span class="p">[</span><span class="n">idx_start</span><span class="p">:</span><span class="n">idx_end</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaled_data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="n">it_p</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">kdtree</span> <span class="o">=</span> <span class="n">KDTree</span><span class="p">(</span><span class="n">flattened_points</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_precompute_CCD_planes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normal_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scaled_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
+            <span class="n">x0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaled_data</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">it</span><span class="p">]</span>
+            <span class="n">x1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaled_data</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">it</span><span class="p">]</span>
+            <span class="n">x2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaled_data</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">it</span><span class="p">]</span>
+
+            <span class="n">y0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaled_data</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">it</span><span class="p">]</span>
+            <span class="n">y1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaled_data</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">it</span><span class="p">]</span>
+            <span class="n">y2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaled_data</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">it</span><span class="p">]</span>
+
+            <span class="n">z0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaled_data</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">it</span><span class="p">]</span>
+            <span class="n">z1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaled_data</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">it</span><span class="p">]</span>
+            <span class="n">z2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scaled_data</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">it</span><span class="p">]</span>
+
+            <span class="n">ux</span><span class="p">,</span> <span class="n">uy</span><span class="p">,</span> <span class="n">uz</span> <span class="o">=</span> <span class="n">x1</span> <span class="o">-</span> <span class="n">x0</span><span class="p">,</span> <span class="n">y1</span> <span class="o">-</span> <span class="n">y0</span><span class="p">,</span> <span class="n">z1</span> <span class="o">-</span> <span class="n">z0</span>
+            <span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span> <span class="o">=</span> <span class="n">x2</span> <span class="o">-</span> <span class="n">x0</span><span class="p">,</span> <span class="n">y2</span> <span class="o">-</span> <span class="n">y0</span><span class="p">,</span> <span class="n">z2</span> <span class="o">-</span> <span class="n">z0</span>
+
+            <span class="n">normal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">uy</span> <span class="o">*</span> <span class="n">vz</span> <span class="o">-</span> <span class="n">uz</span> <span class="o">*</span> <span class="n">vy</span><span class="p">,</span> <span class="n">uz</span> <span class="o">*</span> <span class="n">vx</span> <span class="o">-</span> <span class="n">ux</span> <span class="o">*</span> <span class="n">vz</span><span class="p">,</span> <span class="n">ux</span> <span class="o">*</span> <span class="n">vy</span> <span class="o">-</span> <span class="n">uy</span> <span class="o">*</span> <span class="n">vx</span><span class="p">]</span>
+            <span class="p">)</span>  <span class="c1"># u_cross_v</span>
+            <span class="n">point</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scaled_data</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="n">it</span><span class="p">])</span>
+
+            <span class="n">d</span> <span class="o">=</span> <span class="o">-</span><span class="n">point</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">normal</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">normal_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">normal</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">d_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CCDMisalignmentCalculator.scale_position_to_tile_reference">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.ccd_misalignments.html#wf_psf.utils.ccd_misalignments.CCDMisalignmentCalculator.scale_position_to_tile_reference">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">scale_position_to_tile_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Scale input position into tiles coordinate system.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pos : np.ndarray</span>
+<span class="sd">            Focal plane position in wavediff coordinate system</span>
+<span class="sd">            respecting `self.x_lims` and `self.y_lims`. Shape: (2,)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_position_wavediff_limits</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+
+        <span class="n">pos_x</span> <span class="o">=</span> <span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">pos_y</span> <span class="o">=</span> <span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">scaled_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">pos_x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">scaled_x</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">scaled_x</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tiles_x_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles_x_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles_x_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="n">scaled_y</span> <span class="o">=</span> <span class="p">(</span><span class="n">pos_y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">scaled_y</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">scaled_y</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tiles_y_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles_y_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles_y_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">scaled_x</span><span class="p">,</span> <span class="n">scaled_y</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="CCDMisalignmentCalculator.scale_position_to_wavediff_reference">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.ccd_misalignments.html#wf_psf.utils.ccd_misalignments.CCDMisalignmentCalculator.scale_position_to_wavediff_reference">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">scale_position_to_wavediff_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Scale input position into wavediff coordinate system.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pos : np.ndarray</span>
+<span class="sd">            Tile position in input tile coordinate system. Shape: (2,)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_position_tile_limits</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+
+        <span class="n">pos_x</span> <span class="o">=</span> <span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">pos_y</span> <span class="o">=</span> <span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">scaled_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">pos_x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles_x_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tiles_x_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles_x_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">scaled_x</span> <span class="o">=</span> <span class="n">scaled_x</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">scaled_y</span> <span class="o">=</span> <span class="p">(</span><span class="n">pos_y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles_y_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tiles_y_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles_y_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">scaled_y</span> <span class="o">=</span> <span class="n">scaled_y</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">scaled_x</span><span class="p">,</span> <span class="n">scaled_y</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="CCDMisalignmentCalculator.check_position_wavediff_limits">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.ccd_misalignments.html#wf_psf.utils.ccd_misalignments.CCDMisalignmentCalculator.check_position_wavediff_limits">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_position_wavediff_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if position is within wavediff limits.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="ow">or</span> <span class="p">(</span>
+            <span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Input position is not within the WaveDiff focal plane limits.&quot;</span>
+            <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CCDMisalignmentCalculator.check_position_tile_limits">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.ccd_misalignments.html#wf_psf.utils.ccd_misalignments.CCDMisalignmentCalculator.check_position_tile_limits">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_position_tile_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if position is within tile limits.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles_x_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles_x_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="ow">or</span> <span class="p">(</span>
+            <span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles_y_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles_y_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Input position is not within the tile focal plane limits.&quot;</span>
+            <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CCDMisalignmentCalculator.get_ccd_from_position">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.ccd_misalignments.html#wf_psf.utils.ccd_misalignments.CCDMisalignmentCalculator.get_ccd_from_position">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_ccd_from_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get CCD ID from the position.</span>
+
+<span class="sd">        The ID correponds to the orden in the input `self.tiles_data`</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pos : np.ndarray</span>
+<span class="sd">            Focal plane position respecting `self.x_lims` and `self.y_lims`. Shape: (2,)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check if position is inside the focal plane limits, if not raise Error</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_position_wavediff_limits</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+
+        <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_position_format</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+
+        <span class="c1"># Test for each CCD if the position is inside</span>
+        <span class="n">ccds_results</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">ccd_polygon</span><span class="o">.</span><span class="n">contains_points</span><span class="p">(</span><span class="n">pos</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">ccd_polygon</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ccd_polygons</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># See inside how many CCD areas it falls</span>
+        <span class="n">non_zero_occurrence</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">ccds_results</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">non_zero_occurrence</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># Extract value if the ccd was identified</span>
+            <span class="n">ccd_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">ccds_results</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="n">non_zero_occurrence</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Handle the case where the position is in a gap</span>
+            <span class="c1"># Look for closest point in the flattened list</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">flat_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kdtree</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+            <span class="c1"># Get the corresponding CCD ID</span>
+            <span class="n">ccd_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">flat_index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_points_per_ccd</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">non_zero_occurrence</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="c1"># This should not occure unless something strange is going on</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Input position gives more than one CCD ID.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ccd_id</span></div>
+
+
+<div class="viewcode-block" id="CCDMisalignmentCalculator.get_dz_from_position">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.ccd_misalignments.html#wf_psf.utils.ccd_misalignments.CCDMisalignmentCalculator.get_dz_from_position">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_dz_from_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get z-axis displacement for a focal plane position.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pos : np.ndarray</span>
+<span class="sd">            Focal plane position respecting `self.x_lims` and `self.y_lims`. Shape: (2,)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dz : float</span>
+<span class="sd">            The delta in z-axis (perpendicular to the focal plane) in [m].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_position_wavediff_limits</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+
+        <span class="n">ccd_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ccd_from_position</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+
+        <span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_z_from_plane_data</span><span class="p">(</span>
+            <span class="n">pos</span><span class="o">=</span><span class="n">pos</span><span class="p">,</span>
+            <span class="n">normal</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">normal_list</span><span class="p">[</span><span class="n">ccd_id</span><span class="p">],</span>
+            <span class="n">d</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">d_list</span><span class="p">[</span><span class="n">ccd_id</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Compute the dz with respect to the mean, and change unit from [um] to [m]</span>
+        <span class="n">dz</span> <span class="o">=</span> <span class="p">(</span><span class="n">z</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tiles_z_average</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e-6</span>
+
+        <span class="k">return</span> <span class="n">dz</span></div>
+
+
+<div class="viewcode-block" id="CCDMisalignmentCalculator.get_zk4_from_position">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.ccd_misalignments.html#wf_psf.utils.ccd_misalignments.CCDMisalignmentCalculator.get_zk4_from_position">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_zk4_from_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get defocus Zernike contribution from focal plane position.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pos : np.ndarray</span>
+<span class="sd">            Focal plane position respecting `self.x_lims` and `self.y_lims`. Shape: (2,)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            Zernike 4 value in wavediff convention corresponding to</span>
+<span class="sd">            the delta z of the given input position `pos`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dz_from_position</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">defocus_to_zk4_wavediff</span><span class="p">(</span><span class="n">dz</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tel_focal_length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tel_diameter</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="CCDMisalignmentCalculator.compute_z_from_plane_data">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.ccd_misalignments.html#wf_psf.utils.ccd_misalignments.CCDMisalignmentCalculator.compute_z_from_plane_data">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_z_from_plane_data</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">normal</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute z value from plane data.</span>
+
+<span class="sd">        Plane equation:</span>
+<span class="sd">        normal . pos + d = 0</span>
+
+<span class="sd">        If</span>
+<span class="sd">        normal = (a,b,c),</span>
+<span class="sd">        and,</span>
+<span class="sd">        a*x + b*y + c*z + d = 0,</span>
+<span class="sd">        then,</span>
+<span class="sd">        z = (-a*x -b*y -d) / c</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pos : np.ndarray</span>
+<span class="sd">            Focal plane position in wavediff coordinate system</span>
+<span class="sd">            respecting `self.x_lims` and `self.y_lims`. Shape: (2,)</span>
+<span class="sd">        normal : np.ndarray</span>
+<span class="sd">            Plane normal vector. Shape: (3,)</span>
+<span class="sd">        d : np.ndarray</span>
+<span class="sd">            `d` value from the plane ecuation. Shape (3,)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">normal</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">normal</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">d</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">normal</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">z</span></div>
+
+
+<div class="viewcode-block" id="CCDMisalignmentCalculator.check_position_format">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.ccd_misalignments.html#wf_psf.utils.ccd_misalignments.CCDMisalignmentCalculator.check_position_format">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_position_format</span><span class="p">(</span><span class="n">pos</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check and format input position.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pos : Union[list, np.ndarray]</span>
+<span class="sd">            Input position.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.ndarray</span>
+<span class="sd">            Formatted position.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">list</span><span class="p">:</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pos</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">pos</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">pos</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

@@ -1,25 +1,24 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wf_psf.data.training_preprocessing &mdash; wf-psf 2.0.1 documentation</title>
+  <title>wf_psf.data.training_preprocessing &mdash; wf-psf 3.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9570fddd" />
       <link rel="stylesheet" type="text/css" href="../../../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=309026bb" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
-        <script src="../../../_static/doctools.js?v=888ff710"></script>
-        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
-        <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"></script>
-        <script src="../../../_static/twemoji.js"></script>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../../../_static/twemoji.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="../../../about.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -62,7 +61,11 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../wf_psf.html">wf_psf package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer/index.html">Developer Guide</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">References</span></p>
 <ul>
@@ -101,102 +104,486 @@
 <span class="sd">:Authors: Jennifer Pollack &lt;jennifer.pollack@cea.fr&gt; and Tobias Liaudat &lt;tobiasliaudat@gmail.com&gt;</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">wf_psf.utils.utils</span> <span class="k">as</span> <span class="nn">utils</span>
-<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
-<span class="kn">import</span> <span class="nn">tensorflow_addons</span> <span class="k">as</span> <span class="nn">tfa</span>
-<span class="kn">import</span> <span class="nn">wf_psf.sims.SimPSFToolkit</span> <span class="k">as</span> <span class="nn">SimPSFToolkit</span>
-<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">wf_psf.utils.utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">utils</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.utils.ccd_misalignments</span><span class="w"> </span><span class="kn">import</span> <span class="n">CCDMisalignmentCalculator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.utils.centroids</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_zernike_tip_tilt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fractions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Fraction</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="TrainingDataHandler">
-<a class="viewcode-back" href="../../../wf_psf.data.training_preprocessing.html#wf_psf.data.training_preprocessing.TrainingDataHandler">[docs]</a>
-<span class="k">class</span> <span class="nc">TrainingDataHandler</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Training Data Handler.</span>
+<div class="viewcode-block" id="DataHandler">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.training_preprocessing.html#wf_psf.data.training_preprocessing.DataHandler">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DataHandler</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Data Handler.</span>
 
-<span class="sd">    A class to manage training data.</span>
+<span class="sd">    This class manages loading and processing of training and testing data for use during PSF model training and validation.</span>
+<span class="sd">    It provides methods to access and preprocess the data.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    training_data_params: Recursive Namespace object</span>
-<span class="sd">        Recursive Namespace object containing training data parameters</span>
-<span class="sd">    simPSF: object</span>
-<span class="sd">        SimPSFToolkit instance</span>
-<span class="sd">    n_bins_lambda: int</span>
-<span class="sd">        Number of bins in wavelength</span>
+<span class="sd">    dataset_type : str</span>
+<span class="sd">        Type of dataset (&quot;train&quot; or &quot;test&quot;).</span>
+<span class="sd">    data_params : RecursiveNamespace</span>
+<span class="sd">        Recursive Namespace object containing parameters for both &#39;train&#39; and &#39;test&#39; datasets.</span>
+<span class="sd">    simPSF : PSFSimulator</span>
+<span class="sd">        Instance of the PSFSimulator class for simulating PSF models.</span>
+<span class="sd">    n_bins_lambda : int</span>
+<span class="sd">        Number of wavelength bins for SED processing.</span>
+<span class="sd">    load_data : bool, optional</span>
+<span class="sd">        If True, data is loaded and processed during initialization. If False, data loading</span>
+<span class="sd">        is deferred until explicitly called. Default is True.</span>
 
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dataset_type : str</span>
+<span class="sd">        Type of dataset (&quot;train&quot; or &quot;test&quot;).</span>
+<span class="sd">    data_params : RecursiveNamespace</span>
+<span class="sd">        Parameters for the current dataset type.</span>
+<span class="sd">    dataset : dict or None</span>
+<span class="sd">        Dictionary containing the loaded dataset, including positions and stars/noisy_stars.</span>
+<span class="sd">    simPSF : PSFSimulator</span>
+<span class="sd">        Instance of the PSFSimulator class for simulating PSF models.</span>
+<span class="sd">    n_bins_lambda : int</span>
+<span class="sd">        Number of wavelength bins.</span>
+<span class="sd">    sed_data : tf.Tensor or None</span>
+<span class="sd">        TensorFlow tensor containing processed SED data for training/testing.</span>
+<span class="sd">    load_data_on_init : bool</span>
+<span class="sd">        Flag controlling whether data is loaded during initialization.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">training_data_params</span><span class="p">,</span> <span class="n">simPSF</span><span class="p">,</span> <span class="n">n_bins_lambda</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">training_data_params</span> <span class="o">=</span> <span class="n">training_data_params</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">train_dataset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">training_data_params</span><span class="o">.</span><span class="n">data_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_data_params</span><span class="o">.</span><span class="n">file</span>
-            <span class="p">),</span>
-            <span class="n">allow_pickle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="p">)[()]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">train_dataset</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">train_dataset</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span>
-        <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">train_dataset</span><span class="p">[</span><span class="s2">&quot;noisy_stars&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">train_dataset</span><span class="p">[</span><span class="s2">&quot;noisy_stars&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span>
-        <span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">dataset_type</span><span class="p">,</span> <span class="n">data_params</span><span class="p">,</span> <span class="n">simPSF</span><span class="p">,</span> <span class="n">n_bins_lambda</span><span class="p">,</span> <span class="n">load_data</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the dataset handler for PSF simulation.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dataset_type : str</span>
+<span class="sd">            Type of dataset (&quot;train&quot; or &quot;test&quot;).</span>
+<span class="sd">        data_params : RecursiveNamespace</span>
+<span class="sd">            Recursive Namespace object containing parameters for both &#39;train&#39; and &#39;test&#39; datasets.</span>
+<span class="sd">        simPSF : PSFSimulator</span>
+<span class="sd">            Instance of the PSFSimulator class for simulating PSF models.</span>
+<span class="sd">        n_bins_lambda : int</span>
+<span class="sd">            Number of wavelength bins for SED processing.</span>
+<span class="sd">        load_data : bool, optional</span>
+<span class="sd">            If True, data is loaded and processed during initialization. If False, data loading</span>
+<span class="sd">            is deferred. Default is True.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset_type</span> <span class="o">=</span> <span class="n">dataset_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_params</span> <span class="o">=</span> <span class="n">data_params</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">dataset_type</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">simPSF</span> <span class="o">=</span> <span class="n">simPSF</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_bins_lambda</span> <span class="o">=</span> <span class="n">n_bins_lambda</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sed_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_data_on_init</span> <span class="o">=</span> <span class="n">load_data</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_data_on_init</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process_sed_data</span><span class="p">()</span>
+
+<div class="viewcode-block" id="DataHandler.load_dataset">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.training_preprocessing.html#wf_psf.data.training_preprocessing.DataHandler.load_dataset">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load dataset.</span>
+
+<span class="sd">        Load the dataset based on the specified dataset type.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_params</span><span class="o">.</span><span class="n">data_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_params</span><span class="o">.</span><span class="n">file</span><span class="p">),</span>
+            <span class="n">allow_pickle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)[()]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset_type</span> <span class="o">==</span> <span class="s2">&quot;training&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;noisy_stars&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;noisy_stars&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;noisy_stars&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing &#39;noisy_stars&#39; in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset_type</span><span class="si">}</span><span class="s2"> dataset.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset_type</span> <span class="o">==</span> <span class="s2">&quot;test&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;stars&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;stars&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;stars&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing &#39;stars&#39; in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset_type</span><span class="si">}</span><span class="s2"> dataset.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DataHandler.process_sed_data">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.training_preprocessing.html#wf_psf.data.training_preprocessing.DataHandler.process_sed_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_sed_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process SED Data.</span>
+
+<span class="sd">        A method to generate and process SED data.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sed_data</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">utils</span><span class="o">.</span><span class="n">generate_SED_elems_in_tensorflow</span><span class="p">(</span>
                 <span class="n">_sed</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">simPSF</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bins_lambda</span><span class="p">,</span> <span class="n">tf_dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float64</span>
             <span class="p">)</span>
-            <span class="k">for</span> <span class="n">_sed</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_dataset</span><span class="p">[</span><span class="s2">&quot;SEDs&quot;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">_sed</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;SEDs&quot;</span><span class="p">]</span>
         <span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sed_data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sed_data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sed_data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sed_data</span><span class="p">,</span> <span class="n">perm</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span></div>
+</div>
 
 
 
-<div class="viewcode-block" id="TestDataHandler">
-<a class="viewcode-back" href="../../../wf_psf.data.training_preprocessing.html#wf_psf.data.training_preprocessing.TestDataHandler">[docs]</a>
-<span class="k">class</span> <span class="nc">TestDataHandler</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Test Data Handler.</span>
+<div class="viewcode-block" id="get_np_obs_positions">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.training_preprocessing.html#wf_psf.data.training_preprocessing.get_np_obs_positions">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_np_obs_positions</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get observed positions in numpy from the provided dataset.</span>
 
-<span class="sd">    A class to handle test data for model validation.</span>
+<span class="sd">    This method concatenates the positions of the stars from both the training</span>
+<span class="sd">    and test datasets to obtain the observed positions.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    test_data_params: Recursive Namespace object</span>
-<span class="sd">        Recursive Namespace object containing test data parameters</span>
-<span class="sd">    simPSF: object</span>
-<span class="sd">        SimPSFToolkit instance</span>
-<span class="sd">    n_bins_lambda: int</span>
-<span class="sd">        Number of bins in wavelength</span>
+<span class="sd">    data : DataConfigHandler</span>
+<span class="sd">        Object containing training and test datasets.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        Numpy array containing the observed positions of the stars.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The observed positions are obtained by concatenating the positions of stars</span>
+<span class="sd">    from both the training and test datasets along the 0th axis.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">obs_positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+        <span class="p">(</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">training_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">],</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">test_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">],</span>
+        <span class="p">),</span>
+        <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">obs_positions</span></div>
+
+
+
+<div class="viewcode-block" id="get_obs_positions">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.training_preprocessing.html#wf_psf.data.training_preprocessing.get_obs_positions">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_obs_positions</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get observed positions from the provided dataset.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : DataConfigHandler</span>
+<span class="sd">        Object containing training and test datasets.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tf.Tensor</span>
+<span class="sd">        Tensor containing the observed positions of the stars.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">obs_positions</span> <span class="o">=</span> <span class="n">get_np_obs_positions</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">obs_positions</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="extract_star_data">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.training_preprocessing.html#wf_psf.data.training_preprocessing.extract_star_data">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">extract_star_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">train_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">test_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract specific star-related data from training and test datasets.</span>
+
+<span class="sd">    This function retrieves and concatenates specific star-related data (e.g., stars, masks) from the</span>
+<span class="sd">    star training and test datasets such as star stamps or masks, based on the provided keys.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : DataConfigHandler</span>
+<span class="sd">        Object containing training and test datasets.</span>
+<span class="sd">    train_key : str</span>
+<span class="sd">        The key to retrieve data from the training dataset (e.g., &#39;noisy_stars&#39;, &#39;masks&#39;).</span>
+<span class="sd">    test_key : str</span>
+<span class="sd">        The key to retrieve data from the test dataset (e.g., &#39;stars&#39;, &#39;masks&#39;).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        A NumPy array containing the concatenated data for the given keys.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    KeyError</span>
+<span class="sd">        If the specified keys do not exist in the training or test datasets.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - If the dataset contains TensorFlow tensors, they will be converted to NumPy arrays.</span>
+<span class="sd">    - Ensure that eager execution is enabled when calling this function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Ensure the requested keys exist in both training and test datasets</span>
+    <span class="n">missing_keys</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">key</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">train_key</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">training_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">test_key</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">test_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">),</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset</span>
+    <span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">missing_keys</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing keys in dataset: </span><span class="si">{</span><span class="n">missing_keys</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Retrieve data from training and test sets</span>
+    <span class="n">train_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">training_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="n">train_key</span><span class="p">]</span>
+    <span class="n">test_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">test_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="n">test_key</span><span class="p">]</span>
+
+    <span class="c1"># Convert to NumPy if necessary</span>
+    <span class="k">if</span> <span class="n">tf</span><span class="o">.</span><span class="n">is_tensor</span><span class="p">(</span><span class="n">train_data</span><span class="p">):</span>
+        <span class="n">train_data</span> <span class="o">=</span> <span class="n">train_data</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">tf</span><span class="o">.</span><span class="n">is_tensor</span><span class="p">(</span><span class="n">test_data</span><span class="p">):</span>
+        <span class="n">test_data</span> <span class="o">=</span> <span class="n">test_data</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+    <span class="c1"># Concatenate and return</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">train_data</span><span class="p">,</span> <span class="n">test_data</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_np_zernike_prior">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.training_preprocessing.html#wf_psf.data.training_preprocessing.get_np_zernike_prior">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_np_zernike_prior</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the zernike prior from the provided dataset.</span>
+
+<span class="sd">    This method concatenates the stars from both the training</span>
+<span class="sd">    and test datasets to obtain the full prior.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : DataConfigHandler</span>
+<span class="sd">        Object containing training and test datasets.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    zernike_prior : np.ndarray</span>
+<span class="sd">        Numpy array containing the full prior.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">zernike_prior</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+        <span class="p">(</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">training_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;zernike_prior&quot;</span><span class="p">],</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">test_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;zernike_prior&quot;</span><span class="p">],</span>
+        <span class="p">),</span>
+        <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">zernike_prior</span></div>
+
+
+
+<div class="viewcode-block" id="compute_centroid_correction">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.training_preprocessing.html#wf_psf.data.training_preprocessing.compute_centroid_correction">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_centroid_correction</span><span class="p">(</span><span class="n">model_params</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute centroid corrections using Zernike polynomials.</span>
+
+<span class="sd">    This function calculates the Zernike contributions required to match the centroid</span>
+<span class="sd">    of the WaveDiff PSF model to the observed star centroids, processing in batches.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model_params : RecursiveNamespace</span>
+<span class="sd">        An object containing parameters for the PSF model, including pixel sampling and initial centroid window parameters.</span>
+
+<span class="sd">    data : DataConfigHandler</span>
+<span class="sd">        An object containing training and test datasets, including observed PSFs</span>
+<span class="sd">        and optional star masks.</span>
+
+<span class="sd">    batch_size : int, optional</span>
+<span class="sd">        The batch size to use when processing the stars. Default is 16.</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    zernike_centroid_array : np.ndarray</span>
+<span class="sd">        A 2D NumPy array of shape `(n_stars, 3)`, where `n_stars` is the number of</span>
+<span class="sd">        observed stars. The array contains the computed Zernike contributions,</span>
+<span class="sd">        with zero padding applied to the first column to ensure a consistent shape.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">star_postage_stamps</span> <span class="o">=</span> <span class="n">extract_star_data</span><span class="p">(</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">train_key</span><span class="o">=</span><span class="s2">&quot;noisy_stars&quot;</span><span class="p">,</span> <span class="n">test_key</span><span class="o">=</span><span class="s2">&quot;stars&quot;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Get star mask catalogue only if &quot;masks&quot; exist in both training and test datasets</span>
+    <span class="n">star_masks</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">extract_star_data</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">train_key</span><span class="o">=</span><span class="s2">&quot;masks&quot;</span><span class="p">,</span> <span class="n">test_key</span><span class="o">=</span><span class="s2">&quot;masks&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">training_data</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;masks&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="ow">and</span> <span class="n">data</span><span class="o">.</span><span class="n">test_data</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;masks&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="ow">and</span> <span class="n">tf</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">training_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;masks&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="ow">and</span> <span class="n">tf</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">test_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;masks&quot;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="p">)</span>
+        <span class="k">else</span> <span class="kc">None</span>
+    <span class="p">)</span>
+
+    <span class="n">pix_sampling</span> <span class="o">=</span> <span class="n">model_params</span><span class="o">.</span><span class="n">pix_sampling</span> <span class="o">*</span> <span class="mf">1e-6</span>  <span class="c1"># Change units from [um] to [m]</span>
+
+    <span class="c1"># Ensure star_masks is properly handled</span>
+    <span class="n">star_masks</span> <span class="o">=</span> <span class="n">star_masks</span> <span class="k">if</span> <span class="n">star_masks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="n">reference_shifts</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">Fraction</span><span class="p">(</span><span class="n">value</span><span class="p">))</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">model_params</span><span class="o">.</span><span class="n">reference_shifts</span>
+    <span class="p">]</span>
+
+    <span class="n">n_stars</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">star_postage_stamps</span><span class="p">)</span>
+    <span class="n">zernike_centroid_array</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Batch process the stars</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_stars</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">):</span>
+        <span class="n">batch_postage_stamps</span> <span class="o">=</span> <span class="n">star_postage_stamps</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">batch_size</span><span class="p">]</span>
+        <span class="n">batch_masks</span> <span class="o">=</span> <span class="n">star_masks</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">batch_size</span><span class="p">]</span> <span class="k">if</span> <span class="n">star_masks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="c1"># Compute Zernike 1 and Zernike 2 for the batch</span>
+        <span class="n">zk1_2_batch</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">compute_zernike_tip_tilt</span><span class="p">(</span>
+            <span class="n">batch_postage_stamps</span><span class="p">,</span> <span class="n">batch_masks</span><span class="p">,</span> <span class="n">pix_sampling</span><span class="p">,</span> <span class="n">reference_shifts</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Zero pad array for each batch and append</span>
+        <span class="n">zernike_centroid_array</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span>
+                <span class="n">zk1_2_batch</span><span class="p">,</span>
+                <span class="n">pad_width</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)],</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span>
+                <span class="n">constant_values</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Combine all batches into a single array</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">zernike_centroid_array</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="compute_ccd_misalignment">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.training_preprocessing.html#wf_psf.data.training_preprocessing.compute_ccd_misalignment">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_ccd_misalignment</span><span class="p">(</span><span class="n">model_params</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute CCD misalignment.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model_params : RecursiveNamespace</span>
+<span class="sd">        Object containing parameters for this PSF model class.</span>
+<span class="sd">    data : DataConfigHandler</span>
+<span class="sd">        Object containing training and test datasets.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    zernike_ccd_misalignment_array : np.ndarray</span>
+<span class="sd">        Numpy array containing the Zernike contributions to model the CCD chip misalignments.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">obs_positions</span> <span class="o">=</span> <span class="n">get_np_obs_positions</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="n">ccd_misalignment_calculator</span> <span class="o">=</span> <span class="n">CCDMisalignmentCalculator</span><span class="p">(</span>
+        <span class="n">tiles_path</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">ccd_misalignments_input_path</span><span class="p">,</span>
+        <span class="n">x_lims</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">x_lims</span><span class="p">,</span>
+        <span class="n">y_lims</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">y_lims</span><span class="p">,</span>
+        <span class="n">tel_focal_length</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">tel_focal_length</span><span class="p">,</span>
+        <span class="n">tel_diameter</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">tel_diameter</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># Compute required zernike 4 for each position</span>
+    <span class="n">zk4_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">ccd_misalignment_calculator</span><span class="o">.</span><span class="n">get_zk4_from_position</span><span class="p">(</span><span class="n">single_pos</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">single_pos</span> <span class="ow">in</span> <span class="n">obs_positions</span>
+        <span class="p">]</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Zero pad array to get shape (n_stars, n_zernike=4)</span>
+    <span class="n">zernike_ccd_misalignment_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span>
+        <span class="n">zk4_values</span><span class="p">,</span> <span class="n">pad_width</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">)],</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span> <span class="n">constant_values</span><span class="o">=</span><span class="mi">0</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">zernike_ccd_misalignment_array</span></div>
+
+
+
+<div class="viewcode-block" id="get_zernike_prior">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.training_preprocessing.html#wf_psf.data.training_preprocessing.get_zernike_prior">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_zernike_prior</span><span class="p">(</span><span class="n">model_params</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get Zernike priors from the provided dataset.</span>
+
+<span class="sd">    This method concatenates the Zernike priors from both the training</span>
+<span class="sd">    and test datasets.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model_params : RecursiveNamespace</span>
+<span class="sd">        Object containing parameters for this PSF model class.</span>
+<span class="sd">    data : DataConfigHandler</span>
+<span class="sd">        Object containing training and test datasets.</span>
+<span class="sd">    batch_size : int, optional</span>
+<span class="sd">        The batch size to use when processing the stars. Default is 16.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tf.Tensor</span>
+<span class="sd">        Tensor containing the observed positions of the stars.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The Zernike prior are obtained by concatenating the Zernike priors</span>
+<span class="sd">    from both the training and test datasets along the 0th axis.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># List of zernike contribution</span>
+    <span class="n">zernike_contribution_list</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">test_data_params</span><span class="p">,</span> <span class="n">simPSF</span><span class="p">,</span> <span class="n">n_bins_lambda</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">test_data_params</span> <span class="o">=</span> <span class="n">test_data_params</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">test_dataset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">test_data_params</span><span class="o">.</span><span class="n">data_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_data_params</span><span class="o">.</span><span class="n">file</span><span class="p">),</span>
-            <span class="n">allow_pickle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="p">)[()]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">test_dataset</span><span class="p">[</span><span class="s2">&quot;stars&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">test_dataset</span><span class="p">[</span><span class="s2">&quot;stars&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span>
+    <span class="k">if</span> <span class="n">model_params</span><span class="o">.</span><span class="n">use_prior</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reading in Zernike prior into Zernike contribution list...&quot;</span><span class="p">)</span>
+        <span class="n">zernike_contribution_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_np_zernike_prior</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">model_params</span><span class="o">.</span><span class="n">correct_centroids</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Adding centroid correction to Zernike contribution list...&quot;</span><span class="p">)</span>
+        <span class="n">zernike_contribution_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">compute_centroid_correction</span><span class="p">(</span><span class="n">model_params</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">test_dataset</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">test_dataset</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span>
-        <span class="p">)</span>
 
-        <span class="c1"># Prepare validation data inputs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">simPSF</span> <span class="o">=</span> <span class="n">simPSF</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">n_bins_lambda</span> <span class="o">=</span> <span class="n">n_bins_lambda</span>
+    <span class="k">if</span> <span class="n">model_params</span><span class="o">.</span><span class="n">add_ccd_misalignments</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Adding CCD mis-alignments to Zernike contribution list...&quot;</span><span class="p">)</span>
+        <span class="n">zernike_contribution_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">compute_ccd_misalignment</span><span class="p">(</span><span class="n">model_params</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">sed_data</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="n">utils</span><span class="o">.</span><span class="n">generate_SED_elems_in_tensorflow</span><span class="p">(</span>
-                <span class="n">_sed</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">simPSF</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bins_lambda</span><span class="p">,</span> <span class="n">tf_dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float64</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">zernike_contribution_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">zernike_contribution</span> <span class="o">=</span> <span class="n">zernike_contribution_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Get max zk order</span>
+        <span class="n">max_zk_order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">zk_contribution</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">zk_contribution</span> <span class="ow">in</span> <span class="n">zernike_contribution_list</span>
+                <span class="p">]</span>
             <span class="p">)</span>
-            <span class="k">for</span> <span class="n">_sed</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_dataset</span><span class="p">[</span><span class="s2">&quot;SEDs&quot;</span><span class="p">]</span>
-        <span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sed_data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sed_data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sed_data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sed_data</span><span class="p">,</span> <span class="n">perm</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span></div>
+        <span class="p">)</span>
+
+        <span class="n">zernike_contribution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">zernike_contribution_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">max_zk_order</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Pad arrays to get the same length and add the final contribution</span>
+        <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">zernike_contribution_list</span><span class="p">)):</span>
+            <span class="n">current_zk_order</span> <span class="o">=</span> <span class="n">zernike_contribution_list</span><span class="p">[</span><span class="n">it</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">current_zernike_contribution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span>
+                <span class="n">zernike_contribution_list</span><span class="p">[</span><span class="n">it</span><span class="p">],</span>
+                <span class="n">pad_width</span><span class="o">=</span><span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_zk_order</span> <span class="o">-</span> <span class="n">current_zk_order</span><span class="p">))],</span>
+                <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span>
+                <span class="n">constant_values</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">zernike_contribution</span> <span class="o">+=</span> <span class="n">current_zernike_contribution</span>
+
+    <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">zernike_contribution</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span></div>
 
 </pre></div>
 
@@ -207,7 +594,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, CosmoStat.</p>
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

@@ -1,25 +1,24 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wf_psf.metrics.metrics &mdash; wf-psf 2.0.1 documentation</title>
+  <title>wf_psf.metrics.metrics &mdash; wf-psf 3.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9570fddd" />
       <link rel="stylesheet" type="text/css" href="../../../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=309026bb" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
-        <script src="../../../_static/doctools.js?v=888ff710"></script>
-        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
-        <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"></script>
-        <script src="../../../_static/twemoji.js"></script>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../../../_static/twemoji.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="../../../about.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -62,7 +61,11 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../wf_psf.html">wf_psf package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer/index.html">Developer Guide</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">References</span></p>
 <ul>
@@ -94,24 +97,32 @@
            <div itemprop="articleBody">
              
   <h1>Source code for wf_psf.metrics.metrics</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">galsim</span> <span class="k">as</span> <span class="nn">gs</span>
-<span class="kn">import</span> <span class="nn">wf_psf.utils.utils</span> <span class="k">as</span> <span class="nn">utils</span>
-<span class="kn">from</span> <span class="nn">wf_psf.psf_models.tf_psf_field</span> <span class="kn">import</span> <span class="n">build_PSF_model</span>
-<span class="kn">from</span> <span class="nn">wf_psf.psf_models</span> <span class="kn">import</span> <span class="n">tf_psf_field</span> <span class="k">as</span> <span class="n">psf_field</span>
-<span class="kn">from</span> <span class="nn">wf_psf.sims</span> <span class="kn">import</span> <span class="n">SimPSFToolkit</span> <span class="k">as</span> <span class="n">SimPSFToolkit</span>
-<span class="kn">import</span> <span class="nn">logging</span>
+<span></span><span class="sd">&quot;&quot;&quot;Metrics.</span>
+
+<span class="sd">A module which contains the specific functions</span>
+<span class="sd">for performing various sets of metrics evaluation</span>
+<span class="sd">of the trained psf model.</span>
+
+<span class="sd">:Author: Tobias Liaudat &lt;tobias.liaudat@cea.fr&gt;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">galsim</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gs</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">wf_psf.utils.utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.psf_models.psf_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_PSF_model</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.sims</span><span class="w"> </span><span class="kn">import</span> <span class="n">psf_simulator</span> <span class="k">as</span> <span class="n">psf_simulator</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="compute_poly_metric">
-<a class="viewcode-back" href="../../../wf_psf.metrics.metrics.html#wf_psf.metrics.metrics.compute_poly_metric">[docs]</a>
-<span class="k">def</span> <span class="nf">compute_poly_metric</span><span class="p">(</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.metrics.metrics.html#wf_psf.metrics.metrics.compute_poly_metric">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_poly_metric</span><span class="p">(</span>
     <span class="n">tf_semiparam_field</span><span class="p">,</span>
-    <span class="n">GT_tf_semiparam_field</span><span class="p">,</span>
+    <span class="n">gt_tf_semiparam_field</span><span class="p">,</span>
     <span class="n">simPSF_np</span><span class="p">,</span>
     <span class="n">tf_pos</span><span class="p">,</span>
     <span class="n">tf_SEDs</span><span class="p">,</span>
@@ -119,11 +130,12 @@
     <span class="n">n_bins_gt</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
     <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
     <span class="n">dataset_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mask</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate metrics for polychromatic reconstructions.</span>
 
 <span class="sd">    The ``tf_semiparam_field`` should be the model to evaluate, and the</span>
-<span class="sd">    ``GT_tf_semiparam_field`` should be loaded with the ground truth PSF field.</span>
+<span class="sd">    ``gt_tf_semiparam_field`` should be loaded with the ground truth PSF field.</span>
 
 <span class="sd">    Relative values returned in [%] (so multiplied by 100).</span>
 
@@ -131,8 +143,8 @@
 <span class="sd">    ----------</span>
 <span class="sd">    tf_semiparam_field: PSF field object</span>
 <span class="sd">        Trained model to evaluate.</span>
-<span class="sd">    GT_tf_semiparam_field: PSF field object</span>
-<span class="sd">        Ground truth model to produce GT observations at any position</span>
+<span class="sd">    gt_tf_semiparam_field: PSF field object</span>
+<span class="sd">        Ground truth model to produce gt observations at any position</span>
 <span class="sd">        and wavelength.</span>
 <span class="sd">    simPSF_np: PSF simulator object</span>
 <span class="sd">        Simulation object to be used by ``generate_packed_elems`` function.</span>
@@ -149,8 +161,12 @@
 <span class="sd">    dataset_dict: dict</span>
 <span class="sd">        Dictionary containing the dataset information. If provided, and if the `&#39;stars&#39;` key</span>
 <span class="sd">        is present, the noiseless stars from the dataset are used to compute the metrics.</span>
-<span class="sd">        Otherwise, the stars are generated from the GT model.</span>
+<span class="sd">        Otherwise, the stars are generated from the gt model.</span>
 <span class="sd">        Default is `None`.</span>
+<span class="sd">    mask: bool</span>
+<span class="sd">        If `True`, predictions are masked using the same mask as the target data, ensuring</span>
+<span class="sd">        that metric calculations consider only unmasked regions.</span>
+<span class="sd">        Default is `False`.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -159,7 +175,7 @@
 <span class="sd">    rel_rmse: float</span>
 <span class="sd">        Relative RMSE value. Values in %.</span>
 <span class="sd">    std_rmse: float</span>
-<span class="sd">        Sstandard deviation of RMSEs.</span>
+<span class="sd">        Standard deviation of RMSEs.</span>
 <span class="sd">    std_rel_rmse: float</span>
 <span class="sd">        Standard deviation of relative RMSEs. Values in %.</span>
 
@@ -176,15 +192,15 @@
     <span class="c1"># Model prediction</span>
     <span class="n">preds</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">pred_inputs</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
 
-    <span class="c1"># GT data preparation</span>
+    <span class="c1"># Ground truth data preparation</span>
     <span class="k">if</span> <span class="n">dataset_dict</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="s2">&quot;stars&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset_dict</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Regenerating GT stars from model.&quot;</span><span class="p">)</span>
-        <span class="c1"># Change interpolation parameters for the GT simPSF</span>
-        <span class="n">interp_pts_per_bin</span> <span class="o">=</span> <span class="n">simPSF_np</span><span class="o">.</span><span class="n">SED_interp_pts_per_bin</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;No precomputed ground truth stars found. Regenerating from the ground truth model using configured interpolation settings.&quot;</span>
+        <span class="p">)</span>
+        <span class="c1"># Change interpolation parameters for the ground truth simPSF</span>
         <span class="n">simPSF_np</span><span class="o">.</span><span class="n">SED_interp_pts_per_bin</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">SED_sigma</span> <span class="o">=</span> <span class="n">simPSF_np</span><span class="o">.</span><span class="n">SED_sigma</span>
         <span class="n">simPSF_np</span><span class="o">.</span><span class="n">SED_sigma</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="c1"># Generate SED data list for GT model</span>
+        <span class="c1"># Generate SED data list for gt model</span>
         <span class="n">packed_SED_data</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">utils</span><span class="o">.</span><span class="n">generate_packed_elems</span><span class="p">(</span><span class="n">_sed</span><span class="p">,</span> <span class="n">simPSF_np</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="n">n_bins_gt</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">_sed</span> <span class="ow">in</span> <span class="n">tf_SEDs</span>
@@ -193,38 +209,61 @@
         <span class="n">tf_packed_SED_data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">tf_packed_SED_data</span><span class="p">,</span> <span class="n">perm</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
         <span class="n">pred_inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">tf_pos</span><span class="p">,</span> <span class="n">tf_packed_SED_data</span><span class="p">]</span>
 
-        <span class="c1"># GT model prediction</span>
-        <span class="n">GT_preds</span> <span class="o">=</span> <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">pred_inputs</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="c1"># Ground Truth model prediction</span>
+        <span class="n">gt_preds</span> <span class="o">=</span> <span class="n">gt_tf_semiparam_field</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">pred_inputs</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Using GT stars from dataset.&quot;</span><span class="p">)</span>
-        <span class="n">GT_preds</span> <span class="o">=</span> <span class="n">dataset_dict</span><span class="p">[</span><span class="s2">&quot;stars&quot;</span><span class="p">]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Using precomputed ground truth stars from dataset_dict[&#39;stars&#39;].&quot;</span><span class="p">)</span>
+        <span class="n">gt_preds</span> <span class="o">=</span> <span class="n">dataset_dict</span><span class="p">[</span><span class="s2">&quot;stars&quot;</span><span class="p">]</span>
+
+    <span class="c1"># If the data is masked, mask the predictions</span>
+    <span class="k">if</span> <span class="n">mask</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;Applying masks to predictions. Only unmasked regions will be considered for metric calculations.&quot;</span>
+        <span class="p">)</span>
+
+        <span class="n">masks</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">dataset_dict</span><span class="p">[</span><span class="s2">&quot;masks&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Ensure masks as float dtype</span>
+        <span class="n">masks</span> <span class="o">=</span> <span class="n">masks</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">preds</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+        <span class="c1"># Weight the mse by the number of unmasked pixels</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+
+        <span class="c1"># Avoid divide by zero</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="mf">1e-7</span><span class="p">)</span>
+
+        <span class="c1"># Mask the predictions and ground truth/observations</span>
+        <span class="n">preds</span> <span class="o">=</span> <span class="n">preds</span> <span class="o">*</span> <span class="n">masks</span>
+        <span class="n">gt_preds</span> <span class="o">=</span> <span class="n">gt_preds</span> <span class="o">*</span> <span class="n">masks</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">gt_preds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">gt_preds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">gt_preds</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
 
     <span class="c1"># Calculate residuals</span>
-    <span class="n">residuals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">GT_preds</span> <span class="o">-</span> <span class="n">preds</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
-    <span class="n">GT_star_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">GT_preds</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
+    <span class="n">residuals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">gt_preds</span> <span class="o">-</span> <span class="n">preds</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">weights</span><span class="p">)</span>
+    <span class="n">gt_star_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">gt_preds</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">weights</span><span class="p">)</span>
 
     <span class="c1"># RMSE calculations</span>
     <span class="n">rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">residuals</span><span class="p">)</span>
-    <span class="n">rel_rmse</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">residuals</span> <span class="o">/</span> <span class="n">GT_star_mean</span><span class="p">)</span>
+    <span class="n">rel_rmse</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">residuals</span> <span class="o">/</span> <span class="n">gt_star_mean</span><span class="p">)</span>
 
     <span class="c1"># STD calculations</span>
     <span class="n">std_rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">residuals</span><span class="p">)</span>
-    <span class="n">std_rel_rmse</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">residuals</span> <span class="o">/</span> <span class="n">GT_star_mean</span><span class="p">)</span>
+    <span class="n">std_rel_rmse</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">residuals</span> <span class="o">/</span> <span class="n">gt_star_mean</span><span class="p">)</span>
 
     <span class="c1"># Print RMSE values</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Absolute RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">%.4e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">rmse</span><span class="p">,</span> <span class="n">std_rmse</span><span class="p">))</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Relative RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> </span><span class="si">%%</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">%.4e</span><span class="s2"> </span><span class="si">%%</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">rel_rmse</span><span class="p">,</span> <span class="n">std_rel_rmse</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Absolute RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">%.4e</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">rmse</span><span class="p">,</span> <span class="n">std_rmse</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Relative RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> % </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">%.4e</span><span class="s2"> %&quot;</span><span class="p">,</span> <span class="n">rel_rmse</span><span class="p">,</span> <span class="n">std_rel_rmse</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">rmse</span><span class="p">,</span> <span class="n">rel_rmse</span><span class="p">,</span> <span class="n">std_rmse</span><span class="p">,</span> <span class="n">std_rel_rmse</span></div>
 
 
 
 <div class="viewcode-block" id="compute_mono_metric">
-<a class="viewcode-back" href="../../../wf_psf.metrics.metrics.html#wf_psf.metrics.metrics.compute_mono_metric">[docs]</a>
-<span class="k">def</span> <span class="nf">compute_mono_metric</span><span class="p">(</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.metrics.metrics.html#wf_psf.metrics.metrics.compute_mono_metric">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_mono_metric</span><span class="p">(</span>
     <span class="n">tf_semiparam_field</span><span class="p">,</span>
-    <span class="n">GT_tf_semiparam_field</span><span class="p">,</span>
+    <span class="n">gt_tf_semiparam_field</span><span class="p">,</span>
     <span class="n">simPSF_np</span><span class="p">,</span>
     <span class="n">tf_pos</span><span class="p">,</span>
     <span class="n">lambda_list</span><span class="p">,</span>
@@ -233,7 +272,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate metrics for monochromatic reconstructions.</span>
 
 <span class="sd">    The ``tf_semiparam_field`` should be the model to evaluate, and the</span>
-<span class="sd">    ``GT_tf_semiparam_field`` should be loaded with the ground truth PSF field.</span>
+<span class="sd">    ``gt_tf_semiparam_field`` should be loaded with the ground truth PSF field.</span>
 
 <span class="sd">    Relative values returned in [%] (so multiplied by 100).</span>
 
@@ -241,8 +280,8 @@
 <span class="sd">    ----------</span>
 <span class="sd">    tf_semiparam_field: PSF field object</span>
 <span class="sd">        Trained model to evaluate.</span>
-<span class="sd">    GT_tf_semiparam_field: PSF field object</span>
-<span class="sd">        Ground truth model to produce GT observations at any position</span>
+<span class="sd">    gt_tf_semiparam_field: PSF field object</span>
+<span class="sd">        Ground truth model to produce gt observations at any position</span>
 <span class="sd">        and wavelength.</span>
 <span class="sd">    simPSF_np: PSF simulator object</span>
 <span class="sd">        Simulation object capable of calculating ``phase_N`` values from</span>
@@ -281,8 +320,8 @@
         <span class="n">lambda_obs</span> <span class="o">=</span> <span class="n">lambda_list</span><span class="p">[</span><span class="n">it</span><span class="p">]</span>
         <span class="n">phase_N</span> <span class="o">=</span> <span class="n">simPSF_np</span><span class="o">.</span><span class="n">feasible_N</span><span class="p">(</span><span class="n">lambda_obs</span><span class="p">)</span>
 
-        <span class="n">residuals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">total_samples</span><span class="p">))</span>
-        <span class="n">GT_star_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">total_samples</span><span class="p">))</span>
+        <span class="n">residuals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">total_samples</span><span class="p">)</span>
+        <span class="n">gt_star_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">total_samples</span><span class="p">)</span>
 
         <span class="c1"># Total number of epochs</span>
         <span class="n">n_epochs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">total_samples</span> <span class="o">/</span> <span class="n">batch_size</span><span class="p">))</span>
@@ -297,7 +336,7 @@
             <span class="n">batch_pos</span> <span class="o">=</span> <span class="n">tf_pos</span><span class="p">[</span><span class="n">ep_low_lim</span><span class="p">:</span><span class="n">ep_up_lim</span><span class="p">,</span> <span class="p">:]</span>
 
             <span class="c1"># Estimate the monochromatic PSFs</span>
-            <span class="n">GT_mono_psf</span> <span class="o">=</span> <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">predict_mono_psfs</span><span class="p">(</span>
+            <span class="n">gt_mono_psf</span> <span class="o">=</span> <span class="n">gt_tf_semiparam_field</span><span class="o">.</span><span class="n">predict_mono_psfs</span><span class="p">(</span>
                 <span class="n">input_positions</span><span class="o">=</span><span class="n">batch_pos</span><span class="p">,</span> <span class="n">lambda_obs</span><span class="o">=</span><span class="n">lambda_obs</span><span class="p">,</span> <span class="n">phase_N</span><span class="o">=</span><span class="n">phase_N</span>
             <span class="p">)</span>
 
@@ -305,13 +344,13 @@
                 <span class="n">input_positions</span><span class="o">=</span><span class="n">batch_pos</span><span class="p">,</span> <span class="n">lambda_obs</span><span class="o">=</span><span class="n">lambda_obs</span><span class="p">,</span> <span class="n">phase_N</span><span class="o">=</span><span class="n">phase_N</span>
             <span class="p">)</span>
 
-            <span class="n">num_pixels</span> <span class="o">=</span> <span class="n">GT_mono_psf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">GT_mono_psf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">num_pixels</span> <span class="o">=</span> <span class="n">gt_mono_psf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">gt_mono_psf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
 
             <span class="n">residuals</span><span class="p">[</span><span class="n">ep_low_lim</span><span class="p">:</span><span class="n">ep_up_lim</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">GT_mono_psf</span> <span class="o">-</span> <span class="n">model_mono_psf</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">num_pixels</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">gt_mono_psf</span> <span class="o">-</span> <span class="n">model_mono_psf</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">num_pixels</span>
             <span class="p">)</span>
-            <span class="n">GT_star_mean</span><span class="p">[</span><span class="n">ep_low_lim</span><span class="p">:</span><span class="n">ep_up_lim</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">GT_mono_psf</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">num_pixels</span>
+            <span class="n">gt_star_mean</span><span class="p">[</span><span class="n">ep_low_lim</span><span class="p">:</span><span class="n">ep_up_lim</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">gt_mono_psf</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">num_pixels</span>
             <span class="p">)</span>
 
             <span class="c1"># Increase lower limit</span>
@@ -319,23 +358,23 @@
 
         <span class="c1"># Calculate residuals</span>
         <span class="n">residuals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">residuals</span><span class="p">)</span>
-        <span class="n">GT_star_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">GT_star_mean</span><span class="p">)</span>
+        <span class="n">gt_star_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">gt_star_mean</span><span class="p">)</span>
 
         <span class="c1"># RMSE calculations</span>
         <span class="n">rmse_lda</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">residuals</span><span class="p">))</span>
-        <span class="n">rel_rmse_lda</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">100.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">residuals</span> <span class="o">/</span> <span class="n">GT_star_mean</span><span class="p">))</span>
+        <span class="n">rel_rmse_lda</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">100.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">residuals</span> <span class="o">/</span> <span class="n">gt_star_mean</span><span class="p">))</span>
 
         <span class="c1"># STD calculations</span>
         <span class="n">std_rmse_lda</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">residuals</span><span class="p">))</span>
-        <span class="n">std_rel_rmse_lda</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">100.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">residuals</span> <span class="o">/</span> <span class="n">GT_star_mean</span><span class="p">))</span>
+        <span class="n">std_rel_rmse_lda</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">100.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">residuals</span> <span class="o">/</span> <span class="n">gt_star_mean</span><span class="p">))</span>
 
     <span class="k">return</span> <span class="n">rmse_lda</span><span class="p">,</span> <span class="n">rel_rmse_lda</span><span class="p">,</span> <span class="n">std_rmse_lda</span><span class="p">,</span> <span class="n">std_rel_rmse_lda</span></div>
 
 
 
 <div class="viewcode-block" id="compute_opd_metrics">
-<a class="viewcode-back" href="../../../wf_psf.metrics.metrics.html#wf_psf.metrics.metrics.compute_opd_metrics">[docs]</a>
-<span class="k">def</span> <span class="nf">compute_opd_metrics</span><span class="p">(</span><span class="n">tf_semiparam_field</span><span class="p">,</span> <span class="n">GT_tf_semiparam_field</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.metrics.metrics.html#wf_psf.metrics.metrics.compute_opd_metrics">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_opd_metrics</span><span class="p">(</span><span class="n">tf_semiparam_field</span><span class="p">,</span> <span class="n">gt_tf_semiparam_field</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the OPD metrics.</span>
 
 <span class="sd">    Need to handle a batch size to avoid Out-Of-Memory errors with</span>
@@ -350,8 +389,8 @@
 <span class="sd">    ----------</span>
 <span class="sd">    tf_semiparam_field: PSF field object</span>
 <span class="sd">        Trained model to evaluate.</span>
-<span class="sd">    GT_tf_semiparam_field: PSF field object</span>
-<span class="sd">        Ground truth model to produce GT observations at any position</span>
+<span class="sd">    gt_tf_semiparam_field: PSF field object</span>
+<span class="sd">        Ground truth model to produce gt observations at any position</span>
 <span class="sd">        and wavelength.</span>
 <span class="sd">    pos: numpy.ndarray [batch x 2]</span>
 <span class="sd">        Positions at where to predict the OPD maps.</span>
@@ -371,13 +410,13 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Get OPD obscurations</span>
-    <span class="n">np_obscurations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">obscurations</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+    <span class="n">np_obscurations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">gt_tf_semiparam_field</span><span class="o">.</span><span class="n">obscurations</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
     <span class="c1"># Define total number of samples</span>
     <span class="n">n_samples</span> <span class="o">=</span> <span class="n">pos</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="c1"># Initialise batch variables</span>
     <span class="n">opd_batch</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">GT_opd_batch</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">gt_opd_batch</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="c1"># Initialise result lists</span>
     <span class="n">rmse_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)</span>
@@ -394,13 +433,13 @@
         <span class="n">batch_pos</span> <span class="o">=</span> <span class="n">pos</span><span class="p">[</span><span class="n">counter</span><span class="p">:</span><span class="n">end_sample</span><span class="p">,</span> <span class="p">:]</span>
         <span class="c1"># We calculate a batch of OPDs</span>
         <span class="n">opd_batch</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">predict_opd</span><span class="p">(</span><span class="n">batch_pos</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
-        <span class="n">GT_opd_batch</span> <span class="o">=</span> <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">predict_opd</span><span class="p">(</span><span class="n">batch_pos</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="n">gt_opd_batch</span> <span class="o">=</span> <span class="n">gt_tf_semiparam_field</span><span class="o">.</span><span class="n">predict_opd</span><span class="p">(</span><span class="n">batch_pos</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
         <span class="c1"># Remove the mean of the OPD</span>
         <span class="n">opd_batch</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">opd_batch</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">GT_opd_batch</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">GT_opd_batch</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">gt_opd_batch</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">gt_opd_batch</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="c1"># Obscure the OPDs</span>
         <span class="n">opd_batch</span> <span class="o">*=</span> <span class="n">np_obscurations</span>
-        <span class="n">GT_opd_batch</span> <span class="o">*=</span> <span class="n">np_obscurations</span>
+        <span class="n">gt_opd_batch</span> <span class="o">*=</span> <span class="n">np_obscurations</span>
         <span class="c1"># Generate obscuration mask</span>
         <span class="n">obsc_mask</span> <span class="o">=</span> <span class="n">np_obscurations</span> <span class="o">&gt;</span> <span class="mi">0</span>
         <span class="n">nb_mask_elems</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">obsc_mask</span><span class="p">)</span>
@@ -409,18 +448,18 @@
             <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
                 <span class="p">[</span>
                     <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">im1</span><span class="p">[</span><span class="n">obsc_mask</span><span class="p">]</span> <span class="o">-</span> <span class="n">im2</span><span class="p">[</span><span class="n">obsc_mask</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">nb_mask_elems</span>
-                    <span class="k">for</span> <span class="n">im1</span><span class="p">,</span> <span class="n">im2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">opd_batch</span><span class="p">,</span> <span class="n">GT_opd_batch</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">im1</span><span class="p">,</span> <span class="n">im2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">opd_batch</span><span class="p">,</span> <span class="n">gt_opd_batch</span><span class="p">)</span>
                 <span class="p">]</span>
             <span class="p">)</span>
         <span class="p">)</span>
-        <span class="n">GT_opd_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+        <span class="n">gt_opd_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
             <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-                <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">im2</span><span class="p">[</span><span class="n">obsc_mask</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">nb_mask_elems</span> <span class="k">for</span> <span class="n">im2</span> <span class="ow">in</span> <span class="n">GT_opd_batch</span><span class="p">]</span>
+                <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">im2</span><span class="p">[</span><span class="n">obsc_mask</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">nb_mask_elems</span> <span class="k">for</span> <span class="n">im2</span> <span class="ow">in</span> <span class="n">gt_opd_batch</span><span class="p">]</span>
             <span class="p">)</span>
         <span class="p">)</span>
         <span class="c1"># RMSE calculations</span>
         <span class="n">rmse_vals</span><span class="p">[</span><span class="n">counter</span><span class="p">:</span><span class="n">end_sample</span><span class="p">]</span> <span class="o">=</span> <span class="n">res_opd</span>
-        <span class="n">rel_rmse_vals</span><span class="p">[</span><span class="n">counter</span><span class="p">:</span><span class="n">end_sample</span><span class="p">]</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">res_opd</span> <span class="o">/</span> <span class="n">GT_opd_mean</span><span class="p">)</span>
+        <span class="n">rel_rmse_vals</span><span class="p">[</span><span class="n">counter</span><span class="p">:</span><span class="n">end_sample</span><span class="p">]</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">res_opd</span> <span class="o">/</span> <span class="n">gt_opd_mean</span><span class="p">)</span>
 
         <span class="c1"># Add the results to the lists</span>
         <span class="n">counter</span> <span class="o">+=</span> <span class="n">batch_size</span>
@@ -432,18 +471,18 @@
     <span class="n">rel_rmse_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">rel_rmse_vals</span><span class="p">)</span>
 
     <span class="c1"># Print RMSE values</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Absolute RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">%.4e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">rmse</span><span class="p">,</span> <span class="n">rmse_std</span><span class="p">))</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Relative RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> </span><span class="si">%%</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">%.4e</span><span class="s2"> </span><span class="si">%%</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">rel_rmse</span><span class="p">,</span> <span class="n">rel_rmse_std</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Absolute RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> % </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">%.4e</span><span class="s2"> %&quot;</span><span class="p">,</span> <span class="n">rmse</span><span class="p">,</span> <span class="n">rmse_std</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Relative RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> % </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">%.4e</span><span class="s2"> %&quot;</span><span class="p">,</span> <span class="n">rel_rmse</span><span class="p">,</span> <span class="n">rel_rmse_std</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">rmse</span><span class="p">,</span> <span class="n">rel_rmse</span><span class="p">,</span> <span class="n">rmse_std</span><span class="p">,</span> <span class="n">rel_rmse_std</span></div>
 
 
 
 <div class="viewcode-block" id="compute_shape_metrics">
-<a class="viewcode-back" href="../../../wf_psf.metrics.metrics.html#wf_psf.metrics.metrics.compute_shape_metrics">[docs]</a>
-<span class="k">def</span> <span class="nf">compute_shape_metrics</span><span class="p">(</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.metrics.metrics.html#wf_psf.metrics.metrics.compute_shape_metrics">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_shape_metrics</span><span class="p">(</span>
     <span class="n">tf_semiparam_field</span><span class="p">,</span>
-    <span class="n">GT_tf_semiparam_field</span><span class="p">,</span>
+    <span class="n">gt_tf_semiparam_field</span><span class="p">,</span>
     <span class="n">simPSF_np</span><span class="p">,</span>
     <span class="n">SEDs</span><span class="p">,</span>
     <span class="n">tf_pos</span><span class="p">,</span>
@@ -464,8 +503,8 @@
 <span class="sd">    ----------</span>
 <span class="sd">    tf_semiparam_field: PSF field object</span>
 <span class="sd">        Trained model to evaluate.</span>
-<span class="sd">    GT_tf_semiparam_field: PSF field object</span>
-<span class="sd">        Ground truth model to produce GT observations at any position</span>
+<span class="sd">    gt_tf_semiparam_field: PSF field object</span>
+<span class="sd">        Ground truth model to produce gt observations at any position</span>
 <span class="sd">        and wavelength.</span>
 <span class="sd">    simPSF_np:</span>
 <span class="sd">    SEDs: numpy.ndarray [batch x SED_samples x 2]</span>
@@ -496,7 +535,7 @@
 <span class="sd">    dataset_dict: dict</span>
 <span class="sd">        Dictionary containing the dataset information. If provided, and if the `&#39;super_res_stars&#39;`</span>
 <span class="sd">        key is present, the noiseless super resolved stars from the dataset are used to compute</span>
-<span class="sd">        the metrics. Otherwise, the stars are generated from the GT model.</span>
+<span class="sd">        the metrics. Otherwise, the stars are generated from the gt model.</span>
 <span class="sd">        Default is `None`.</span>
 
 <span class="sd">    Returns</span>
@@ -508,16 +547,16 @@
     <span class="c1"># Save original output_Q and output_dim</span>
     <span class="n">original_out_Q</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">output_Q</span>
     <span class="n">original_out_dim</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">output_dim</span>
-    <span class="n">GT_original_out_Q</span> <span class="o">=</span> <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">output_Q</span>
-    <span class="n">GT_original_out_dim</span> <span class="o">=</span> <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">output_dim</span>
+    <span class="n">gt_original_out_Q</span> <span class="o">=</span> <span class="n">gt_tf_semiparam_field</span><span class="o">.</span><span class="n">output_Q</span>
+    <span class="n">gt_original_out_dim</span> <span class="o">=</span> <span class="n">gt_tf_semiparam_field</span><span class="o">.</span><span class="n">output_dim</span>
 
     <span class="c1"># Set the required output_Q and output_dim parameters in the models</span>
     <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">set_output_Q</span><span class="p">(</span><span class="n">output_Q</span><span class="o">=</span><span class="n">output_Q</span><span class="p">,</span> <span class="n">output_dim</span><span class="o">=</span><span class="n">output_dim</span><span class="p">)</span>
-    <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">set_output_Q</span><span class="p">(</span><span class="n">output_Q</span><span class="o">=</span><span class="n">output_Q</span><span class="p">,</span> <span class="n">output_dim</span><span class="o">=</span><span class="n">output_dim</span><span class="p">)</span>
+    <span class="n">gt_tf_semiparam_field</span><span class="o">.</span><span class="n">set_output_Q</span><span class="p">(</span><span class="n">output_Q</span><span class="o">=</span><span class="n">output_Q</span><span class="p">,</span> <span class="n">output_dim</span><span class="o">=</span><span class="n">output_dim</span><span class="p">)</span>
 
     <span class="c1"># Need to compile the models again</span>
     <span class="n">tf_semiparam_field</span> <span class="o">=</span> <span class="n">build_PSF_model</span><span class="p">(</span><span class="n">tf_semiparam_field</span><span class="p">)</span>
-    <span class="n">GT_tf_semiparam_field</span> <span class="o">=</span> <span class="n">build_PSF_model</span><span class="p">(</span><span class="n">GT_tf_semiparam_field</span><span class="p">)</span>
+    <span class="n">gt_tf_semiparam_field</span> <span class="o">=</span> <span class="n">build_PSF_model</span><span class="p">(</span><span class="n">gt_tf_semiparam_field</span><span class="p">)</span>
 
     <span class="c1"># Generate SED data list</span>
     <span class="n">packed_SED_data</span> <span class="o">=</span> <span class="p">[</span>
@@ -532,19 +571,17 @@
     <span class="c1"># PSF model</span>
     <span class="n">predictions</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">pred_inputs</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
 
-    <span class="c1"># GT data preparation</span>
-    <span class="k">if</span> <span class="p">(</span>
-        <span class="n">dataset_dict</span> <span class="ow">is</span> <span class="kc">None</span>
-        <span class="ow">or</span> <span class="s2">&quot;super_res_stars&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset_dict</span>
-        <span class="ow">or</span> <span class="s2">&quot;SR_stars&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset_dict</span>
+    <span class="c1"># Ground truth data preparation</span>
+    <span class="k">if</span> <span class="n">dataset_dict</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="p">(</span>
+        <span class="s2">&quot;super_res_stars&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset_dict</span> <span class="ow">and</span> <span class="s2">&quot;SR_stars&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset_dict</span>
     <span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Generating GT super resolved stars from the GT model.&quot;</span><span class="p">)</span>
-        <span class="c1"># Change interpolation parameters for the GT simPSF</span>
-        <span class="n">interp_pts_per_bin</span> <span class="o">=</span> <span class="n">simPSF_np</span><span class="o">.</span><span class="n">SED_interp_pts_per_bin</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;No pre-computed super-resolved ground truth stars found.  Regenerating ground truth super resolved stars from the ground-truth model using configured interpolation settings.&quot;</span>
+        <span class="p">)</span>
+        <span class="c1"># Change interpolation parameters for the ground truth simPSF</span>
         <span class="n">simPSF_np</span><span class="o">.</span><span class="n">SED_interp_pts_per_bin</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">SED_sigma</span> <span class="o">=</span> <span class="n">simPSF_np</span><span class="o">.</span><span class="n">SED_sigma</span>
         <span class="n">simPSF_np</span><span class="o">.</span><span class="n">SED_sigma</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="c1"># Generate SED data list for GT model</span>
+        <span class="c1"># Generate SED data list for gt model</span>
         <span class="n">packed_SED_data</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">utils</span><span class="o">.</span><span class="n">generate_packed_elems</span><span class="p">(</span><span class="n">_sed</span><span class="p">,</span> <span class="n">simPSF_np</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="n">n_bins_gt</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">_sed</span> <span class="ow">in</span> <span class="n">SEDs</span>
@@ -556,40 +593,39 @@
         <span class="n">pred_inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">tf_pos</span><span class="p">,</span> <span class="n">tf_packed_SED_data</span><span class="p">]</span>
 
         <span class="c1"># Ground Truth model</span>
-        <span class="n">GT_predictions</span> <span class="o">=</span> <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+        <span class="n">gt_predictions</span> <span class="o">=</span> <span class="n">gt_tf_semiparam_field</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
             <span class="n">x</span><span class="o">=</span><span class="n">pred_inputs</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span>
         <span class="p">)</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Using super resolved stars from dataset.&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Using precomputed super-resolved ground truth stars from dataset.&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="s2">&quot;super_res_stars&quot;</span> <span class="ow">in</span> <span class="n">dataset_dict</span><span class="p">:</span>
-            <span class="n">GT_predictions</span> <span class="o">=</span> <span class="n">dataset_dict</span><span class="p">[</span><span class="s2">&quot;super_res_stars&quot;</span><span class="p">]</span>
+            <span class="n">gt_predictions</span> <span class="o">=</span> <span class="n">dataset_dict</span><span class="p">[</span><span class="s2">&quot;super_res_stars&quot;</span><span class="p">]</span>
         <span class="k">elif</span> <span class="s2">&quot;SR_stars&quot;</span> <span class="ow">in</span> <span class="n">dataset_dict</span><span class="p">:</span>
-            <span class="n">GT_predictions</span> <span class="o">=</span> <span class="n">dataset_dict</span><span class="p">[</span><span class="s2">&quot;SR_stars&quot;</span><span class="p">]</span>
+            <span class="n">gt_predictions</span> <span class="o">=</span> <span class="n">dataset_dict</span><span class="p">[</span><span class="s2">&quot;SR_stars&quot;</span><span class="p">]</span>
 
     <span class="c1"># Calculate residuals</span>
-    <span class="n">residuals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">GT_predictions</span> <span class="o">-</span> <span class="n">predictions</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
-    <span class="n">GT_star_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">GT_predictions</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
+    <span class="n">residuals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">gt_predictions</span> <span class="o">-</span> <span class="n">predictions</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
+    <span class="n">gt_star_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">gt_predictions</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
 
     <span class="c1"># Pixel RMSE for each star</span>
     <span class="k">if</span> <span class="n">opt_stars_rel_pix_rmse</span><span class="p">:</span>
-        <span class="n">stars_rel_pix_rmse</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">residuals</span> <span class="o">/</span> <span class="n">GT_star_mean</span>
+        <span class="n">stars_rel_pix_rmse</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">residuals</span> <span class="o">/</span> <span class="n">gt_star_mean</span>
 
     <span class="c1"># RMSE calculations</span>
     <span class="n">pix_rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">residuals</span><span class="p">)</span>
-    <span class="n">rel_pix_rmse</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">residuals</span> <span class="o">/</span> <span class="n">GT_star_mean</span><span class="p">)</span>
+    <span class="n">rel_pix_rmse</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">residuals</span> <span class="o">/</span> <span class="n">gt_star_mean</span><span class="p">)</span>
 
     <span class="c1"># STD calculations</span>
     <span class="n">pix_rmse_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">residuals</span><span class="p">)</span>
-    <span class="n">rel_pix_rmse_std</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">residuals</span> <span class="o">/</span> <span class="n">GT_star_mean</span><span class="p">)</span>
+    <span class="n">rel_pix_rmse_std</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">residuals</span> <span class="o">/</span> <span class="n">gt_star_mean</span><span class="p">)</span>
 
     <span class="c1"># Print pixel RMSE values</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Pixel star absolute RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">%.4e</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pix_rmse</span><span class="p">,</span> <span class="n">pix_rmse_std</span><span class="p">)</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Pixel star absolute RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">{</span><span class="n">pix_rmse</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">{</span><span class="n">pix_rmse_std</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2"> &quot;</span>
     <span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-        <span class="s2">&quot;Pixel star relative RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> </span><span class="si">%%</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">%.4e</span><span class="s2"> </span><span class="si">%%</span><span class="s2">&quot;</span>
-        <span class="o">%</span> <span class="p">(</span><span class="n">rel_pix_rmse</span><span class="p">,</span> <span class="n">rel_pix_rmse_std</span><span class="p">)</span>
+        <span class="sa">f</span><span class="s2">&quot;Pixel star relative RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">{</span><span class="n">rel_pix_rmse</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2"> % </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">{</span><span class="n">rel_pix_rmse_std</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2"> %&quot;</span>
     <span class="p">)</span>
 
     <span class="c1"># Measure shapes of the reconstructions</span>
@@ -598,40 +634,40 @@
     <span class="p">]</span>
 
     <span class="c1"># Measure shapes of the reconstructions</span>
-    <span class="n">GT_pred_moments</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">gt_pred_moments</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">gs</span><span class="o">.</span><span class="n">hsm</span><span class="o">.</span><span class="n">FindAdaptiveMom</span><span class="p">(</span><span class="n">gs</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">_pred</span><span class="p">),</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">_pred</span> <span class="ow">in</span> <span class="n">GT_predictions</span>
+        <span class="k">for</span> <span class="n">_pred</span> <span class="ow">in</span> <span class="n">gt_predictions</span>
     <span class="p">]</span>
 
     <span class="n">pred_e1_HSM</span><span class="p">,</span> <span class="n">pred_e2_HSM</span><span class="p">,</span> <span class="n">pred_R2_HSM</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
-    <span class="n">GT_pred_e1_HSM</span><span class="p">,</span> <span class="n">GT_pred_e2_HSM</span><span class="p">,</span> <span class="n">GT_pred_R2_HSM</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="n">gt_pred_e1_HSM</span><span class="p">,</span> <span class="n">gt_pred_e2_HSM</span><span class="p">,</span> <span class="n">gt_pred_R2_HSM</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
 
-    <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">GT_pred_moments</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">gt_pred_moments</span><span class="p">)):</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="n">pred_moments</span><span class="p">[</span><span class="n">it</span><span class="p">]</span><span class="o">.</span><span class="n">moments_status</span> <span class="o">==</span> <span class="mi">0</span>
-            <span class="ow">and</span> <span class="n">GT_pred_moments</span><span class="p">[</span><span class="n">it</span><span class="p">]</span><span class="o">.</span><span class="n">moments_status</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="ow">and</span> <span class="n">gt_pred_moments</span><span class="p">[</span><span class="n">it</span><span class="p">]</span><span class="o">.</span><span class="n">moments_status</span> <span class="o">==</span> <span class="mi">0</span>
         <span class="p">):</span>
             <span class="n">pred_e1_HSM</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred_moments</span><span class="p">[</span><span class="n">it</span><span class="p">]</span><span class="o">.</span><span class="n">observed_shape</span><span class="o">.</span><span class="n">g1</span><span class="p">)</span>
             <span class="n">pred_e2_HSM</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred_moments</span><span class="p">[</span><span class="n">it</span><span class="p">]</span><span class="o">.</span><span class="n">observed_shape</span><span class="o">.</span><span class="n">g2</span><span class="p">)</span>
             <span class="n">pred_R2_HSM</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">pred_moments</span><span class="p">[</span><span class="n">it</span><span class="p">]</span><span class="o">.</span><span class="n">moments_sigma</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
 
-            <span class="n">GT_pred_e1_HSM</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">GT_pred_moments</span><span class="p">[</span><span class="n">it</span><span class="p">]</span><span class="o">.</span><span class="n">observed_shape</span><span class="o">.</span><span class="n">g1</span><span class="p">)</span>
-            <span class="n">GT_pred_e2_HSM</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">GT_pred_moments</span><span class="p">[</span><span class="n">it</span><span class="p">]</span><span class="o">.</span><span class="n">observed_shape</span><span class="o">.</span><span class="n">g2</span><span class="p">)</span>
-            <span class="n">GT_pred_R2_HSM</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">GT_pred_moments</span><span class="p">[</span><span class="n">it</span><span class="p">]</span><span class="o">.</span><span class="n">moments_sigma</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+            <span class="n">gt_pred_e1_HSM</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gt_pred_moments</span><span class="p">[</span><span class="n">it</span><span class="p">]</span><span class="o">.</span><span class="n">observed_shape</span><span class="o">.</span><span class="n">g1</span><span class="p">)</span>
+            <span class="n">gt_pred_e2_HSM</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gt_pred_moments</span><span class="p">[</span><span class="n">it</span><span class="p">]</span><span class="o">.</span><span class="n">observed_shape</span><span class="o">.</span><span class="n">g2</span><span class="p">)</span>
+            <span class="n">gt_pred_R2_HSM</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">gt_pred_moments</span><span class="p">[</span><span class="n">it</span><span class="p">]</span><span class="o">.</span><span class="n">moments_sigma</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
 
     <span class="n">pred_e1_HSM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pred_e1_HSM</span><span class="p">)</span>
     <span class="n">pred_e2_HSM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pred_e2_HSM</span><span class="p">)</span>
     <span class="n">pred_R2_HSM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pred_R2_HSM</span><span class="p">)</span>
 
-    <span class="n">GT_pred_e1_HSM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">GT_pred_e1_HSM</span><span class="p">)</span>
-    <span class="n">GT_pred_e2_HSM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">GT_pred_e2_HSM</span><span class="p">)</span>
-    <span class="n">GT_pred_R2_HSM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">GT_pred_R2_HSM</span><span class="p">)</span>
+    <span class="n">gt_pred_e1_HSM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gt_pred_e1_HSM</span><span class="p">)</span>
+    <span class="n">gt_pred_e2_HSM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gt_pred_e2_HSM</span><span class="p">)</span>
+    <span class="n">gt_pred_R2_HSM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gt_pred_R2_HSM</span><span class="p">)</span>
 
     <span class="c1"># Calculate metrics</span>
 
     <span class="c1"># e1</span>
-    <span class="n">e1_res</span> <span class="o">=</span> <span class="n">GT_pred_e1_HSM</span> <span class="o">-</span> <span class="n">pred_e1_HSM</span>
-    <span class="n">e1_res_rel</span> <span class="o">=</span> <span class="p">(</span><span class="n">GT_pred_e1_HSM</span> <span class="o">-</span> <span class="n">pred_e1_HSM</span><span class="p">)</span> <span class="o">/</span> <span class="n">GT_pred_e1_HSM</span>
+    <span class="n">e1_res</span> <span class="o">=</span> <span class="n">gt_pred_e1_HSM</span> <span class="o">-</span> <span class="n">pred_e1_HSM</span>
+    <span class="n">e1_res_rel</span> <span class="o">=</span> <span class="p">(</span><span class="n">gt_pred_e1_HSM</span> <span class="o">-</span> <span class="n">pred_e1_HSM</span><span class="p">)</span> <span class="o">/</span> <span class="n">gt_pred_e1_HSM</span>
 
     <span class="n">rmse_e1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">e1_res</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
     <span class="n">rel_rmse_e1</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">e1_res_rel</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
@@ -639,8 +675,8 @@
     <span class="n">std_rel_rmse_e1</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">e1_res_rel</span><span class="p">)</span>
 
     <span class="c1"># e2</span>
-    <span class="n">e2_res</span> <span class="o">=</span> <span class="n">GT_pred_e2_HSM</span> <span class="o">-</span> <span class="n">pred_e2_HSM</span>
-    <span class="n">e2_res_rel</span> <span class="o">=</span> <span class="p">(</span><span class="n">GT_pred_e2_HSM</span> <span class="o">-</span> <span class="n">pred_e2_HSM</span><span class="p">)</span> <span class="o">/</span> <span class="n">GT_pred_e2_HSM</span>
+    <span class="n">e2_res</span> <span class="o">=</span> <span class="n">gt_pred_e2_HSM</span> <span class="o">-</span> <span class="n">pred_e2_HSM</span>
+    <span class="n">e2_res_rel</span> <span class="o">=</span> <span class="p">(</span><span class="n">gt_pred_e2_HSM</span> <span class="o">-</span> <span class="n">pred_e2_HSM</span><span class="p">)</span> <span class="o">/</span> <span class="n">gt_pred_e2_HSM</span>
 
     <span class="n">rmse_e2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">e2_res</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
     <span class="n">rel_rmse_e2</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">e2_res_rel</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
@@ -648,55 +684,52 @@
     <span class="n">std_rel_rmse_e2</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">e2_res_rel</span><span class="p">)</span>
 
     <span class="c1"># R2</span>
-    <span class="n">R2_res</span> <span class="o">=</span> <span class="n">GT_pred_R2_HSM</span> <span class="o">-</span> <span class="n">pred_R2_HSM</span>
+    <span class="n">R2_res</span> <span class="o">=</span> <span class="n">gt_pred_R2_HSM</span> <span class="o">-</span> <span class="n">pred_R2_HSM</span>
 
-    <span class="n">rmse_R2_meanR2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">R2_res</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">GT_pred_R2_HSM</span><span class="p">)</span>
-    <span class="n">std_rmse_R2_meanR2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">R2_res</span> <span class="o">/</span> <span class="n">GT_pred_R2_HSM</span><span class="p">)</span>
+    <span class="n">rmse_R2_meanR2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">R2_res</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">gt_pred_R2_HSM</span><span class="p">)</span>
+    <span class="n">std_rmse_R2_meanR2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">R2_res</span> <span class="o">/</span> <span class="n">gt_pred_R2_HSM</span><span class="p">)</span>
 
     <span class="c1"># Print shape/size errors</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">sigma(e1) RMSE =</span><span class="se">\t\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">%.4e</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">rmse_e1</span><span class="p">,</span> <span class="n">std_rmse_e1</span><span class="p">))</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;sigma(e2) RMSE =</span><span class="se">\t\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">%.4e</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">rmse_e2</span><span class="p">,</span> <span class="n">std_rmse_e2</span><span class="p">))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">sigma(e1) RMSE =</span><span class="se">\t\t</span><span class="s2"> </span><span class="si">{</span><span class="n">rmse_e1</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">{</span><span class="n">std_rmse_e1</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;sigma(e2) RMSE =</span><span class="se">\t\t</span><span class="s2"> </span><span class="si">{</span><span class="n">rmse_e2</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">{</span><span class="n">std_rmse_e2</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-        <span class="s2">&quot;sigma(R2)/&lt;R2&gt; =</span><span class="se">\t\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">%.4e</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">rmse_R2_meanR2</span><span class="p">,</span> <span class="n">std_rmse_R2_meanR2</span><span class="p">)</span>
+        <span class="sa">f</span><span class="s2">&quot;sigma(R2)/&lt;R2&gt; =</span><span class="se">\t\t</span><span class="s2"> </span><span class="si">{</span><span class="n">rmse_R2_meanR2</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">{</span><span class="n">std_rmse_R2_meanR2</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2"> &quot;</span>
     <span class="p">)</span>
 
     <span class="c1"># Print relative shape/size errors</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Relative sigma(e1) RMSE =</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> </span><span class="si">%%</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">%.4e</span><span class="s2"> </span><span class="si">%%</span><span class="s2">&quot;</span>
-        <span class="o">%</span> <span class="p">(</span><span class="n">rel_rmse_e1</span><span class="p">,</span> <span class="n">std_rel_rmse_e1</span><span class="p">)</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Relative sigma(e1) RMSE =</span><span class="se">\t</span><span class="s2"> </span><span class="si">{</span><span class="n">rel_rmse_e1</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2"> % </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">{</span><span class="n">std_rel_rmse_e1</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2"> %&quot;</span>
     <span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-        <span class="s2">&quot;Relative sigma(e2) RMSE =</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> </span><span class="si">%%</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">%.4e</span><span class="s2"> </span><span class="si">%%</span><span class="s2">&quot;</span>
-        <span class="o">%</span> <span class="p">(</span><span class="n">rel_rmse_e2</span><span class="p">,</span> <span class="n">std_rel_rmse_e2</span><span class="p">)</span>
+        <span class="sa">f</span><span class="s2">&quot;Relative sigma(e2) RMSE =</span><span class="se">\t</span><span class="s2"> </span><span class="si">{</span><span class="n">rel_rmse_e2</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2"> % </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">{</span><span class="n">std_rel_rmse_e2</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2"> %&quot;</span>
     <span class="p">)</span>
 
     <span class="c1"># Print number of stars</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Total number of stars: </span><span class="se">\t\t</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">GT_pred_moments</span><span class="p">)))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Total number of stars: </span><span class="se">\t\t</span><span class="s2"> </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">gt_pred_moments</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-        <span class="s2">&quot;Problematic number of stars: </span><span class="se">\t</span><span class="si">%d</span><span class="s2">&quot;</span>
-        <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">GT_pred_moments</span><span class="p">)</span> <span class="o">-</span> <span class="n">GT_pred_e1_HSM</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="sa">f</span><span class="s2">&quot;Problematic number of stars: </span><span class="se">\t</span><span class="s2"> </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">gt_pred_moments</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">gt_pred_e1_HSM</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="p">)</span>
 
     <span class="c1"># Re-et the original output_Q and output_dim parameters in the models</span>
     <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">set_output_Q</span><span class="p">(</span>
         <span class="n">output_Q</span><span class="o">=</span><span class="n">original_out_Q</span><span class="p">,</span> <span class="n">output_dim</span><span class="o">=</span><span class="n">original_out_dim</span>
     <span class="p">)</span>
-    <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">set_output_Q</span><span class="p">(</span>
-        <span class="n">output_Q</span><span class="o">=</span><span class="n">GT_original_out_Q</span><span class="p">,</span> <span class="n">output_dim</span><span class="o">=</span><span class="n">GT_original_out_dim</span>
+    <span class="n">gt_tf_semiparam_field</span><span class="o">.</span><span class="n">set_output_Q</span><span class="p">(</span>
+        <span class="n">output_Q</span><span class="o">=</span><span class="n">gt_original_out_Q</span><span class="p">,</span> <span class="n">output_dim</span><span class="o">=</span><span class="n">gt_original_out_dim</span>
     <span class="p">)</span>
 
     <span class="c1"># Need to compile the models again</span>
     <span class="n">tf_semiparam_field</span> <span class="o">=</span> <span class="n">build_PSF_model</span><span class="p">(</span><span class="n">tf_semiparam_field</span><span class="p">)</span>
-    <span class="n">GT_tf_semiparam_field</span> <span class="o">=</span> <span class="n">build_PSF_model</span><span class="p">(</span><span class="n">GT_tf_semiparam_field</span><span class="p">)</span>
+    <span class="n">gt_tf_semiparam_field</span> <span class="o">=</span> <span class="n">build_PSF_model</span><span class="p">(</span><span class="n">gt_tf_semiparam_field</span><span class="p">)</span>
 
     <span class="c1"># Moment results</span>
     <span class="n">result_dict</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s2">&quot;pred_e1_HSM&quot;</span><span class="p">:</span> <span class="n">pred_e1_HSM</span><span class="p">,</span>
         <span class="s2">&quot;pred_e2_HSM&quot;</span><span class="p">:</span> <span class="n">pred_e2_HSM</span><span class="p">,</span>
         <span class="s2">&quot;pred_R2_HSM&quot;</span><span class="p">:</span> <span class="n">pred_R2_HSM</span><span class="p">,</span>
-        <span class="s2">&quot;GT_pred_e1_HSM&quot;</span><span class="p">:</span> <span class="n">GT_pred_e1_HSM</span><span class="p">,</span>
-        <span class="s2">&quot;GT_ped_e2_HSM&quot;</span><span class="p">:</span> <span class="n">GT_pred_e2_HSM</span><span class="p">,</span>
-        <span class="s2">&quot;GT_pred_R2_HSM&quot;</span><span class="p">:</span> <span class="n">GT_pred_R2_HSM</span><span class="p">,</span>
+        <span class="s2">&quot;gt_pred_e1_HSM&quot;</span><span class="p">:</span> <span class="n">gt_pred_e1_HSM</span><span class="p">,</span>
+        <span class="s2">&quot;gt_ped_e2_HSM&quot;</span><span class="p">:</span> <span class="n">gt_pred_e2_HSM</span><span class="p">,</span>
+        <span class="s2">&quot;gt_pred_R2_HSM&quot;</span><span class="p">:</span> <span class="n">gt_pred_R2_HSM</span><span class="p">,</span>
         <span class="s2">&quot;rmse_e1&quot;</span><span class="p">:</span> <span class="n">rmse_e1</span><span class="p">,</span>
         <span class="s2">&quot;std_rmse_e1&quot;</span><span class="p">:</span> <span class="n">std_rmse_e1</span><span class="p">,</span>
         <span class="s2">&quot;rel_rmse_e1&quot;</span><span class="p">:</span> <span class="n">rel_rmse_e1</span><span class="p">,</span>
@@ -721,614 +754,6 @@
 
     <span class="k">return</span> <span class="n">result_dict</span></div>
 
-
-
-<div class="viewcode-block" id="gen_GT_wf_model">
-<a class="viewcode-back" href="../../../wf_psf.metrics.metrics.html#wf_psf.metrics.metrics.gen_GT_wf_model">[docs]</a>
-<span class="k">def</span> <span class="nf">gen_GT_wf_model</span><span class="p">(</span><span class="n">test_wf_file_path</span><span class="p">,</span> <span class="n">pred_output_Q</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">pred_output_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">):</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generate the ground truth model and output test PSF ar required resolution.</span>
-
-<span class="sd">    If `pred_output_Q=1` the resolution will be 3 times the one of Euclid.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Load dataset</span>
-    <span class="n">wf_test_dataset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">test_wf_file_path</span><span class="p">,</span> <span class="n">allow_pickle</span><span class="o">=</span><span class="kc">True</span><span class="p">)[()]</span>
-
-    <span class="c1"># Extract parameters from the wf test dataset</span>
-    <span class="n">wf_test_params</span> <span class="o">=</span> <span class="n">wf_test_dataset</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">]</span>
-    <span class="n">wf_test_C_poly</span> <span class="o">=</span> <span class="n">wf_test_dataset</span><span class="p">[</span><span class="s2">&quot;C_poly&quot;</span><span class="p">]</span>
-    <span class="n">wf_test_pos</span> <span class="o">=</span> <span class="n">wf_test_dataset</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">]</span>
-    <span class="n">tf_test_pos</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">wf_test_pos</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-    <span class="n">wf_test_SEDs</span> <span class="o">=</span> <span class="n">wf_test_dataset</span><span class="p">[</span><span class="s2">&quot;SEDs&quot;</span><span class="p">]</span>
-
-    <span class="c1"># Generate GT model</span>
-    <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">16</span>
-
-    <span class="c1"># Generate Zernike maps</span>
-    <span class="n">zernikes</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">zernike_generator</span><span class="p">(</span>
-        <span class="n">n_zernikes</span><span class="o">=</span><span class="n">wf_test_params</span><span class="p">[</span><span class="s2">&quot;max_order&quot;</span><span class="p">],</span> <span class="n">wfe_dim</span><span class="o">=</span><span class="n">wf_test_params</span><span class="p">[</span><span class="s2">&quot;pupil_diameter&quot;</span><span class="p">]</span>
-    <span class="p">)</span>
-
-    <span class="c1">## Generate initializations</span>
-    <span class="c1"># Prepare np input</span>
-    <span class="n">simPSF_np</span> <span class="o">=</span> <span class="n">SimPSFToolkit</span><span class="p">(</span>
-        <span class="n">zernikes</span><span class="p">,</span>
-        <span class="n">max_order</span><span class="o">=</span><span class="n">wf_test_params</span><span class="p">[</span><span class="s2">&quot;max_order&quot;</span><span class="p">],</span>
-        <span class="n">pupil_diameter</span><span class="o">=</span><span class="n">wf_test_params</span><span class="p">[</span><span class="s2">&quot;pupil_diameter&quot;</span><span class="p">],</span>
-        <span class="n">output_dim</span><span class="o">=</span><span class="n">wf_test_params</span><span class="p">[</span><span class="s2">&quot;output_dim&quot;</span><span class="p">],</span>
-        <span class="n">oversampling_rate</span><span class="o">=</span><span class="n">wf_test_params</span><span class="p">[</span><span class="s2">&quot;oversampling_rate&quot;</span><span class="p">],</span>
-        <span class="n">output_Q</span><span class="o">=</span><span class="n">wf_test_params</span><span class="p">[</span><span class="s2">&quot;output_Q&quot;</span><span class="p">],</span>
-    <span class="p">)</span>
-    <span class="n">simPSF_np</span><span class="o">.</span><span class="n">gen_random_Z_coeffs</span><span class="p">(</span><span class="n">max_order</span><span class="o">=</span><span class="n">wf_test_params</span><span class="p">[</span><span class="s2">&quot;max_order&quot;</span><span class="p">])</span>
-    <span class="n">z_coeffs</span> <span class="o">=</span> <span class="n">simPSF_np</span><span class="o">.</span><span class="n">normalize_zernikes</span><span class="p">(</span>
-        <span class="n">simPSF_np</span><span class="o">.</span><span class="n">get_z_coeffs</span><span class="p">(),</span> <span class="n">simPSF_np</span><span class="o">.</span><span class="n">max_wfe_rms</span>
-    <span class="p">)</span>
-    <span class="n">simPSF_np</span><span class="o">.</span><span class="n">set_z_coeffs</span><span class="p">(</span><span class="n">z_coeffs</span><span class="p">)</span>
-    <span class="n">simPSF_np</span><span class="o">.</span><span class="n">generate_mono_PSF</span><span class="p">(</span><span class="n">lambda_obs</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">regen_sample</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="c1"># Obscurations</span>
-    <span class="n">obscurations</span> <span class="o">=</span> <span class="n">simPSF_np</span><span class="o">.</span><span class="n">generate_pupil_obscurations</span><span class="p">(</span>
-        <span class="n">N_pix</span><span class="o">=</span><span class="n">wf_test_params</span><span class="p">[</span><span class="s2">&quot;pupil_diameter&quot;</span><span class="p">],</span>
-        <span class="n">N_filter</span><span class="o">=</span><span class="n">wf_test_params</span><span class="p">[</span><span class="s2">&quot;LP_filter_length&quot;</span><span class="p">],</span>
-    <span class="p">)</span>
-    <span class="n">tf_obscurations</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">obscurations</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">complex64</span><span class="p">)</span>
-
-    <span class="c1">## Prepare ground truth model</span>
-    <span class="c1"># Now Zernike&#39;s as cubes</span>
-    <span class="n">np_zernike_cube</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
-        <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">zernikes</span><span class="p">),</span> <span class="n">zernikes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">zernikes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-    <span class="p">)</span>
-    <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">zernikes</span><span class="p">)):</span>
-        <span class="n">np_zernike_cube</span><span class="p">[</span><span class="n">it</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">zernikes</span><span class="p">[</span><span class="n">it</span><span class="p">]</span>
-
-    <span class="n">np_zernike_cube</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">np_zernike_cube</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">tf_zernike_cube</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">np_zernike_cube</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-
-    <span class="c1"># Initialize the model</span>
-    <span class="n">GT_tf_semiparam_field</span> <span class="o">=</span> <span class="n">psf_field</span><span class="o">.</span><span class="n">TF_SemiParam_field</span><span class="p">(</span>
-        <span class="n">zernike_maps</span><span class="o">=</span><span class="n">tf_zernike_cube</span><span class="p">,</span>
-        <span class="n">obscurations</span><span class="o">=</span><span class="n">tf_obscurations</span><span class="p">,</span>
-        <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
-        <span class="n">output_Q</span><span class="o">=</span><span class="n">wf_test_params</span><span class="p">[</span><span class="s2">&quot;output_Q&quot;</span><span class="p">],</span>
-        <span class="n">d_max_nonparam</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-        <span class="n">output_dim</span><span class="o">=</span><span class="n">wf_test_params</span><span class="p">[</span><span class="s2">&quot;output_dim&quot;</span><span class="p">],</span>
-        <span class="n">n_zernikes</span><span class="o">=</span><span class="n">wf_test_params</span><span class="p">[</span><span class="s2">&quot;max_order&quot;</span><span class="p">],</span>
-        <span class="n">d_max</span><span class="o">=</span><span class="n">wf_test_params</span><span class="p">[</span><span class="s2">&quot;d_max&quot;</span><span class="p">],</span>
-        <span class="n">x_lims</span><span class="o">=</span><span class="n">wf_test_params</span><span class="p">[</span><span class="s2">&quot;x_lims&quot;</span><span class="p">],</span>
-        <span class="n">y_lims</span><span class="o">=</span><span class="n">wf_test_params</span><span class="p">[</span><span class="s2">&quot;y_lims&quot;</span><span class="p">],</span>
-    <span class="p">)</span>
-
-    <span class="c1"># For the Ground truth model</span>
-    <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">tf_poly_Z_field</span><span class="o">.</span><span class="n">assign_coeff_matrix</span><span class="p">(</span><span class="n">wf_test_C_poly</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">tf_np_poly_opd</span><span class="o">.</span><span class="n">alpha_mat</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
-        <span class="n">tf</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">tf_np_poly_opd</span><span class="o">.</span><span class="n">alpha_mat</span><span class="p">)</span>
-    <span class="p">)</span>
-
-    <span class="c1"># Set required output_Q</span>
-
-    <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">set_output_Q</span><span class="p">(</span>
-        <span class="n">output_Q</span><span class="o">=</span><span class="n">pred_output_Q</span><span class="p">,</span> <span class="n">output_dim</span><span class="o">=</span><span class="n">pred_output_dim</span>
-    <span class="p">)</span>
-
-    <span class="n">GT_tf_semiparam_field</span> <span class="o">=</span> <span class="n">psf_field</span><span class="o">.</span><span class="n">build_PSF_model</span><span class="p">(</span><span class="n">GT_tf_semiparam_field</span><span class="p">)</span>
-
-    <span class="n">packed_SED_data</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">utils</span><span class="o">.</span><span class="n">generate_packed_elems</span><span class="p">(</span><span class="n">_sed</span><span class="p">,</span> <span class="n">simPSF_np</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="n">wf_test_params</span><span class="p">[</span><span class="s2">&quot;n_bins&quot;</span><span class="p">])</span>
-        <span class="k">for</span> <span class="n">_sed</span> <span class="ow">in</span> <span class="n">wf_test_SEDs</span>
-    <span class="p">]</span>
-
-    <span class="c1"># Prepare inputs</span>
-    <span class="n">tf_packed_SED_data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">packed_SED_data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-    <span class="n">tf_packed_SED_data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">tf_packed_SED_data</span><span class="p">,</span> <span class="n">perm</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-    <span class="n">pred_inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">tf_test_pos</span><span class="p">,</span> <span class="n">tf_packed_SED_data</span><span class="p">]</span>
-
-    <span class="c1"># Ground Truth model</span>
-    <span class="n">GT_predictions</span> <span class="o">=</span> <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">pred_inputs</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">GT_predictions</span><span class="p">,</span> <span class="n">wf_test_pos</span><span class="p">,</span> <span class="n">GT_tf_semiparam_field</span></div>
-
-
-
-<span class="c1">## Below this line there are DEPRECATED functions</span>
-
-
-<div class="viewcode-block" id="compute_metrics">
-<a class="viewcode-back" href="../../../wf_psf.metrics.metrics.html#wf_psf.metrics.metrics.compute_metrics">[docs]</a>
-<span class="k">def</span> <span class="nf">compute_metrics</span><span class="p">(</span>
-    <span class="n">tf_semiparam_field</span><span class="p">,</span>
-    <span class="n">simPSF_np</span><span class="p">,</span>
-    <span class="n">test_SEDs</span><span class="p">,</span>
-    <span class="n">train_SEDs</span><span class="p">,</span>
-    <span class="n">tf_test_pos</span><span class="p">,</span>
-    <span class="n">tf_train_pos</span><span class="p">,</span>
-    <span class="n">tf_test_stars</span><span class="p">,</span>
-    <span class="n">tf_train_stars</span><span class="p">,</span>
-    <span class="n">n_bins_lda</span><span class="p">,</span>
-    <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
-<span class="p">):</span>
-    <span class="c1"># Generate SED data list</span>
-    <span class="n">test_packed_SED_data</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">utils</span><span class="o">.</span><span class="n">generate_packed_elems</span><span class="p">(</span><span class="n">_sed</span><span class="p">,</span> <span class="n">simPSF_np</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="n">n_bins_lda</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">_sed</span> <span class="ow">in</span> <span class="n">test_SEDs</span>
-    <span class="p">]</span>
-
-    <span class="n">tf_test_packed_SED_data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span>
-        <span class="n">test_packed_SED_data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span>
-    <span class="p">)</span>
-    <span class="n">tf_test_packed_SED_data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">tf_test_packed_SED_data</span><span class="p">,</span> <span class="n">perm</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-    <span class="n">test_pred_inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">tf_test_pos</span><span class="p">,</span> <span class="n">tf_test_packed_SED_data</span><span class="p">]</span>
-    <span class="n">test_predictions</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
-        <span class="n">x</span><span class="o">=</span><span class="n">test_pred_inputs</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span>
-    <span class="p">)</span>
-
-    <span class="c1"># Initialize the SED data list</span>
-    <span class="n">packed_SED_data</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">utils</span><span class="o">.</span><span class="n">generate_packed_elems</span><span class="p">(</span><span class="n">_sed</span><span class="p">,</span> <span class="n">simPSF_np</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="n">n_bins_lda</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">_sed</span> <span class="ow">in</span> <span class="n">train_SEDs</span>
-    <span class="p">]</span>
-    <span class="c1"># First estimate the stars for the observations</span>
-    <span class="n">tf_packed_SED_data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">packed_SED_data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-    <span class="n">tf_packed_SED_data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">tf_packed_SED_data</span><span class="p">,</span> <span class="n">perm</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-    <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">tf_train_pos</span><span class="p">,</span> <span class="n">tf_packed_SED_data</span><span class="p">]</span>
-    <span class="n">train_predictions</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
-
-    <span class="c1"># Calculate RMSE values</span>
-    <span class="n">test_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">tf_test_stars</span> <span class="o">-</span> <span class="n">test_predictions</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
-    <span class="n">train_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">tf_train_stars</span> <span class="o">-</span> <span class="n">train_predictions</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
-
-    <span class="c1"># Calculate relative RMSE values</span>
-    <span class="n">relative_test_res</span> <span class="o">=</span> <span class="n">test_res</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">tf_test_stars</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
-    <span class="n">relative_train_res</span> <span class="o">=</span> <span class="n">train_res</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">tf_train_stars</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
-
-    <span class="c1"># Print RMSE values</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Test stars absolute RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">test_res</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Training stars absolute RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">train_res</span><span class="p">)</span>
-
-    <span class="c1"># Print RMSE values</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Test stars relative RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> </span><span class="si">%%</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">relative_test_res</span> <span class="o">*</span> <span class="mf">100.0</span><span class="p">))</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-        <span class="s2">&quot;Training stars relative RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> </span><span class="si">%%</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">relative_train_res</span> <span class="o">*</span> <span class="mf">100.0</span><span class="p">)</span>
-    <span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">test_res</span><span class="p">,</span> <span class="n">train_res</span></div>
-
-
-
-<div class="viewcode-block" id="compute_opd_metrics_mccd">
-<a class="viewcode-back" href="../../../wf_psf.metrics.metrics.html#wf_psf.metrics.metrics.compute_opd_metrics_mccd">[docs]</a>
-<span class="k">def</span> <span class="nf">compute_opd_metrics_mccd</span><span class="p">(</span>
-    <span class="n">tf_semiparam_field</span><span class="p">,</span> <span class="n">GT_tf_semiparam_field</span><span class="p">,</span> <span class="n">test_pos</span><span class="p">,</span> <span class="n">train_pos</span>
-<span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the OPD metrics.&quot;&quot;&quot;</span>
-
-    <span class="n">np_obscurations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">obscurations</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
-
-    <span class="c1">## For test positions</span>
-    <span class="c1"># Param part</span>
-    <span class="n">zernike_coeffs</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">tf_poly_Z_field</span><span class="p">(</span><span class="n">test_pos</span><span class="p">)</span>
-    <span class="n">P_opd_pred</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">tf_zernike_OPD</span><span class="p">(</span><span class="n">zernike_coeffs</span><span class="p">)</span>
-    <span class="c1"># Non-Param part</span>
-    <span class="n">NP_opd_pred</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">tf_NP_mccd_OPD</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test_pos</span><span class="p">)</span>
-    <span class="c1"># OPD prediction</span>
-    <span class="n">opd_pred</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">P_opd_pred</span><span class="p">,</span> <span class="n">NP_opd_pred</span><span class="p">)</span>
-
-    <span class="c1"># GT model</span>
-    <span class="n">GT_zernike_coeffs</span> <span class="o">=</span> <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">tf_poly_Z_field</span><span class="p">(</span><span class="n">test_pos</span><span class="p">)</span>
-    <span class="n">GT_opd_maps</span> <span class="o">=</span> <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">tf_zernike_OPD</span><span class="p">(</span><span class="n">GT_zernike_coeffs</span><span class="p">)</span>
-
-    <span class="c1"># Compute residual and obscure the OPD</span>
-    <span class="n">res_opd</span> <span class="o">=</span> <span class="p">(</span><span class="n">GT_opd_maps</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">-</span> <span class="n">opd_pred</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span> <span class="o">*</span> <span class="n">np_obscurations</span>
-
-    <span class="c1"># Calculate absolute RMSE values</span>
-    <span class="n">test_opd_rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">res_opd</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
-
-    <span class="c1"># Calculate relative RMSE values</span>
-    <span class="n">relative_test_opd_rmse</span> <span class="o">=</span> <span class="n">test_opd_rmse</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">GT_opd_maps</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">*</span> <span class="n">np_obscurations</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="p">)</span>
-
-    <span class="c1"># Print RMSE values</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Test stars absolute OPD RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">test_opd_rmse</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-        <span class="s2">&quot;Test stars relative OPD RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> </span><span class="si">%%</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">relative_test_opd_rmse</span> <span class="o">*</span> <span class="mf">100.0</span><span class="p">)</span>
-    <span class="p">)</span>
-
-    <span class="c1">## For train part</span>
-    <span class="c1"># Param part</span>
-    <span class="n">zernike_coeffs</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">tf_poly_Z_field</span><span class="p">(</span><span class="n">train_pos</span><span class="p">)</span>
-    <span class="n">P_opd_pred</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">tf_zernike_OPD</span><span class="p">(</span><span class="n">zernike_coeffs</span><span class="p">)</span>
-    <span class="c1"># Non-Param part</span>
-    <span class="n">NP_opd_pred</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">tf_NP_mccd_OPD</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">train_pos</span><span class="p">)</span>
-    <span class="c1"># OPD prediction</span>
-    <span class="n">opd_pred</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">P_opd_pred</span><span class="p">,</span> <span class="n">NP_opd_pred</span><span class="p">)</span>
-
-    <span class="c1"># GT model</span>
-    <span class="n">GT_zernike_coeffs</span> <span class="o">=</span> <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">tf_poly_Z_field</span><span class="p">(</span><span class="n">train_pos</span><span class="p">)</span>
-    <span class="n">GT_opd_maps</span> <span class="o">=</span> <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">tf_zernike_OPD</span><span class="p">(</span><span class="n">GT_zernike_coeffs</span><span class="p">)</span>
-
-    <span class="c1"># Compute residual and obscure the OPD</span>
-    <span class="n">res_opd</span> <span class="o">=</span> <span class="p">(</span><span class="n">GT_opd_maps</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">-</span> <span class="n">opd_pred</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span> <span class="o">*</span> <span class="n">np_obscurations</span>
-
-    <span class="c1"># Calculate RMSE values</span>
-    <span class="n">train_opd_rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">res_opd</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
-
-    <span class="c1"># Calculate relative RMSE values</span>
-    <span class="n">relative_train_opd_rmse</span> <span class="o">=</span> <span class="n">train_opd_rmse</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">GT_opd_maps</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">*</span> <span class="n">np_obscurations</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="p">)</span>
-
-    <span class="c1"># Print RMSE values</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Train stars absolute OPD RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">train_opd_rmse</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-        <span class="s2">&quot;Train stars relative OPD RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> </span><span class="si">%%</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">relative_train_opd_rmse</span> <span class="o">*</span> <span class="mf">100.0</span><span class="p">)</span>
-    <span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">test_opd_rmse</span><span class="p">,</span> <span class="n">train_opd_rmse</span></div>
-
-
-
-<div class="viewcode-block" id="compute_opd_metrics_polymodel">
-<a class="viewcode-back" href="../../../wf_psf.metrics.metrics.html#wf_psf.metrics.metrics.compute_opd_metrics_polymodel">[docs]</a>
-<span class="k">def</span> <span class="nf">compute_opd_metrics_polymodel</span><span class="p">(</span>
-    <span class="n">tf_semiparam_field</span><span class="p">,</span> <span class="n">GT_tf_semiparam_field</span><span class="p">,</span> <span class="n">test_pos</span><span class="p">,</span> <span class="n">train_pos</span>
-<span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the OPD metrics.&quot;&quot;&quot;</span>
-
-    <span class="n">np_obscurations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">obscurations</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
-
-    <span class="c1">## For test positions</span>
-    <span class="c1"># Param part</span>
-    <span class="n">zernike_coeffs</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">tf_poly_Z_field</span><span class="p">(</span><span class="n">test_pos</span><span class="p">)</span>
-    <span class="n">P_opd_pred</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">tf_zernike_OPD</span><span class="p">(</span><span class="n">zernike_coeffs</span><span class="p">)</span>
-    <span class="c1"># Non-Param part</span>
-    <span class="n">NP_opd_pred</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">tf_np_poly_opd</span><span class="p">(</span><span class="n">test_pos</span><span class="p">)</span>
-    <span class="c1"># OPD prediction</span>
-    <span class="n">opd_pred</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">P_opd_pred</span><span class="p">,</span> <span class="n">NP_opd_pred</span><span class="p">)</span>
-
-    <span class="c1"># GT model</span>
-    <span class="n">GT_zernike_coeffs</span> <span class="o">=</span> <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">tf_poly_Z_field</span><span class="p">(</span><span class="n">test_pos</span><span class="p">)</span>
-    <span class="n">GT_opd_maps</span> <span class="o">=</span> <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">tf_zernike_OPD</span><span class="p">(</span><span class="n">GT_zernike_coeffs</span><span class="p">)</span>
-
-    <span class="c1"># Compute residual and obscure the OPD</span>
-    <span class="n">res_opd</span> <span class="o">=</span> <span class="p">(</span><span class="n">GT_opd_maps</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">-</span> <span class="n">opd_pred</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span> <span class="o">*</span> <span class="n">np_obscurations</span>
-
-    <span class="c1"># Calculate RMSE values</span>
-    <span class="n">test_opd_rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">res_opd</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
-
-    <span class="c1"># Calculate relative RMSE values</span>
-    <span class="n">relative_test_opd_rmse</span> <span class="o">=</span> <span class="n">test_opd_rmse</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">GT_opd_maps</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">*</span> <span class="n">np_obscurations</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="p">)</span>
-
-    <span class="c1"># Print RMSE values</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Test stars OPD RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">test_opd_rmse</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-        <span class="s2">&quot;Test stars relative OPD RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> </span><span class="si">%%</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">relative_test_opd_rmse</span> <span class="o">*</span> <span class="mf">100.0</span><span class="p">)</span>
-    <span class="p">)</span>
-
-    <span class="c1">## For train part</span>
-    <span class="c1"># Param part</span>
-    <span class="n">zernike_coeffs</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">tf_poly_Z_field</span><span class="p">(</span><span class="n">train_pos</span><span class="p">)</span>
-    <span class="n">P_opd_pred</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">tf_zernike_OPD</span><span class="p">(</span><span class="n">zernike_coeffs</span><span class="p">)</span>
-    <span class="c1"># Non-Param part</span>
-    <span class="n">NP_opd_pred</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">tf_np_poly_opd</span><span class="p">(</span><span class="n">train_pos</span><span class="p">)</span>
-    <span class="c1"># OPD prediction</span>
-    <span class="n">opd_pred</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">P_opd_pred</span><span class="p">,</span> <span class="n">NP_opd_pred</span><span class="p">)</span>
-
-    <span class="c1"># GT model</span>
-    <span class="n">GT_zernike_coeffs</span> <span class="o">=</span> <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">tf_poly_Z_field</span><span class="p">(</span><span class="n">train_pos</span><span class="p">)</span>
-    <span class="n">GT_opd_maps</span> <span class="o">=</span> <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">tf_zernike_OPD</span><span class="p">(</span><span class="n">GT_zernike_coeffs</span><span class="p">)</span>
-
-    <span class="c1"># Compute residual and obscure the OPD</span>
-    <span class="n">res_opd</span> <span class="o">=</span> <span class="p">(</span><span class="n">GT_opd_maps</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">-</span> <span class="n">opd_pred</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span> <span class="o">*</span> <span class="n">np_obscurations</span>
-
-    <span class="c1"># Calculate RMSE values</span>
-    <span class="n">train_opd_rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">res_opd</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
-
-    <span class="c1"># Calculate relative RMSE values</span>
-    <span class="n">relative_train_opd_rmse</span> <span class="o">=</span> <span class="n">train_opd_rmse</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">GT_opd_maps</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">*</span> <span class="n">np_obscurations</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="p">)</span>
-
-    <span class="c1"># Pritn RMSE values</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Train stars OPD RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">train_opd_rmse</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-        <span class="s2">&quot;Train stars relative OPD RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> </span><span class="si">%%</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">relative_train_opd_rmse</span> <span class="o">*</span> <span class="mf">100.0</span><span class="p">)</span>
-    <span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">test_opd_rmse</span><span class="p">,</span> <span class="n">train_opd_rmse</span></div>
-
-
-
-<div class="viewcode-block" id="compute_opd_metrics_param_model">
-<a class="viewcode-back" href="../../../wf_psf.metrics.metrics.html#wf_psf.metrics.metrics.compute_opd_metrics_param_model">[docs]</a>
-<span class="k">def</span> <span class="nf">compute_opd_metrics_param_model</span><span class="p">(</span>
-    <span class="n">tf_semiparam_field</span><span class="p">,</span> <span class="n">GT_tf_semiparam_field</span><span class="p">,</span> <span class="n">test_pos</span><span class="p">,</span> <span class="n">train_pos</span>
-<span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the OPD metrics.&quot;&quot;&quot;</span>
-
-    <span class="n">np_obscurations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">obscurations</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
-
-    <span class="c1">## For test positions</span>
-    <span class="c1"># Param part</span>
-    <span class="n">zernike_coeffs</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">tf_poly_Z_field</span><span class="p">(</span><span class="n">test_pos</span><span class="p">)</span>
-    <span class="n">opd_pred</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">tf_zernike_OPD</span><span class="p">(</span><span class="n">zernike_coeffs</span><span class="p">)</span>
-
-    <span class="c1"># GT model</span>
-    <span class="n">GT_zernike_coeffs</span> <span class="o">=</span> <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">tf_poly_Z_field</span><span class="p">(</span><span class="n">test_pos</span><span class="p">)</span>
-    <span class="n">GT_opd_maps</span> <span class="o">=</span> <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">tf_zernike_OPD</span><span class="p">(</span><span class="n">GT_zernike_coeffs</span><span class="p">)</span>
-
-    <span class="c1"># Compute residual and obscure the OPD</span>
-    <span class="n">res_opd</span> <span class="o">=</span> <span class="p">(</span><span class="n">GT_opd_maps</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">-</span> <span class="n">opd_pred</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span> <span class="o">*</span> <span class="n">np_obscurations</span>
-
-    <span class="c1"># Calculate absolute RMSE values</span>
-    <span class="n">test_opd_rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">res_opd</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
-
-    <span class="c1"># Calculate relative RMSE values</span>
-    <span class="n">relative_test_opd_rmse</span> <span class="o">=</span> <span class="n">test_opd_rmse</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">GT_opd_maps</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">*</span> <span class="n">np_obscurations</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="p">)</span>
-
-    <span class="c1"># Print RMSE values</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Test stars absolute OPD RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">test_opd_rmse</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-        <span class="s2">&quot;Test stars relative OPD RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> </span><span class="si">%%</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">relative_test_opd_rmse</span> <span class="o">*</span> <span class="mf">100.0</span><span class="p">)</span>
-    <span class="p">)</span>
-
-    <span class="c1">## For train part</span>
-    <span class="c1"># Param part</span>
-    <span class="n">zernike_coeffs</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">tf_poly_Z_field</span><span class="p">(</span><span class="n">train_pos</span><span class="p">)</span>
-    <span class="n">opd_pred</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">tf_zernike_OPD</span><span class="p">(</span><span class="n">zernike_coeffs</span><span class="p">)</span>
-
-    <span class="c1"># GT model</span>
-    <span class="n">GT_zernike_coeffs</span> <span class="o">=</span> <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">tf_poly_Z_field</span><span class="p">(</span><span class="n">train_pos</span><span class="p">)</span>
-    <span class="n">GT_opd_maps</span> <span class="o">=</span> <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">tf_zernike_OPD</span><span class="p">(</span><span class="n">GT_zernike_coeffs</span><span class="p">)</span>
-
-    <span class="c1"># Compute residual and obscure the OPD</span>
-    <span class="n">res_opd</span> <span class="o">=</span> <span class="p">(</span><span class="n">GT_opd_maps</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">-</span> <span class="n">opd_pred</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span> <span class="o">*</span> <span class="n">np_obscurations</span>
-
-    <span class="c1"># Calculate RMSE values</span>
-    <span class="n">train_opd_rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">res_opd</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
-
-    <span class="c1"># Calculate relative RMSE values</span>
-    <span class="n">relative_train_opd_rmse</span> <span class="o">=</span> <span class="n">train_opd_rmse</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">GT_opd_maps</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">*</span> <span class="n">np_obscurations</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="p">)</span>
-
-    <span class="c1"># Print RMSE values</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Train stars absolute OPD RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">train_opd_rmse</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-        <span class="s2">&quot;Train stars relative OPD RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> </span><span class="si">%%</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">relative_train_opd_rmse</span> <span class="o">*</span> <span class="mf">100.0</span><span class="p">)</span>
-    <span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">test_opd_rmse</span><span class="p">,</span> <span class="n">train_opd_rmse</span></div>
-
-
-
-<div class="viewcode-block" id="compute_one_opd_rmse">
-<a class="viewcode-back" href="../../../wf_psf.metrics.metrics.html#wf_psf.metrics.metrics.compute_one_opd_rmse">[docs]</a>
-<span class="k">def</span> <span class="nf">compute_one_opd_rmse</span><span class="p">(</span><span class="n">GT_tf_semiparam_field</span><span class="p">,</span> <span class="n">tf_semiparam_field</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">is_poly</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the OPD map for one position.&quot;&quot;&quot;</span>
-
-    <span class="n">np_obscurations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">obscurations</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
-
-    <span class="n">tf_pos</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-
-    <span class="c1">## For test positions</span>
-    <span class="c1"># Param part</span>
-    <span class="n">zernike_coeffs</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">tf_poly_Z_field</span><span class="p">(</span><span class="n">tf_pos</span><span class="p">)</span>
-    <span class="n">P_opd_pred</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">tf_zernike_OPD</span><span class="p">(</span><span class="n">zernike_coeffs</span><span class="p">)</span>
-    <span class="c1"># Non-Param part</span>
-    <span class="k">if</span> <span class="n">is_poly</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
-        <span class="n">NP_opd_pred</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">tf_NP_mccd_OPD</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">tf_pos</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">NP_opd_pred</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">tf_np_poly_opd</span><span class="p">(</span><span class="n">tf_pos</span><span class="p">)</span>
-    <span class="c1"># OPD prediction</span>
-    <span class="n">opd_pred</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">P_opd_pred</span><span class="p">,</span> <span class="n">NP_opd_pred</span><span class="p">)</span>
-
-    <span class="c1"># GT model</span>
-    <span class="n">GT_zernike_coeffs</span> <span class="o">=</span> <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">tf_poly_Z_field</span><span class="p">(</span><span class="n">tf_pos</span><span class="p">)</span>
-    <span class="n">GT_opd_maps</span> <span class="o">=</span> <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">tf_zernike_OPD</span><span class="p">(</span><span class="n">GT_zernike_coeffs</span><span class="p">)</span>
-
-    <span class="c1"># Compute residual and obscure the OPD</span>
-    <span class="n">res_opd</span> <span class="o">=</span> <span class="p">(</span><span class="n">GT_opd_maps</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">-</span> <span class="n">opd_pred</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span> <span class="o">*</span> <span class="n">np_obscurations</span>
-
-    <span class="c1"># Calculate RMSE values</span>
-    <span class="n">opd_rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">res_opd</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
-
-    <span class="k">return</span> <span class="n">opd_rmse</span></div>
-
-
-
-<div class="viewcode-block" id="plot_function">
-<a class="viewcode-back" href="../../../wf_psf.metrics.metrics.html#wf_psf.metrics.metrics.plot_function">[docs]</a>
-<span class="k">def</span> <span class="nf">plot_function</span><span class="p">(</span><span class="n">mesh_pos</span><span class="p">,</span> <span class="n">residual</span><span class="p">,</span> <span class="n">tf_train_pos</span><span class="p">,</span> <span class="n">tf_test_pos</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Error&quot;</span><span class="p">):</span>
-    <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">residual</span><span class="p">)</span>
-    <span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">residual</span><span class="p">)</span>
-
-    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
-        <span class="n">mesh_pos</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
-        <span class="n">mesh_pos</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
-        <span class="n">s</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-        <span class="n">c</span><span class="o">=</span><span class="n">residual</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-        <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;viridis&quot;</span><span class="p">,</span>
-        <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">,</span>
-        <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span>
-        <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
-        <span class="n">tf_train_pos</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
-        <span class="n">tf_train_pos</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
-        <span class="n">c</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span>
-        <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="p">,</span>
-        <span class="n">s</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Train stars&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
-        <span class="n">tf_test_pos</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span>
-        <span class="n">tf_test_pos</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
-        <span class="n">c</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span>
-        <span class="n">marker</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="p">,</span>
-        <span class="n">s</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Test stars&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;x-axis&quot;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;y-axis&quot;</span><span class="p">)</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
-
-
-
-<div class="viewcode-block" id="plot_residual_maps">
-<a class="viewcode-back" href="../../../wf_psf.metrics.metrics.html#wf_psf.metrics.metrics.plot_residual_maps">[docs]</a>
-<span class="k">def</span> <span class="nf">plot_residual_maps</span><span class="p">(</span>
-    <span class="n">GT_tf_semiparam_field</span><span class="p">,</span>
-    <span class="n">tf_semiparam_field</span><span class="p">,</span>
-    <span class="n">simPSF_np</span><span class="p">,</span>
-    <span class="n">train_SEDs</span><span class="p">,</span>
-    <span class="n">tf_train_pos</span><span class="p">,</span>
-    <span class="n">tf_test_pos</span><span class="p">,</span>
-    <span class="n">n_bins_lda</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
-    <span class="n">n_points_per_dim</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
-    <span class="n">is_poly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-<span class="p">):</span>
-    <span class="c1"># Recover teh grid limits</span>
-    <span class="n">x_lims</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">x_lims</span>
-    <span class="n">y_lims</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">y_lims</span>
-
-    <span class="c1"># Generate mesh of testing positions</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">x_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">n_points_per_dim</span><span class="p">)</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">y_lims</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y_lims</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">n_points_per_dim</span><span class="p">)</span>
-    <span class="n">x_pos</span><span class="p">,</span> <span class="n">y_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-
-    <span class="n">mesh_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
-        <span class="p">(</span><span class="n">x_pos</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">y_pos</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span>
-    <span class="p">)</span>
-    <span class="n">tf_mesh_pos</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">mesh_pos</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-
-    <span class="c1"># Testing the positions</span>
-    <span class="n">rec_x_pos</span> <span class="o">=</span> <span class="n">mesh_pos</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x_pos</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-    <span class="n">rec_y_pos</span> <span class="o">=</span> <span class="n">mesh_pos</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">y_pos</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-
-    <span class="c1"># Get random SED from the training catalog</span>
-    <span class="n">SED_random_integers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">train_SEDs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">size</span><span class="o">=</span><span class="n">mesh_pos</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span>
-    <span class="p">)</span>
-    <span class="c1"># Build the SED catalog for the testing mesh</span>
-    <span class="n">mesh_SEDs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">train_SEDs</span><span class="p">[</span><span class="n">_id</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="k">for</span> <span class="n">_id</span> <span class="ow">in</span> <span class="n">SED_random_integers</span><span class="p">])</span>
-
-    <span class="c1"># Generate SED data list</span>
-    <span class="n">mesh_packed_SED_data</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">utils</span><span class="o">.</span><span class="n">generate_packed_elems</span><span class="p">(</span><span class="n">_sed</span><span class="p">,</span> <span class="n">simPSF_np</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="n">n_bins_lda</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">_sed</span> <span class="ow">in</span> <span class="n">mesh_SEDs</span>
-    <span class="p">]</span>
-
-    <span class="c1"># Generate inputs</span>
-    <span class="n">tf_mesh_packed_SED_data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span>
-        <span class="n">mesh_packed_SED_data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span>
-    <span class="p">)</span>
-    <span class="n">tf_mesh_packed_SED_data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">tf_mesh_packed_SED_data</span><span class="p">,</span> <span class="n">perm</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-    <span class="n">mesh_pred_inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">tf_mesh_pos</span><span class="p">,</span> <span class="n">tf_mesh_packed_SED_data</span><span class="p">]</span>
-
-    <span class="c1"># Predict mesh stars</span>
-    <span class="n">model_mesh_preds</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">mesh_pred_inputs</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
-    <span class="n">GT_mesh_preds</span> <span class="o">=</span> <span class="n">GT_tf_semiparam_field</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">mesh_pred_inputs</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
-
-    <span class="c1"># Calculate pixel RMSE for each star</span>
-    <span class="n">pix_rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-        <span class="p">[</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">_GT_pred</span> <span class="o">-</span> <span class="n">_model_pred</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">_GT_pred</span><span class="p">,</span> <span class="n">_model_pred</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">GT_mesh_preds</span><span class="p">,</span> <span class="n">model_mesh_preds</span><span class="p">)</span>
-        <span class="p">]</span>
-    <span class="p">)</span>
-
-    <span class="n">relative_pix_rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-        <span class="p">[</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">_GT_pred</span> <span class="o">-</span> <span class="n">_model_pred</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
-            <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">_GT_pred</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">_GT_pred</span><span class="p">,</span> <span class="n">_model_pred</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">GT_mesh_preds</span><span class="p">,</span> <span class="n">model_mesh_preds</span><span class="p">)</span>
-        <span class="p">]</span>
-    <span class="p">)</span>
-
-    <span class="c1"># Plot absolute pixel error</span>
-    <span class="n">plot_function</span><span class="p">(</span>
-        <span class="n">mesh_pos</span><span class="p">,</span> <span class="n">pix_rmse</span><span class="p">,</span> <span class="n">tf_train_pos</span><span class="p">,</span> <span class="n">tf_test_pos</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Absolute pixel error&quot;</span>
-    <span class="p">)</span>
-    <span class="c1"># Plot relative pixel error</span>
-    <span class="n">plot_function</span><span class="p">(</span>
-        <span class="n">mesh_pos</span><span class="p">,</span>
-        <span class="n">relative_pix_rmse</span><span class="p">,</span>
-        <span class="n">tf_train_pos</span><span class="p">,</span>
-        <span class="n">tf_test_pos</span><span class="p">,</span>
-        <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Relative pixel error&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
-
-    <span class="c1"># Compute OPD errors</span>
-    <span class="n">opd_rmse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-        <span class="p">[</span>
-            <span class="n">compute_one_opd_rmse</span><span class="p">(</span>
-                <span class="n">GT_tf_semiparam_field</span><span class="p">,</span> <span class="n">tf_semiparam_field</span><span class="p">,</span> <span class="n">_pos</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">is_poly</span>
-            <span class="p">)</span>
-            <span class="k">for</span> <span class="n">_pos</span> <span class="ow">in</span> <span class="n">mesh_pos</span>
-        <span class="p">]</span>
-    <span class="p">)</span>
-
-    <span class="c1"># Plot absolute pixel error</span>
-    <span class="n">plot_function</span><span class="p">(</span>
-        <span class="n">mesh_pos</span><span class="p">,</span> <span class="n">opd_rmse</span><span class="p">,</span> <span class="n">tf_train_pos</span><span class="p">,</span> <span class="n">tf_test_pos</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Absolute OPD error&quot;</span>
-    <span class="p">)</span></div>
-
-
-
-<div class="viewcode-block" id="plot_imgs">
-<a class="viewcode-back" href="../../../wf_psf.metrics.metrics.html#wf_psf.metrics.metrics.plot_imgs">[docs]</a>
-<span class="k">def</span> <span class="nf">plot_imgs</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gist_stern&quot;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">)):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Function to plot 2D images of a tensor.</span>
-<span class="sd">    The Tensor is (batch,xdim,ydim) and the matrix of subplots is</span>
-<span class="sd">    chosen &quot;intelligently&quot;.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">dp</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">left</span><span class="p">):</span>  <span class="c1"># returns tuple (cost, [factors])</span>
-        <span class="n">memo</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">left</span><span class="p">)</span> <span class="ow">in</span> <span class="n">memo</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">memo</span><span class="p">[(</span><span class="n">n</span><span class="p">,</span> <span class="n">left</span><span class="p">)]</span>
-
-        <span class="k">if</span> <span class="n">left</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="p">[</span><span class="n">n</span><span class="p">])</span>
-
-        <span class="n">i</span> <span class="o">=</span> <span class="mi">2</span>
-        <span class="n">best</span> <span class="o">=</span> <span class="n">n</span>
-        <span class="n">bestTuple</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span><span class="p">]</span>
-        <span class="k">while</span> <span class="n">i</span> <span class="o">*</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="n">n</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">rem</span> <span class="o">=</span> <span class="n">dp</span><span class="p">(</span><span class="n">n</span> <span class="o">/</span> <span class="n">i</span><span class="p">,</span> <span class="n">left</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">rem</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">best</span><span class="p">:</span>
-                    <span class="n">best</span> <span class="o">=</span> <span class="n">rem</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">i</span>
-                    <span class="n">bestTuple</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">rem</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
-
-        <span class="n">memo</span><span class="p">[(</span><span class="n">n</span><span class="p">,</span> <span class="n">left</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span><span class="n">best</span><span class="p">,</span> <span class="n">bestTuple</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">memo</span><span class="p">[(</span><span class="n">n</span><span class="p">,</span> <span class="n">left</span><span class="p">)]</span>
-
-    <span class="n">n_images</span> <span class="o">=</span> <span class="n">mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">row_col</span> <span class="o">=</span> <span class="n">dp</span><span class="p">(</span><span class="n">n_images</span><span class="p">,</span> <span class="mi">2</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">row_n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">row_col</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">col_n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">row_col</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-
-    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
-    <span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span>
-
-    <span class="k">for</span> <span class="n">_i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">row_n</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">_j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">col_n</span><span class="p">):</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">row_n</span><span class="p">,</span> <span class="n">col_n</span><span class="p">,</span> <span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">mat</span><span class="p">[</span><span class="n">idx</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:],</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">)</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;matrix id </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">idx</span><span class="p">)</span>
-
-            <span class="n">idx</span> <span class="o">+=</span> <span class="mi">1</span>
-
-    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
-
 </pre></div>
 
            </div>
@@ -1338,7 +763,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, CosmoStat.</p>
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

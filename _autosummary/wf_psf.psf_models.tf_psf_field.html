@@ -1,0 +1,631 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.psf_models.tf_psf_field &mdash; wf-psf 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../_static/twemoji.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="wf_psf.psf_models.zernikes" href="wf_psf.psf_models.zernikes.html" />
+    <link rel="prev" title="wf_psf.psf_models.tf_modules" href="wf_psf.psf_models.tf_modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.data.html">wf_psf.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.metrics.html">wf_psf.metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.plotting.html">wf_psf.plotting</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="wf_psf.psf_models.html">wf_psf.psf_models</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_parametric.html">wf_psf.psf_models.psf_model_parametric</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_physical_polychromatic.html">wf_psf.psf_models.psf_model_physical_polychromatic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_semiparametric.html">wf_psf.psf_models.psf_model_semiparametric</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_models.html">wf_psf.psf_models.psf_models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html">wf_psf.psf_models.tf_layers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_modules.html">wf_psf.psf_models.tf_modules</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">wf_psf.psf_models.tf_psf_field</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.tf_psf_field.GroundTruthPhysicalFieldFactory"><code class="docutils literal notranslate"><span class="pre">GroundTruthPhysicalFieldFactory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.tf_psf_field.GroundTruthSemiParamFieldFactory"><code class="docutils literal notranslate"><span class="pre">GroundTruthSemiParamFieldFactory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField"><code class="docutils literal notranslate"><span class="pre">TFGroundTruthPhysicalField</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthSemiParametricField"><code class="docutils literal notranslate"><span class="pre">TFGroundTruthSemiParametricField</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.tf_psf_field.get_ground_truth_zernike"><code class="docutils literal notranslate"><span class="pre">get_ground_truth_zernike()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.zernikes.html">wf_psf.psf_models.zernikes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.run.html">wf_psf.run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.sims.html">wf_psf.sims</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.training.html">wf_psf.training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.utils.html">wf_psf.utils</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="wf_psf.psf_models.html">wf_psf.psf_models</a></li>
+      <li class="breadcrumb-item active">wf_psf.psf_models.tf_psf_field</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/wf_psf.psf_models.tf_psf_field.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-wf_psf.psf_models.tf_psf_field">
+<span id="wf-psf-psf-models-tf-psf-field"></span><h1>wf_psf.psf_models.tf_psf_field<a class="headerlink" href="#module-wf_psf.psf_models.tf_psf_field" title="Link to this heading"></a></h1>
+<p>Ground-Truth TensorFlow PSF Field Model.</p>
+<p>A module with classes for the Ground-Truth TensorFlow-based PSF field models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Authors<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tobias Liaudat &lt;<a class="reference external" href="mailto:tobiasliaudat&#37;&#52;&#48;gmail&#46;com">tobiasliaudat<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt; and Jennifer Pollack &lt;<a class="reference external" href="mailto:jennifer&#46;pollack&#37;&#52;&#48;cea&#46;fr">jennifer<span>&#46;</span>pollack<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;</p>
+</dd>
+</dl>
+<p class="rubric">Functions</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_psf_field.get_ground_truth_zernike" title="wf_psf.psf_models.tf_psf_field.get_ground_truth_zernike"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_ground_truth_zernike</span></code></a>(data)</p></td>
+<td><p>Get Ground Truth Zernikes from the provided dataset.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_psf_field.GroundTruthPhysicalFieldFactory" title="wf_psf.psf_models.tf_psf_field.GroundTruthPhysicalFieldFactory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GroundTruthPhysicalFieldFactory</span></code></a>()</p></td>
+<td><p>Factory class for the Tensor Flow Ground Truth Physical PSF Field Model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_psf_field.GroundTruthSemiParamFieldFactory" title="wf_psf.psf_models.tf_psf_field.GroundTruthSemiParamFieldFactory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GroundTruthSemiParamFieldFactory</span></code></a>()</p></td>
+<td><p>Factory class for the TensorFlow Ground Truth Physical PSF Field Model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField" title="wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TFGroundTruthPhysicalField</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Ground Truth PSF field forward model with a physical layer.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthSemiParametricField" title="wf_psf.psf_models.tf_psf_field.TFGroundTruthSemiParametricField"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TFGroundTruthSemiParametricField</span></code></a>(*args, **kwargs)</p></td>
+<td><p>A TensorFlow-based Ground Truth Semi-Parametric PSF Field Model.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_psf_field.GroundTruthPhysicalFieldFactory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.tf_psf_field.</span></span><span class="sig-name descname"><span class="pre">GroundTruthPhysicalFieldFactory</span></span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_psf_field.html#GroundTruthPhysicalFieldFactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_psf_field.GroundTruthPhysicalFieldFactory" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">PSFModelBaseFactory</span></code></a></p>
+<p>Factory class for the Tensor Flow Ground Truth Physical PSF Field Model.</p>
+<p>This factory class is responsible for instantiating instances of the TensorFlow Ground Truth Physical PSF Field Model.
+It is registered with the PSF model factory registry.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ids</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>) – A tuple containing identifiers for the factory class.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_psf_field.GroundTruthPhysicalFieldFactory.get_model_instance">
+<span class="sig-name descname"><span class="pre">get_model_instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coeff_mat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_psf_field.html#GroundTruthPhysicalFieldFactory.get_model_instance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_psf_field.GroundTruthPhysicalFieldFactory.get_model_instance" title="Link to this definition"></a></dt>
+<dd><p>Instantiates an instance of the TensorFlow Physical Polychromatic Field class with the provided parameters.</p>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id0" title="wf_psf.psf_models.tf_psf_field.GroundTruthPhysicalFieldFactory.get_model_instance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_model_instance</span></code></a>(model_params, ...)</p></td>
+<td><p>Get Model Instance.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">get_model_instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coeff_mat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_psf_field.html#GroundTruthPhysicalFieldFactory.get_model_instance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd><p>Get Model Instance.</p>
+<p>This method creates an instance of the TensorFlow Ground Truth SemiParametric PSF Field Model using the provided parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_params</strong> (<em>Recursive Namespace</em>) – A Recursive Namespace object containing parameters for this PSF model class.</p></li>
+<li><p><strong>training_params</strong> (<em>Recursive Namespace</em>) – A Recursive Namespace object containing training hyperparameters for this PSF model class.</p></li>
+<li><p><strong>data</strong> (<a class="reference internal" href="wf_psf.utils.configs_handler.html#wf_psf.utils.configs_handler.DataConfigHandler" title="wf_psf.utils.configs_handler.DataConfigHandler"><em>DataConfigHandler</em></a>) – A DataConfigHandler object that provides access to training and test datasets, as well as prior knowledge like Zernike coefficients.</p></li>
+<li><p><strong>coeff_mat</strong> (<em>Tensor</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Coefficient matrix defining the parametric PSF field model.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the TensorFlow Ground Truth SemiParametric PSF Field model.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField" title="wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField">TFGroundTruthPhysicalField</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_psf_field.GroundTruthPhysicalFieldFactory.ids">
+<span class="sig-name descname"><span class="pre">ids</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('ground_truth_physical_poly',)</span></em><a class="headerlink" href="#wf_psf.psf_models.tf_psf_field.GroundTruthPhysicalFieldFactory.ids" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_psf_field.GroundTruthSemiParamFieldFactory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.tf_psf_field.</span></span><span class="sig-name descname"><span class="pre">GroundTruthSemiParamFieldFactory</span></span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_psf_field.html#GroundTruthSemiParamFieldFactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_psf_field.GroundTruthSemiParamFieldFactory" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">PSFModelBaseFactory</span></code></a></p>
+<p>Factory class for the TensorFlow Ground Truth Physical PSF Field Model.</p>
+<p>This factory class is responsible for instantiating instances
+of the TensorFlow Ground Truth SemiParametric PSF Field Model.
+It is registered with the PSF model factory registry.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ids</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>) – A tuple containing identifiers for the factory class.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_psf_field.GroundTruthSemiParamFieldFactory.get_model_instance">
+<span class="sig-name descname"><span class="pre">get_model_instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coeff_mat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_psf_field.html#GroundTruthSemiParamFieldFactory.get_model_instance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_psf_field.GroundTruthSemiParamFieldFactory.get_model_instance" title="Link to this definition"></a></dt>
+<dd><p>Instantiates an instance of the TensorFlow Ground Truth SemiParametric Field class with the provided parameters.</p>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id1" title="wf_psf.psf_models.tf_psf_field.GroundTruthSemiParamFieldFactory.get_model_instance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_model_instance</span></code></a>(model_params, ...[, ...])</p></td>
+<td><p>Get Model Instance.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">get_model_instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coeff_mat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_psf_field.html#GroundTruthSemiParamFieldFactory.get_model_instance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd><p>Get Model Instance.</p>
+<p>This method creates an instance of the TensorFlow Ground Truth SemiParametric PSF Field Model using the provided parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_params</strong> (<em>Recursive Namespace</em>) – A Recursive Namespace object containing parameters for this PSF model class.</p></li>
+<li><p><strong>training_params</strong> (<em>Recursive Namespace</em>) – A Recursive Namespace object containing training hyperparameters for this PSF model class.</p></li>
+<li><p><strong>data</strong> (<a class="reference internal" href="wf_psf.utils.configs_handler.html#wf_psf.utils.configs_handler.DataConfigHandler" title="wf_psf.utils.configs_handler.DataConfigHandler"><em>DataConfigHandler</em></a>) – A DataConfigHandler object that provides access to training and test datasets, as well as prior knowledge like Zernike coefficients.
+<strong>Note</strong>: This parameter is not used in this method.</p></li>
+<li><p><strong>coeff_mat</strong> (<em>Tensor</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Coefficient matrix defining the parametric PSF field model.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the TensorFlow Ground Truth SemiParametric PSF Field model.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthSemiParametricField" title="wf_psf.psf_models.tf_psf_field.TFGroundTruthSemiParametricField">TFGroundTruthSemiParametricField</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_psf_field.GroundTruthSemiParamFieldFactory.ids">
+<span class="sig-name descname"><span class="pre">ids</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('ground_truth_poly',)</span></em><a class="headerlink" href="#wf_psf.psf_models.tf_psf_field.GroundTruthSemiParamFieldFactory.ids" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.tf_psf_field.</span></span><span class="sig-name descname"><span class="pre">TFGroundTruthPhysicalField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_psf_field.html#TFGroundTruthPhysicalField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></p>
+<p>Ground Truth PSF field forward model with a physical layer.</p>
+<p>Ground truth PSF field used for evaluation purposes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ids</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>) – A tuple storing the string attribute of the PSF model class</p></li>
+<li><p><strong>model_params</strong> (<em>Recursive Namespace</em>) – A Recursive Namespace object containing parameters for this PSF model class.</p></li>
+<li><p><strong>training_params</strong> (<em>Recursive Namespace</em>) – A Recursive Namespace object containing training hyperparameters for this PSF model class.</p></li>
+<li><p><strong>data</strong> (<em>DataConfigHandler object</em>) – A DataConfigHandler object containing training and tests datasets, as well as prior knowledge like Zernike coefficients.</p></li>
+<li><p><strong>coeff_mat</strong> (<em>Tensor</em><em> or </em><em>None</em>) – Initialization of the coefficient matrix defining the parametric PSF field model.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(*args, **kwargs)</p></td>
+<td><p>Call self as a function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.call" title="wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(inputs[, training])</p></td>
+<td><p>Define the PSF field forward model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.compute_zernikes" title="wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.compute_zernikes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_zernikes</span></code></a>(input_positions)</p></td>
+<td><p>Compute Zernike coefficients at a batch of positions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.predict_mono_psfs" title="wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.predict_mono_psfs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict_mono_psfs</span></code></a>(input_positions, ...)</p></td>
+<td><p>Predict a batch of monochromatic PSFs at the specified positions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.predict_opd" title="wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.predict_opd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict_opd</span></code></a>(input_positions)</p></td>
+<td><p>Predict the Optical Path Difference (OPD) at the specified positions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.predict_step" title="wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.predict_step"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict_step</span></code></a>(data[, evaluate_step])</p></td>
+<td><p>Apply custom prediction (inference) step for the PSF model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.predict_zernikes" title="wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.predict_zernikes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict_zernikes</span></code></a>(input_positions)</p></td>
+<td><p>Predict Zernike coefficients at a batch of positions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.set_output_Q" title="wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.set_output_Q"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_output_Q</span></code></a>(output_Q[, output_dim])</p></td>
+<td><p>Set the value of the output_Q parameter.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.call">
+<span class="sig-name descname"><span class="pre">call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_psf_field.html#TFGroundTruthPhysicalField.call"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.call" title="Link to this definition"></a></dt>
+<dd><p>Define the PSF field forward model.</p>
+<p>[1] From positions to Zernike coefficients
+[2] From Zernike coefficients to OPD maps
+[3] From OPD maps and SED info to polychromatic PSFs</p>
+<p>OPD: Optical Path Differences</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.compute_zernikes">
+<span class="sig-name descname"><span class="pre">compute_zernikes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_positions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_psf_field.html#TFGroundTruthPhysicalField.compute_zernikes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.compute_zernikes" title="Link to this definition"></a></dt>
+<dd><p>Compute Zernike coefficients at a batch of positions.</p>
+<p>This only includes the physical layer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input_positions</strong> (<em>Tensor</em><em> [</em><em>batch_dim</em><em>, </em><em>2</em><em>]</em>) – Positions to compute the Zernikes.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>zks_coeffs</strong> – Zernikes at requested positions</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tensor [batch, n_zks_total, 1, 1]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.predict_mono_psfs">
+<span class="sig-name descname"><span class="pre">predict_mono_psfs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_obs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_N</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_psf_field.html#TFGroundTruthPhysicalField.predict_mono_psfs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.predict_mono_psfs" title="Link to this definition"></a></dt>
+<dd><p>Predict a batch of monochromatic PSFs at the specified positions.</p>
+<p>This method calculates the monochromatic Point Spread Functions (PSFs) for
+a given set of input positions, using the observed wavelength and wavefront
+dimension. The PSFs are computed using a parametric model and a physical layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_positions</strong> (<em>tf.Tensor</em><em> [</em><em>batch_dim</em><em>, </em><em>2</em><em>]</em>) – A tensor containing the positions (in 2D space) at which to compute the PSF.
+Shape should be <cite>[batch_dim, 2]</cite>, where <cite>batch_dim</cite> is the batch size.</p></li>
+<li><p><strong>lambda_obs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The observed wavelength (in micrometers) for which the monochromatic PSFs are to be computed.</p></li>
+<li><p><strong>phase_N</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The required wavefront dimension. This should be calculated using the following:
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">simPSF_np</span> <span class="pre">=</span> <span class="pre">wf_psf.sims.psf_simulator.PSFSimulator(...)</span>
+<span class="pre">phase_N</span> <span class="pre">=</span> <span class="pre">simPSF_np.feasible_N(lambda_obs)</span>
+<span class="pre">`</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>mono_psf_batch</strong> – A tensor containing the computed batch of monochromatic PSFs for the input positions.
+The shape of the tensor depends on the model’s implementation.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The method uses the <cite>TFBatchMonochromaticPSF</cite> class to handle the computation of
+monochromatic PSFs. The <cite>set_lambda_phaseN</cite> method is called to set the observed
+wavelength and wavefront dimension before the PSFs are computed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.predict_opd">
+<span class="sig-name descname"><span class="pre">predict_opd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_psf_field.html#TFGroundTruthPhysicalField.predict_opd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.predict_opd" title="Link to this definition"></a></dt>
+<dd><p>Predict the Optical Path Difference (OPD) at the specified positions.</p>
+<p>This method uses the <cite>predict_zernikes</cite> method to compute Zernike coefficients.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input_positions</strong> (<em>Tensor</em><em> [</em><em>batch_dim</em><em>, </em><em>2</em><em>]</em>) – Positions to predict the OPD.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>opd_maps</strong> – OPD at requested positions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tensor [batch, opd_dim, opd_dim]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.predict_step">
+<span class="sig-name descname"><span class="pre">predict_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">evaluate_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tensorflow.Tensor</span></span></span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_psf_field.html#TFGroundTruthPhysicalField.predict_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.predict_step" title="Link to this definition"></a></dt>
+<dd><p>Apply custom prediction (inference) step for the PSF model.</p>
+<p>This method applies a specialized interpolation required by the physical layer, distinct from the training process. It processes the input data, computes the Zernike coefficients, propagates them to obtain the Optical Path Difference (OPD), and generates the corresponding polychromatic PSFs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>) – Input data for prediction. Expected to be a tuple containing positions (tf.Tensor) and Spectral Energy Distributions (SEDs) (tf.Tensor), or a batch of data.</p></li>
+<li><p><strong>evaluate_step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, <cite>data</cite> is used as-is. Otherwise, it is formatted and unpacked using <cite>data_adapter.expand_1d</cite> and <cite>data_adapter.unpack_x_y_sample_weight</cite>. Default is False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>poly_psfs</strong> – A tensor of shape <cite>[batch_size, output_dim, output_dim]</cite> containing the computed polychromatic PSFs.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The method assumes <cite>data_adapter.expand_1d</cite> and <cite>data_adapter.unpack_x_y_sample_weight</cite></p></li>
+</ul>
+<p>are used to properly format and extract <cite>input_positions</cite> and <cite>packed_SEDs</cite>.
+- Unlike standard Keras <cite>predict_step</cite>, this implementation does not expect <cite>sample_weight</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.predict_zernikes">
+<span class="sig-name descname"><span class="pre">predict_zernikes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_positions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_psf_field.html#TFGroundTruthPhysicalField.predict_zernikes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.predict_zernikes" title="Link to this definition"></a></dt>
+<dd><p>Predict Zernike coefficients at a batch of positions.</p>
+<p>This only includes the physical layer.
+For the moment, it is the same as the <cite>compute_zernikes</cite>.
+No interpolation done to avoid interpolation error in the metrics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input_positions</strong> (<em>Tensor</em><em> [</em><em>batch_dim</em><em>, </em><em>2</em><em>]</em>) – Positions to compute the Zernikes.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>zks_coeffs</strong> – Zernikes at requested positions</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tensor [batch, n_zks_total, 1, 1]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.set_output_Q">
+<span class="sig-name descname"><span class="pre">set_output_Q</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_Q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_psf_field.html#TFGroundTruthPhysicalField.set_output_Q"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthPhysicalField.set_output_Q" title="Link to this definition"></a></dt>
+<dd><p>Set the value of the output_Q parameter.</p>
+<p>This method is useful for generating or predicting Point Spread Functions (PSFs) at a different
+sampling rate compared to the observation sampling. It allows for adjusting the resolution
+of the generated PSFs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output_Q</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The output sampling rate factor, which determines the resolution of the PSFs to be generated.</p></li>
+<li><p><strong>output_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – The output dimension of the generated PSFs. If not provided, the existing dimension will be used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>This method does not return any value.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>After setting the <cite>output_Q</cite> and optionally the <cite>output_dim</cite>, the PSF batch polynomial generator
+is reinitialized with the new parameters.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_psf_field.TFGroundTruthSemiParametricField">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.tf_psf_field.</span></span><span class="sig-name descname"><span class="pre">TFGroundTruthSemiParametricField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_psf_field.html#TFGroundTruthSemiParametricField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthSemiParametricField" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="wf_psf.psf_models.psf_model_semiparametric.html#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField" title="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField"><code class="xref py py-class docutils literal notranslate"><span class="pre">TFSemiParametricField</span></code></a></p>
+<p>A TensorFlow-based Ground Truth Semi-Parametric PSF Field Model.</p>
+<p>This class represents a ground truth semi-parametric PSF (Point Spread Function)
+field model implemented using TensorFlow. The model generates a ground truth PSF
+field based on the provided Zernike coefficient matrix. If the coefficient matrix
+(<cite>coeff_mat</cite>) is provided, it will be used to produce the ground truth PSF model,
+which serves as the reference for the previously simulated PSF fields. If no
+coefficient matrix is provided, the model proceeds without it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_params</strong> (<a class="reference internal" href="wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace" title="wf_psf.utils.read_config.RecursiveNamespace"><em>RecursiveNamespace</em></a>) – A RecursiveNamespace object containing parameters for configuring the PSF model.</p></li>
+<li><p><strong>training_params</strong> (<a class="reference internal" href="wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace" title="wf_psf.utils.read_config.RecursiveNamespace"><em>RecursiveNamespace</em></a>) – A RecursiveNamespace object containing training hyperparameters for the PSF model.</p></li>
+<li><p><strong>coeff_mat</strong> (<em>Tensor</em><em> or </em><em>None</em>) – The Zernike coefficient matrix used in generating simulations of the PSF model. This
+matrix defines the Zernike polynomials up to a given order used to simulate the PSF
+field. It is only used by this model if present to produce the ground truth PSF model.
+If not provided, the model will proceed without it.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_psf_field.TFGroundTruthSemiParametricField.GT_tf_semiparam_field">
+<span class="sig-name descname"><span class="pre">GT_tf_semiparam_field</span></span><a class="headerlink" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthSemiParametricField.GT_tf_semiparam_field" title="Link to this definition"></a></dt>
+<dd><p>An instance of the TensorFlow-based Semi-Parametric PSF Field Model used for
+generating ground truth PSF fields.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="wf_psf.psf_models.psf_model_semiparametric.html#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField" title="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField">TFSemiParametricField</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_psf_field.TFGroundTruthSemiParametricField.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coeff_mat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_psf_field.html#TFGroundTruthSemiParametricField.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_psf_field.TFGroundTruthSemiParametricField.__init__" title="Link to this definition"></a></dt>
+<dd><p>Initializes the TFGroundTruthSemiParametricField instance.</p>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(*args, **kwargs)</p></td>
+<td><p>Call self as a function.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">assign_S_mat</span></code>(s_mat)</p></td>
+<td><p>Assign DD features matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">assign_coeff_matrix</span></code>(coeff_mat)</p></td>
+<td><p>Assign coefficient matrix.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code>(inputs)</p></td>
+<td><p>Define the PSF field forward model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_coeff_matrix</span></code>()</p></td>
+<td><p>Get coefficient matrix.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict_mono_psfs</span></code>(input_positions, ...)</p></td>
+<td><p>Predict a set of monochromatic PSF at desired positions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict_opd</span></code>(input_positions)</p></td>
+<td><p>Predict the OPD at some positions.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">project_DD_features</span></code>([tf_zernike_cube])</p></td>
+<td><p>Project data-driven features.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_nonzero_nonparam</span></code>()</p></td>
+<td><p>Set to non-zero the non-parametric part.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_output_Q</span></code>(output_Q[, output_dim])</p></td>
+<td><p>Set the value of the output_Q parameter.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_trainable_layers</span></code>([param_bool, nonparam_bool])</p></td>
+<td><p>Set Trainable Layers.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_zero_nonparam</span></code>()</p></td>
+<td><p>Set to zero the non-parametric part.</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_psf_field.get_ground_truth_zernike">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.tf_psf_field.</span></span><span class="sig-name descname"><span class="pre">get_ground_truth_zernike</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_psf_field.html#get_ground_truth_zernike"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_psf_field.get_ground_truth_zernike" title="Link to this definition"></a></dt>
+<dd><p>Get Ground Truth Zernikes from the provided dataset.</p>
+<p>This method concatenates the Ground Truth Zernike from both the training
+and test datasets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<a class="reference internal" href="wf_psf.utils.configs_handler.html#wf_psf.utils.configs_handler.DataConfigHandler" title="wf_psf.utils.configs_handler.DataConfigHandler"><em>DataConfigHandler</em></a>) – A DataConfigHandler object that provides access to training and test datasets, as well as prior knowledge like Zernike coefficients.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor containing the observed positions of the stars.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The Zernike Ground Truth are obtained by concatenating the
+Ground Truth Zernikes from both the training and test datasets
+along the 0th axis.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="wf_psf.psf_models.tf_modules.html" class="btn btn-neutral float-left" title="wf_psf.psf_models.tf_modules" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wf_psf.psf_models.zernikes.html" class="btn btn-neutral float-right" title="wf_psf.psf_models.zernikes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

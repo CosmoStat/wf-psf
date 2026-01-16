@@ -1,26 +1,25 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="./">
 <head>
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Basic Execution &mdash; wf-psf 2.0.1 documentation</title>
+  <title>Basic Execution &mdash; wf-psf 3.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9570fddd" />
       <link rel="stylesheet" type="text/css" href="_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css?v=309026bb" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="_static/jquery.js?v=5d32c60e"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=af2ce170"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
-        <script src="_static/sphinx_highlight.js?v=4825356b"></script>
-        <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"></script>
-        <script src="_static/twemoji.js"></script>
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=af2ce170"></script>
+      <script src="_static/doctools.js?v=888ff710"></script>
+      <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="_static/twemoji.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="about.html" />
     <link rel="index" title="Index" href="genindex.html" />
@@ -60,12 +59,19 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Basic Execution</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Basic Execution</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#wavediff-output-directory-structure">WaveDiff Output Directory Structure</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="wf_psf.html">wf_psf package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="developer/index.html">Developer Guide</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">References</span></p>
 <ul>
@@ -98,32 +104,32 @@
              
   <section id="basic-execution">
 <h1>Basic Execution<a class="headerlink" href="#basic-execution" title="Link to this heading"></a></h1>
-<p>The WaveDiff pipeline is launched by the Python script: <code class="docutils literal notranslate"><span class="pre">src/wf_psf/run.py</span></code> which is referenced by the command <code class="docutils literal notranslate"><span class="pre">wavediff</span></code>.</p>
+<p>The WaveDiff pipeline is launched by the entrypoint script: <code class="docutils literal notranslate"><span class="pre">src/wf_psf/run.py</span></code>, which is referenced by the command <code class="docutils literal notranslate"><span class="pre">wavediff</span></code>.</p>
 <p>A list of command-line arguments can be displayed using the <code class="docutils literal notranslate"><span class="pre">--help</span></code> option:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">wavediff</span> <span class="o">--</span><span class="n">help</span>
-<span class="n">usage</span><span class="p">:</span> <span class="n">run</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="o">--</span><span class="n">conffile</span> <span class="n">CONFFILE</span> <span class="o">--</span><span class="n">repodir</span> <span class="n">REPODIR</span> <span class="o">--</span><span class="n">outputdir</span> <span class="n">OUTPUTDIR</span>
+<span class="n">usage</span><span class="p">:</span> <span class="n">run</span><span class="o">.</span><span class="n">py</span> <span class="p">[</span><span class="o">-</span><span class="n">h</span><span class="p">]</span> <span class="o">--</span><span class="n">conffile</span> <span class="n">CONFFILE</span> <span class="o">--</span><span class="n">outputdir</span> <span class="n">OUTPUTDIR</span>
+
+<span class="n">required</span> <span class="n">arguments</span><span class="p">:</span>
+  <span class="o">--</span><span class="n">conffile</span> <span class="n">CONFFILE</span><span class="p">,</span> <span class="o">-</span><span class="n">c</span> <span class="n">CONFFILE</span>
+                        <span class="n">a</span> <span class="n">configuration</span> <span class="n">file</span> <span class="n">containing</span> <span class="n">program</span> <span class="n">settings</span><span class="o">.</span>
+  <span class="o">--</span><span class="n">outputdir</span> <span class="n">OUTPUTDIR</span><span class="p">,</span> <span class="o">-</span><span class="n">o</span> <span class="n">OUTPUTDIR</span>
+                        <span class="n">the</span> <span class="n">path</span> <span class="n">of</span> <span class="n">the</span> <span class="n">output</span> <span class="n">directory</span><span class="o">.</span>
 
 <span class="n">optional</span> <span class="n">arguments</span><span class="p">:</span>
   <span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>            <span class="n">show</span> <span class="n">this</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
-  <span class="o">--</span><span class="n">conffile</span> <span class="n">CONFFILE</span><span class="p">,</span> <span class="o">-</span><span class="n">c</span> <span class="n">CONFFILE</span>
-                        <span class="n">a</span> <span class="n">configuration</span> <span class="n">file</span> <span class="n">containing</span> <span class="n">program</span> <span class="n">settings</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">repodir</span> <span class="n">REPODIR</span><span class="p">,</span> <span class="o">-</span><span class="n">r</span> <span class="n">REPODIR</span>
-                        <span class="n">the</span> <span class="n">path</span> <span class="n">of</span> <span class="n">the</span> <span class="n">code</span> <span class="n">repository</span> <span class="n">directory</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">outputdir</span> <span class="n">OUTPUTDIR</span><span class="p">,</span> <span class="o">-</span><span class="n">o</span> <span class="n">OUTPUTDIR</span>
-                        <span class="n">the</span> <span class="n">path</span> <span class="n">of</span> <span class="n">the</span> <span class="n">output</span> <span class="n">directory</span><span class="o">.</span>
 </pre></div>
 </div>
-<p>There are three arguments, which the user should specify when launching the pipeline.</p>
 <p>The first argument: <code class="docutils literal notranslate"><span class="pre">--confile</span> <span class="pre">CONFFILE</span></code> specifies the path to the <a class="reference internal" href="configuration.html#master-config-file"><span class="std std-ref">master configuration file</span></a> storing the pipeline tasks to be executed at runtime.</p>
-<p>The second argument: <code class="docutils literal notranslate"><span class="pre">--repodir</span> <span class="pre">REPODIR</span></code> is the path to the <code class="docutils literal notranslate"><span class="pre">wf-psf</span></code> repository.</p>
-<p>The third argument: <code class="docutils literal notranslate"><span class="pre">--outputdir</span> <span class="pre">OUTPUTDIR</span></code> is used to set the path to the main output directory, which stores the <code class="docutils literal notranslate"><span class="pre">WaveDiff</span></code> results.</p>
+<p>The second argument: <code class="docutils literal notranslate"><span class="pre">--outputdir</span> <span class="pre">OUTPUTDIR</span></code> is used to set the path to the main output directory, which stores the <code class="docutils literal notranslate"><span class="pre">WaveDiff</span></code> results.</p>
 <p>To run <code class="docutils literal notranslate"><span class="pre">WaveDiff</span></code>, use the following command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">wavediff</span> <span class="o">-</span><span class="n">c</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">config</span><span class="o">/</span><span class="n">file</span> <span class="o">-</span><span class="n">r</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">wf</span><span class="o">-</span><span class="n">psf</span> <span class="o">-</span><span class="n">o</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">output</span><span class="o">/</span><span class="nb">dir</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">wavediff</span> <span class="o">-</span><span class="n">c</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">config</span><span class="o">/</span><span class="n">file</span> <span class="o">-</span><span class="n">o</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">output</span><span class="o">/</span><span class="nb">dir</span>
 </pre></div>
 </div>
-<p>WaveDiff begins with the input/output (i.e. retrieving and parsing the configuration file and creating a set of nested output of directories within the main output directory). The name of the top-level subdirectory is a composition of the string <code class="docutils literal notranslate"><span class="pre">wf-outputs-</span></code> and a timestamp of the current run, i.e. <code class="docutils literal notranslate"><span class="pre">wf-outputs-202310221632</span></code>. Each run of WaveDiff will produce its own unique subdirectory. Then within this subdirectory, further subdirectories are generated to store the corresponding output.</p>
-<p>Below is an example of the set of directories generated during each execution of the WaveDiff pipeline.</p>
-<div class="highlight-default notranslate" id="wf-outputs"><div class="highlight"><pre><span></span>wf-outputs-202310211641
+<section id="wavediff-output-directory-structure">
+<h2>WaveDiff Output Directory Structure<a class="headerlink" href="#wavediff-output-directory-structure" title="Link to this heading"></a></h2>
+<p>WaveDiff creates an output directory at the location specified by <code class="docutils literal notranslate"><span class="pre">--outputdir</span></code> for each run. The parent directory is named with the prefix <code class="docutils literal notranslate"><span class="pre">wf-outputs-</span></code> and a timestamp accurate to the microsecond, e.g., <code class="docutils literal notranslate"><span class="pre">wf-outputs-20231119151932213823</span></code>.</p>
+<p>Inside this directory, the following subdirectories are generated:</p>
+<div class="highlight-default notranslate" id="wf-outputs"><div class="highlight"><pre><span></span>wf-outputs-20231119151932213823
 ├── checkpoint
 ├── config
 ├── log-files
@@ -137,34 +143,39 @@
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Sub-directory</p></th>
-<th class="head"><p>Purpose</p></th>
+<th class="head"><p>Description</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>checkpoint</p></td>
-<td><p>Stores the checkpoint weights produced during the training pipeline task.</p></td>
+<td><p>Checkpoint weights saved during training.</p></td>
 </tr>
 <tr class="row-odd"><td><p>config</p></td>
-<td><p>Stores all of the configuration files (see <a class="reference internal" href="configuration.html#configuration"><span class="std std-ref">Configuration</span></a>) provided as input during the run.</p></td>
+<td><p>Input configuration files used for this run (<a class="reference internal" href="configuration.html#configuration"><span class="std std-ref">see Configuration</span></a>).</p></td>
 </tr>
 <tr class="row-even"><td><p>log-files</p></td>
-<td><p>Stores the log-file of the run.</p></td>
+<td><p>Log files generated during the run.</p></td>
 </tr>
 <tr class="row-odd"><td><p>metrics</p></td>
-<td><p>Stores the metrics results generated during the metrics pipeline task.</p></td>
+<td><p>Evaluation metrics produced by the metrics pipeline.</p></td>
 </tr>
 <tr class="row-even"><td><p>optim-hist</p></td>
-<td><p>Stores the training history of the model parameters.</p></td>
+<td><p>Optimization history of model parameters during training.</p></td>
 </tr>
 <tr class="row-odd"><td><p>plots</p></td>
-<td><p>Stores metrics plots generated during the plotting pipeline task.</p></td>
+<td><p>Plots generated by the plotting pipeline.</p></td>
 </tr>
 <tr class="row-even"><td><p>psf_models</p></td>
-<td><p>Stores the final trained PSF models for each training cycle.</p></td>
+<td><p>Final PSF models, including full model graphs for each training cycle.</p></td>
 </tr>
 </tbody>
 </table>
-<p>Next, we describe to some detail the configuration file structures and content.</p>
+<p><strong>Notes:</strong>
+All subdirectory names are consistent across runs.
+Timestamps ensure unique output directories for each execution.
+This structure supports reproducibility and easy access to intermediate results.</p>
+<p>Next, we cover how the configuration files are organized.</p>
+</section>
 </section>
 
 
@@ -178,7 +189,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, CosmoStat.</p>
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

@@ -1,0 +1,525 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.utils.centroids &mdash; wf-psf 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../../../_static/twemoji.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../../../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">wf_psf.utils.centroids</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for wf_psf.utils.centroids</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Centroids.</span>
+
+<span class="sd">A module with utils to handle PSF centroids.</span>
+
+<span class="sd">:Author: Tobias Liaudat &lt;tobias.liaudat@cea.fr&gt; and Jennifer Pollack &lt;jennifer.pollack@cea.fr&gt;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.signal</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">scisig</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.utils.preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">shift_x_y_to_zk1_2_wavediff</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+
+
+<div class="viewcode-block" id="compute_zernike_tip_tilt">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.centroids.html#wf_psf.utils.centroids.compute_zernike_tip_tilt">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_zernike_tip_tilt</span><span class="p">(</span>
+    <span class="n">star_images</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">star_masks</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">pixel_sampling</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">12e-6</span><span class="p">,</span>
+    <span class="n">reference_shifts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">],</span>
+    <span class="n">sigma_init</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.5</span><span class="p">,</span>
+    <span class="n">n_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute Zernike tip-tilt corrections for a batch of PSF images.</span>
+
+<span class="sd">    This function estimates the centroid shifts of multiple PSFs and computes </span>
+<span class="sd">    the corresponding Zernike tip-tilt corrections to align them with a reference.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    star_images : np.ndarray</span>
+<span class="sd">        A batch of PSF images (3D array of shape `(num_images, height, width)`).</span>
+<span class="sd">    star_masks : np.ndarray, optional</span>
+<span class="sd">        A batch of masks (same shape as `star_postage_stamps`). Each mask can have:</span>
+<span class="sd">        - `0` to ignore the pixel.</span>
+<span class="sd">        - `1` to fully consider the pixel.</span>
+<span class="sd">        - Values in `(0,1]` as weights for partial consideration.</span>
+<span class="sd">        Defaults to None.</span>
+<span class="sd">    pixel_sampling : float, optional</span>
+<span class="sd">        The pixel size in meters. Defaults to `12e-6 m` (12 microns).</span>
+<span class="sd">    reference_shifts : list[float], optional</span>
+<span class="sd">        The target centroid shifts in pixels, specified as `[dy, dx]`.  </span>
+<span class="sd">        Defaults to `[-1/3, -1/3]` (nominal Euclid conditions).</span>
+<span class="sd">    sigma_init : float, optional</span>
+<span class="sd">        Initial standard deviation for centroid estimation. Default is `2.5`.</span>
+<span class="sd">    n_iter : int, optional</span>
+<span class="sd">        Number of iterations for centroid refinement. Default is `20`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        An array of shape `(num_images, 2)`, where:</span>
+<span class="sd">        - Column 0 contains `Zk1` (tip) values.</span>
+<span class="sd">        - Column 1 contains `Zk2` (tilt) values.</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - This function processes all images at once using vectorized operations.</span>
+<span class="sd">    - The Zernike coefficients are computed in the WaveDiff convention.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Vectorize the centroid computation</span>
+    <span class="n">centroid_estimator</span> <span class="o">=</span> <span class="n">CentroidEstimator</span><span class="p">(</span>
+                            <span class="n">im</span><span class="o">=</span><span class="n">star_images</span><span class="p">,</span>
+                            <span class="n">mask</span><span class="o">=</span><span class="n">star_masks</span><span class="p">,</span> 
+                            <span class="n">sigma_init</span><span class="o">=</span><span class="n">sigma_init</span><span class="p">,</span>
+                            <span class="n">n_iter</span><span class="o">=</span><span class="n">n_iter</span>
+                            <span class="p">)</span>
+
+    <span class="n">shifts</span> <span class="o">=</span> <span class="n">centroid_estimator</span><span class="o">.</span><span class="n">get_intra_pixel_shifts</span><span class="p">()</span>
+
+    <span class="c1"># Ensure reference_shifts is a NumPy array (if it&#39;s not already)</span>
+    <span class="n">reference_shifts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">reference_shifts</span><span class="p">)</span>
+
+    <span class="c1"># Reshape to ensure it&#39;s a column vector (1, 2)</span>
+    <span class="n">reference_shifts</span> <span class="o">=</span> <span class="n">reference_shifts</span><span class="p">[</span><span class="kc">None</span><span class="p">,:]</span>
+  
+    <span class="c1"># Broadcast reference_shifts to match the shape of shifts</span>
+    <span class="n">reference_shifts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">reference_shifts</span><span class="p">,</span> <span class="n">shifts</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>  
+    
+    <span class="c1"># Compute displacements</span>
+    <span class="n">displacements</span> <span class="o">=</span> <span class="p">(</span><span class="n">reference_shifts</span> <span class="o">-</span> <span class="n">shifts</span><span class="p">)</span> <span class="c1"># </span>
+    
+    <span class="c1"># Ensure the correct axis order for displacements (x-axis, then y-axis)</span>
+    <span class="n">displacements_swapped</span> <span class="o">=</span> <span class="n">displacements</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span> <span class="c1"># Adjust axis order if necessary</span>
+
+    <span class="c1"># Call shift_x_y_to_zk1_2_wavediff directly on the vector of displacements</span>
+    <span class="n">zk1_2_array</span> <span class="o">=</span> <span class="n">shift_x_y_to_zk1_2_wavediff</span><span class="p">(</span><span class="n">displacements_swapped</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">*</span> <span class="n">pixel_sampling</span> <span class="p">)</span>  <span class="c1"># vectorized call</span>
+    
+    <span class="c1"># Reshape the result back to the original shape of displacements</span>
+    <span class="n">zk1_2_array</span> <span class="o">=</span> <span class="n">zk1_2_array</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">displacements</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+  
+    <span class="k">return</span> <span class="n">zk1_2_array</span></div>
+
+
+
+
+<div class="viewcode-block" id="CentroidEstimator">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.centroids.html#wf_psf.utils.centroids.CentroidEstimator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CentroidEstimator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate centroids and estimate intra-pixel shifts for a batch of star images.</span>
+
+<span class="sd">    This class estimates the centroid of each star in a batch of images using an </span>
+<span class="sd">    iterative process that fits an elliptical Gaussian model to the star images. </span>
+<span class="sd">    The estimated centroids are returned along with the intra-pixel shifts, which </span>
+<span class="sd">    represent the difference between the estimated centroid and the center of the </span>
+<span class="sd">    image grid (or pixel grid).</span>
+
+<span class="sd">    The process is vectorized, allowing multiple star images to be processed in </span>
+<span class="sd">    parallel, which significantly improves performance when working with large batches.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    im : numpy.ndarray</span>
+<span class="sd">        A 3D numpy array of star image stamps. The shape of the array should be </span>
+<span class="sd">        (n_images, height, width), where n_images is the number of stars, and </span>
+<span class="sd">        height and width are the dimensions of each star&#39;s image.</span>
+<span class="sd">    </span>
+<span class="sd">    mask : numpy.ndarray, optional</span>
+<span class="sd">        A 3D numpy array of the same shape as `im`, representing the mask for each star image. </span>
+<span class="sd">        A mask value of `0` indicates that the pixel is fully considered (unmasked), while a value of `1` means the pixel is completely ignored (masked).  </span>
+<span class="sd">        Values between `0` and `1` act as weights, allowing partial consideration of the pixel.  </span>
+<span class="sd">        If not provided, no mask is applied. </span>
+
+<span class="sd">    sigma_init : float, optional</span>
+<span class="sd">        The initial guess for the standard deviation (sigma) of the elliptical Gaussian </span>
+<span class="sd">        that models the star. Default is 7.5.</span>
+
+<span class="sd">    n_iter : int, optional</span>
+<span class="sd">        The number of iterations for the iterative centroid estimation procedure. </span>
+<span class="sd">        Default is 5.</span>
+
+<span class="sd">    auto_run : bool, optional</span>
+<span class="sd">        If True, the centroid estimation procedure will be automatically run upon </span>
+<span class="sd">        initialization. Default is True.</span>
+
+<span class="sd">    xc : float, optional</span>
+<span class="sd">        The initial guess for the x-component of the centroid. If None, it is set </span>
+<span class="sd">        to the center of the image. Default is None.</span>
+
+<span class="sd">    yc : float, optional</span>
+<span class="sd">        The initial guess for the y-component of the centroid. If None, it is set </span>
+<span class="sd">        to the center of the image. Default is None.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xc : numpy.ndarray</span>
+<span class="sd">        The x-components of the estimated centroids for each image. Shape is (n_images,).</span>
+<span class="sd">    </span>
+<span class="sd">    yc : numpy.ndarray</span>
+<span class="sd">        The y-components of the estimated centroids for each image. Shape is (n_images,).</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    update_grid()</span>
+<span class="sd">        Updates the grid of pixel positions based on the current centroid estimates.</span>
+
+<span class="sd">    elliptical_gaussian(e1=0, e2=0)</span>
+<span class="sd">        Computes an elliptical 2D Gaussian with the specified shear parameters.</span>
+<span class="sd">    </span>
+<span class="sd">    compute_moments()</span>
+<span class="sd">        Computes the first-order moments of the star images and updates the centroid estimates.</span>
+<span class="sd">    </span>
+<span class="sd">    estimate()</span>
+<span class="sd">        Runs the iterative centroid estimation procedure for all images.</span>
+
+<span class="sd">    get_centroids()</span>
+<span class="sd">        Returns the estimated centroids for all images as a 2D numpy array.</span>
+
+<span class="sd">    get_intra_pixel_shifts()</span>
+<span class="sd">        Gets the intra-pixel shifts for all images as a list of x and y displacements.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The iterative centroid estimation procedure fits an elliptical Gaussian to each</span>
+<span class="sd">    star image and computes the centroid by calculating the weighted moments. The</span>
+<span class="sd">    `estimate()` method performs the centroid calculation for a batch of images using </span>
+<span class="sd">    the iterative approach defined by the `n_iter` parameter. This class is designed </span>
+<span class="sd">    to be efficient and scalable when processing large batches of star images.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">im</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sigma_init</span><span class="o">=</span><span class="mf">7.5</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">auto_run</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">xc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">yc</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize class attributes.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">im</span> <span class="o">=</span> <span class="n">im</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">im</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">im</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stamp_size</span> <span class="o">=</span> <span class="n">im</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma_init</span> <span class="o">=</span> <span class="n">sigma_init</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span> <span class="o">=</span> <span class="n">n_iter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xc0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">yc0</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stamp_size</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stamp_size</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">xc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">im</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],),</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">yc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">im</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],),</span> <span class="bp">self</span><span class="o">.</span><span class="n">yc0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">auto_run</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">estimate</span><span class="p">()</span>
+            
+
+<div class="viewcode-block" id="CentroidEstimator.update_grid">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.centroids.html#wf_psf.utils.centroids.CentroidEstimator.update_grid">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Vectorized update of the grid coordinates for multiple star stamps.&quot;&quot;&quot;</span>
+        <span class="n">num_images</span><span class="p">,</span> <span class="n">Nx</span><span class="p">,</span> <span class="n">Ny</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">im</span><span class="o">.</span><span class="n">shape</span>  <span class="c1"># Extract dimensions</span>
+
+        <span class="n">x_range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Nx</span><span class="p">)</span>
+        <span class="n">y_range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Ny</span><span class="p">)</span>
+
+        <span class="c1"># Correct subtraction without mixing axes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xx</span> <span class="o">=</span> <span class="p">(</span><span class="n">x_range</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">yy</span> <span class="o">=</span> <span class="p">(</span><span class="n">y_range</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">yc</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">])</span>
+        
+        <span class="c1"># Now, expand to the correct shape (num_images, Nx, Ny)</span>
+        <span class="c1"># Add the extra dimension for the number of stars</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xx</span><span class="p">[:,</span> <span class="p">:,</span> <span class="kc">None</span><span class="p">]</span>  <span class="c1"># Shape: (num_images, Nx, 1)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">yy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">yy</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># Shape: (num_images, 1, Ny)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">xx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xx</span><span class="p">,</span> <span class="p">(</span><span class="n">num_images</span><span class="p">,</span> <span class="n">Nx</span><span class="p">,</span> <span class="n">Ny</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">yy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yy</span><span class="p">,</span> <span class="p">(</span><span class="n">num_images</span><span class="p">,</span> <span class="n">Nx</span><span class="p">,</span> <span class="n">Ny</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="CentroidEstimator.elliptical_gaussian">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.centroids.html#wf_psf.utils.centroids.CentroidEstimator.elliptical_gaussian">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">elliptical_gaussian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e1</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">e2</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute an elliptical 2D Gaussian with arbitrary centroid.&quot;&quot;&quot;</span>
+        <span class="c1"># Shear the grid coordinates</span>
+        <span class="n">gxx</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">e1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">xx</span> <span class="o">-</span> <span class="n">e2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">yy</span>
+        <span class="n">gyy</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">e1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">yy</span> <span class="o">-</span> <span class="n">e2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">xx</span>
+        
+        <span class="c1"># Compute elliptical Gaussian</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">gxx</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">gyy</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_init</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="CentroidEstimator.compute_moments">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.centroids.html#wf_psf.utils.centroids.CentroidEstimator.compute_moments">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_moments</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the moments for multiple PSFs at once.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">masked_im_window</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">im</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">window</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">masked_im_window</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">im</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">window</span>
+
+        <span class="n">Q0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">masked_im_window</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>  <span class="c1"># Sum over images and their pixels</span>
+        <span class="n">Q1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">masked_im_window</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span> <span class="o">-</span> <span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stamp_size</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xc</span> <span class="o">=</span> <span class="n">Q1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">Q0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">yc</span> <span class="o">=</span> <span class="n">Q1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">Q0</span></div>
+
+
+<div class="viewcode-block" id="CentroidEstimator.estimate">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.centroids.html#wf_psf.utils.centroids.CentroidEstimator.estimate">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">estimate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Estimate centroids for all images.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_grid</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">window</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elliptical_gaussian</span><span class="p">()</span>
+            <span class="c1"># Calculate weighted moments.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">compute_moments</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">yc</span></div>
+
+
+<div class="viewcode-block" id="CentroidEstimator.get_centroids">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.centroids.html#wf_psf.utils.centroids.CentroidEstimator.get_centroids">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_centroids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return centroids for all images.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">xc</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">yc</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="CentroidEstimator.get_intra_pixel_shifts">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.centroids.html#wf_psf.utils.centroids.CentroidEstimator.get_intra_pixel_shifts">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_intra_pixel_shifts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get intra-pixel shifts for all images.</span>
+<span class="sd">        </span>
+<span class="sd">        Intra-pixel shifts are the differences between the estimated centroid and the center of the image stamp (or pixel grid). These shifts are calculated for all images in the batch.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        np.array</span>
+<span class="sd">            A 2D array of shape (num_of_images, 2), where each row corresponds to the x and y shifts for each image.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">shifts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">xc</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">xc0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">yc</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">yc0</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> 
+    
+        <span class="k">return</span> <span class="n">shifts</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="shift_ker_stack">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.centroids.html#wf_psf.utils.centroids.shift_ker_stack">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">shift_ker_stack</span><span class="p">(</span><span class="n">shifts</span><span class="p">,</span> <span class="n">upfact</span><span class="p">,</span> <span class="n">lanc_rad</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generate shifting kernels and rotated shifting kernels.&quot;&quot;&quot;</span>
+    <span class="c1"># lanc_rad = np.ceil(np.max(3*sigmas)).astype(int)</span>
+    <span class="n">shap</span> <span class="o">=</span> <span class="n">shifts</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">var_shift_ker_stack</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">lanc_rad</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">lanc_rad</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">shap</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">var_shift_ker_stack_adj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">lanc_rad</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">lanc_rad</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">shap</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">shap</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="n">uin</span> <span class="o">=</span> <span class="n">shifts</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="n">upfact</span>
+        <span class="n">var_shift_ker_stack</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">lanczos</span><span class="p">(</span><span class="n">uin</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">lanc_rad</span><span class="p">)</span>
+        <span class="n">var_shift_ker_stack_adj</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="n">var_shift_ker_stack</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">var_shift_ker_stack</span><span class="p">,</span> <span class="n">var_shift_ker_stack_adj</span></div>
+
+
+
+<div class="viewcode-block" id="lanczos">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.centroids.html#wf_psf.utils.centroids.lanczos">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">lanczos</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n2</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Generate Lanczos kernel for a given shift.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">n2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">n2</span> <span class="o">=</span> <span class="n">n</span>
+    <span class="n">siz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">U</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">siz</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">U_in</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">U</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">U</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">U_in</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+            <span class="n">U_in</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">U</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">U_in</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">U</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">H</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">U_in</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">U_in</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">H</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="n">n2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="n">H</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">sinc</span><span class="p">(</span><span class="n">U_in</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">n</span><span class="p">))</span>
+                        <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sinc</span><span class="p">((</span><span class="n">U_in</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">n</span><span class="p">))</span> <span class="o">/</span> <span class="n">n</span><span class="p">)</span>
+                        <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sinc</span><span class="p">(</span><span class="n">U_in</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">j</span> <span class="o">-</span> <span class="n">n</span><span class="p">))</span>
+                        <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sinc</span><span class="p">((</span><span class="n">U_in</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">j</span> <span class="o">-</span> <span class="n">n</span><span class="p">))</span> <span class="o">/</span> <span class="n">n</span><span class="p">)</span>
+                    <span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">H</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n</span><span class="p">):</span>
+            <span class="n">H</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sinc</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">U</span> <span class="o">-</span> <span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">n</span><span class="p">)))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sinc</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">U</span> <span class="o">-</span> <span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">n</span><span class="p">))</span> <span class="o">/</span> <span class="n">n</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">H</span></div>
+
+
+
+<div class="viewcode-block" id="degradation_op">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.centroids.html#wf_psf.utils.centroids.degradation_op">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">degradation_op</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">shift_ker</span><span class="p">,</span> <span class="n">D</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Shift and decimate fine-grid image.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">decim</span><span class="p">(</span><span class="n">scisig</span><span class="o">.</span><span class="n">fftconvolve</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">shift_ker</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;same&quot;</span><span class="p">),</span> <span class="n">D</span><span class="p">,</span> <span class="n">av_en</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="decim">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.centroids.html#wf_psf.utils.centroids.decim">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">decim</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">av_en</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fft</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Decimate image to lower resolution.&quot;&quot;&quot;</span>
+    <span class="n">im_filt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">im</span><span class="p">)</span>
+    <span class="n">im_d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">im</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">d</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">av_en</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">siz</span> <span class="o">=</span> <span class="n">d</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">d</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">siz</span><span class="p">,</span> <span class="n">siz</span><span class="p">))</span> <span class="o">/</span> <span class="n">siz</span><span class="o">**</span><span class="mi">2</span>
+            <span class="k">if</span> <span class="n">fft</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">im_filt</span> <span class="o">=</span> <span class="n">scisig</span><span class="o">.</span><span class="n">fftconvolve</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;same&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">im_filt</span> <span class="o">=</span> <span class="n">scisig</span><span class="o">.</span><span class="n">convolve</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;same&quot;</span><span class="p">)</span>
+        <span class="n">n1</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">im</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">d</span><span class="p">))</span>
+        <span class="n">n2</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">im</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">d</span><span class="p">))</span>
+        <span class="n">im_d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">))</span>
+        <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n1</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n2</span><span class="p">):</span>
+                <span class="n">im_d</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">im</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">d</span><span class="p">,</span> <span class="n">j</span> <span class="o">*</span> <span class="n">d</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">av_en</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">im_filt</span><span class="p">,</span> <span class="n">im_d</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">im_d</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

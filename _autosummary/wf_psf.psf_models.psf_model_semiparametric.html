@@ -1,0 +1,446 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.psf_models.psf_model_semiparametric &mdash; wf-psf 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../_static/twemoji.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="wf_psf.psf_models.psf_models" href="wf_psf.psf_models.psf_models.html" />
+    <link rel="prev" title="wf_psf.psf_models.psf_model_physical_polychromatic" href="wf_psf.psf_models.psf_model_physical_polychromatic.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.data.html">wf_psf.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.metrics.html">wf_psf.metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.plotting.html">wf_psf.plotting</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="wf_psf.psf_models.html">wf_psf.psf_models</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_parametric.html">wf_psf.psf_models.psf_model_parametric</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_physical_polychromatic.html">wf_psf.psf_models.psf_model_physical_polychromatic</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">wf_psf.psf_models.psf_model_semiparametric</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.psf_model_semiparametric.SemiParamFieldFactory"><code class="docutils literal notranslate"><span class="pre">SemiParamFieldFactory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField"><code class="docutils literal notranslate"><span class="pre">TFSemiParametricField</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_models.html">wf_psf.psf_models.psf_models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html">wf_psf.psf_models.tf_layers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_modules.html">wf_psf.psf_models.tf_modules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html">wf_psf.psf_models.tf_psf_field</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.zernikes.html">wf_psf.psf_models.zernikes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.run.html">wf_psf.run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.sims.html">wf_psf.sims</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.training.html">wf_psf.training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.utils.html">wf_psf.utils</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="wf_psf.psf_models.html">wf_psf.psf_models</a></li>
+      <li class="breadcrumb-item active">wf_psf.psf_models.psf_model_semiparametric</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/wf_psf.psf_models.psf_model_semiparametric.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-wf_psf.psf_models.psf_model_semiparametric">
+<span id="wf-psf-psf-models-psf-model-semiparametric"></span><h1>wf_psf.psf_models.psf_model_semiparametric<a class="headerlink" href="#module-wf_psf.psf_models.psf_model_semiparametric" title="Link to this heading"></a></h1>
+<p>PSF Model Semi-Parametric.</p>
+<p>A module which defines the classes and methods
+to manage the parameters of the psf semi-parametric model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Authors<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tobias Liaudat &lt;<a class="reference external" href="mailto:tobiasliaudat&#37;&#52;&#48;gmail&#46;com">tobiasliaudat<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt; and Jennifer Pollack &lt;<a class="reference external" href="mailto:jennifer&#46;pollack&#37;&#52;&#48;cea&#46;fr">jennifer<span>&#46;</span>pollack<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;</p>
+</dd>
+</dl>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_semiparametric.SemiParamFieldFactory" title="wf_psf.psf_models.psf_model_semiparametric.SemiParamFieldFactory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SemiParamFieldFactory</span></code></a>()</p></td>
+<td><p>Factory class for the SemiParametric PSF Field Model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField" title="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TFSemiParametricField</span></code></a>(*args, **kwargs)</p></td>
+<td><p>PSF field forward model.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_semiparametric.SemiParamFieldFactory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.psf_model_semiparametric.</span></span><span class="sig-name descname"><span class="pre">SemiParamFieldFactory</span></span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_semiparametric.html#SemiParamFieldFactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_semiparametric.SemiParamFieldFactory" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">PSFModelBaseFactory</span></code></a></p>
+<p>Factory class for the SemiParametric PSF Field Model.</p>
+<p>This factory class is responsible for instantiating instances of the SemiParametric PSF Field Model.
+It is registered with the PSF model factory registry.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ids</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>) – A tuple containing identifiers for the factory class.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_semiparametric.SemiParamFieldFactory.get_model_instance">
+<span class="sig-name descname"><span class="pre">get_model_instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coeff_mat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_semiparametric.html#SemiParamFieldFactory.get_model_instance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_semiparametric.SemiParamFieldFactory.get_model_instance" title="Link to this definition"></a></dt>
+<dd><p>Instantiates an instance of the SemiParametric PSF Field Model with the provided parameters.</p>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id0" title="wf_psf.psf_models.psf_model_semiparametric.SemiParamFieldFactory.get_model_instance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_model_instance</span></code></a>(model_params, training_params)</p></td>
+<td><p>Get Model Instance.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">get_model_instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coeff_mat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_semiparametric.html#SemiParamFieldFactory.get_model_instance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd><p>Get Model Instance.</p>
+<p>This method creates an instance of the SemiParametric PSF Field Model using the provided parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_params</strong> (<em>Recursive Namespace</em>) – Recursive Namespace object containing parameters for this PSF model class.</p></li>
+<li><p><strong>training_params</strong> (<em>Recursive Namespace</em>) – Parameters for training the PSF model.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><em>object</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Data used for training the PSF model.</p></li>
+<li><p><strong>coeff_mat</strong> (<em>Tensor</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Zernike coefficient matrix for the parametric PSF field model.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the SemiParametric PSF Field Model.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField" title="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField">TFSemiParametricField</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_semiparametric.SemiParamFieldFactory.ids">
+<span class="sig-name descname"><span class="pre">ids</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('poly',)</span></em><a class="headerlink" href="#wf_psf.psf_models.psf_model_semiparametric.SemiParamFieldFactory.ids" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.psf_model_semiparametric.</span></span><span class="sig-name descname"><span class="pre">TFSemiParametricField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_semiparametric.html#TFSemiParametricField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></p>
+<p>PSF field forward model.</p>
+<p>Semi parametric model based on the Zernike polynomial basis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_params</strong> (<em>Recursive Namespace</em>) – Recursive Namespace object containing parameters for this PSF model class.</p></li>
+<li><p><strong>training_params</strong> (<em>Recursive Namespace</em>) – Recursive Namespace object containing training hyperparameters for this PSF model class.</p></li>
+<li><p><strong>coeff_mat</strong> (<em>Tensor</em><em> or </em><em>None</em>) – Zernike coefficient matrix for the parametric PSF field model.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(*args, **kwargs)</p></td>
+<td><p>Call self as a function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.assign_S_mat" title="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.assign_S_mat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assign_S_mat</span></code></a>(s_mat)</p></td>
+<td><p>Assign DD features matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.assign_coeff_matrix" title="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.assign_coeff_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assign_coeff_matrix</span></code></a>(coeff_mat)</p></td>
+<td><p>Assign coefficient matrix.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.call" title="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(inputs)</p></td>
+<td><p>Define the PSF field forward model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.get_coeff_matrix" title="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.get_coeff_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_coeff_matrix</span></code></a>()</p></td>
+<td><p>Get coefficient matrix.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.predict_mono_psfs" title="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.predict_mono_psfs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict_mono_psfs</span></code></a>(input_positions, ...)</p></td>
+<td><p>Predict a set of monochromatic PSF at desired positions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.predict_opd" title="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.predict_opd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict_opd</span></code></a>(input_positions)</p></td>
+<td><p>Predict the OPD at some positions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.project_DD_features" title="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.project_DD_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">project_DD_features</span></code></a>([tf_zernike_cube])</p></td>
+<td><p>Project data-driven features.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.set_nonzero_nonparam" title="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.set_nonzero_nonparam"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_nonzero_nonparam</span></code></a>()</p></td>
+<td><p>Set to non-zero the non-parametric part.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.set_output_Q" title="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.set_output_Q"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_output_Q</span></code></a>(output_Q[, output_dim])</p></td>
+<td><p>Set the value of the output_Q parameter.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.set_trainable_layers" title="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.set_trainable_layers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_trainable_layers</span></code></a>([param_bool, nonparam_bool])</p></td>
+<td><p>Set Trainable Layers.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.set_zero_nonparam" title="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.set_zero_nonparam"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_zero_nonparam</span></code></a>()</p></td>
+<td><p>Set to zero the non-parametric part.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.assign_S_mat">
+<span class="sig-name descname"><span class="pre">assign_S_mat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s_mat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_semiparametric.html#TFSemiParametricField.assign_S_mat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.assign_S_mat" title="Link to this definition"></a></dt>
+<dd><p>Assign DD features matrix.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.assign_coeff_matrix">
+<span class="sig-name descname"><span class="pre">assign_coeff_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coeff_mat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_semiparametric.html#TFSemiParametricField.assign_coeff_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.assign_coeff_matrix" title="Link to this definition"></a></dt>
+<dd><p>Assign coefficient matrix.</p>
+<p>A function to set the coefficient matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>coeff_mat</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Tensor Flow coefficient matrix for the parametric PSF field model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.call">
+<span class="sig-name descname"><span class="pre">call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_semiparametric.html#TFSemiParametricField.call"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.call" title="Link to this definition"></a></dt>
+<dd><p>Define the PSF field forward model.</p>
+<p>[1] From positions to Zernike coefficients
+[2] From Zernike coefficients to OPD maps
+[3] From OPD maps and SED info to polychromatic PSFs</p>
+<p>OPD: Optical Path Differences</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.get_coeff_matrix">
+<span class="sig-name descname"><span class="pre">get_coeff_matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_semiparametric.html#TFSemiParametricField.get_coeff_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.get_coeff_matrix" title="Link to this definition"></a></dt>
+<dd><p>Get coefficient matrix.</p>
+<p>A function to get the coefficient matrix
+for parametric model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>coefficient matrix</strong> – Tensor Flow coefficient matrix for the parametric PSF field model</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.predict_mono_psfs">
+<span class="sig-name descname"><span class="pre">predict_mono_psfs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_N</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_semiparametric.html#TFSemiParametricField.predict_mono_psfs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.predict_mono_psfs" title="Link to this definition"></a></dt>
+<dd><p>Predict a set of monochromatic PSF at desired positions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_positions</strong> (<em>Tensor</em><em>(</em><em>batch_dim x 2</em><em>)</em>)</p></li>
+<li><p><strong>lambda_obs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Observed wavelength in um.</p></li>
+<li><p><strong>phase_N</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Required wavefront dimension. Should be calculated with as:
+<code class="docutils literal notranslate"><span class="pre">simPSF_np</span> <span class="pre">=</span> <span class="pre">wf_psf.sims.psf_simulator.PSFSimulator(...)</span></code>
+<code class="docutils literal notranslate"><span class="pre">phase_N</span> <span class="pre">=</span> <span class="pre">simPSF_np.feasible_N(lambda_obs)</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.predict_opd">
+<span class="sig-name descname"><span class="pre">predict_opd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_positions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_semiparametric.html#TFSemiParametricField.predict_opd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.predict_opd" title="Link to this definition"></a></dt>
+<dd><p>Predict the OPD at some positions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input_positions</strong> (<em>tf.Tensor</em>) – Positions to predict the OPD. Tensor dimensions are (batch_dim, 2)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>opd_maps</strong> – OPD at requested positions. Tensor dimensions are (batch, opd_dim, opd_dim)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.project_DD_features">
+<span class="sig-name descname"><span class="pre">project_DD_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tf_zernike_cube</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_semiparametric.html#TFSemiParametricField.project_DD_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.project_DD_features" title="Link to this definition"></a></dt>
+<dd><p>Project data-driven features.</p>
+<p>Project non-parametric wavefront onto first n_z Zernikes and transfer
+their parameters to the parametric model. This method updates the value
+of the S matrix in the non-parametric layer <cite>self.tf_np_poly_opd</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tf_zernike_cube</strong> (<em>tf.Tensor</em>) – Zernike maps used for the projection.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.set_nonzero_nonparam">
+<span class="sig-name descname"><span class="pre">set_nonzero_nonparam</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_semiparametric.html#TFSemiParametricField.set_nonzero_nonparam"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.set_nonzero_nonparam" title="Link to this definition"></a></dt>
+<dd><p>Set to non-zero the non-parametric part.</p>
+<p>A function to set non-parametric alpha parameters
+equal to non-zero values.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.set_output_Q">
+<span class="sig-name descname"><span class="pre">set_output_Q</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_Q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_semiparametric.html#TFSemiParametricField.set_output_Q"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.set_output_Q" title="Link to this definition"></a></dt>
+<dd><p>Set the value of the output_Q parameter.</p>
+<p>Useful for generating/predicting PSFs at a different sampling wrt the
+observation sampling.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output_Q</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Oversampling factor</p></li>
+<li><p><strong>output_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Output dimension</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.set_trainable_layers">
+<span class="sig-name descname"><span class="pre">set_trainable_layers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_bool</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonparam_bool</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_semiparametric.html#TFSemiParametricField.set_trainable_layers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.set_trainable_layers" title="Link to this definition"></a></dt>
+<dd><p>Set Trainable Layers.</p>
+<p>A function to set the layers to be trainable or not.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>param_bool</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Boolean flag for the parametric layers</p></li>
+<li><p><strong>nonparam_bool</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Boolean flag for the non-parametric layers</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.set_zero_nonparam">
+<span class="sig-name descname"><span class="pre">set_zero_nonparam</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_semiparametric.html#TFSemiParametricField.set_zero_nonparam"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_semiparametric.TFSemiParametricField.set_zero_nonparam" title="Link to this definition"></a></dt>
+<dd><p>Set to zero the non-parametric part.</p>
+<p>A function to set non-parametric alpha parameters
+equal to zero.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="wf_psf.psf_models.psf_model_physical_polychromatic.html" class="btn btn-neutral float-left" title="wf_psf.psf_models.psf_model_physical_polychromatic" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wf_psf.psf_models.psf_models.html" class="btn btn-neutral float-right" title="wf_psf.psf_models.psf_models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

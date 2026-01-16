@@ -1,0 +1,819 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.sims.spatial_varying_psf &mdash; wf-psf 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../_static/twemoji.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="wf_psf.training" href="wf_psf.training.html" />
+    <link rel="prev" title="wf_psf.sims.psf_simulator" href="wf_psf.sims.psf_simulator.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.data.html">wf_psf.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.metrics.html">wf_psf.metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.plotting.html">wf_psf.plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.html">wf_psf.psf_models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.run.html">wf_psf.run</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="wf_psf.sims.html">wf_psf.sims</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.sims.psf_simulator.html">wf_psf.sims.psf_simulator</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">wf_psf.sims.spatial_varying_psf</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.CoordinateHelper"><code class="docutils literal notranslate"><span class="pre">CoordinateHelper</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.MeshHelper"><code class="docutils literal notranslate"><span class="pre">MeshHelper</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.PolynomialMatrixHelper"><code class="docutils literal notranslate"><span class="pre">PolynomialMatrixHelper</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF"><code class="docutils literal notranslate"><span class="pre">SpatialVaryingPSF</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.ZernikeHelper"><code class="docutils literal notranslate"><span class="pre">ZernikeHelper</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.training.html">wf_psf.training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.utils.html">wf_psf.utils</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="wf_psf.sims.html">wf_psf.sims</a></li>
+      <li class="breadcrumb-item active">wf_psf.sims.spatial_varying_psf</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/wf_psf.sims.spatial_varying_psf.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-wf_psf.sims.spatial_varying_psf">
+<span id="wf-psf-sims-spatial-varying-psf"></span><h1>wf_psf.sims.spatial_varying_psf<a class="headerlink" href="#module-wf_psf.sims.spatial_varying_psf" title="Link to this heading"></a></h1>
+<p>Spatially Varying PSF Simulator.</p>
+<p>This module contains classes and methods for simulating spatially varying
+Point Spread Functions (PSFs) using polynomial variations of Zernike coefficients.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Authors<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tobias Liaudat &lt;<a class="reference external" href="mailto:tobias&#46;liaudat&#37;&#52;&#48;cea&#46;fr">tobias<span>&#46;</span>liaudat<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt; &amp; Jennifer Pollack &lt;<a class="reference external" href="mailto:jennifer&#46;pollack&#37;&#52;&#48;cea&#46;fr">jennifer<span>&#46;</span>pollack<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;</p>
+</dd>
+</dl>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.CoordinateHelper" title="wf_psf.sims.spatial_varying_psf.CoordinateHelper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CoordinateHelper</span></code></a>()</p></td>
+<td><p>Coordinate Helper.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.MeshHelper" title="wf_psf.sims.spatial_varying_psf.MeshHelper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MeshHelper</span></code></a>()</p></td>
+<td><p>Mesh Helper.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.PolynomialMatrixHelper" title="wf_psf.sims.spatial_varying_psf.PolynomialMatrixHelper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PolynomialMatrixHelper</span></code></a>()</p></td>
+<td><p>PolynomialMatrixHelper.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF" title="wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpatialVaryingPSF</span></code></a>(psf_simulator[, d_max, ...])</p></td>
+<td><p>Spatial Varying PSF.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.ZernikeHelper" title="wf_psf.sims.spatial_varying_psf.ZernikeHelper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ZernikeHelper</span></code></a>()</p></td>
+<td><p>ZernikeHelper.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.CoordinateHelper">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.sims.spatial_varying_psf.</span></span><span class="sig-name descname"><span class="pre">CoordinateHelper</span></span><a class="reference internal" href="../_modules/wf_psf/sims/spatial_varying_psf.html#CoordinateHelper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.CoordinateHelper" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Coordinate Helper.</p>
+<p>A utility class for handling coordinate operations.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.CoordinateHelper.add_random_shift_to_positions" title="wf_psf.sims.spatial_varying_psf.CoordinateHelper.add_random_shift_to_positions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_random_shift_to_positions</span></code></a>(xv_grid, ...)</p></td>
+<td><p>Add Random Shift to Positions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.CoordinateHelper.calculate_shift" title="wf_psf.sims.spatial_varying_psf.CoordinateHelper.calculate_shift"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_shift</span></code></a>(x_lims, y_lims, grid_points)</p></td>
+<td><p>Calculate Shift.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.CoordinateHelper.check_and_adjust_coordinate_limits" title="wf_psf.sims.spatial_varying_psf.CoordinateHelper.check_and_adjust_coordinate_limits"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_and_adjust_coordinate_limits</span></code></a>(x, y, ...)</p></td>
+<td><p>Check and adjust coordinate limits.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.CoordinateHelper.check_position_coordinate_limits" title="wf_psf.sims.spatial_varying_psf.CoordinateHelper.check_position_coordinate_limits"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_position_coordinate_limits</span></code></a>(xv, yv, ...)</p></td>
+<td><p>Check Position Coordinate Limits.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.CoordinateHelper.scale_positions" title="wf_psf.sims.spatial_varying_psf.CoordinateHelper.scale_positions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale_positions</span></code></a>(x, y, x_lims, y_lims)</p></td>
+<td><p>Scale Positions.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.CoordinateHelper.add_random_shift_to_positions">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">add_random_shift_to_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xv_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yv_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/spatial_varying_psf.html#CoordinateHelper.add_random_shift_to_positions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.CoordinateHelper.add_random_shift_to_positions" title="Link to this definition"></a></dt>
+<dd><p>Add Random Shift to Positions.</p>
+<p>Add random shifts to positions within each grid cell,
+ensuring no overlap between neighboring cells.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xv_grid</strong> (<em>Numpy array</em>) – Grid of x-coordinates.</p></li>
+<li><p><strong>yv_grid</strong> (<em>Numpy array</em>) – Grid of y-coordinates.</p></li>
+<li><p><strong>grid_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – A list defining the size of each axis grid</p></li>
+<li><p><strong>x_lims</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – Lower and upper limits along the x-axis.</p></li>
+<li><p><strong>y_lims</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – Lower and upper limits along the y-axis.</p></li>
+<li><p><strong>seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Seed for random number generation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>xv_s</strong> (<em>numpy.ndarray</em>) – Positions with added random shifts along the x-axis.</p></li>
+<li><p><strong>yv_s</strong> (<em>numpy.ndarray</em>) – Positions with added random shifts along the y-axis.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.CoordinateHelper.calculate_shift">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">calculate_shift</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_points</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/spatial_varying_psf.html#CoordinateHelper.calculate_shift"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.CoordinateHelper.calculate_shift" title="Link to this definition"></a></dt>
+<dd><p>Calculate Shift.</p>
+<p>A method to calcuate the step size for shifting positions
+based on the specified coordinate limits and grid points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x_lims</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – A list representing the lower and upper limits along the x-axis.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>y_lims: list</dt><dd><p>A list representing the lower and upper limits along the y-axis.</p>
+</dd>
+<dt>grid_points: list</dt><dd><p>List defining the size of each axis grid.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>xstep</strong> (<em>int</em>)</p></li>
+<li><p><strong>ystep</strong> (<em>int</em>)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.CoordinateHelper.check_and_adjust_coordinate_limits">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">check_and_adjust_coordinate_limits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_lims</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/spatial_varying_psf.html#CoordinateHelper.check_and_adjust_coordinate_limits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.CoordinateHelper.check_and_adjust_coordinate_limits" title="Link to this definition"></a></dt>
+<dd><p>Check and adjust coordinate limits.</p>
+<p>A method to check and adjust coordinate limits to within
+the range of x_lims and y_lims, respectively.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – A 1-dimensional numpy-ndarray containing positions along x-axis.</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – A 1-dimensional numpy-ndarray containing positions along y-axis.</p></li>
+<li><p><strong>x_lims</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – Lower and upper limits along the x-axis.</p></li>
+<li><p><strong>y_lims</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – Lower and upper limits along the y-axis.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>x</strong> (<em>numpy.ndarray</em>) – A numpy.ndarraycontaining adjusted positions along the x-axis within the specified limits.</p></li>
+<li><p><strong>y</strong> (<em>numpy.ndarray</em>) – A numpy.ndarraycontaining adjusted positions along the x-axis within the specified limits.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.CoordinateHelper.check_position_coordinate_limits">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">check_position_coordinate_limits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/spatial_varying_psf.html#CoordinateHelper.check_position_coordinate_limits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.CoordinateHelper.check_position_coordinate_limits" title="Link to this definition"></a></dt>
+<dd><p>Check Position Coordinate Limits.</p>
+<p>This function checks if the given position coordinates (xv, yv) are within the specified limits
+(x_lims, y_lims). It raises a warning if any coordinate is outside the limits.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xv</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – The x coordinates to be checked.</p></li>
+<li><p><strong>yv</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – The y coordinates to be checked.</p></li>
+<li><p><strong>x_lims</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>) – A tuple (min, max) specifying the lower and upper limits for x coordinates.</p></li>
+<li><p><strong>y_lims</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>) – A tuple (min, max) specifying the lower and upper limits for y coordinates.</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If True, print warning messages when coordinates are outside the limits.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.CoordinateHelper.scale_positions">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scale_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_lims</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/spatial_varying_psf.html#CoordinateHelper.scale_positions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.CoordinateHelper.scale_positions" title="Link to this definition"></a></dt>
+<dd><p>Scale Positions.</p>
+<p>A method to scale x- and y- positions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – A 1-dimensional numpy ndarray denoting a vector of x positions.</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – A 1-dimensional numpy ndarray denoting a vector of y positions.</p></li>
+<li><p><strong>x_lims</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – A list representing the lower and upper limits along the x-axis.</p></li>
+<li><p><strong>y_lims</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – A list representing the lower and upper limits along the y-axis.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>scaled_x</strong> (<em>numpy.ndarray</em>) – Scaled x positions.</p></li>
+<li><p><strong>scaled_y</strong> (<em>numpy.ndarray</em>) – Scaled y positions.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.MeshHelper">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.sims.spatial_varying_psf.</span></span><span class="sig-name descname"><span class="pre">MeshHelper</span></span><a class="reference internal" href="../_modules/wf_psf/sims/spatial_varying_psf.html#MeshHelper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.MeshHelper" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Mesh Helper.</p>
+<p>A utility class for generating mesh grids.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.MeshHelper.build_mesh" title="wf_psf.sims.spatial_varying_psf.MeshHelper.build_mesh"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_mesh</span></code></a>(x_lims, y_lims[, grid_points, ...])</p></td>
+<td><p>Build Mesh.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.MeshHelper.build_mesh">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build_mesh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endpoint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/spatial_varying_psf.html#MeshHelper.build_mesh"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.MeshHelper.build_mesh" title="Link to this definition"></a></dt>
+<dd><p>Build Mesh.</p>
+<p>A method to build a mesh.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x_lims</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – A list representing the lower and upper limits along the x-axis.</p></li>
+<li><p><strong>y_lims</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – A list representing the lower and upper limits along the y-axis.</p></li>
+<li><p><strong>grid_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – List defining the size of each axis grid for constructing the mesh grid.
+If provided and <cite>grid_size</cite> is also provided, <cite>grid_size</cite> will
+override this parameter. (default is None)</p></li>
+<li><p><strong>grid_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Number of points to generate for each axis of the grid. If None and <cite>grid_points</cite>
+is not provided, the default grid size is used. (default is None)</p></li>
+<li><p><strong>endpoint</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, <cite>stop</cite> is the last sample. Otherwise, it is not included. (default is True).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing two 2-dimensional arrays for x- and y-coordinate axes.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.PolynomialMatrixHelper">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.sims.spatial_varying_psf.</span></span><span class="sig-name descname"><span class="pre">PolynomialMatrixHelper</span></span><a class="reference internal" href="../_modules/wf_psf/sims/spatial_varying_psf.html#PolynomialMatrixHelper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.PolynomialMatrixHelper" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>PolynomialMatrixHelper.</p>
+<p>Helper class with methods for generating polynomial matrices of positions.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.PolynomialMatrixHelper.generate_polynomial_matrix" title="wf_psf.sims.spatial_varying_psf.PolynomialMatrixHelper.generate_polynomial_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_polynomial_matrix</span></code></a>(x, y, x_lims, ...)</p></td>
+<td><p>Generate polynomial matrix of positions.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.PolynomialMatrixHelper.generate_polynomial_matrix">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_polynomial_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_max</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/spatial_varying_psf.html#PolynomialMatrixHelper.generate_polynomial_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.PolynomialMatrixHelper.generate_polynomial_matrix" title="Link to this definition"></a></dt>
+<dd><p>Generate polynomial matrix of positions.</p>
+<p>This method constructs a polynomial matrix representing spatial variations
+in a two-dimensional field. The polynomial matrix is generated based on the
+given x and y positions, considering a maximum polynomial degree specified
+by d_max.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – A 1-dimensional numpy ndarray denoting a vector of x positions.</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – A 1-dimensional numpy ndarray denoting a vector of y positions.</p></li>
+<li><p><strong>x_lims</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – Lower and upper limits along the x-axis.</p></li>
+<li><p><strong>y_lims</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – Lower and upper limits along the y-axis.</p></li>
+<li><p><strong>d_max</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The maximum polynomial degree for the spatial variation of the field.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Pi</strong> – A 2-dimensional polynomial matrix representing the spatial variations.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.sims.spatial_varying_psf.</span></span><span class="sig-name descname"><span class="pre">SpatialVaryingPSF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psf_simulator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[4,</span> <span class="pre">4]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">45</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_lims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0,</span> <span class="pre">1000.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_lims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0,</span> <span class="pre">1000.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">35</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lim_max_wfe_rms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/spatial_varying_psf.html#SpatialVaryingPSF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Spatial Varying PSF.</p>
+<p>Generate PSF field with polynomial variations of Zernike coefficients.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>psf_simulator</strong> (<em>PSFSimulator object</em>) – Class instance of the PSFSimulator</p></li>
+<li><p><strong>d_max</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Integer representing the maximum polynomial degree for the FOV spatial variation of WFE.</p></li>
+<li><p><strong>grid_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – List defining the size of each axis grid for constructing the (constrained random realisation) polynomial coefficient matrix.</p></li>
+<li><p><strong>grid_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em> or </em><em>None</em><em>, </em><em>optional</em>) – Number of points to generate for the grid. If None, the value from
+grid_points attribute will be used. (default is None)</p></li>
+<li><p><strong>max_order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The maximum order of Zernike polynomials to be used in the simulation.</p></li>
+<li><p><strong>x_lims</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – A list representing the lower and upper limits along the x-axis.</p></li>
+<li><p><strong>y_lims</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – A list representing the lower and upper limits along the y-axis.</p></li>
+<li><p><strong>n_bins</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – An integer representing the number of equidistant bins to partition the passband to compute polychromatic PSFs.</p></li>
+<li><p><strong>lim_max_wfe_rms</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The upper maximum value limit for the Wave Front Error (WFE) Root-Mean-Square (RMS) error.</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – A flag to determine whether to print warning messages.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.lim_max_wfe_rms" title="wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.lim_max_wfe_rms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lim_max_wfe_rms</span></code></a></dt><dd><p>Get the upper limit for Wave Front Error (WFE) Root-Mean-Square (RMS).</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.build_polynomial_coeffs" title="wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.build_polynomial_coeffs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_polynomial_coeffs</span></code></a>()</p></td>
+<td><p>Build polynomial coefficients for spatial variation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.calculate_wfe_rms" title="wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.calculate_wfe_rms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_wfe_rms</span></code></a>(xv, yv, polynomial_coeffs)</p></td>
+<td><p>Calculate the Wave Front Error (WFE) Root-Mean-Square (RMS).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.estimate_polynomial_coeffs" title="wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.estimate_polynomial_coeffs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">estimate_polynomial_coeffs</span></code></a>(xv, yv, Z)</p></td>
+<td><p>Estimate polynomial coefficients using least squares.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.get_monochromatic_PSF" title="wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.get_monochromatic_PSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_monochromatic_PSF</span></code></a>(xv, yv[, lambda_obs])</p></td>
+<td><p>Calculate the monochromatic Point Spread Function (PSF) at a specific position and wavelength.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.get_polychromatic_PSF" title="wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.get_polychromatic_PSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_polychromatic_PSF</span></code></a>(xv, yv, SED)</p></td>
+<td><p>Calculate the polychromatic Point Spread Function (PSF) for a specific position and Spectral Energy Distribution (SED).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.plot_WFE_RMS" title="wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.plot_WFE_RMS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_WFE_RMS</span></code></a>([save_img, save_name])</p></td>
+<td><p>Plot the Wave Front Error (WFE) Root-Mean-Square (RMS) map.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.build_polynomial_coeffs">
+<span class="sig-name descname"><span class="pre">build_polynomial_coeffs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/spatial_varying_psf.html#SpatialVaryingPSF.build_polynomial_coeffs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.build_polynomial_coeffs" title="Link to this definition"></a></dt>
+<dd><p>Build polynomial coefficients for spatial variation.</p>
+<p>This method constructs polynomial coefficients for spatial variation by following these steps:
+1. Build a mesh based on the provided limits and grid points.
+2. Apply random position shifts to the mesh coordinates.
+3. Estimate polynomial coefficients using the shifted positions.
+4. Choose anchor points on a regular grid and calculate the Wave Front Error (WFE) Root-Mean-Square (RMS)</p>
+<blockquote>
+<div><p>on this new grid.</p>
+</div></blockquote>
+<ol class="arabic simple" start="5">
+<li><p>Scale the polynomial coefficients to ensure that the mean WFE RMS over the field of view is 80% of the
+maximum allowed WFE RMS per position.</p></li>
+<li><p>Recalculate the Zernike coefficients using the scaled polynomial coefficients.</p></li>
+<li><p>Calculate and save the WFE RMS map of the polynomial coefficient values.</p></li>
+</ol>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.calculate_wfe_rms">
+<span class="sig-name descname"><span class="pre">calculate_wfe_rms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polynomial_coeffs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/spatial_varying_psf.html#SpatialVaryingPSF.calculate_wfe_rms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.calculate_wfe_rms" title="Link to this definition"></a></dt>
+<dd><p>Calculate the Wave Front Error (WFE) Root-Mean-Square (RMS).</p>
+<p>This method calculates the WFE RMS for a specific position using the provided
+x and y coordinates and polynomial coefficients.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xv</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – A 1-dimensional numpy ndarray representing positions along the x-axis.</p></li>
+<li><p><strong>yv</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – A 1-dimensional numpy ndarray representing positions along the y-axis.</p></li>
+<li><p><strong>polynomial_coeffs</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – A numpy ndarray containing the polynomial coefficients.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An array containing the WFE RMS values for the provided positions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.estimate_polynomial_coeffs">
+<span class="sig-name descname"><span class="pre">estimate_polynomial_coeffs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Z</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/spatial_varying_psf.html#SpatialVaryingPSF.estimate_polynomial_coeffs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.estimate_polynomial_coeffs" title="Link to this definition"></a></dt>
+<dd><p>Estimate polynomial coefficients using least squares.</p>
+<p>This method estimates the polynomial coefficients using the least squares
+method based on the provided positions along the x and y axes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xv</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – A 1-dimensional numpy ndarray representing positions along the x-axis.</p></li>
+<li><p><strong>yv</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – A 1-dimensional numpy ndarray representing positions along the y-axis.</p></li>
+<li><p><strong>Z</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – A something numpy ndarray representing the Zernike coefficients.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.get_monochromatic_PSF">
+<span class="sig-name descname"><span class="pre">get_monochromatic_PSF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_obs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.725</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/spatial_varying_psf.html#SpatialVaryingPSF.get_monochromatic_PSF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.get_monochromatic_PSF" title="Link to this definition"></a></dt>
+<dd><p>Calculate the monochromatic Point Spread Function (PSF) at a specific position and wavelength.</p>
+<p>This method calculates the monochromatic PSF for a given position and wavelength. It utilizes the
+Zernike coefficients of the specific field to generate the PSF using the PSF toolkit generator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xv</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – 1-dimensional numpy array containing the x positions.</p></li>
+<li><p><strong>yv</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – 1-dimensional numpy array containing the y positions.</p></li>
+<li><p><strong>lambda_obs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – Wavelength of observation for which the PSF is calculated. Default is 0.725 micrometers.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The generated monochromatic PSF.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The PSF generator’s Zernike coefficients are set based on the provided positions before generating the PSF.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.get_polychromatic_PSF">
+<span class="sig-name descname"><span class="pre">get_polychromatic_PSF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SED</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/spatial_varying_psf.html#SpatialVaryingPSF.get_polychromatic_PSF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.get_polychromatic_PSF" title="Link to this definition"></a></dt>
+<dd><p>Calculate the polychromatic Point Spread Function (PSF) for a specific position and Spectral Energy Distribution (SED).</p>
+<p>This method calculates the polychromatic PSF for a given position and SED. It utilizes the Zernike coefficients
+of the specific field to generate the PSF using the PSF Simulator generator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xv</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – 1-dimensional numpy array containing the x positions.</p></li>
+<li><p><strong>yv</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – 1-dimensional numpy array containing the y positions.</p></li>
+<li><p><strong>SED</strong> (<em>array_like</em>) – Spectral Energy Distribution (SED) describing the relative intensity of light at different wavelengths.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>A tuple containing:
+- polychromatic_psf : numpy.ndarray</p>
+<blockquote>
+<div><p>The generated polychromatic PSF.</p>
+</div></blockquote>
+<ul class="simple">
+<li><dl class="simple">
+<dt>zernikes<span class="classifier">numpy.ndarray</span></dt><dd><p>The Zernike coefficients corresponding to the specific field.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>opd<span class="classifier">numpy.ndarray</span></dt><dd><p>The Optical Path Difference (OPD) corresponding to the generated PSF.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)">tuple</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The PSF generator’s Zernike coefficients are set based on the provided positions before generating the PSF.
+The SED is used to compute the polychromatic PSF by integrating the monochromatic PSFs over the spectral range.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.lim_max_wfe_rms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lim_max_wfe_rms</span></span><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.lim_max_wfe_rms" title="Link to this definition"></a></dt>
+<dd><p>Get the upper limit for Wave Front Error (WFE) Root-Mean-Square (RMS).</p>
+<p>If the custom upper limit <cite>lim_max_wfe_rms</cite> is not set, this property returns
+the maximum WFE RMS value from the PSF simulator. Otherwise, it returns the
+custom upper limit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The upper limit for Wave Front Error (WFE) Root-Mean-Square (RMS).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.plot_WFE_RMS">
+<span class="sig-name descname"><span class="pre">plot_WFE_RMS</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_img</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'WFE_field_meshdim'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/spatial_varying_psf.html#SpatialVaryingPSF.plot_WFE_RMS"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.SpatialVaryingPSF.plot_WFE_RMS" title="Link to this definition"></a></dt>
+<dd><p>Plot the Wave Front Error (WFE) Root-Mean-Square (RMS) map.</p>
+<p>This method generates a plot of the WFE RMS map for the Point Spread Function (PSF) field. The plot
+visualizes the distribution of WFE RMS values across the field of view.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>save_img</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Flag indicating whether to save the plot as an image file. Default is False.</p></li>
+<li><p><strong>save_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Name of the image file to save. Default is ‘WFE_field_meshdim’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.ZernikeHelper">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.sims.spatial_varying_psf.</span></span><span class="sig-name descname"><span class="pre">ZernikeHelper</span></span><a class="reference internal" href="../_modules/wf_psf/sims/spatial_varying_psf.html#ZernikeHelper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.ZernikeHelper" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>ZernikeHelper.</p>
+<p>Helper class for generating Zernike Polynomials.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.ZernikeHelper.calculate_zernike" title="wf_psf.sims.spatial_varying_psf.ZernikeHelper.calculate_zernike"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_zernike</span></code></a>(xv, yv, x_lims, y_lims, ...)</p></td>
+<td><p>Calculate Zernikes for a specific position.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.ZernikeHelper.generate_zernike_polynomials" title="wf_psf.sims.spatial_varying_psf.ZernikeHelper.generate_zernike_polynomials"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_zernike_polynomials</span></code></a>(xv, yv, x_lims, ...)</p></td>
+<td><p>Generate Zernike Polynomials.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.ZernikeHelper.initialize_Z_matrix" title="wf_psf.sims.spatial_varying_psf.ZernikeHelper.initialize_Z_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">initialize_Z_matrix</span></code></a>(max_order, size[, seed])</p></td>
+<td><p>Initialize Zernike Matrix.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.ZernikeHelper.initialize_normalized_zernike_matrix" title="wf_psf.sims.spatial_varying_psf.ZernikeHelper.initialize_normalized_zernike_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">initialize_normalized_zernike_matrix</span></code></a>(...[, seed])</p></td>
+<td><p>Initialize Normalized Zernike Matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.spatial_varying_psf.ZernikeHelper.normalize_Z_matrix" title="wf_psf.sims.spatial_varying_psf.ZernikeHelper.normalize_Z_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_Z_matrix</span></code></a>(Z, lim_max_wfe_rms)</p></td>
+<td><p>Normalize Zernike Matrix.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.ZernikeHelper.calculate_zernike">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">calculate_zernike</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_max</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polynomial_coeffs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/spatial_varying_psf.html#ZernikeHelper.calculate_zernike"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.ZernikeHelper.calculate_zernike" title="Link to this definition"></a></dt>
+<dd><p>Calculate Zernikes for a specific position.</p>
+<p>This method computes Zernike polynomials for given positions (xv, yv).
+The positions (xv, yv) should lie within the specified limits:
+[x_lims[0], x_lims[1]] along the x-axis and [y_lims[0], y_lims[1]] along the y-axis.
+Additionally, the positions should be normalized to the range [-1, +1] along both axes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xv</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – Array containing positions along the x-axis.</p></li>
+<li><p><strong>yv</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – Array containing positions along the y-axis.</p></li>
+<li><p><strong>x_lims</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – Lower and upper limits along the x-axis.</p></li>
+<li><p><strong>y_lims</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – Lower and upper limits along the y-axis.</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Flag to indicate whether to print warning messages when positions are outside the specified limits.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array containing the computed Zernike polynomials for the given positions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.ZernikeHelper.generate_zernike_polynomials">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_zernike_polynomials</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_max</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polynomial_coeffs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/spatial_varying_psf.html#ZernikeHelper.generate_zernike_polynomials"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.ZernikeHelper.generate_zernike_polynomials" title="Link to this definition"></a></dt>
+<dd><p>Generate Zernike Polynomials.</p>
+<p>[old name: zernike_poly_gen] This method calculates Zernike polynomials based on the given x and y positions,
+considering a maximum polynomial degree specified by d_max and a set of polynomial
+coefficients.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xv</strong> (<em>np.ndarray</em><em> (</em><em>dim</em><em>,</em><em>)</em>) – x positions.</p></li>
+<li><p><strong>yv</strong> (<em>np.ndarray</em><em> (</em><em>dim</em><em>,</em><em>)</em>) – y positions.</p></li>
+<li><p><strong>x_lims</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – Lower and upper limits along the x-axis.</p></li>
+<li><p><strong>y_lims</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – Lower and upper limits along the y-axis.</p></li>
+<li><p><strong>d_max</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The maximum polynomial degree for the spatial variation of the field.s</p></li>
+<li><p><strong>polynomial_coeffs</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – An array containing the polynomial coefficients.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>numpy.ndarray</em> – A 1-dimensional numpy ndarray representing the spatial polynomials generated</p></li>
+<li><p><em>from the given positions and polynomial coefficients.</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.ZernikeHelper.initialize_Z_matrix">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">initialize_Z_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/spatial_varying_psf.html#ZernikeHelper.initialize_Z_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.ZernikeHelper.initialize_Z_matrix" title="Link to this definition"></a></dt>
+<dd><p>Initialize Zernike Matrix.</p>
+<p>This method initializes a Zernike matrix with a specified size determined by
+the maximum order of Zernike polynomials and the length of the position vector
+along the x-coordinate axis. The matrix is populated with random values sampled
+from a standard normal distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>max_order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The maximum order of Zernike polynomials to be used in the simulation.</p></li>
+<li><p><strong>size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – An integer representing the size of the position vector.</p></li>
+<li><p><strong>seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Seed for random number generation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>numpy.ndarray</em> – An array of shape (max_order, size) containing randomly generated values</p></li>
+<li><p><em>from a standard normal distribution to initialize the Zernike matrix.</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.ZernikeHelper.initialize_normalized_zernike_matrix">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">initialize_normalized_zernike_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lim_max_wfe_rms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/spatial_varying_psf.html#ZernikeHelper.initialize_normalized_zernike_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.ZernikeHelper.initialize_normalized_zernike_matrix" title="Link to this definition"></a></dt>
+<dd><p>Initialize Normalized Zernike Matrix.</p>
+<p>This method initializes a normalized Zernike matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>max_order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The maximum order of Zernike polynomials to be used in the simulation.</p></li>
+<li><p><strong>size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – An integer representing the size of the position vector.</p></li>
+<li><p><strong>lim_max_wfe_rms</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The upper maximum value limit for the Wave Front Error (WFE) Root-Mean-Square (RMS) error.</p></li>
+<li><p><strong>seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Seed for random number generation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A normalized Zernike matrix.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.spatial_varying_psf.ZernikeHelper.normalize_Z_matrix">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">normalize_Z_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lim_max_wfe_rms</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/spatial_varying_psf.html#ZernikeHelper.normalize_Z_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.spatial_varying_psf.ZernikeHelper.normalize_Z_matrix" title="Link to this definition"></a></dt>
+<dd><p>Normalize Zernike Matrix.</p>
+<p>This method performs normalization on the Zernike matrix. It calculates
+normalization weights as the square root of the sum of squares of the
+Zernike matrix along the second axis. Each row of the matrix is then
+divided by its corresponding normalization weight, scaled by the maximum
+allowed Wave Front Error (WFE) Root-Mean-Square (RMS) error.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Z</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a>) – A numpy ndarray representing the Zernike matrix.</p></li>
+<li><p><strong>lim_max_wfe_rms</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The upper maximum value limit for the Wave Front Error (WFE) Root-Mean-Square (RMS) error.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Z</strong> – The normalized Zernike matrix after applying the normalization process.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="wf_psf.sims.psf_simulator.html" class="btn btn-neutral float-left" title="wf_psf.sims.psf_simulator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wf_psf.training.html" class="btn btn-neutral float-right" title="wf_psf.training" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

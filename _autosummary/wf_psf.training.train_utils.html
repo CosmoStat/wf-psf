@@ -1,0 +1,639 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.training.train_utils &mdash; wf-psf 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../_static/twemoji.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="wf_psf.utils" href="wf_psf.utils.html" />
+    <link rel="prev" title="wf_psf.training.train" href="wf_psf.training.train.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.data.html">wf_psf.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.metrics.html">wf_psf.metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.plotting.html">wf_psf.plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.html">wf_psf.psf_models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.run.html">wf_psf.run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.sims.html">wf_psf.sims</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="wf_psf.training.html">wf_psf.training</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.training.train.html">wf_psf.training.train</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">wf_psf.training.train_utils</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.training.train_utils.L1ParamScheduler"><code class="docutils literal notranslate"><span class="pre">L1ParamScheduler</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.training.train_utils.MaskedMeanSquaredError"><code class="docutils literal notranslate"><span class="pre">MaskedMeanSquaredError</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric"><code class="docutils literal notranslate"><span class="pre">MaskedMeanSquaredErrorMetric</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.training.train_utils.calculate_sample_weights"><code class="docutils literal notranslate"><span class="pre">calculate_sample_weights()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.training.train_utils.configure_optimizer_and_loss"><code class="docutils literal notranslate"><span class="pre">configure_optimizer_and_loss()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.training.train_utils.general_train_cycle"><code class="docutils literal notranslate"><span class="pre">general_train_cycle()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.training.train_utils.get_callbacks"><code class="docutils literal notranslate"><span class="pre">get_callbacks()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.training.train_utils.l1_schedule_rule"><code class="docutils literal notranslate"><span class="pre">l1_schedule_rule()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.training.train_utils.masked_mse"><code class="docutils literal notranslate"><span class="pre">masked_mse()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.training.train_utils.train_cycle_part"><code class="docutils literal notranslate"><span class="pre">train_cycle_part()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.utils.html">wf_psf.utils</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="wf_psf.training.html">wf_psf.training</a></li>
+      <li class="breadcrumb-item active">wf_psf.training.train_utils</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/wf_psf.training.train_utils.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-wf_psf.training.train_utils">
+<span id="wf-psf-training-train-utils"></span><h1>wf_psf.training.train_utils<a class="headerlink" href="#module-wf_psf.training.train_utils" title="Link to this heading"></a></h1>
+<p>Training utilities for the PSF model.</p>
+<p>This module contains helper functions and utilities related to the training
+process for the PSF model. These functions help with managing training cycles,
+callbacks, and related operations.</p>
+<dl class="simple">
+<dt>Authors: Tobias Liaudat &lt;<a class="reference external" href="mailto:tobias&#46;liaudat&#37;&#52;&#48;cea&#46;fr">tobias<span>&#46;</span>liaudat<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;, Ezequiel Centofanti &lt;<a class="reference external" href="mailto:ezequiel&#46;centofanti&#37;&#52;&#48;cea&#46;fr">ezequiel<span>&#46;</span>centofanti<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;,</dt><dd><p>Jennifer Pollack &lt;<a class="reference external" href="mailto:jennifer&#46;pollack&#37;&#52;&#48;cea&#46;fr">jennifer<span>&#46;</span>pollack<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;</p>
+</dd>
+</dl>
+<p class="rubric">Functions</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.calculate_sample_weights" title="wf_psf.training.train_utils.calculate_sample_weights"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_sample_weights</span></code></a>(outputs, ...[, ...])</p></td>
+<td><p>Calculate sample weights based on image noise standard deviation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.configure_optimizer_and_loss" title="wf_psf.training.train_utils.configure_optimizer_and_loss"><code class="xref py py-obj docutils literal notranslate"><span class="pre">configure_optimizer_and_loss</span></code></a>(learning_rate)</p></td>
+<td><p>Configure and return the optimizer, loss function, and metrics for model training.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.general_train_cycle" title="wf_psf.training.train_utils.general_train_cycle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">general_train_cycle</span></code></a>(psf_model, inputs, ...)</p></td>
+<td><p>Perform a Bi-Cycle Descent (BCD) training iteration on a semi-parametric model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.get_callbacks" title="wf_psf.training.train_utils.get_callbacks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_callbacks</span></code></a>(callback1, callback2)</p></td>
+<td><p>Combine two callback lists into one.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.l1_schedule_rule" title="wf_psf.training.train_utils.l1_schedule_rule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">l1_schedule_rule</span></code></a>(epoch_n, l1_rate)</p></td>
+<td><p>Schedule the L1 rate based on the epoch number.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.masked_mse" title="wf_psf.training.train_utils.masked_mse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">masked_mse</span></code></a>(y_true, y_pred, mask[, sample_weight])</p></td>
+<td><p>Compute the mean squared error over the masked regions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.train_cycle_part" title="wf_psf.training.train_utils.train_cycle_part"><code class="xref py py-obj docutils literal notranslate"><span class="pre">train_cycle_part</span></code></a>(psf_model, inputs, outputs, ...)</p></td>
+<td><p>Train either the parametric or non-parametric part of the PSF model using the specified parameters.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.L1ParamScheduler" title="wf_psf.training.train_utils.L1ParamScheduler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">L1ParamScheduler</span></code></a>(*args, **kwargs)</p></td>
+<td><p>L1 rate scheduler that adjusts the L1 rate during training according to a specified schedule.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.MaskedMeanSquaredError" title="wf_psf.training.train_utils.MaskedMeanSquaredError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MaskedMeanSquaredError</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Computes the masked mean squared error (MSE) loss between predictions and targets.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric" title="wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MaskedMeanSquaredErrorMetric</span></code></a>(*args, **kwargs)</p></td>
+<td><p>A custom metric class for computing the masked mean squared error (MSE).</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.training.train_utils.L1ParamScheduler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.training.train_utils.</span></span><span class="sig-name descname"><span class="pre">L1ParamScheduler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#L1ParamScheduler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.L1ParamScheduler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></p>
+<p>L1 rate scheduler that adjusts the L1 rate during training according to a specified schedule.</p>
+<p>This callback modifies the L1 regularization rate at each epoch based on the given scheduling function.
+The function takes the epoch index and the current L1 rate as inputs, and it outputs the updated L1 rate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>l1_schedule_rule</strong> (<em>function</em>) – <p>A function that defines how to update the L1 rate. The function should take two arguments:
+- <cite>epoch</cite> (int): The current epoch index, starting from 0.
+- <cite>current_l1_rate</cite> (float): The L1 rate at the current epoch.</p>
+<p>The function should return a new L1 rate (float) to be applied at the next epoch.</p>
+</p>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(*args, **kwargs)</p></td>
+<td><p>Call self as a function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.L1ParamScheduler.on_epoch_begin" title="wf_psf.training.train_utils.L1ParamScheduler.on_epoch_begin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_epoch_begin</span></code></a>(epoch[, logs])</p></td>
+<td><p>Execute callback function at the beginning of each epoch to adjust the L1 rate.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.training.train_utils.L1ParamScheduler.on_epoch_begin">
+<span class="sig-name descname"><span class="pre">on_epoch_begin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#L1ParamScheduler.on_epoch_begin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.L1ParamScheduler.on_epoch_begin" title="Link to this definition"></a></dt>
+<dd><p>Execute callback function at the beginning of each epoch to adjust the L1 rate.</p>
+<p>This function gets the current L1 rate from the model’s optimizer, computes the new scheduled
+L1 rate using the <cite>l1_schedule_rule</cite> function, and sets it back to the model’s optimizer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epoch</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The current epoch index, starting from 0.</p></li>
+<li><p><strong>logs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, </em><em>optional</em>) – A dictionary containing logs for the current epoch (default is None).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.training.train_utils.MaskedMeanSquaredError">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.training.train_utils.</span></span><span class="sig-name descname"><span class="pre">MaskedMeanSquaredError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#MaskedMeanSquaredError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.MaskedMeanSquaredError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Loss</span></code></p>
+<p>Computes the masked mean squared error (MSE) loss between predictions and targets.</p>
+<p>This loss function assumes that <cite>y_true</cite> has two components in the last axis:
+- <cite>y_true[…, 0]</cite>: the target values.
+- <cite>y_true[…, 1]</cite>: a mask in [0, 1] where:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><cite>1</cite> means the pixel is included in the loss.</p></li>
+<li><p><cite>0</cite> means the pixel is ignored.</p></li>
+<li><p>Values in (0,1) are treated as weights for partial contribution.</p></li>
+</ul>
+</div></blockquote>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(y_true, y_pred[, sample_weight])</p></td>
+<td><p>Invoke the loss computation with support for different shapes of inputs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.MaskedMeanSquaredError.call" title="wf_psf.training.train_utils.MaskedMeanSquaredError.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(y_true, y_pred[, sample_weight])</p></td>
+<td><p>Compute the masked mean squared error loss.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.training.train_utils.MaskedMeanSquaredError.call">
+<span class="sig-name descname"><span class="pre">call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tensorflow.Tensor</span></span></span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#MaskedMeanSquaredError.call"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.MaskedMeanSquaredError.call" title="Link to this definition"></a></dt>
+<dd><p>Compute the masked mean squared error loss.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_true</strong> (<em>tf.Tensor</em>) – Tensor of shape (batch, height, width, 2) containing the ground truth
+values and the mask.</p></li>
+<li><p><strong>y_pred</strong> (<em>tf.Tensor</em>) – Tensor of shape (batch, height, width) containing the predicted values.</p></li>
+<li><p><strong>sample_weight</strong> (<em>tf.Tensor</em><em>, </em><em>optional</em>) – Optional sample weights of shape (batch,). Broadcast over spatial dims.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Scalar tensor representing the mean squared error over masked pixels.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.training.train_utils.</span></span><span class="sig-name descname"><span class="pre">MaskedMeanSquaredErrorMetric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#MaskedMeanSquaredErrorMetric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Metric</span></code></p>
+<p>A custom metric class for computing the masked mean squared error (MSE).</p>
+<p>This metric computes the mean squared error over the masked regions of the
+true values and predictions. A mask is applied such that a mask value of
+<cite>1</cite> excludes the pixel and <cite>0</cite> includes the pixel in the error computation.
+The metric is updated after every batch and returns the average masked MSE
+after processing the dataset.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(*args, **kwargs)</p></td>
+<td><p>Call self as a function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.reset_state" title="wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.reset_state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_state</span></code></a>()</p></td>
+<td><p>Reset the state of the metric, clearing the accumulated total loss and batch count.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.result" title="wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.result"><code class="xref py py-obj docutils literal notranslate"><span class="pre">result</span></code></a>()</p></td>
+<td><p>Compute and return the current masked MSE value, averaged over all batches.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.update_state" title="wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.update_state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_state</span></code></a>(y_true, y_pred[, sample_weight])</p></td>
+<td><p>Update the state of the metric with the true values, predictions, and optional sample weights.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.reset_state">
+<span class="sig-name descname"><span class="pre">reset_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#MaskedMeanSquaredErrorMetric.reset_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.reset_state" title="Link to this definition"></a></dt>
+<dd><p>Reset the state of the metric, clearing the accumulated total loss and batch count.</p>
+<p>This method is typically called at the start of a new evaluation or after
+a new epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.result">
+<span class="sig-name descname"><span class="pre">result</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tensorflow.Tensor</span></span></span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#MaskedMeanSquaredErrorMetric.result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.result" title="Link to this definition"></a></dt>
+<dd><p>Compute and return the current masked MSE value, averaged over all batches.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The current masked MSE value (average loss per batch).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tf.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.update_state">
+<span class="sig-name descname"><span class="pre">update_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#MaskedMeanSquaredErrorMetric.update_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.update_state" title="Link to this definition"></a></dt>
+<dd><p>Update the state of the metric with the true values, predictions, and optional sample weights.</p>
+<p>This method calculates the masked MSE loss for the given batch and accumulates the total loss and batch count.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_true</strong> (<em>tf.Tensor</em>) – True values with shape <cite>(batch_size, height, width, channels)</cite>,
+where the last dimension contains both the target values and the mask.</p></li>
+<li><p><strong>y_pred</strong> (<em>tf.Tensor</em>) – Predicted values with shape <cite>(batch_size, height, width, channels)</cite>.</p></li>
+<li><p><strong>sample_weight</strong> (<em>tf.Tensor</em><em>, </em><em>optional</em>) – Sample weights for each instance in the batch, with shape <cite>(batch_size,)</cite>.
+If not provided, all instances are treated equally.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.training.train_utils.calculate_sample_weights">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.training.train_utils.</span></span><span class="sig-name descname"><span class="pre">calculate_sample_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_sample_weights</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_sigmoid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmoid_max_val</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmoid_power_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#calculate_sample_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.calculate_sample_weights" title="Link to this definition"></a></dt>
+<dd><p>Calculate sample weights based on image noise standard deviation.</p>
+<p>The function computes sample weights by estimating the noise standard deviation for each image, calculating the inverse variance,
+and then normalizing the weights by dividing by the median.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>outputs</strong> (<em>np.ndarray</em>) – A 3D array of shape (batch_size, height, width) representing images, where the first dimension is the batch size
+and the next two dimensions are the image height and width.</p></li>
+<li><p><strong>use_sample_weights</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Flag indicating whether to compute sample weights. If True, sample weights will be computed based on the image noise.</p></li>
+<li><p><strong>loss</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>callable</em><em>, </em><em>optional</em>) – The loss function used for training. If the loss name is “masked_mean_squared_error”, the function will calculate the noise standard deviation for masked images.</p></li>
+<li><p><strong>apply_sigmoid</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Flag indicating whether to apply a generalized sigmoid function to the sample weights. Default is True.</p></li>
+<li><p><strong>sigmoid_max_val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – The maximum value for the sigmoid function. Default is 5.0.</p></li>
+<li><p><strong>sigmoid_power_k</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – The power parameter for the sigmoid function. Default is 1.0.
+This parameter controls the steepness of the sigmoid curve.
+Higher values make the curve steeper.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An array of sample weights, or None if <cite>use_sample_weights</cite> is False.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.training.train_utils.configure_optimizer_and_loss">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.training.train_utils.</span></span><span class="sig-name descname"><span class="pre">configure_optimizer_and_loss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">learning_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#configure_optimizer_and_loss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.configure_optimizer_and_loss" title="Link to this definition"></a></dt>
+<dd><p>Configure and return the optimizer, loss function, and metrics for model training.</p>
+<p>This function configures the optimizer, loss function, and metrics for either the parametric
+or non-parametric model components. If no optimizer, loss, or metrics are provided,
+default values are used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>learning_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The learning rate to be used by the optimizer.</p></li>
+<li><p><strong>optimizer</strong> (<em>callable</em><em>, </em><em>optional</em>) – A function or object used to initialize the optimizer (e.g., <cite>tf.keras.optimizers.Adam</cite>).
+If None, the default Adam optimizer with the specified learning rate is used.</p></li>
+<li><p><strong>loss</strong> (<em>callable</em><em>, </em><em>optional</em>) – The loss function to be used during training (e.g., <cite>tf.keras.losses.MeanSquaredError</cite>).
+If None, the default Mean Squared Error loss is used.</p></li>
+<li><p><strong>metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>callable</em><em>, </em><em>optional</em>) – A list of metric functions to evaluate during training (e.g., <cite>tf.keras.metrics.MeanSquaredError</cite>).
+If None, the default metric <cite>MeanSquaredError</cite> is used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>optimizer</strong> (<em>callable</em>) – The optimizer function or object configured for training.</p></li>
+<li><p><strong>loss</strong> (<em>callable</em>) – The loss function configured for training.</p></li>
+<li><p><strong>metrics</strong> (<em>list of callable</em>) – The list of metrics to be used for evaluating the model.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.training.train_utils.general_train_cycle">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.training.train_utils.</span></span><span class="sig-name descname"><span class="pre">general_train_cycle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psf_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_rate_param</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_rate_non_param</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_epochs_param</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_epochs_non_param</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_optim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">non_param_optim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_loss</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">non_param_loss</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">non_param_metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_callback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">non_param_callback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">general_callback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_run</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cycle_def</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'complete'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_sample_weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_sigmoid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmoid_max_val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmoid_power_k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#general_train_cycle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.general_train_cycle" title="Link to this definition"></a></dt>
+<dd><p>Perform a Bi-Cycle Descent (BCD) training iteration on a semi-parametric model.</p>
+<p>The function alternates between optimizing the parametric and/or non-parametric parts of the model
+across specified training cycles. Each part of the model can be trained individually or together
+depending on the <cite>cycle_def</cite> parameter.</p>
+<p>For the parametric part:
+- Default learning rate: <cite>learning_rate_param = 1e-2</cite>
+- Default epochs: <cite>n_epochs_param = 20</cite></p>
+<p>For the non-parametric part:
+- Default learning rate: <cite>learning_rate_non_param = 1.0</cite>
+- Default epochs: <cite>n_epochs_non_param = 100</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>psf_model</strong> (<em>tf.keras.Model</em>) – A TensorFlow model representing the PSF (Point Spread Function), which may consist of both parametric and non-parametric components, or an individual component. These components are partitioned for training, with each part addressing different aspects of the PSF.</p></li>
+<li><p><strong>inputs</strong> (<em>Tensor</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>tensors</em>) – Input data for training (<cite>Model.fit()</cite>).</p></li>
+<li><p><strong>outputs</strong> (<em>Tensor</em>) – Output data for training (<cite>Model.fit()</cite>).</p></li>
+<li><p><strong>validation_data</strong> (<em>Tuple</em>) – Validation data used for model evaluation during training.
+(input_data, output_data).</p></li>
+<li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The batch size for the training.</p></li>
+<li><p><strong>learning_rate_param</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Learning rate for the parametric part of the PSF model.</p></li>
+<li><p><strong>learning_rate_non_param</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Learning rate for the non-parametric part of the PSF model.</p></li>
+<li><p><strong>n_epochs_param</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of epochs to train the parametric part.</p></li>
+<li><p><strong>n_epochs_non_param</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of epochs to train the non-parametric part.</p></li>
+<li><p><strong>param_optim</strong> (<em>tf.keras.optimizers.Optimizer</em><em>, </em><em>optional</em>) – Optimizer for the parametric part. Defaults to Adam if not provided.</p></li>
+<li><p><strong>non_param_optim</strong> (<em>tf.keras.optimizers.Optimizer</em><em>, </em><em>optional</em>) – Optimizer for the non-parametric part. Defaults to Adam if not provided.</p></li>
+<li><p><strong>param_loss</strong> (<em>tf.keras.losses.Loss</em><em>, </em><em>optional</em>) – Loss function for the parametric part. Defaults to the MeanSquaredError().</p></li>
+<li><p><strong>non_param_loss</strong> (<em>tf.keras.losses.Loss</em><em>, </em><em>optional</em>) – Loss function for the non-parametric part. Defaults to MeanSquaredError().</p></li>
+<li><p><strong>param_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>tf.keras.metrics.Metric</em><em>, </em><em>optional</em>) – List of metrics for the parametric part. Defaults to MeanSquaredError().</p></li>
+<li><p><strong>non_param_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>tf.keras.metrics.Metric</em><em>, </em><em>optional</em>) – List of metrics for the non-parametric part. Defaults to MeanSquaredError().</p></li>
+<li><p><strong>param_callback</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>tf.keras.callbacks.Callback</em><em>, </em><em>optional</em>) – Callback for the parametric part only. Defaults to no callback.</p></li>
+<li><p><strong>non_param_callback</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>tf.keras.callbacks.Callback</em><em>, </em><em>optional</em>) – Callback for the non-parametric part only. Defaults to no callback.</p></li>
+<li><p><strong>general_callback</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>tf.keras.callbacks.Callback</em><em>, </em><em>optional</em>) – Callback shared between both the parametric and non-parametric parts. Defaults to no callback.</p></li>
+<li><p><strong>first_run</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, the first iteration of training is assumed, and the non-parametric part
+is not considered during the parametric training. Default is False.</p></li>
+<li><p><strong>cycle_def</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Defines the training cycle: <cite>parametric</cite>, <cite>non-parametric</cite>, <cite>complete</cite>, <cite>only-parametric</cite>, or <cite>only-non-parametric</cite>.
+The <cite>complete</cite> cycle trains both parts, while the others train only the specified part (both parametric and non-parametric). Default is <cite>complete</cite>.</p></li>
+<li><p><strong>use_sample_weights</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, sample weights are used in training. Sample weights are computed
+based on estimated noise variance. Default is False.</p></li>
+<li><p><strong>apply_sigmoid</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, a generalized sigmoid function is applied to the sample weights.
+Default is True.</p></li>
+<li><p><strong>sigmoid_max_val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – The maximum value for the sigmoid function. Default is <cite>5.0</cite>.</p></li>
+<li><p><strong>sigmoid_power_k</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – The power parameter for the sigmoid function. Default is <cite>1.0</cite>.
+This parameter controls the steepness of the sigmoid curve.</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Verbosity mode. <cite>0</cite> = silent, <cite>1</cite> = progress bar, <cite>2</cite> = one line per epoch.
+Default is 1.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>psf_model</strong> (<em>tf.keras.Model</em>) – The trained PSF model.</p></li>
+<li><p><strong>hist_param</strong> (<em>tf.keras.callbacks.History</em>) – History object for the parametric training.</p></li>
+<li><p><strong>hist_non_param</strong> (<em>tf.keras.callbacks.History</em>) – History object for the non-parametric training.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.training.train_utils.get_callbacks">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.training.train_utils.</span></span><span class="sig-name descname"><span class="pre">get_callbacks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callback2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#get_callbacks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.get_callbacks" title="Link to this definition"></a></dt>
+<dd><p>Combine two callback lists into one.</p>
+<p>If both are None, returns None. If one is None, returns the other.
+Otherwise, combines both lists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>callback1</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>tf.keras.callbacks.Callback</em><em> or </em><em>None</em>) – The first callback list (e.g., parametric or non-parametric).</p></li>
+<li><p><strong>callback2</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>tf.keras.callbacks.Callback</em><em> or </em><em>None</em>) – The second callback list (e.g., general callback).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The combined list of callbacks or None.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a> of tf.keras.callbacks.Callback or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.training.train_utils.l1_schedule_rule">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.training.train_utils.</span></span><span class="sig-name descname"><span class="pre">l1_schedule_rule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch_n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">l1_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#l1_schedule_rule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.l1_schedule_rule" title="Link to this definition"></a></dt>
+<dd><p>Schedule the L1 rate based on the epoch number.</p>
+<p>If the current epoch is a multiple of 10 (except for the first epoch),
+the L1 rate is halved. Otherwise, the L1 rate remains unchanged.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epoch_n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The current epoch number, where the epoch index starts from 0.</p></li>
+<li><p><strong>l1_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The current L1 regularization rate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The updated L1 rate for the given epoch.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.training.train_utils.masked_mse">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.training.train_utils.</span></span><span class="sig-name descname"><span class="pre">masked_mse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tensorflow.Tensor</span></span></span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#masked_mse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.masked_mse" title="Link to this definition"></a></dt>
+<dd><p>Compute the mean squared error over the masked regions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y_true</strong> (<em>tf.Tensor</em>) – True values with shape (batch, height, width).</p></li>
+<li><p><strong>y_pred</strong> (<em>tf.Tensor</em>) – Predicted values with shape (batch, height, width).</p></li>
+<li><p><strong>mask</strong> (<em>tf.Tensor</em>) – A mask to apply, which <strong>can contain float values in [0,1]</strong>.
+- <cite>0</cite> means to include the pixel.
+- <cite>1</cite> means to ignore the pixel.
+- Values in <cite>(0,1)</cite> act as weights for partial consideration.</p></li>
+<li><p><strong>sample_weight</strong> (<em>tf.Tensor</em><em>, </em><em>optional</em>) – Sample weights for each image in the batch, with shape (batch,).
+If provided, it is broadcasted over the spatial dimensions.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The mean squared error computed over the masked regions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.training.train_utils.train_cycle_part">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.training.train_utils.</span></span><span class="sig-name descname"><span class="pre">train_cycle_part</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psf_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.keras.Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.keras.optimizers.Optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">tensorflow.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">tensorflow.Tensor</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callbacks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cycle_part</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'parametric'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tensorflow.keras.Model</span></span></span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#train_cycle_part"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.train_cycle_part" title="Link to this definition"></a></dt>
+<dd><p>Train either the parametric or non-parametric part of the PSF model using the specified parameters. This function trains a single component of the model (either parametric or non-parametric) based on the provided configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>psf_model</strong> (<em>tf.keras.Model</em>) – A TensorFlow model representing the PSF (Point Spread Function), which consists of either a parametric or a non-parametric component.</p></li>
+<li><p><strong>inputs</strong> (<em>tf.Tensor</em>) – Input data for training the model. Expected to be a tensor with the shape of the input batch.</p></li>
+<li><p><strong>outputs</strong> (<em>tf.Tensor</em>) – Target output data for training the model. Expected to match the shape of <cite>inputs</cite>.</p></li>
+<li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The number of samples per batch during training.</p></li>
+<li><p><strong>epochs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The number of epochs to train the model.</p></li>
+<li><p><strong>optimizer</strong> (<em>tf.keras.optimizers.Optimizer</em>) – The optimizer used for training the model (e.g., Adam, SGD).</p></li>
+<li><p><strong>loss</strong> (<em>Callable</em>) – The loss function used for training the model. Typically a callable like <cite>tf.keras.losses.MeanSquaredError()</cite>.</p></li>
+<li><p><strong>metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>Callable</em>) – List of metrics to monitor during training. Each element should be a callable metric (e.g., accuracy, precision).</p></li>
+<li><p><strong>validation_data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><em>(</em><em>tf.Tensor</em><em>, </em><em>tf.Tensor</em><em>)</em><em>, </em><em>optional</em>) – Tuple of input and output tensors to evaluate the model during training. Default is None.</p></li>
+<li><p><strong>callbacks</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>Callable</em><em>, </em><em>optional</em>) – List of callbacks to apply during training, such as <cite>tf.keras.callbacks.EarlyStopping</cite>. Default is None.</p></li>
+<li><p><strong>sample_weight</strong> (<em>tf.Tensor</em><em>, </em><em>optional</em>) – Weights for the samples during training. Default is None.</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Verbosity mode (0, 1, or 2). Default is 1.</p></li>
+<li><p><strong>cycle_part</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Specifies which part of the model to train (“parametric” or “non-parametric”). Default is “parametric”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The trained TensorFlow model after completing the specified number of epochs.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.keras.Model</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function trains the model based on the provided <cite>cycle_part</cite>. If <cite>cycle_part</cite> is set to
+“parametric”, the function assumes the model is being trained in a parametric setting, while
+“non-parametric” indicates the training of a non-parametric part. The model is built using the
+<cite>build_PSF_model</cite> function before fitting.</p>
+<p class="rubric">Examples</p>
+<dl class="simple">
+<dt>model = train_cycle_part(</dt><dd><p>psf_model=model,
+inputs=train_inputs,
+outputs=train_outputs,
+batch_size=32,
+epochs=10,
+optimizer=tf.keras.optimizers.Adam(),
+loss=tf.keras.losses.MeanSquaredError(),
+metrics=[tf.keras.metrics.MeanAbsoluteError()],
+validation_data=(val_inputs, val_outputs),
+callbacks=[tf.keras.callbacks.EarlyStopping(patience=3)],
+sample_weight=None,
+verbose=1</p>
+</dd>
+</dl>
+<p>)</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="wf_psf.training.train.html" class="btn btn-neutral float-left" title="wf_psf.training.train" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wf_psf.utils.html" class="btn btn-neutral float-right" title="wf_psf.utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

@@ -1,25 +1,24 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wf_psf.psf_models.psf_model_parametric &mdash; wf-psf 2.0.1 documentation</title>
+  <title>wf_psf.psf_models.psf_model_parametric &mdash; wf-psf 3.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9570fddd" />
       <link rel="stylesheet" type="text/css" href="../../../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=309026bb" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
-        <script src="../../../_static/doctools.js?v=888ff710"></script>
-        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
-        <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"></script>
-        <script src="../../../_static/twemoji.js"></script>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../../../_static/twemoji.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="../../../about.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -62,7 +61,11 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../wf_psf.html">wf_psf package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer/index.html">Developer Guide</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">References</span></p>
 <ul>
@@ -103,28 +106,21 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
-<span class="kn">from</span> <span class="nn">tensorflow.python.keras.engine</span> <span class="kn">import</span> <span class="n">data_adapter</span>
-<span class="kn">from</span> <span class="nn">wf_psf.psf_models.psf_models</span> <span class="kn">import</span> <span class="n">register_psfclass</span>
-<span class="kn">from</span> <span class="nn">wf_psf.psf_models.tf_layers</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">TF_poly_Z_field</span><span class="p">,</span>
-    <span class="n">TF_zernike_OPD</span><span class="p">,</span>
-    <span class="n">TF_batch_poly_PSF</span><span class="p">,</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.psf_models.psf_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">register_psfclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.psf_models.tf_layers</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TFPolynomialZernikeField</span><span class="p">,</span>
+    <span class="n">TFZernikeOPD</span><span class="p">,</span>
+    <span class="n">TFBatchPolychromaticPSF</span><span class="p">,</span>
+    <span class="n">TFBatchMonochromaticPSF</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">wf_psf.psf_models.tf_layers</span> <span class="kn">import</span> <span class="p">(</span>
-    <span class="n">TF_NP_poly_OPD</span><span class="p">,</span>
-    <span class="n">TF_batch_mono_PSF</span><span class="p">,</span>
-    <span class="n">TF_physical_layer</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="kn">from</span> <span class="nn">wf_psf.utils.utils</span> <span class="kn">import</span> <span class="n">PI_zernikes</span>
 
 
-<div class="viewcode-block" id="TF_PSF_field_model">
-<a class="viewcode-back" href="../../../wf_psf.psf_models.psf_model_parametric.html#wf_psf.psf_models.psf_model_parametric.TF_PSF_field_model">[docs]</a>
+<div class="viewcode-block" id="TFParametricPSFFieldModel">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_parametric.html#wf_psf.psf_models.psf_model_parametric.TFParametricPSFFieldModel">[docs]</a>
 <span class="nd">@register_psfclass</span>
-<span class="k">class</span> <span class="nc">TF_PSF_field_model</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parametric PSF field model!</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">TFParametricPSFFieldModel</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parametric PSF field model.</span>
 
 <span class="sd">    Fully parametric model based on the Zernike polynomial basis.</span>
 
@@ -169,7 +165,7 @@
 
     <span class="n">ids</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;parametric&quot;</span><span class="p">,)</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">zernike_maps</span><span class="p">,</span>
         <span class="n">obscurations</span><span class="p">,</span>
@@ -184,7 +180,7 @@
         <span class="n">coeff_mat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">name</span><span class="o">=</span><span class="s2">&quot;TF_PSF_field_model&quot;</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">TF_PSF_field_model</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">output_Q</span> <span class="o">=</span> <span class="n">output_Q</span>
 
@@ -207,7 +203,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">l2_param</span> <span class="o">=</span> <span class="n">l2_param</span>
 
         <span class="c1"># Initialize the first layer</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tf_poly_Z_field</span> <span class="o">=</span> <span class="n">TF_poly_Z_field</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_poly_Z_field</span> <span class="o">=</span> <span class="n">TFPolynomialZernikeField</span><span class="p">(</span>
             <span class="n">x_lims</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x_lims</span><span class="p">,</span>
             <span class="n">y_lims</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y_lims</span><span class="p">,</span>
             <span class="n">n_zernikes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_zernikes</span><span class="p">,</span>
@@ -215,10 +211,10 @@
         <span class="p">)</span>
 
         <span class="c1"># Initialize the zernike to OPD layer</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tf_zernike_OPD</span> <span class="o">=</span> <span class="n">TF_zernike_OPD</span><span class="p">(</span><span class="n">zernike_maps</span><span class="o">=</span><span class="n">zernike_maps</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_zernike_OPD</span> <span class="o">=</span> <span class="n">TFZernikeOPD</span><span class="p">(</span><span class="n">zernike_maps</span><span class="o">=</span><span class="n">zernike_maps</span><span class="p">)</span>
 
         <span class="c1"># Initialize the batch opd to batch polychromatic PSF layer</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tf_batch_poly_PSF</span> <span class="o">=</span> <span class="n">TF_batch_poly_PSF</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_batch_poly_PSF</span> <span class="o">=</span> <span class="n">TFBatchPolychromaticPSF</span><span class="p">(</span>
             <span class="n">obscurations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">obscurations</span><span class="p">,</span>
             <span class="n">output_Q</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_Q</span><span class="p">,</span>
             <span class="n">output_dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span><span class="p">,</span>
@@ -235,41 +231,52 @@
         <span class="c1"># else:</span>
         <span class="c1">#     self.call = self.call_l2_opd_loss</span>
 
-<div class="viewcode-block" id="TF_PSF_field_model.get_coeff_matrix">
-<a class="viewcode-back" href="../../../wf_psf.psf_models.psf_model_parametric.html#wf_psf.psf_models.psf_model_parametric.TF_PSF_field_model.get_coeff_matrix">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_coeff_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="TFParametricPSFFieldModel.get_coeff_matrix">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_parametric.html#wf_psf.psf_models.psf_model_parametric.TFParametricPSFFieldModel.get_coeff_matrix">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_coeff_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get coefficient matrix.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_poly_Z_field</span><span class="o">.</span><span class="n">get_coeff_matrix</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="TF_PSF_field_model.assign_coeff_matrix">
-<a class="viewcode-back" href="../../../wf_psf.psf_models.psf_model_parametric.html#wf_psf.psf_models.psf_model_parametric.TF_PSF_field_model.assign_coeff_matrix">[docs]</a>
-    <span class="k">def</span> <span class="nf">assign_coeff_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coeff_mat</span><span class="p">):</span>
+<div class="viewcode-block" id="TFParametricPSFFieldModel.assign_coeff_matrix">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_parametric.html#wf_psf.psf_models.psf_model_parametric.TFParametricPSFFieldModel.assign_coeff_matrix">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">assign_coeff_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coeff_mat</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Assign coefficient matrix.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tf_poly_Z_field</span><span class="o">.</span><span class="n">assign_coeff_matrix</span><span class="p">(</span><span class="n">coeff_mat</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="TF_PSF_field_model.set_output_Q">
-<a class="viewcode-back" href="../../../wf_psf.psf_models.psf_model_parametric.html#wf_psf.psf_models.psf_model_parametric.TF_PSF_field_model.set_output_Q">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_output_Q</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_Q</span><span class="p">,</span> <span class="n">output_dim</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="TFParametricPSFFieldModel.set_output_Q">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_parametric.html#wf_psf.psf_models.psf_model_parametric.TFParametricPSFFieldModel.set_output_Q">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_output_Q</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_Q</span><span class="p">,</span> <span class="n">output_dim</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the value of the output_Q parameter.</span>
+
 <span class="sd">        Useful for generating/predicting PSFs at a different sampling wrt the</span>
 <span class="sd">        observation sampling.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        output_Q: float</span>
+<span class="sd">            New value of the output_Q parameter.</span>
+<span class="sd">        output_dim: int or None</span>
+<span class="sd">            New value of the output_dim parameter. If None, the output_dim</span>
+<span class="sd">            parameter is not changed.</span>
+
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">output_Q</span> <span class="o">=</span> <span class="n">output_Q</span>
         <span class="k">if</span> <span class="n">output_dim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span> <span class="o">=</span> <span class="n">output_dim</span>
         <span class="c1"># Reinitialize the PSF batch poly generator</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">tf_batch_poly_PSF</span> <span class="o">=</span> <span class="n">TF_batch_poly_PSF</span><span class="p">(</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_batch_poly_PSF</span> <span class="o">=</span> <span class="n">TFBatchPolychromaticPSF</span><span class="p">(</span>
             <span class="n">obscurations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">obscurations</span><span class="p">,</span>
             <span class="n">output_Q</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_Q</span><span class="p">,</span>
             <span class="n">output_dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="TF_PSF_field_model.predict_mono_psfs">
-<a class="viewcode-back" href="../../../wf_psf.psf_models.psf_model_parametric.html#wf_psf.psf_models.psf_model_parametric.TF_PSF_field_model.predict_mono_psfs">[docs]</a>
-    <span class="k">def</span> <span class="nf">predict_mono_psfs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_positions</span><span class="p">,</span> <span class="n">lambda_obs</span><span class="p">,</span> <span class="n">phase_N</span><span class="p">):</span>
+<div class="viewcode-block" id="TFParametricPSFFieldModel.predict_mono_psfs">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_parametric.html#wf_psf.psf_models.psf_model_parametric.TFParametricPSFFieldModel.predict_mono_psfs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict_mono_psfs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_positions</span><span class="p">,</span> <span class="n">lambda_obs</span><span class="p">,</span> <span class="n">phase_N</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Predict a set of monochromatic PSF at desired positions.</span>
 
 <span class="sd">        input_positions: Tensor(batch_dim x 2)</span>
@@ -279,12 +286,11 @@
 
 <span class="sd">        phase_N: int</span>
 <span class="sd">            Required wavefront dimension. Should be calculated with as:</span>
-<span class="sd">            ``simPSF_np = wf.SimPSFToolkit(...)``</span>
+<span class="sd">            ``simPSF_np = wf_psf.sims.psf_simulator.PSFSimulator(...)``</span>
 <span class="sd">            ``phase_N = simPSF_np.feasible_N(lambda_obs)``</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="c1"># Initialise the monochromatic PSF batch calculator</span>
-        <span class="n">tf_batch_mono_psf</span> <span class="o">=</span> <span class="n">TF_batch_mono_PSF</span><span class="p">(</span>
+        <span class="n">tf_batch_mono_psf</span> <span class="o">=</span> <span class="n">TFBatchMonochromaticPSF</span><span class="p">(</span>
             <span class="n">obscurations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">obscurations</span><span class="p">,</span>
             <span class="n">output_Q</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_Q</span><span class="p">,</span>
             <span class="n">output_dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span><span class="p">,</span>
@@ -302,9 +308,9 @@
         <span class="k">return</span> <span class="n">mono_psf_batch</span></div>
 
 
-<div class="viewcode-block" id="TF_PSF_field_model.predict_opd">
-<a class="viewcode-back" href="../../../wf_psf.psf_models.psf_model_parametric.html#wf_psf.psf_models.psf_model_parametric.TF_PSF_field_model.predict_opd">[docs]</a>
-    <span class="k">def</span> <span class="nf">predict_opd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_positions</span><span class="p">):</span>
+<div class="viewcode-block" id="TFParametricPSFFieldModel.predict_opd">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_parametric.html#wf_psf.psf_models.psf_model_parametric.TFParametricPSFFieldModel.predict_opd">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict_opd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_positions</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Predict the OPD at some positions.</span>
 
 <span class="sd">        Parameters</span>
@@ -325,9 +331,9 @@
         <span class="k">return</span> <span class="n">opd_maps</span></div>
 
 
-<div class="viewcode-block" id="TF_PSF_field_model.call">
-<a class="viewcode-back" href="../../../wf_psf.psf_models.psf_model_parametric.html#wf_psf.psf_models.psf_model_parametric.TF_PSF_field_model.call">[docs]</a>
-    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+<div class="viewcode-block" id="TFParametricPSFFieldModel.call">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_parametric.html#wf_psf.psf_models.psf_model_parametric.TFParametricPSFFieldModel.call">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Define the PSF field forward model.</span>
 
 <span class="sd">        [1] From positions to Zernike coefficients</span>
@@ -359,7 +365,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, CosmoStat.</p>
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

@@ -1,0 +1,586 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.psf_models.psf_model_physical_polychromatic &mdash; wf-psf 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../_static/twemoji.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="wf_psf.psf_models.psf_model_semiparametric" href="wf_psf.psf_models.psf_model_semiparametric.html" />
+    <link rel="prev" title="wf_psf.psf_models.psf_model_parametric" href="wf_psf.psf_models.psf_model_parametric.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.data.html">wf_psf.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.metrics.html">wf_psf.metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.plotting.html">wf_psf.plotting</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="wf_psf.psf_models.html">wf_psf.psf_models</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_parametric.html">wf_psf.psf_models.psf_model_parametric</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">wf_psf.psf_models.psf_model_physical_polychromatic</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.psf_model_physical_polychromatic.PhysicalPolychromaticFieldFactory"><code class="docutils literal notranslate"><span class="pre">PhysicalPolychromaticFieldFactory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField"><code class="docutils literal notranslate"><span class="pre">TFPhysicalPolychromaticField</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_semiparametric.html">wf_psf.psf_models.psf_model_semiparametric</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_models.html">wf_psf.psf_models.psf_models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html">wf_psf.psf_models.tf_layers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_modules.html">wf_psf.psf_models.tf_modules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html">wf_psf.psf_models.tf_psf_field</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.zernikes.html">wf_psf.psf_models.zernikes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.run.html">wf_psf.run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.sims.html">wf_psf.sims</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.training.html">wf_psf.training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.utils.html">wf_psf.utils</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="wf_psf.psf_models.html">wf_psf.psf_models</a></li>
+      <li class="breadcrumb-item active">wf_psf.psf_models.psf_model_physical_polychromatic</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/wf_psf.psf_models.psf_model_physical_polychromatic.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-wf_psf.psf_models.psf_model_physical_polychromatic">
+<span id="wf-psf-psf-models-psf-model-physical-polychromatic"></span><h1>wf_psf.psf_models.psf_model_physical_polychromatic<a class="headerlink" href="#module-wf_psf.psf_models.psf_model_physical_polychromatic" title="Link to this heading"></a></h1>
+<p>PSF Model Physical Semi-Parametric Polychromatic.</p>
+<p>A module which defines the classes and methods
+to manage the parameters of the psf physical polychromatic model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Authors<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tobias Liaudat &lt;<a class="reference external" href="mailto:tobias&#46;liaudat&#37;&#52;&#48;cea&#46;fr">tobias<span>&#46;</span>liaudat<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt; and Jennifer Pollack &lt;<a class="reference external" href="mailto:jennifer&#46;pollack&#37;&#52;&#48;cea&#46;fr">jennifer<span>&#46;</span>pollack<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;</p>
+</dd>
+</dl>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_physical_polychromatic.PhysicalPolychromaticFieldFactory" title="wf_psf.psf_models.psf_model_physical_polychromatic.PhysicalPolychromaticFieldFactory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PhysicalPolychromaticFieldFactory</span></code></a>()</p></td>
+<td><p>Factory class for the TensorFlow Physical Polychromatic PSF Field Model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField" title="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TFPhysicalPolychromaticField</span></code></a>(*args, **kwargs)</p></td>
+<td><p>TensorFlow Physical Polychromatic PSF Field class.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_physical_polychromatic.PhysicalPolychromaticFieldFactory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.psf_model_physical_polychromatic.</span></span><span class="sig-name descname"><span class="pre">PhysicalPolychromaticFieldFactory</span></span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_physical_polychromatic.html#PhysicalPolychromaticFieldFactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_physical_polychromatic.PhysicalPolychromaticFieldFactory" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory"><code class="xref py py-class docutils literal notranslate"><span class="pre">PSFModelBaseFactory</span></code></a></p>
+<p>Factory class for the TensorFlow Physical Polychromatic PSF Field Model.</p>
+<p>This factory class is responsible for instantiating instances of the TensorFlow Physical Polychromatic PSF Field Model. It is registered with the PSF model factory registry.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ids</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>) – A tuple containing identifiers for the factory class.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_physical_polychromatic.PhysicalPolychromaticFieldFactory.get_model_instance">
+<span class="sig-name descname"><span class="pre">get_model_instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coeff_mat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_physical_polychromatic.html#PhysicalPolychromaticFieldFactory.get_model_instance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_physical_polychromatic.PhysicalPolychromaticFieldFactory.get_model_instance" title="Link to this definition"></a></dt>
+<dd><p>Instantiates an instance of the TensorFlow Physical Polychromatic Field class with the provided parameters.</p>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id0" title="wf_psf.psf_models.psf_model_physical_polychromatic.PhysicalPolychromaticFieldFactory.get_model_instance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_model_instance</span></code></a>(model_params, ...[, ...])</p></td>
+<td><p>Create an instance of the TensorFlow Physical Polychromatic Field model.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">get_model_instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coeff_mat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_physical_polychromatic.html#PhysicalPolychromaticFieldFactory.get_model_instance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd><p>Create an instance of the TensorFlow Physical Polychromatic Field model.</p>
+<p>This method instantiates a <cite>TFPhysicalPolychromaticField</cite> object with the given model and training parameters, and data containing prior information like Zernike coefficients. Optionally, a coefficient matrix can be provided.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_params</strong> (<em>Recursive Namespace</em>) – A Recursive Namespace object containing parameters for this PSF model class.</p></li>
+<li><p><strong>training_params</strong> (<em>Recursive Namespace</em>) – A Recursive Namespace object containing training hyperparameters for this PSF model class.</p></li>
+<li><p><strong>data</strong> (<a class="reference internal" href="wf_psf.utils.configs_handler.html#wf_psf.utils.configs_handler.DataConfigHandler" title="wf_psf.utils.configs_handler.DataConfigHandler"><em>DataConfigHandler</em></a>) – A DataConfigHandler object that provides access to training and test datasets, as well as prior knowledge like Zernike coefficients.</p></li>
+<li><p><strong>coeff_mat</strong> (<em>Tensor</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Coefficient matrix defining the parametric PSF field model.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the TensorFlow Physical Polychromatic Field model.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField" title="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField">TFPhysicalPolychromaticField</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_physical_polychromatic.PhysicalPolychromaticFieldFactory.ids">
+<span class="sig-name descname"><span class="pre">ids</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('physical_poly',)</span></em><a class="headerlink" href="#wf_psf.psf_models.psf_model_physical_polychromatic.PhysicalPolychromaticFieldFactory.ids" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.psf_model_physical_polychromatic.</span></span><span class="sig-name descname"><span class="pre">TFPhysicalPolychromaticField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_physical_polychromatic.html#TFPhysicalPolychromaticField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></p>
+<p>TensorFlow Physical Polychromatic PSF Field class.</p>
+<p>This class represents a polychromatic PSF field model with a physical layer.
+It incorporates parametric and non-parametric modeling approaches to accurately reconstruct the point spread function (PSF) across multiple wavelengths.</p>
+<p>The model provides functionalities for:
+- Initializing model parameters and defining the physical PSF layer.
+- Performing forward passes and computing wavefront transformations.
+- Handling Zernike parameterization and coefficient matrices.
+- Evaluating model performance and saving optimization history.</p>
+<p>See individual method docstrings for more details.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(*args, **kwargs)</p></td>
+<td><p>Call self as a function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.assign_coeff_matrix" title="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.assign_coeff_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assign_coeff_matrix</span></code></a>(coeff_mat)</p></td>
+<td><p>Assign a coefficient matrix to the parametric PSF field model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.call" title="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(inputs[, training])</p></td>
+<td><p>Define the PSF (Point Spread Function) field forward model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.compute_zernikes" title="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.compute_zernikes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_zernikes</span></code></a>(input_positions)</p></td>
+<td><p>Compute Zernike coefficients at a batch of positions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.get_coeff_matrix" title="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.get_coeff_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_coeff_matrix</span></code></a>()</p></td>
+<td><p>Get coefficient matrix.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.pad_zernikes" title="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.pad_zernikes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pad_zernikes</span></code></a>(zk_param, zk_prior)</p></td>
+<td><p>Pad the Zernike coefficients to match the maximum length.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.predict_mono_psfs" title="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.predict_mono_psfs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict_mono_psfs</span></code></a>(input_positions, ...)</p></td>
+<td><p>Predict a set of monochromatic Point Spread Functions (PSFs) at desired positions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.predict_opd" title="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.predict_opd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict_opd</span></code></a>(input_positions)</p></td>
+<td><p>Predict the OPD at some positions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.predict_step" title="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.predict_step"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict_step</span></code></a>(data[, evaluate_step])</p></td>
+<td><p>Predict (inference) step.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.predict_zernikes" title="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.predict_zernikes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict_zernikes</span></code></a>(input_positions)</p></td>
+<td><p>Predict Zernike coefficients at a batch of positions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.set_nonzero_nonparam" title="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.set_nonzero_nonparam"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_nonzero_nonparam</span></code></a>()</p></td>
+<td><p>Set the non-parametric part to non-zero values.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.set_output_Q" title="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.set_output_Q"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_output_Q</span></code></a>(output_Q[, output_dim])</p></td>
+<td><p>Set the output sampling rate (output_Q) for PSF generation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.set_trainable_layers" title="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.set_trainable_layers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_trainable_layers</span></code></a>([param_bool, nonparam_bool])</p></td>
+<td><p>Set the layers to be trainable.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.set_zero_nonparam" title="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.set_zero_nonparam"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_zero_nonparam</span></code></a>()</p></td>
+<td><p>Set the non-parametric part of the OPD (Optical Path Difference) to zero.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.assign_coeff_matrix">
+<span class="sig-name descname"><span class="pre">assign_coeff_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coeff_mat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_physical_polychromatic.html#TFPhysicalPolychromaticField.assign_coeff_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.assign_coeff_matrix" title="Link to this definition"></a></dt>
+<dd><p>Assign a coefficient matrix to the parametric PSF field model.</p>
+<p>This method updates the coefficient matrix used by the parametric PSF field model,
+allowing for customization or modification of the model’s parameters.
+If <cite>coeff_mat</cite> is <cite>None</cite>, the model will revert to using its default coefficient matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>coeff_mat</strong> (<em>Optional</em><em>[</em><em>tf.Tensor</em><em>]</em>) – A TensorFlow tensor representing the coefficient matrix for the PSF field model.
+If <cite>None</cite>, the model will use the default coefficient matrix.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.call">
+<span class="sig-name descname"><span class="pre">call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_physical_polychromatic.html#TFPhysicalPolychromaticField.call"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.call" title="Link to this definition"></a></dt>
+<dd><p>Define the PSF (Point Spread Function) field forward model.</p>
+<p>This method defines the forward model of the PSF field, which involves several steps:
+1. Transforming input positions into Zernike coefficients.
+2. Converting Zernike coefficients into Optical Path Difference (OPD) maps.
+3. Combining OPD maps with Spectral Energy Distribution (SED) information to generate</p>
+<blockquote>
+<div><p>polychromatic PSFs.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a>) – <p>List containing input data required for PSF computation. It should contain two
+elements:
+- input_positions: Tensor [batch_dim, 2]</p>
+<blockquote>
+<div><p>Positions at which to compute the PSFs.</p>
+</div></blockquote>
+<ul>
+<li><dl class="simple">
+<dt>packed_SEDs: Tensor [batch_dim, …]</dt><dd><p>Packed Spectral Energy Distributions (SEDs) for the corresponding positions.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p></li>
+<li><p><strong>training</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – Indicates whether the model is being trained or used for inference. Defaults to True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>poly_psfs</strong> – Polychromatic PSFs generated by the forward model.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tensor</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The <cite>input_positions</cite> tensor should have a shape of [batch_dim, 2], where each row
+represents the x and y coordinates of a position.</p></li>
+<li><p>The <cite>packed_SEDs</cite> tensor should have a shape of [batch_dim, …], containing the SED
+information for each position.</p></li>
+<li><p>During training, this method computes the Zernike coefficients from the input positions
+and calculates the corresponding OPD maps. Additionally, it adds an L2 loss term based on
+the parametric OPD maps.</p></li>
+<li><p>During inference, this method generates predictions using precomputed OPD maps or by
+propagating through the forward model.</p></li>
+</ul>
+<p class="rubric">Examples</p>
+<p># Usage during training
+inputs = [input_positions, packed_SEDs]
+poly_psfs = psf_model(inputs)</p>
+<p># Usage during inference
+inputs = [input_positions, packed_SEDs]
+poly_psfs = psf_model(inputs, training=False)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.compute_zernikes">
+<span class="sig-name descname"><span class="pre">compute_zernikes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_positions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_physical_polychromatic.html#TFPhysicalPolychromaticField.compute_zernikes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.compute_zernikes" title="Link to this definition"></a></dt>
+<dd><p>Compute Zernike coefficients at a batch of positions.</p>
+<p>This method computes the Zernike coefficients for a batch of input positions
+using both the parametric model and the physical layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input_positions</strong> (<em>Tensor</em><em> [</em><em>batch_dim</em><em>, </em><em>2</em><em>]</em>) – Positions for which to compute the Zernike coefficients.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>zernike_coefficients</strong> – Computed Zernike coefficients for the input positions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tensor [batch, n_zks_total, 1, 1]</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This method combines the predictions from both the parametric model and
+the physical layer to obtain the final Zernike coefficients.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.get_coeff_matrix">
+<span class="sig-name descname"><span class="pre">get_coeff_matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_physical_polychromatic.html#TFPhysicalPolychromaticField.get_coeff_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.get_coeff_matrix" title="Link to this definition"></a></dt>
+<dd><p>Get coefficient matrix.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.pad_zernikes">
+<span class="sig-name descname"><span class="pre">pad_zernikes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zk_param</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zk_prior</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_physical_polychromatic.html#TFPhysicalPolychromaticField.pad_zernikes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.pad_zernikes" title="Link to this definition"></a></dt>
+<dd><p>Pad the Zernike coefficients to match the maximum length.</p>
+<p>Pad the input Zernike coefficient tensors to match the length of the
+maximum number of Zernike coefficients among the parametric and prior parts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>zk_param</strong> (<em>tf.Tensor</em>) – Zernike coefficients for the parametric part. Shape [batch, n_zks_param, 1, 1].</p></li>
+<li><p><strong>zk_prior</strong> (<em>tf.Tensor</em>) – Zernike coefficients for the prior part. Shape [batch, n_zks_prior, 1, 1].</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>padded_zk_param</strong> (<em>tf.Tensor</em>) – Padded Zernike coefficients for the parametric part. Shape [batch, n_zks_total, 1, 1].</p></li>
+<li><p><strong>padded_zk_prior</strong> (<em>tf.Tensor</em>) – Padded Zernike coefficients for the prior part. Shape [batch, n_zks_total, 1, 1].</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.predict_mono_psfs">
+<span class="sig-name descname"><span class="pre">predict_mono_psfs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_positions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_N</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_physical_polychromatic.html#TFPhysicalPolychromaticField.predict_mono_psfs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.predict_mono_psfs" title="Link to this definition"></a></dt>
+<dd><p>Predict a set of monochromatic Point Spread Functions (PSFs) at desired positions.</p>
+<p>This method calculates monochromatic PSFs based on the provided input positions,
+observed wavelength, and required wavefront dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_positions</strong> (<em>Tensor</em><em> [</em><em>batch_dim</em><em>, </em><em>2</em><em>]</em>) – Positions at which to compute the PSFs.</p></li>
+<li><p><strong>lambda_obs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Observed wavelength in micrometers (um).</p></li>
+<li><p><strong>phase_N</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Required wavefront dimension. This should be calculated using a SimPSFToolkit
+instance. Example:
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">simPSF_np</span> <span class="pre">=</span> <span class="pre">wf.SimPSFToolkit(...)</span>
+<span class="pre">phase_N</span> <span class="pre">=</span> <span class="pre">simPSF_np.feasible_N(lambda_obs)</span>
+<span class="pre">`</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>mono_psf_batch</strong> – Batch of monochromatic PSFs.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.predict_opd">
+<span class="sig-name descname"><span class="pre">predict_opd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_positions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_physical_polychromatic.html#TFPhysicalPolychromaticField.predict_opd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.predict_opd" title="Link to this definition"></a></dt>
+<dd><p>Predict the OPD at some positions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input_positions</strong> (<em>Tensor</em><em> [</em><em>batch_dim</em><em>, </em><em>2</em><em>]</em>) – Positions to predict the OPD.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>opd_maps</strong> – OPD at requested positions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tensor [batch, opd_dim, opd_dim]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.predict_step">
+<span class="sig-name descname"><span class="pre">predict_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evaluate_step</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_physical_polychromatic.html#TFPhysicalPolychromaticField.predict_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.predict_step" title="Link to this definition"></a></dt>
+<dd><p>Predict (inference) step.</p>
+<p>A method to enable a special type of
+interpolation (different from training) for
+the physical layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>NOT SURE</em>)</p></li>
+<li><p><strong>evaluate_step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Boolean flag to evaluate step</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Instance of TFBatchPolychromaticPSF class containing computed polychromatic PSFs.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>poly_psfs TFBatchPolychromaticPSF</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.predict_zernikes">
+<span class="sig-name descname"><span class="pre">predict_zernikes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_positions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_physical_polychromatic.html#TFPhysicalPolychromaticField.predict_zernikes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.predict_zernikes" title="Link to this definition"></a></dt>
+<dd><p>Predict Zernike coefficients at a batch of positions.</p>
+<p>This method predicts the Zernike coefficients for a batch of input positions
+using both the parametric model and the physical layer. During training,
+the prediction from the physical layer is typically not used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input_positions</strong> (<em>Tensor</em><em> [</em><em>batch_dim</em><em>, </em><em>2</em><em>]</em>) – Positions for which to predict the Zernike coefficients.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>zernike_coeffs</strong> – Predicted Zernike coefficients for the input positions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tensor [batch, n_zks_total, 1, 1]</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>At training time, the prediction from the physical layer may not be utilized,
+as the model might be trained to rely solely on the parametric part.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.set_nonzero_nonparam">
+<span class="sig-name descname"><span class="pre">set_nonzero_nonparam</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_physical_polychromatic.html#TFPhysicalPolychromaticField.set_nonzero_nonparam"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.set_nonzero_nonparam" title="Link to this definition"></a></dt>
+<dd><p>Set the non-parametric part to non-zero values.</p>
+<p>This method sets the non-parametric component of the Optical Path Difference (OPD)
+to non-zero values, allowing it to contribute to the overall PSF (Point Spread Function).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.set_output_Q">
+<span class="sig-name descname"><span class="pre">set_output_Q</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_Q</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_physical_polychromatic.html#TFPhysicalPolychromaticField.set_output_Q"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.set_output_Q" title="Link to this definition"></a></dt>
+<dd><p>Set the output sampling rate (output_Q) for PSF generation.</p>
+<p>This method updates the <cite>output_Q</cite> parameter, which defines the
+resampling factor for generating PSFs at different resolutions
+relative to the telescope’s native sampling. It also allows optionally
+updating <cite>output_dim</cite>, which sets the output resolution of the PSF model.</p>
+<p>If <cite>output_dim</cite> is provided, the PSF model’s output resolution is updated.
+The method then reinitializes the batch polychromatic PSF generator
+to reflect the updated parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output_Q</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The resampling factor that determines the output PSF resolution
+relative to the telescope’s native sampling.</p></li>
+<li><p><strong>output_dim</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em><em>, </em><em>default=None</em>) – The new output dimension for the PSF model. If <cite>None</cite>, the output
+dimension remains unchanged.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.set_trainable_layers">
+<span class="sig-name descname"><span class="pre">set_trainable_layers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_bool</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nonparam_bool</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_physical_polychromatic.html#TFPhysicalPolychromaticField.set_trainable_layers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.set_trainable_layers" title="Link to this definition"></a></dt>
+<dd><p>Set the layers to be trainable.</p>
+<p>A method to set layers to be trainable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>param_bool</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Boolean flag for parametric model layers</p></li>
+<li><p><strong>nonparam_bool</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Boolean flag for non-parametric model layers</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.set_zero_nonparam">
+<span class="sig-name descname"><span class="pre">set_zero_nonparam</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_physical_polychromatic.html#TFPhysicalPolychromaticField.set_zero_nonparam"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.set_zero_nonparam" title="Link to this definition"></a></dt>
+<dd><p>Set the non-parametric part of the OPD (Optical Path Difference) to zero.</p>
+<p>This method sets the non-parametric component of the Optical Path Difference (OPD)
+to zero, effectively removing its contribution from the overall PSF (Point Spread Function).</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="wf_psf.psf_models.psf_model_parametric.html" class="btn btn-neutral float-left" title="wf_psf.psf_models.psf_model_parametric" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wf_psf.psf_models.psf_model_semiparametric.html" class="btn btn-neutral float-right" title="wf_psf.psf_models.psf_model_semiparametric" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

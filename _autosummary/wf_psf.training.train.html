@@ -1,0 +1,509 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.training.train &mdash; wf-psf 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../_static/twemoji.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="wf_psf.training.train_utils" href="wf_psf.training.train_utils.html" />
+    <link rel="prev" title="wf_psf.training" href="wf_psf.training.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.data.html">wf_psf.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.metrics.html">wf_psf.metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.plotting.html">wf_psf.plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.html">wf_psf.psf_models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.run.html">wf_psf.run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.sims.html">wf_psf.sims</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="wf_psf.training.html">wf_psf.training</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">wf_psf.training.train</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.training.train.TrainingParamsHandler"><code class="docutils literal notranslate"><span class="pre">TrainingParamsHandler</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.training.train.filepath_chkp_callback"><code class="docutils literal notranslate"><span class="pre">filepath_chkp_callback()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.training.train.get_gpu_info"><code class="docutils literal notranslate"><span class="pre">get_gpu_info()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.training.train.get_loss_metrics_monitor_and_outputs"><code class="docutils literal notranslate"><span class="pre">get_loss_metrics_monitor_and_outputs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.training.train.setup_training"><code class="docutils literal notranslate"><span class="pre">setup_training()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.training.train.train"><code class="docutils literal notranslate"><span class="pre">train()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.training.train_utils.html">wf_psf.training.train_utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.utils.html">wf_psf.utils</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="wf_psf.training.html">wf_psf.training</a></li>
+      <li class="breadcrumb-item active">wf_psf.training.train</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/wf_psf.training.train.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-wf_psf.training.train">
+<span id="wf-psf-training-train"></span><h1>wf_psf.training.train<a class="headerlink" href="#module-wf_psf.training.train" title="Link to this heading"></a></h1>
+<p>Train.</p>
+<p>A module which defines the classes and methods
+to manage training of the psf model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Authors<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Jennifer Pollack &lt;<a class="reference external" href="mailto:jennifer&#46;pollack&#37;&#52;&#48;cea&#46;fr">jennifer<span>&#46;</span>pollack<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;, Tobias Liaudat &lt;<a class="reference external" href="mailto:tobias&#46;liaudat&#37;&#52;&#48;cea&#46;fr">tobias<span>&#46;</span>liaudat<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;, Ezequiel Centofanti &lt;<a class="reference external" href="mailto:ezequiel&#46;centofanti&#37;&#52;&#48;cea&#46;fr">ezequiel<span>&#46;</span>centofanti<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;</p>
+</dd>
+</dl>
+<p class="rubric">Functions</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.training.train.filepath_chkp_callback" title="wf_psf.training.train.filepath_chkp_callback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filepath_chkp_callback</span></code></a>(checkpoint_dir, ...)</p></td>
+<td><p>Generate a file path for a checkpoint callback.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.training.train.get_gpu_info" title="wf_psf.training.train.get_gpu_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_gpu_info</span></code></a>()</p></td>
+<td><p>Get GPU Information.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.training.train.get_loss_metrics_monitor_and_outputs" title="wf_psf.training.train.get_loss_metrics_monitor_and_outputs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_loss_metrics_monitor_and_outputs</span></code></a>(...)</p></td>
+<td><p>Generate factory for loss, metrics, monitor, and outputs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.training.train.setup_training" title="wf_psf.training.train.setup_training"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_training</span></code></a>()</p></td>
+<td><p>Set up Training.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.training.train.train" title="wf_psf.training.train.train"><code class="xref py py-obj docutils literal notranslate"><span class="pre">train</span></code></a>(training_params, data_conf, ...)</p></td>
+<td><p>Train the PSF model over one or more parametric and non-parametric training cycles.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.training.train.TrainingParamsHandler" title="wf_psf.training.train.TrainingParamsHandler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TrainingParamsHandler</span></code></a>(training_params)</p></td>
+<td><p>Training Parameters Handler.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.training.train.TrainingParamsHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.training.train.</span></span><span class="sig-name descname"><span class="pre">TrainingParamsHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">training_params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/training/train.html#TrainingParamsHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train.TrainingParamsHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Training Parameters Handler.</p>
+<p>A class to handle training parameters accessed:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>training_params</strong> (<em>Recursive Namespace object</em>) – Recursive Namespace object containing training input parameters</p>
+</dd>
+<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><a class="reference internal" href="#wf_psf.training.train.TrainingParamsHandler.id_name" title="wf_psf.training.train.TrainingParamsHandler.id_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">id_name</span></code></a></dt><dd><p>ID Name.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.training.train.TrainingParamsHandler.learning_rate_non_params" title="wf_psf.training.train.TrainingParamsHandler.learning_rate_non_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">learning_rate_non_params</span></code></a></dt><dd><p>Non-parametric Model Learning Rate.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.training.train.TrainingParamsHandler.learning_rate_params" title="wf_psf.training.train.TrainingParamsHandler.learning_rate_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">learning_rate_params</span></code></a></dt><dd><p>Parametric Model Learning Rate.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.training.train.TrainingParamsHandler.model_name" title="wf_psf.training.train.TrainingParamsHandler.model_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">model_name</span></code></a></dt><dd><p>PSF Model Name.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.training.train.TrainingParamsHandler.model_params" title="wf_psf.training.train.TrainingParamsHandler.model_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">model_params</span></code></a></dt><dd><p>PSF Model Params.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.training.train.TrainingParamsHandler.multi_cycle_params" title="wf_psf.training.train.TrainingParamsHandler.multi_cycle_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">multi_cycle_params</span></code></a></dt><dd><p>Training Multi Cycle Parameters.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.training.train.TrainingParamsHandler.n_epochs_non_params" title="wf_psf.training.train.TrainingParamsHandler.n_epochs_non_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_epochs_non_params</span></code></a></dt><dd><p>Number of Epochs for Non-parametric PSF model.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.training.train.TrainingParamsHandler.n_epochs_params" title="wf_psf.training.train.TrainingParamsHandler.n_epochs_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_epochs_params</span></code></a></dt><dd><p>Number of Epochs for Parametric PSF model.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.training.train.TrainingParamsHandler.total_cycles" title="wf_psf.training.train.TrainingParamsHandler.total_cycles"><code class="xref py py-obj docutils literal notranslate"><span class="pre">total_cycles</span></code></a></dt><dd><p>Total Number of Cycles.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.training.train.TrainingParamsHandler.training_hparams" title="wf_psf.training.train.TrainingParamsHandler.training_hparams"><code class="xref py py-obj docutils literal notranslate"><span class="pre">training_hparams</span></code></a></dt><dd><p>Training Hyperparameters.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.training.train.TrainingParamsHandler.id_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">id_name</span></span><a class="headerlink" href="#wf_psf.training.train.TrainingParamsHandler.id_name" title="Link to this definition"></a></dt>
+<dd><p>ID Name.</p>
+<p>Set unique ID name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>id_name</strong> – A unique ID.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.training.train.TrainingParamsHandler.learning_rate_non_params">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">learning_rate_non_params</span></span><a class="headerlink" href="#wf_psf.training.train.TrainingParamsHandler.learning_rate_non_params" title="Link to this definition"></a></dt>
+<dd><p>Non-parametric Model Learning Rate.</p>
+<p>Set learning rate for non-parametric
+PSF model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>learning_rate_non_params</strong> – List containing learning rate for non-parametric PSF model</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.training.train.TrainingParamsHandler.learning_rate_params">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">learning_rate_params</span></span><a class="headerlink" href="#wf_psf.training.train.TrainingParamsHandler.learning_rate_params" title="Link to this definition"></a></dt>
+<dd><p>Parametric Model Learning Rate.</p>
+<p>Set learning rate for parametric
+PSF model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>learning_rate_params</strong> – List containing learning rate for parametric PSF model</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.training.train.TrainingParamsHandler.model_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_name</span></span><a class="headerlink" href="#wf_psf.training.train.TrainingParamsHandler.model_name" title="Link to this definition"></a></dt>
+<dd><p>PSF Model Name.</p>
+<p>Set model_name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model_name</strong> – Name of PSF model</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.training.train.TrainingParamsHandler.model_params">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">model_params</span></span><a class="headerlink" href="#wf_psf.training.train.TrainingParamsHandler.model_params" title="Link to this definition"></a></dt>
+<dd><p>PSF Model Params.</p>
+<p>Set PSF model training parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model_params</strong> – Recursive Namespace object storing PSF model parameters</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Recursive Namespace object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.training.train.TrainingParamsHandler.multi_cycle_params">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">multi_cycle_params</span></span><a class="headerlink" href="#wf_psf.training.train.TrainingParamsHandler.multi_cycle_params" title="Link to this definition"></a></dt>
+<dd><p>Training Multi Cycle Parameters.</p>
+<p>Set training multi cycle parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>multi_cycle_params</strong> – Recursive Namespace object storing training multi-cycle parameters</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Recursive Namespace object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.training.train.TrainingParamsHandler.n_epochs_non_params">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_epochs_non_params</span></span><a class="headerlink" href="#wf_psf.training.train.TrainingParamsHandler.n_epochs_non_params" title="Link to this definition"></a></dt>
+<dd><p>Number of Epochs for Non-parametric PSF model.</p>
+<p>Set the number of epochs for
+training non-parametric PSF model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n_epochs_non_params</strong> – List of number of epochs for training non-parametric PSF model.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.training.train.TrainingParamsHandler.n_epochs_params">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_epochs_params</span></span><a class="headerlink" href="#wf_psf.training.train.TrainingParamsHandler.n_epochs_params" title="Link to this definition"></a></dt>
+<dd><p>Number of Epochs for Parametric PSF model.</p>
+<p>Set the number of epochs for
+training parametric PSF model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n_epochs_params</strong> – List of number of epochs for training parametric PSF model.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.training.train.TrainingParamsHandler.total_cycles">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">total_cycles</span></span><a class="headerlink" href="#wf_psf.training.train.TrainingParamsHandler.total_cycles" title="Link to this definition"></a></dt>
+<dd><p>Total Number of Cycles.</p>
+<p>Set total number of cycles for
+training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>total_cycles</strong> – Total number of cycles for training</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.training.train.TrainingParamsHandler.training_hparams">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">training_hparams</span></span><a class="headerlink" href="#wf_psf.training.train.TrainingParamsHandler.training_hparams" title="Link to this definition"></a></dt>
+<dd><p>Training Hyperparameters.</p>
+<p>Set training hyperparameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>training_hparams</strong> – Recursive Namespace object storing training hyper parameters</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Recursive Namespace object</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.training.train.filepath_chkp_callback">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.training.train.</span></span><span class="sig-name descname"><span class="pre">filepath_chkp_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_cycle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/training/train.html#filepath_chkp_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train.filepath_chkp_callback" title="Link to this definition"></a></dt>
+<dd><p>Generate a file path for a checkpoint callback.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>checkpoint_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The directory where the checkpoint will be saved.</p></li>
+<li><p><strong>model_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The name of the model.</p></li>
+<li><p><strong>id_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The unique identifier for the model instance.</p></li>
+<li><p><strong>current_cycle</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The current cycle number.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A string representing the full file path for the checkpoint callback.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.training.train.get_gpu_info">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.training.train.</span></span><span class="sig-name descname"><span class="pre">get_gpu_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/training/train.html#get_gpu_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train.get_gpu_info" title="Link to this definition"></a></dt>
+<dd><p>Get GPU Information.</p>
+<p>A function to return GPU
+device name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>device_name</strong> – Name of GPU device</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.training.train.get_loss_metrics_monitor_and_outputs">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.training.train.</span></span><span class="sig-name descname"><span class="pre">get_loss_metrics_monitor_and_outputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">training_handler</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_conf</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/training/train.html#get_loss_metrics_monitor_and_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train.get_loss_metrics_monitor_and_outputs" title="Link to this definition"></a></dt>
+<dd><p>Generate factory for loss, metrics, monitor, and outputs.</p>
+<p>A function to generate loss, metrics, monitor, and outputs
+for training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>training_handler</strong> (<a class="reference internal" href="#wf_psf.training.train.TrainingParamsHandler" title="wf_psf.training.train.TrainingParamsHandler"><em>TrainingParamsHandler</em></a>) – TrainingParamsHandler object containing training parameters</p></li>
+<li><p><strong>data_conf</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><em>object</em></a>) – Data configuration object containing training and test data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>loss</strong> (<em>tf.keras.losses.Loss</em>) – Loss function to be used for training</p></li>
+<li><p><strong>param_metrics</strong> (<em>list</em>) – List of metrics for the parametric model</p></li>
+<li><p><strong>non_param_metrics</strong> (<em>list</em>) – List of metrics for the non-parametric model</p></li>
+<li><p><strong>monitor</strong> (<em>str</em>) – Metric to monitor for saving the model</p></li>
+<li><p><strong>outputs</strong> (<em>tf.Tensor</em>) – Tensor containing the outputs for training</p></li>
+<li><p><strong>output_val</strong> (<em>tf.Tensor</em>) – Tensor containing the outputs for validation</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.training.train.setup_training">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.training.train.</span></span><span class="sig-name descname"><span class="pre">setup_training</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/training/train.html#setup_training"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train.setup_training" title="Link to this definition"></a></dt>
+<dd><p>Set up Training.</p>
+<p>A function to setup training.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.training.train.train">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.training.train.</span></span><span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">training_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_conf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkpoint_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psf_model_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/training/train.html#train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train.train" title="Link to this definition"></a></dt>
+<dd><p>Train the PSF model over one or more parametric and non-parametric training cycles.</p>
+<p>This function manages multi-cycle training of a parametric + non-parametric PSF model,
+including initialization, loss/metric configuration, optimizer setup, model checkpointing,
+and optional projection or resetting of non-parametric features. Each cycle can include
+both parametric and non-parametric training stages, and training history is saved for each.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>training_params</strong> (<a class="reference internal" href="wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace" title="wf_psf.utils.read_config.RecursiveNamespace"><em>RecursiveNamespace</em></a>) – Contains all training configuration parameters, including:
+- learning rates per cycle
+- number of epochs per component per cycle
+- model type and training behavior flags
+- multi-cycle definitions and callbacks</p></li>
+<li><p><strong>data_conf</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><em>object</em></a>) – Contains training and validation datasets via attributes:
+- data_conf.training_data: TrainingDataHandler instance with SEDs and positions
+- data_conf.test_data: TestDataHandler instance with validation SEDs and positions</p></li>
+<li><p><strong>checkpoint_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Directory where model checkpoints will be saved during training.</p></li>
+<li><p><strong>optimizer_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Directory where the optimizer history (as a NumPy .npy file) will be stored.</p></li>
+<li><p><strong>psf_model_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Directory where the final trained PSF model weights will be saved per cycle.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Utilizes TensorFlow and TensorFlow Addons for model training and optimization.</p></li>
+<li><p>Supports masked mean squared error loss for training with masked data.</p></li>
+<li><p>Allows for projection of data-driven features onto parametric models between cycles.</p></li>
+<li><p>Supports resetting of non-parametric features to initial states.</p></li>
+<li><p>Saves model weights to <cite>psf_model_dir</cite> per training cycle (or final one if not all saved)</p></li>
+<li><p>Saves optimizer histories to <cite>optimizer_dir</cite></p></li>
+<li><p>Logs cycle information and time durations</p></li>
+</ul>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="wf_psf.training.html" class="btn btn-neutral float-left" title="wf_psf.training" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wf_psf.training.train_utils.html" class="btn btn-neutral float-right" title="wf_psf.training.train_utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

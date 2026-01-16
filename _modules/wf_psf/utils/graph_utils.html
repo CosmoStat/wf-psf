@@ -1,25 +1,24 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wf_psf.utils.graph_utils &mdash; wf-psf 2.0.1 documentation</title>
+  <title>wf_psf.utils.graph_utils &mdash; wf-psf 3.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9570fddd" />
       <link rel="stylesheet" type="text/css" href="../../../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=309026bb" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
-        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
-        <script src="../../../_static/doctools.js?v=888ff710"></script>
-        <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
-        <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js"></script>
-        <script src="../../../_static/twemoji.js"></script>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../../../_static/twemoji.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="author" title="About these documents" href="../../../about.html" />
     <link rel="index" title="Index" href="../../../genindex.html" />
@@ -62,7 +61,11 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../wf_psf.html">wf_psf package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer/index.html">Developer Guide</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">References</span></p>
 <ul>
@@ -94,12 +97,18 @@
            <div itemprop="articleBody">
              
   <h1>Source code for wf_psf.utils.graph_utils</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span></span><span class="sd">&quot;&quot;&quot;Graph-related utility functions.</span>
+
+<span class="sd">:Authors: Tobias Liaudat &lt;tobias.liaudat@cea.fr&gt;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 
 <div class="viewcode-block" id="GraphBuilder">
-<a class="viewcode-back" href="../../../wf_psf.utils.graph_utils.html#wf_psf.utils.graph_utils.GraphBuilder">[docs]</a>
-<span class="k">class</span> <span class="nc">GraphBuilder</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.graph_utils.html#wf_psf.utils.graph_utils.GraphBuilder">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GraphBuilder</span><span class="p">:</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;GraphBuilder class.</span>
 
 <span class="sd">    This class computes the necessary quantities for RCA&#39;s graph constraint.</span>
@@ -135,7 +144,7 @@
 <span class="sd">        Default is ``True``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">obs_data</span><span class="p">,</span>
         <span class="n">obs_pos</span><span class="p">,</span>
@@ -177,7 +186,7 @@
         <span class="k">if</span> <span class="n">auto_run</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_build_graphs</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_build_graphs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_graphs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute graph-constraint related values.</span>
 
 <span class="sd">        Notes</span>
@@ -210,17 +219,17 @@
             <span class="n">R</span> <span class="o">-=</span> <span class="n">vect</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vect</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R</span><span class="p">))</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span>
-                    <span class="s2">&quot; &gt; selected e: </span><span class="si">{}</span><span class="se">\t</span><span class="s2">selected a:&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-                    <span class="o">+</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="se">\t</span><span class="s2"> chosen index: </span><span class="si">{}</span><span class="s2">/</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_eigenvects</span><span class="p">)</span>
+                    <span class="sa">f</span><span class="s2">&quot; &gt; selected e: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="se">\t</span><span class="s2">selected a:&quot;</span>
+                    <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="se">\t</span><span class="s2"> chosen index: </span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_eigenvects</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">VT</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">eigenvect</span> <span class="k">for</span> <span class="n">eigenvect</span> <span class="ow">in</span> <span class="n">list_eigenvects</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">VT</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">eigenvect</span> <span class="k">for</span> <span class="n">eigenvect</span> <span class="ow">in</span> <span class="n">list_eigenvects</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n_comp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">VT</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_comp</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_eigenvects</span> <span class="o">+</span> <span class="n">idx</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
 
 <div class="viewcode-block" id="GraphBuilder.pick_emax">
-<a class="viewcode-back" href="../../../wf_psf.utils.graph_utils.html#wf_psf.utils.graph_utils.GraphBuilder.pick_emax">[docs]</a>
-    <span class="k">def</span> <span class="nf">pick_emax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-15</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.graph_utils.html#wf_psf.utils.graph_utils.GraphBuilder.pick_emax">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pick_emax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-15</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Pick maximum value for ``e`` parameter.</span>
 
 <span class="sd">        From now, we fix the maximum :math:`e` to 1 and ignore the old</span>
@@ -240,8 +249,8 @@
 
 
 <div class="viewcode-block" id="GraphBuilder.select_params">
-<a class="viewcode-back" href="../../../wf_psf.utils.graph_utils.html#wf_psf.utils.graph_utils.GraphBuilder.select_params">[docs]</a>
-    <span class="k">def</span> <span class="nf">select_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">e_range</span><span class="p">,</span> <span class="n">a_range</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.graph_utils.html#wf_psf.utils.graph_utils.GraphBuilder.select_params">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">select_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">e_range</span><span class="p">,</span> <span class="n">a_range</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Select best graph parameters.</span>
 
 <span class="sd">        Select :math:`(e,a)` parameters and best eigenvector</span>
@@ -277,8 +286,8 @@
 
 
 <div class="viewcode-block" id="GraphBuilder.gen_eigenvects">
-<a class="viewcode-back" href="../../../wf_psf.utils.graph_utils.html#wf_psf.utils.graph_utils.GraphBuilder.gen_eigenvects">[docs]</a>
-    <span class="k">def</span> <span class="nf">gen_eigenvects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mat</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.graph_utils.html#wf_psf.utils.graph_utils.GraphBuilder.gen_eigenvects">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">gen_eigenvects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mat</span><span class="p">):</span>
 <span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute input matrix&#39;s eigenvectors.</span>
 
 <span class="sd">        Keep only the ``n_eigenvects`` associated</span>
@@ -292,8 +301,8 @@
 
 
 <div class="viewcode-block" id="select_vstar">
-<a class="viewcode-back" href="../../../wf_psf.utils.graph_utils.html#wf_psf.utils.graph_utils.select_vstar">[docs]</a>
-<span class="k">def</span> <span class="nf">select_vstar</span><span class="p">(</span><span class="n">eigenvects</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.graph_utils.html#wf_psf.utils.graph_utils.select_vstar">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">select_vstar</span><span class="p">(</span><span class="n">eigenvects</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Pick best eigenvector from a set of :math:`(e,a)`.</span>
 
 <span class="sd">    i.e., solve (35) from RCA paper (Ngole et al.).</span>
@@ -325,8 +334,8 @@
 
 
 <div class="viewcode-block" id="pairwise_distances">
-<a class="viewcode-back" href="../../../wf_psf.utils.graph_utils.html#wf_psf.utils.graph_utils.pairwise_distances">[docs]</a>
-<span class="k">def</span> <span class="nf">pairwise_distances</span><span class="p">(</span><span class="n">obs_pos</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.graph_utils.html#wf_psf.utils.graph_utils.pairwise_distances">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">pairwise_distances</span><span class="p">(</span><span class="n">obs_pos</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute pairwise distances.&quot;&quot;&quot;</span>
     <span class="n">ones</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">obs_pos</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">out0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">obs_pos</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">ones</span><span class="p">)</span>
@@ -336,8 +345,8 @@
 
 
 <div class="viewcode-block" id="gen_Pea">
-<a class="viewcode-back" href="../../../wf_psf.utils.graph_utils.html#wf_psf.utils.graph_utils.gen_Pea">[docs]</a>
-<span class="k">def</span> <span class="nf">gen_Pea</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.graph_utils.html#wf_psf.utils.graph_utils.gen_Pea">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">gen_Pea</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute the graph Laplacian for a given set of parameters.</span>
 
 <span class="sd">    Parameters</span>
@@ -379,7 +388,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, CosmoStat.</p>
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

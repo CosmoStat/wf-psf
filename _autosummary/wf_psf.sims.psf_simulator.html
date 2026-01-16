@@ -1,0 +1,746 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.sims.psf_simulator &mdash; wf-psf 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../_static/twemoji.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="wf_psf.sims.spatial_varying_psf" href="wf_psf.sims.spatial_varying_psf.html" />
+    <link rel="prev" title="wf_psf.sims" href="wf_psf.sims.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.data.html">wf_psf.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.metrics.html">wf_psf.metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.plotting.html">wf_psf.plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.html">wf_psf.psf_models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.run.html">wf_psf.run</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="wf_psf.sims.html">wf_psf.sims</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">wf_psf.sims.psf_simulator</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator"><code class="docutils literal notranslate"><span class="pre">PSFSimulator</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.sims.spatial_varying_psf.html">wf_psf.sims.spatial_varying_psf</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.training.html">wf_psf.training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.utils.html">wf_psf.utils</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="wf_psf.sims.html">wf_psf.sims</a></li>
+      <li class="breadcrumb-item active">wf_psf.sims.psf_simulator</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/wf_psf.sims.psf_simulator.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-wf_psf.sims.psf_simulator">
+<span id="wf-psf-sims-psf-simulator"></span><h1>wf_psf.sims.psf_simulator<a class="headerlink" href="#module-wf_psf.sims.psf_simulator" title="Link to this heading"></a></h1>
+<p>PSF simulator.</p>
+<p>A module to simulate PSFs from Zernike coefficients.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Authors<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tobias Liaudat &lt;<a class="reference external" href="mailto:tobias&#46;liaudat&#37;&#52;&#48;cea&#46;fr">tobias<span>&#46;</span>liaudat<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt; &amp; Jennifer Pollack &lt;<a class="reference external" href="mailto:jennifer&#46;pollack&#37;&#52;&#48;cea&#46;fr">jennifer<span>&#46;</span>pollack<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;</p>
+</dd>
+</dl>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator" title="wf_psf.sims.psf_simulator.PSFSimulator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PSFSimulator</span></code></a>([max_order, max_wfe_rms, ...])</p></td>
+<td><p>Simulate PSFs.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.sims.psf_simulator.</span></span><span class="sig-name descname"><span class="pre">PSFSimulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">45</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_wfe_rms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rand_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_opt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oversampling_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_Q</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pix_sampling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tel_diameter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tel_focal_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">24.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pupil_diameter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">euclid_obsc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LP_filter_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SED_sigma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SED_interp_pts_per_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SED_extrapolate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SED_interp_kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Simulate PSFs.</p>
+<p>In the future the zernike maps could be created with galsim or some other
+alternative.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>max_order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Maximum Zernike polynomial order. Default is <cite>45</cite>.</p></li>
+<li><p><strong>max_wfe_rms</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Maximum allowed WFE in RMS. Used for normalization. Units in [μm].
+Default is <code class="docutils literal notranslate"><span class="pre">0.1</span></code>.</p></li>
+<li><p><strong>output_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Output dimension of the square PSF stamp. Default is <cite>64</cite>.</p></li>
+<li><p><strong>rand_seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Random seed to be used to generate random zernike values.
+Default is <cite>None</cite>.</p></li>
+<li><p><strong>plot_opt</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Option to plot some characteristics of the PSF generated.
+Default is <cite>False</cite>.</p></li>
+<li><p><strong>oversampling_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Oversampling rate for the wavefront PSF simulation. Default is <cite>2.14</cite>
+that is the minumum number required by Euclid so that there is no
+aliasing at any wavelength in the pass band [0.55um, 0.9um].</p></li>
+<li><p><strong>output_Q</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Downsampling rate to match the specified telescope’s sampling. The value
+of <cite>output_Q</cite> should be equal to <cite>oversampling_rate</cite> in order to have
+the right pixel sampling corresponding to the telescope characteristics
+<cite>pix_sampling</cite>, <cite>tel_diameter</cite>, <cite>tel_focal_length</cite>. The final
+oversampling obtained is <cite>oversampling_rate/output_Q</cite>.
+Default is <cite>1</cite>, so the output psf will be super-resolved by a factor of
+<cite>oversampling_rate</cite>.</p></li>
+<li><p><strong>pix_sampling</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Pixel sampling in [um]. Default is <a href="#id1"><span class="problematic" id="id2">`</span></a>12`[um] (Euclid-like).</p></li>
+<li><p><strong>tel_diameter</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Telescope’s main mirror diameter in [m]. Default is <a href="#id3"><span class="problematic" id="id4">`</span></a>1.2`[m]
+(Euclid-like).</p></li>
+<li><p><strong>tel_focal_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Telescope’s focal length in [m]. Default is <a href="#id5"><span class="problematic" id="id6">`</span></a>24.5`[m] (Euclid-like).</p></li>
+<li><p><strong>pupil_diameter</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Pupil diameter in pixels. Number of samples of the wavefront in the
+pupil plane. More specifically, the Optical Path Differences map.
+Default is <cite>1024</cite> [pix].</p></li>
+<li><p><strong>euclid_obsc</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Wheter to use Euclid-like obscurations. Defualt is <cite>True</cite>.</p></li>
+<li><p><strong>LP_filter_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Length of one dimension of the Low-Pass (LP) filter to apply to the
+obscurations to avoid the aliasing effect. The filter is a simple
+top-hat filter. Default is <cite>3</cite>.</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Self-explanatory variable. Default is <cite>0</cite>, use a value <cite>&gt;0</cite> to activate.</p></li>
+<li><p><strong>SED_sigma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Standard deviation of the multiplicative SED Gaussian noise.</p></li>
+<li><p><strong>SED_interp_pts_per_bin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of points to interpolate in between SED values. It can be 0, 1 or 2.</p></li>
+<li><p><strong>SED_extrapolate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – SED interpolation mode. Default mode uses extrapolation.</p></li>
+<li><p><strong>SED_interp_kind</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – SED interpolation kind. Options are <cite>‘cubic’</cite> or <cite>‘linear’</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.SED_gen_noise" title="wf_psf.sims.psf_simulator.PSFSimulator.SED_gen_noise"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SED_gen_noise</span></code></a>(n_bins, SED_sigma)</p></td>
+<td><p>Generate random normal errors for the binned SED.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.calc_SED_wave_values" title="wf_psf.sims.psf_simulator.PSFSimulator.calc_SED_wave_values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_SED_wave_values</span></code></a>(SED[, n_bins])</p></td>
+<td><p>Calculate feasible wavelength and SED values.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.calculate_opd" title="wf_psf.sims.psf_simulator.PSFSimulator.calculate_opd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_opd</span></code></a>([regen_sample])</p></td>
+<td><p>Calculate the OPD from the Zernike coefficients.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.calculate_wfe_rms" title="wf_psf.sims.psf_simulator.PSFSimulator.calculate_wfe_rms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_wfe_rms</span></code></a>([z_coeffs])</p></td>
+<td><p>Calculate WFE rms from a set of zernike coefficients.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.check_wfe_rms" title="wf_psf.sims.psf_simulator.PSFSimulator.check_wfe_rms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">check_wfe_rms</span></code></a>([z_coeffs, max_wfe_rms])</p></td>
+<td><p>Check if Zernike coefficients are within the maximum admitted error.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.crop_img" title="wf_psf.sims.psf_simulator.PSFSimulator.crop_img"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crop_img</span></code></a>(to_crop_img, ref_im)</p></td>
+<td><p>Crop image.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.decimate_im" title="wf_psf.sims.psf_simulator.PSFSimulator.decimate_im"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decimate_im</span></code></a>(input_im, decim_f)</p></td>
+<td><p>Decimate image.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.diffract_phase" title="wf_psf.sims.psf_simulator.PSFSimulator.diffract_phase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">diffract_phase</span></code></a>([lambda_obs])</p></td>
+<td><p>Diffract the phase map.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.feasible_N" title="wf_psf.sims.psf_simulator.PSFSimulator.feasible_N"><code class="xref py py-obj docutils literal notranslate"><span class="pre">feasible_N</span></code></a>(lambda_obs)</p></td>
+<td><p>Calculate the feasible N for a lambda_obs diffraction.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.feasible_wavelength" title="wf_psf.sims.psf_simulator.PSFSimulator.feasible_wavelength"><code class="xref py py-obj docutils literal notranslate"><span class="pre">feasible_wavelength</span></code></a>(lambda_obs)</p></td>
+<td><p>Calculate closest feasible wavelength to target wavelength.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.fft_diffract" title="wf_psf.sims.psf_simulator.PSFSimulator.fft_diffract"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fft_diffract</span></code></a>(wf, output_Q[, output_dim])</p></td>
+<td><p>Perform a fft-based diffraction.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.filter_SED" title="wf_psf.sims.psf_simulator.PSFSimulator.filter_SED"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter_SED</span></code></a>(SED, n_bins[, filter_lims])</p></td>
+<td><p>Generate filtered SED.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.gen_SED_interp" title="wf_psf.sims.psf_simulator.PSFSimulator.gen_SED_interp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gen_SED_interp</span></code></a>(SED[, n_bins, interp_kind])</p></td>
+<td><p>Generate SED interpolator.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.gen_SED_sampler" title="wf_psf.sims.psf_simulator.PSFSimulator.gen_SED_sampler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gen_SED_sampler</span></code></a>(SED, n_bins[, interp_kind])</p></td>
+<td><p>Generate SED sampler.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.gen_random_Z_coeffs" title="wf_psf.sims.psf_simulator.PSFSimulator.gen_random_Z_coeffs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gen_random_Z_coeffs</span></code></a>([max_order, rand_seed])</p></td>
+<td><p>Generate a random set of Zernike coefficients.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.generate_euclid_pupil_obscurations" title="wf_psf.sims.psf_simulator.PSFSimulator.generate_euclid_pupil_obscurations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_euclid_pupil_obscurations</span></code></a>([N_pix, ...])</p></td>
+<td><p>Generate Euclid like pupil obscurations.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.generate_mono_PSF" title="wf_psf.sims.psf_simulator.PSFSimulator.generate_mono_PSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_mono_PSF</span></code></a>([lambda_obs, ...])</p></td>
+<td><p>Generate monochromatic PSF.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.generate_poly_PSF" title="wf_psf.sims.psf_simulator.PSFSimulator.generate_poly_PSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_poly_PSF</span></code></a>(SED[, n_bins])</p></td>
+<td><p>Generate polychromatic PSF with a specific SED.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.get_psf" title="wf_psf.sims.psf_simulator.PSFSimulator.get_psf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_psf</span></code></a>()</p></td>
+<td><p>Get computed PSF.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.get_radial_idx" title="wf_psf.sims.psf_simulator.PSFSimulator.get_radial_idx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_radial_idx</span></code></a>([max_order])</p></td>
+<td><p>Get radial zernike indices.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.get_z_coeffs" title="wf_psf.sims.psf_simulator.PSFSimulator.get_z_coeffs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_z_coeffs</span></code></a>()</p></td>
+<td><p>Get random coefficients.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.interp_SED" title="wf_psf.sims.psf_simulator.PSFSimulator.interp_SED"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interp_SED</span></code></a>(SED_filt[, n_points, n_bins, ...])</p></td>
+<td><p>Interpolate the binned SED.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.normalize_zernikes" title="wf_psf.sims.psf_simulator.PSFSimulator.normalize_zernikes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_zernikes</span></code></a>([z_coeffs, max_wfe_rms])</p></td>
+<td><p>Normalize zernike coefficients.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.opd_phase_plotter" title="wf_psf.sims.psf_simulator.PSFSimulator.opd_phase_plotter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">opd_phase_plotter</span></code></a>(pupil_mask, opd, phase, ...)</p></td>
+<td><p>Plot OPD and phase maps.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.plot_opd_phase" title="wf_psf.sims.psf_simulator.PSFSimulator.plot_opd_phase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_opd_phase</span></code></a>([cmap, save_img])</p></td>
+<td><p>Plot OPD and phase maps.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.plot_psf" title="wf_psf.sims.psf_simulator.PSFSimulator.plot_psf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_psf</span></code></a>([cmap, save_img])</p></td>
+<td><p>Plot PSF maps.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.plot_z_coeffs" title="wf_psf.sims.psf_simulator.PSFSimulator.plot_z_coeffs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_z_coeffs</span></code></a>([save_img])</p></td>
+<td><p>Plot random Zernike coefficients.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.psf_plotter" title="wf_psf.sims.psf_simulator.PSFSimulator.psf_plotter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">psf_plotter</span></code></a>(psf[, lambda_obs, cmap, save_img])</p></td>
+<td><p>Plot PSF maps.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.sims.psf_simulator.PSFSimulator.set_z_coeffs" title="wf_psf.sims.psf_simulator.PSFSimulator.set_z_coeffs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_z_coeffs</span></code></a>(z_coeffs)</p></td>
+<td><p>Set zernike coefficients.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.SED_gen_noise">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SED_gen_noise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_bins</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SED_sigma</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.SED_gen_noise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.SED_gen_noise" title="Link to this definition"></a></dt>
+<dd><p>Generate random normal errors for the binned SED.</p>
+<p>Returns a vector of size n_bins containing each bin error.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_bins</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of bins of the SED. It will be the length of the output noise vector.</p></li>
+<li><p><strong>SED_sigma</strong> (<em>positive float</em>) – Standard deviation value of the Gaussian noise vector.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.calc_SED_wave_values">
+<span class="sig-name descname"><span class="pre">calc_SED_wave_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">SED</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">35</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.calc_SED_wave_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.calc_SED_wave_values" title="Link to this definition"></a></dt>
+<dd><p>Calculate feasible wavelength and SED values.</p>
+<p>Feasible so that the padding number N is integer.
+Meaning choice of wavelengths matters in speeding
+up the diffraction computation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>SED</strong> (<em>np.ndarray</em>) – Spectral energy distribution for a star at given wavelength positions. The first column contains the wavelength
+positions; the second column contains the SED value at each wavelength.</p></li>
+<li><p><strong>n_bins</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of bins</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>feasible_wv</strong> (<em>np.ndarray</em>) – Feasible wavelength positions in [um]</p></li>
+<li><p><strong>SED_norm</strong> (<em>np.ndarray</em>) – Normalized SED values at each feasible wavelength position</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.calculate_opd">
+<span class="sig-name descname"><span class="pre">calculate_opd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">regen_sample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.calculate_opd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.calculate_opd" title="Link to this definition"></a></dt>
+<dd><p>Calculate the OPD from the Zernike coefficients.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>regen_sample</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to regenerate a new random sample of Zernike coefficients.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>opd</strong> – 2D array corresponding to the Optical Path Differences map.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.calculate_wfe_rms">
+<span class="sig-name descname"><span class="pre">calculate_wfe_rms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_coeffs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.calculate_wfe_rms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.calculate_wfe_rms" title="Link to this definition"></a></dt>
+<dd><p>Calculate WFE rms from a set of zernike coefficients.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>z_coeffs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>floats</em>) – List containing the zernike coefficients to be used.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>wfe_rms</strong> – Wavefront error in RMS [um].</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.check_wfe_rms">
+<span class="sig-name descname"><span class="pre">check_wfe_rms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_coeffs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_wfe_rms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.check_wfe_rms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.check_wfe_rms" title="Link to this definition"></a></dt>
+<dd><p>Check if Zernike coefficients are within the maximum admitted error.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.crop_img">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">crop_img</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to_crop_img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_im</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.crop_img"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.crop_img" title="Link to this definition"></a></dt>
+<dd><p>Crop image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>to_crop_img</strong> (<em>np.ndarray</em>) – Image to be cropped.</p></li>
+<li><p><strong>ref_im</strong> (<em>np.ndarray</em>) – Reference image to match the size.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>cropped_img</strong> – Cropped image.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.decimate_im">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">decimate_im</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_im</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decim_f</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.decimate_im"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.decimate_im" title="Link to this definition"></a></dt>
+<dd><p>Decimate image.</p>
+<p>Decimated by a factor of decim_f.
+Based on the PIL library using the default interpolator.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.diffract_phase">
+<span class="sig-name descname"><span class="pre">diffract_phase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lambda_obs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.diffract_phase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.diffract_phase" title="Link to this definition"></a></dt>
+<dd><p>Diffract the phase map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>lambda_obs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Wavelength of observation in [um]. If None, use the stored wavelength.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.feasible_N">
+<span class="sig-name descname"><span class="pre">feasible_N</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lambda_obs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.feasible_N"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.feasible_N" title="Link to this definition"></a></dt>
+<dd><p>Calculate the feasible N for a lambda_obs diffraction.</p>
+<p>Input wavelength must be in [um].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>lambda_obs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Target wavelength in [um].</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.feasible_wavelength">
+<span class="sig-name descname"><span class="pre">feasible_wavelength</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lambda_obs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.feasible_wavelength"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.feasible_wavelength" title="Link to this definition"></a></dt>
+<dd><p>Calculate closest feasible wavelength to target wavelength.</p>
+<p>Input wavelength must be in [um].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>lambda_obs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Target wavelength in [um].</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.fft_diffract">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">fft_diffract</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_Q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.fft_diffract"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.fft_diffract" title="Link to this definition"></a></dt>
+<dd><p>Perform a fft-based diffraction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>wf</strong> (<em>np.ndarray</em>) – A complex 2D array that corresponds to the wavefront function.</p></li>
+<li><p><strong>output_Q</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Downsampling rate to match the specified telescope’s sampling.</p></li>
+<li><p><strong>output_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Output dimension of the square PSF stamp.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>psf</strong> – A real 2D array corresponding to the PSF.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.filter_SED">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">filter_SED</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">SED</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_lims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.filter_SED"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.filter_SED" title="Link to this definition"></a></dt>
+<dd><p>Generate filtered SED.</p>
+<p>Returns a ‘n_bins’ point SED and wvlength vector.
+Each bin ‘i’ is obtained integrating the SED from filter_lims[i][0] and filter_lims[i][1]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_bins</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of desired bins for the integrated SED. It should be less or equal to the bins
+of the unfilterd SED.</p></li>
+<li><p><strong>SED</strong> (<em>np.ndarray</em>) – The unfiltered SED. The first column contains the wavelength positions. The
+second column contains the SED value at each wavelength.</p></li>
+<li><p><strong>filter_lims</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>np.ndarray</em>) – Each element on the list contains the lower und upper integration limits for the bins.
+Midpoints of bins should be in increasing order. Bins can overlap or be disjoint.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.gen_SED_interp">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">gen_SED_interp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">SED</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">35</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp_kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cubic'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.gen_SED_interp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.gen_SED_interp" title="Link to this definition"></a></dt>
+<dd><p>Generate SED interpolator.</p>
+<p>Returns the interpolator and the wavelengths in [nm].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>SED</strong> (<em>np.ndarray</em>) – The SED. In the first column it contains the wavelength positions. In the
+second column the SED value at each wavelength.</p></li>
+<li><p><strong>n_bins</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of desired bins for the SED interpolation.</p></li>
+<li><p><strong>interp_kind</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Type of interpolation to be used. See scipy.interpolate.interp1d documentation.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.gen_SED_sampler">
+<span class="sig-name descname"><span class="pre">gen_SED_sampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">SED</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp_kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cubic'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.gen_SED_sampler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.gen_SED_sampler" title="Link to this definition"></a></dt>
+<dd><p>Generate SED sampler.</p>
+<p>Returns the sampler and the wavelengths in [nm]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>SED</strong> (<em>np.ndarray</em>) – Spectral energy distribution for a star. The first column contains the wavelength
+positions. The second column contains the SED value at each wavelength.</p></li>
+<li><p><strong>n_bins</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of bins</p></li>
+<li><p><strong>interp_kind</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Interpolation kind for the SED sampler</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>wvlength</strong> (<em>np.ndarray</em>) – Wavelength positions in [nm]</p></li>
+<li><p><strong>SED_sampler</strong> (<em>callable</em>) – Interpolator function for the SED</p></li>
+<li><p><strong>weights</strong> (<em>np.ndarray</em>) – Weights for each wavelength bin in the SED</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.gen_random_Z_coeffs">
+<span class="sig-name descname"><span class="pre">gen_random_Z_coeffs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">45</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rand_seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.gen_random_Z_coeffs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.gen_random_Z_coeffs" title="Link to this definition"></a></dt>
+<dd><p>Generate a random set of Zernike coefficients.</p>
+<p>The coefficients are generated following a uniform law U~[-1,1]
+divided by their radial zernike index.
+Ex: u_i / r(i) (u_i is a realization of U)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>max_order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Maximum order of Zernike polynomials.</p></li>
+<li><p><strong>rand_seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Seed for the random initialization.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>rand_coeffs</strong> – List containing the random coefficients.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a> of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.generate_euclid_pupil_obscurations">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">generate_euclid_pupil_obscurations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N_pix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N_filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.generate_euclid_pupil_obscurations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.generate_euclid_pupil_obscurations" title="Link to this definition"></a></dt>
+<dd><p>Generate Euclid like pupil obscurations.</p>
+<p>This method simulates the 2D pupil obscurations for the Euclid telescope,
+considering the aperture stop, mirror obscurations, and spider arms. It does
+not account for any 3D projections or the angle of the Field of View (FoV).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>N_pix</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Total number of pixels</p></li>
+<li><p><strong>N_filter</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Length of the low-pass filter [pixels]</p></li>
+<li><p><strong>rotation_angle</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Rotation angle in degrees for the obscuration pattern.
+Only multiples of 90 (0, 90, 180, 270, etc.) are supported.
+Rotation is counterclockwise.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.generate_mono_PSF">
+<span class="sig-name descname"><span class="pre">generate_mono_PSF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lambda_obs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.725</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regen_sample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_psf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.generate_mono_PSF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.generate_mono_PSF" title="Link to this definition"></a></dt>
+<dd><p>Generate monochromatic PSF.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.generate_poly_PSF">
+<span class="sig-name descname"><span class="pre">generate_poly_PSF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">SED</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">35</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.generate_poly_PSF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.generate_poly_PSF" title="Link to this definition"></a></dt>
+<dd><p>Generate polychromatic PSF with a specific SED.</p>
+<p>The wavelength space will be the Euclid VIS instrument band:
+[550,900]nm and will be sampled in <code class="docutils literal notranslate"><span class="pre">n_bins</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.get_psf">
+<span class="sig-name descname"><span class="pre">get_psf</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.get_psf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.get_psf" title="Link to this definition"></a></dt>
+<dd><p>Get computed PSF.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>psf</strong> – A real 2D array corresponding to the PSF.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.get_radial_idx">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_radial_idx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">45</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.get_radial_idx"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.get_radial_idx" title="Link to this definition"></a></dt>
+<dd><p>Get radial zernike indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>max_order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Maximum Zernike polynomial order.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>radial_idxs</strong> – Array of radial indices up to the specified maximum order.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.get_z_coeffs">
+<span class="sig-name descname"><span class="pre">get_z_coeffs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.get_z_coeffs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.get_z_coeffs" title="Link to this definition"></a></dt>
+<dd><p>Get random coefficients.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>z_coeffs</strong> – List containing the random coefficients.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a> of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.interp_SED">
+<span class="sig-name descname"><span class="pre">interp_SED</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">SED_filt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">35</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interp_kind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cubic'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.interp_SED"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.interp_SED" title="Link to this definition"></a></dt>
+<dd><p>Interpolate the binned SED.</p>
+<p>Returns a (‘n_bins’)x(‘n_points’+1) point SED and wvlength vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>SED_filt</strong> (<em>np.ndarray</em>) – The filtered SED. The first column contains the wavelength positions. The
+second column contains the SED value for each bin.</p></li>
+<li><p><strong>n_points</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of points to add in each of the filtered SED bins. It can only be 1 or 2.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.normalize_zernikes">
+<span class="sig-name descname"><span class="pre">normalize_zernikes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_coeffs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_wfe_rms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.normalize_zernikes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.normalize_zernikes" title="Link to this definition"></a></dt>
+<dd><p>Normalize zernike coefficients.</p>
+<p>Returns a set of zernike coefficients normalized to the maximum allowed WFE rms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>z_coeffs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><em>floats</em>) – List containing the zernike coefficients to be normalized.</p></li>
+<li><p><strong>max_wfe_rms</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Maximum allowed WFE in RMS. Units in [μm].</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>z_coeffs</strong> – List containing the normalized zernike coefficients.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)">list</a> of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.opd_phase_plotter">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">opd_phase_plotter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pupil_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'viridis'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_img</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.opd_phase_plotter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.opd_phase_plotter" title="Link to this definition"></a></dt>
+<dd><p>Plot OPD and phase maps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pupil_mask</strong> (<em>np.ndarray</em>) – 2D array corresponding to the pupil mask.</p></li>
+<li><p><strong>opd</strong> (<em>np.ndarray</em>) – 2D array corresponding to the Optical Path Differences map.</p></li>
+<li><p><strong>phase</strong> (<em>np.ndarray</em>) – 2D array corresponding to the wavefront phase map.</p></li>
+<li><p><strong>lambda_obs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Wavelength of observation in [um].</p></li>
+<li><p><strong>cmap</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Colormap to be used for the plots.</p></li>
+<li><p><strong>save_img</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to save the image as a PDF.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.plot_opd_phase">
+<span class="sig-name descname"><span class="pre">plot_opd_phase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'viridis'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_img</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.plot_opd_phase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.plot_opd_phase" title="Link to this definition"></a></dt>
+<dd><p>Plot OPD and phase maps.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.plot_psf">
+<span class="sig-name descname"><span class="pre">plot_psf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gist_stern'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_img</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.plot_psf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.plot_psf" title="Link to this definition"></a></dt>
+<dd><p>Plot PSF maps.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.plot_z_coeffs">
+<span class="sig-name descname"><span class="pre">plot_z_coeffs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_img</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.plot_z_coeffs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.plot_z_coeffs" title="Link to this definition"></a></dt>
+<dd><p>Plot random Zernike coefficients.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.psf_plotter">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">psf_plotter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_obs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'gist_stern'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_img</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.psf_plotter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.psf_plotter" title="Link to this definition"></a></dt>
+<dd><p>Plot PSF maps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>psf</strong> (<em>np.ndarray</em>) – 2D array corresponding to the PSF.</p></li>
+<li><p><strong>lambda_obs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Wavelength of observation in [um].</p></li>
+<li><p><strong>cmap</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Colormap to be used for the plots.</p></li>
+<li><p><strong>save_img</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to save the image as a PDF.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.sims.psf_simulator.PSFSimulator.set_z_coeffs">
+<span class="sig-name descname"><span class="pre">set_z_coeffs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_coeffs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/sims/psf_simulator.html#PSFSimulator.set_z_coeffs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.sims.psf_simulator.PSFSimulator.set_z_coeffs" title="Link to this definition"></a></dt>
+<dd><p>Set zernike coefficients.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="wf_psf.sims.html" class="btn btn-neutral float-left" title="wf_psf.sims" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wf_psf.sims.spatial_varying_psf.html" class="btn btn-neutral float-right" title="wf_psf.sims.spatial_varying_psf" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

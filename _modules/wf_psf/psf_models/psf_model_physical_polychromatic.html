@@ -1,0 +1,900 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.psf_models.psf_model_physical_polychromatic &mdash; wf-psf 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../../../_static/twemoji.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../../../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">wf_psf.psf_models.psf_model_physical_polychromatic</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for wf_psf.psf_models.psf_model_physical_polychromatic</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;PSF Model Physical Semi-Parametric Polychromatic.</span>
+
+<span class="sd">A module which defines the classes and methods</span>
+<span class="sd">to manage the parameters of the psf physical polychromatic model.</span>
+
+<span class="sd">:Authors: Tobias Liaudat &lt;tobias.liaudat@cea.fr&gt; and Jennifer Pollack &lt;jennifer.pollack@cea.fr&gt;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tensorflow.python.keras.engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">data_adapter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.psf_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">psf_models</span> <span class="k">as</span> <span class="n">psfm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.utils.read_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">RecursiveNamespace</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.utils.configs_handler</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataConfigHandler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.data.training_preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_obs_positions</span><span class="p">,</span> <span class="n">get_zernike_prior</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.psf_models.tf_layers</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TFPolynomialZernikeField</span><span class="p">,</span>
+    <span class="n">TFZernikeOPD</span><span class="p">,</span>
+    <span class="n">TFBatchPolychromaticPSF</span><span class="p">,</span>
+    <span class="n">TFBatchMonochromaticPSF</span><span class="p">,</span>
+    <span class="n">TFNonParametricPolynomialVariationsOPD</span><span class="p">,</span>
+    <span class="n">TFPhysicalLayer</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="PhysicalPolychromaticFieldFactory">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_physical_polychromatic.html#wf_psf.psf_models.psf_model_physical_polychromatic.PhysicalPolychromaticFieldFactory">[docs]</a>
+<span class="nd">@psfm</span><span class="o">.</span><span class="n">register_psfclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PhysicalPolychromaticFieldFactory</span><span class="p">(</span><span class="n">psfm</span><span class="o">.</span><span class="n">PSFModelBaseFactory</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Factory class for the TensorFlow Physical Polychromatic PSF Field Model.</span>
+
+<span class="sd">    This factory class is responsible for instantiating instances of the TensorFlow Physical Polychromatic PSF Field Model. It is registered with the PSF model factory registry.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ids : tuple</span>
+<span class="sd">        A tuple containing identifiers for the factory class.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    get_model_instance(model_params, training_params, data=None, coeff_mat=None)</span>
+<span class="sd">        Instantiates an instance of the TensorFlow Physical Polychromatic Field class with the provided parameters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ids</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;physical_poly&quot;</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="PhysicalPolychromaticFieldFactory.get_model_instance">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_physical_polychromatic.html#wf_psf.psf_models.psf_model_physical_polychromatic.PhysicalPolychromaticFieldFactory.get_model_instance">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_model_instance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_params</span><span class="p">,</span> <span class="n">training_params</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">coeff_mat</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create an instance of the TensorFlow Physical Polychromatic Field model.</span>
+
+<span class="sd">        This method instantiates a `TFPhysicalPolychromaticField` object with the given model and training parameters, and data containing prior information like Zernike coefficients. Optionally, a coefficient matrix can be provided.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model_params: Recursive Namespace</span>
+<span class="sd">            A Recursive Namespace object containing parameters for this PSF model class.</span>
+<span class="sd">        training_params: Recursive Namespace</span>
+<span class="sd">            A Recursive Namespace object containing training hyperparameters for this PSF model class.</span>
+<span class="sd">        data: DataConfigHandler</span>
+<span class="sd">            A DataConfigHandler object that provides access to training and test datasets, as well as prior knowledge like Zernike coefficients.</span>
+<span class="sd">        coeff_mat: Tensor or None, optional</span>
+<span class="sd">            Coefficient matrix defining the parametric PSF field model.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        TFPhysicalPolychromaticField</span>
+<span class="sd">            An instance of the TensorFlow Physical Polychromatic Field model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">TFPhysicalPolychromaticField</span><span class="p">(</span>
+            <span class="n">model_params</span><span class="p">,</span> <span class="n">training_params</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">coeff_mat</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TFPhysicalPolychromaticField">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_physical_polychromatic.html#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TFPhysicalPolychromaticField</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;TensorFlow Physical Polychromatic PSF Field class.</span>
+
+<span class="sd">    This class represents a polychromatic PSF field model with a physical layer.</span>
+<span class="sd">    It incorporates parametric and non-parametric modeling approaches to accurately reconstruct the point spread function (PSF) across multiple wavelengths.</span>
+
+<span class="sd">    The model provides functionalities for:</span>
+<span class="sd">    - Initializing model parameters and defining the physical PSF layer.</span>
+<span class="sd">    - Performing forward passes and computing wavefront transformations.</span>
+<span class="sd">    - Handling Zernike parameterization and coefficient matrices.</span>
+<span class="sd">    - Evaluating model performance and saving optimization history.</span>
+
+<span class="sd">    See individual method docstrings for more details.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_params</span><span class="p">,</span> <span class="n">training_params</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">coeff_mat</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the TFPhysicalPolychromaticField instance.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model_params: Recursive Namespace</span>
+<span class="sd">            A Recursive Namespace object containing parameters for this PSF model class.</span>
+<span class="sd">        training_params: Recursive Namespace</span>
+<span class="sd">            A Recursive Namespace object containing training hyperparameters for this PSF model class.</span>
+<span class="sd">        data: DataConfigHandler</span>
+<span class="sd">            A DataConfigHandler object that provides access to training and test datasets, as well as prior knowledge like Zernike coefficients.</span>
+<span class="sd">        coeff_mat: Tensor or None, optional</span>
+<span class="sd">            Coefficient matrix defining the parametric PSF field model.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        TFPhysicalPolychromaticField</span>
+<span class="sd">            Initialized instance of the TFPhysicalPolychromaticField class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">model_params</span><span class="p">,</span> <span class="n">training_params</span><span class="p">,</span> <span class="n">coeff_mat</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_parameters_and_layers</span><span class="p">(</span>
+            <span class="n">model_params</span><span class="p">,</span> <span class="n">training_params</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">coeff_mat</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_initialize_parameters_and_layers</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model_params</span><span class="p">:</span> <span class="n">RecursiveNamespace</span><span class="p">,</span>
+        <span class="n">training_params</span><span class="p">:</span> <span class="n">RecursiveNamespace</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">DataConfigHandler</span><span class="p">,</span>
+        <span class="n">coeff_mat</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize Parameters of the PSF model.</span>
+
+<span class="sd">        This method sets up the PSF model parameters, observational positions,</span>
+<span class="sd">        Zernike coefficients, and components required for the automatically</span>
+<span class="sd">        differentiable optical forward model.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model_params: Recursive Namespace</span>
+<span class="sd">            A Recursive Namespace object containing parameters for this PSF model class.</span>
+<span class="sd">        training_params: Recursive Namespace</span>
+<span class="sd">            A Recursive Namespace object containing training hyperparameters for this PSF model class.</span>
+<span class="sd">        data: DataConfigHandler object</span>
+<span class="sd">            A DataConfigHandler object providing access to training and tests datasets, as well as prior knowledge like Zernike coefficients.</span>
+<span class="sd">        coeff_mat: Tensor or None, optional</span>
+<span class="sd">            Initialization of the coefficient matrix defining the parametric psf field model.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        - Initializes Zernike parameters based on dataset priors.</span>
+<span class="sd">        - Configures the PSF model layers according to `model_params`.</span>
+<span class="sd">        - If `coeff_mat` is provided, the model coefficients are updated accordingly.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_Q</span> <span class="o">=</span> <span class="n">model_params</span><span class="o">.</span><span class="n">output_Q</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_pos</span> <span class="o">=</span> <span class="n">get_obs_positions</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l2_param</span> <span class="o">=</span> <span class="n">model_params</span><span class="o">.</span><span class="n">param_hparams</span><span class="o">.</span><span class="n">l2_param</span>
+        <span class="c1"># Inputs: Save optimiser history Parametric model features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_optim_history_param</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">model_params</span><span class="o">.</span><span class="n">param_hparams</span><span class="o">.</span><span class="n">save_optim_history_param</span>
+        <span class="p">)</span>
+        <span class="c1"># Inputs: Save optimiser history NonParameteric model features</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_optim_history_nonparam</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">model_params</span><span class="o">.</span><span class="n">nonparam_hparams</span><span class="o">.</span><span class="n">save_optim_history_nonparam</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_zernike_parameters</span><span class="p">(</span><span class="n">model_params</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_layers</span><span class="p">(</span><span class="n">model_params</span><span class="p">,</span> <span class="n">training_params</span><span class="p">)</span>
+
+        <span class="c1"># Initialize the model parameters with non-default value</span>
+        <span class="k">if</span> <span class="n">coeff_mat</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assign_coeff_matrix</span><span class="p">(</span><span class="n">coeff_mat</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_initialize_zernike_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_params</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the Zernike parameters.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model_params: Recursive Namespace</span>
+<span class="sd">            A Recursive Namespace object containing parameters for this PSF model class.</span>
+<span class="sd">        data: DataConfigHandler object</span>
+<span class="sd">            A DataConfigHandler object providing access to training and tests datasets, as well as prior knowledge like Zernike coefficients.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zks_prior</span> <span class="o">=</span> <span class="n">get_zernike_prior</span><span class="p">(</span><span class="n">model_params</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_zks_total</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+            <span class="n">model_params</span><span class="o">.</span><span class="n">param_hparams</span><span class="o">.</span><span class="n">n_zernikes</span><span class="p">,</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zks_prior</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span> <span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zernike_maps</span> <span class="o">=</span> <span class="n">psfm</span><span class="o">.</span><span class="n">generate_zernike_maps_3d</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_zks_total</span><span class="p">,</span> <span class="n">model_params</span><span class="o">.</span><span class="n">pupil_diameter</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_initialize_layers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_params</span><span class="p">,</span> <span class="n">training_params</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the layers of the PSF model.</span>
+
+<span class="sd">        This method initializes the layers of the PSF model, including the physical layer, polynomial Zernike field, batch polychromatic layer, and non-parametric OPD layer.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model_params: Recursive Namespace</span>
+<span class="sd">            A Recursive Namespace object containing parameters for this PSF model class.</span>
+<span class="sd">        training_params: Recursive Namespace</span>
+<span class="sd">            A Recursive Namespace object containing training hyperparameters for this PSF model class.</span>
+<span class="sd">        coeff_mat: Tensor or None, optional</span>
+<span class="sd">            Initialization of the coefficient matrix defining the parametric psf field model.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_physical_layer</span><span class="p">(</span><span class="n">model_params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_polynomial_Z_field</span><span class="p">(</span><span class="n">model_params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_Zernike_OPD</span><span class="p">(</span><span class="n">model_params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_batch_polychromatic_layer</span><span class="p">(</span><span class="n">model_params</span><span class="p">,</span> <span class="n">training_params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_nonparametric_opd_layer</span><span class="p">(</span><span class="n">model_params</span><span class="p">,</span> <span class="n">training_params</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_initialize_physical_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_params</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the physical layer of the PSF model.</span>
+
+<span class="sd">        This method initializes the physical layer of the PSF model using parameters</span>
+<span class="sd">        specified in the `model_params` object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model_params: Recursive Namespace</span>
+<span class="sd">            A Recursive Namespace object containing parameters for this PSF model class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_physical_layer</span> <span class="o">=</span> <span class="n">TFPhysicalLayer</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">obs_pos</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">zks_prior</span><span class="p">,</span>
+            <span class="n">interpolation_type</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">interpolation_type</span><span class="p">,</span>
+            <span class="n">interpolation_args</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">interpolation_args</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_initialize_polynomial_Z_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_params</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the polynomial Zernike field of the PSF model.</span>
+
+<span class="sd">        This method initializes the polynomial Zernike field of the PSF model using</span>
+<span class="sd">        parameters specified in the `model_params` object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model_params: Recursive Namespace</span>
+<span class="sd">            A Recursive Namespace object containing parameters for this PSF model class.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_poly_Z_field</span> <span class="o">=</span> <span class="n">TFPolynomialZernikeField</span><span class="p">(</span>
+            <span class="n">x_lims</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">x_lims</span><span class="p">,</span>
+            <span class="n">y_lims</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">y_lims</span><span class="p">,</span>
+            <span class="n">random_seed</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">param_hparams</span><span class="o">.</span><span class="n">random_seed</span><span class="p">,</span>
+            <span class="n">n_zernikes</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">param_hparams</span><span class="o">.</span><span class="n">n_zernikes</span><span class="p">,</span>
+            <span class="n">d_max</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">param_hparams</span><span class="o">.</span><span class="n">d_max</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_initialize_Zernike_OPD</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_params</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the Zernike OPD field of the PSF model.</span>
+
+<span class="sd">        This method initializes the Zernike Optical Path Difference</span>
+<span class="sd">        field of the PSF model using parameters specified in the `model_params` object.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model_params: Recursive Namespace</span>
+<span class="sd">            A Recursive Namespace object containing parameters for this PSF model class.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Initialize the zernike to OPD layer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_zernike_OPD</span> <span class="o">=</span> <span class="n">TFZernikeOPD</span><span class="p">(</span><span class="n">zernike_maps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">zernike_maps</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_initialize_batch_polychromatic_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_params</span><span class="p">,</span> <span class="n">training_params</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the batch polychromatic PSF layer.</span>
+
+<span class="sd">        This method initializes the batch opd to batch polychromatic PSF layer</span>
+<span class="sd">        using the provided `model_params` and `training_params`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model_params: Recursive Namespace</span>
+<span class="sd">            A Recursive Namespace object containing parameters for this PSF model class.</span>
+<span class="sd">        training_params: Recursive Namespace</span>
+<span class="sd">            A Recursive Namespace object containing training hyperparameters for this PSF model class.</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">training_params</span><span class="o">.</span><span class="n">batch_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obscurations</span> <span class="o">=</span> <span class="n">psfm</span><span class="o">.</span><span class="n">tf_obscurations</span><span class="p">(</span>
+            <span class="n">pupil_diam</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">pupil_diameter</span><span class="p">,</span>
+            <span class="n">N_filter</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">LP_filter_length</span><span class="p">,</span>
+            <span class="n">rotation_angle</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">obscuration_rotation_angle</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span> <span class="o">=</span> <span class="n">model_params</span><span class="o">.</span><span class="n">output_dim</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_batch_poly_PSF</span> <span class="o">=</span> <span class="n">TFBatchPolychromaticPSF</span><span class="p">(</span>
+            <span class="n">obscurations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">obscurations</span><span class="p">,</span>
+            <span class="n">output_Q</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_Q</span><span class="p">,</span>
+            <span class="n">output_dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_initialize_nonparametric_opd_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_params</span><span class="p">,</span> <span class="n">training_params</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the non-parametric OPD layer.</span>
+
+<span class="sd">        This method initializes the non-parametric OPD layer using the provided</span>
+<span class="sd">        `model_params` and `training_params`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model_params: Recursive Namespace</span>
+<span class="sd">            A Recursive Namespace object containing parameters for this PSF model class.</span>
+<span class="sd">        training_params: Recursive Namespace</span>
+<span class="sd">            A Recursive Namespace object containing training hyperparameters for this PSF model class.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># self.d_max_nonparam = model_params.nonparam_hparams.d_max_nonparam</span>
+        <span class="c1"># self.opd_dim = tf.shape(self.zernike_maps)[1].numpy()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_np_poly_opd</span> <span class="o">=</span> <span class="n">TFNonParametricPolynomialVariationsOPD</span><span class="p">(</span>
+            <span class="n">x_lims</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">x_lims</span><span class="p">,</span>
+            <span class="n">y_lims</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">y_lims</span><span class="p">,</span>
+            <span class="n">random_seed</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">param_hparams</span><span class="o">.</span><span class="n">random_seed</span><span class="p">,</span>
+            <span class="n">d_max</span><span class="o">=</span><span class="n">model_params</span><span class="o">.</span><span class="n">nonparam_hparams</span><span class="o">.</span><span class="n">d_max_nonparam</span><span class="p">,</span>
+            <span class="n">opd_dim</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zernike_maps</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="TFPhysicalPolychromaticField.get_coeff_matrix">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_physical_polychromatic.html#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.get_coeff_matrix">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_coeff_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get coefficient matrix.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_poly_Z_field</span><span class="o">.</span><span class="n">get_coeff_matrix</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="TFPhysicalPolychromaticField.assign_coeff_matrix">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_physical_polychromatic.html#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.assign_coeff_matrix">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">assign_coeff_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coeff_mat</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Assign a coefficient matrix to the parametric PSF field model.</span>
+
+<span class="sd">        This method updates the coefficient matrix used by the parametric PSF field model,</span>
+<span class="sd">        allowing for customization or modification of the model&#39;s parameters.</span>
+<span class="sd">        If `coeff_mat` is `None`, the model will revert to using its default coefficient matrix.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        coeff_mat : Optional[tf.Tensor]</span>
+<span class="sd">            A TensorFlow tensor representing the coefficient matrix for the PSF field model.</span>
+<span class="sd">            If `None`, the model will use the default coefficient matrix.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_poly_Z_field</span><span class="o">.</span><span class="n">assign_coeff_matrix</span><span class="p">(</span><span class="n">coeff_mat</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TFPhysicalPolychromaticField.set_output_Q">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_physical_polychromatic.html#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.set_output_Q">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_output_Q</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_Q</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">output_dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the output sampling rate (output_Q) for PSF generation.</span>
+
+<span class="sd">        This method updates the `output_Q` parameter, which defines the</span>
+<span class="sd">        resampling factor for generating PSFs at different resolutions</span>
+<span class="sd">        relative to the telescope&#39;s native sampling. It also allows optionally</span>
+<span class="sd">        updating `output_dim`, which sets the output resolution of the PSF model.</span>
+
+<span class="sd">        If `output_dim` is provided, the PSF model&#39;s output resolution is updated.</span>
+<span class="sd">        The method then reinitializes the batch polychromatic PSF generator</span>
+<span class="sd">        to reflect the updated parameters.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        output_Q : float</span>
+<span class="sd">            The resampling factor that determines the output PSF resolution</span>
+<span class="sd">            relative to the telescope&#39;s native sampling.</span>
+<span class="sd">        output_dim : Optional[int], default=None</span>
+<span class="sd">            The new output dimension for the PSF model. If `None`, the output</span>
+<span class="sd">            dimension remains unchanged.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_Q</span> <span class="o">=</span> <span class="n">output_Q</span>
+        <span class="k">if</span> <span class="n">output_dim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span> <span class="o">=</span> <span class="n">output_dim</span>
+        <span class="c1"># Reinitialize the PSF batch poly generator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_batch_poly_PSF</span> <span class="o">=</span> <span class="n">TFBatchPolychromaticPSF</span><span class="p">(</span>
+            <span class="n">obscurations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">obscurations</span><span class="p">,</span>
+            <span class="n">output_Q</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_Q</span><span class="p">,</span>
+            <span class="n">output_dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TFPhysicalPolychromaticField.set_zero_nonparam">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_physical_polychromatic.html#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.set_zero_nonparam">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_zero_nonparam</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the non-parametric part of the OPD (Optical Path Difference) to zero.</span>
+
+<span class="sd">        This method sets the non-parametric component of the Optical Path Difference (OPD)</span>
+<span class="sd">        to zero, effectively removing its contribution from the overall PSF (Point Spread Function).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_np_poly_opd</span><span class="o">.</span><span class="n">set_alpha_zero</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="TFPhysicalPolychromaticField.set_nonzero_nonparam">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_physical_polychromatic.html#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.set_nonzero_nonparam">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_nonzero_nonparam</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the non-parametric part to non-zero values.</span>
+
+<span class="sd">        This method sets the non-parametric component of the Optical Path Difference (OPD)</span>
+<span class="sd">        to non-zero values, allowing it to contribute to the overall PSF (Point Spread Function).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_np_poly_opd</span><span class="o">.</span><span class="n">set_alpha_identity</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="TFPhysicalPolychromaticField.set_trainable_layers">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_physical_polychromatic.html#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.set_trainable_layers">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_trainable_layers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nonparam_bool</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the layers to be trainable.</span>
+
+<span class="sd">        A method to set layers to be trainable.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        param_bool: bool</span>
+<span class="sd">            Boolean flag for parametric model layers</span>
+<span class="sd">        nonparam_bool: bool</span>
+<span class="sd">            Boolean flag for non-parametric model layers</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_np_poly_opd</span><span class="o">.</span><span class="n">trainable</span> <span class="o">=</span> <span class="n">nonparam_bool</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tf_poly_Z_field</span><span class="o">.</span><span class="n">trainable</span> <span class="o">=</span> <span class="n">param_bool</span></div>
+
+
+<div class="viewcode-block" id="TFPhysicalPolychromaticField.pad_zernikes">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_physical_polychromatic.html#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.pad_zernikes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pad_zernikes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zk_param</span><span class="p">,</span> <span class="n">zk_prior</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Pad the Zernike coefficients to match the maximum length.</span>
+
+<span class="sd">        Pad the input Zernike coefficient tensors to match the length of the</span>
+<span class="sd">        maximum number of Zernike coefficients among the parametric and prior parts.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        zk_param: tf.Tensor</span>
+<span class="sd">            Zernike coefficients for the parametric part. Shape [batch, n_zks_param, 1, 1].</span>
+<span class="sd">        zk_prior: tf.Tensor</span>
+<span class="sd">            Zernike coefficients for the prior part. Shape [batch, n_zks_prior, 1, 1].</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        padded_zk_param: tf.Tensor</span>
+<span class="sd">            Padded Zernike coefficients for the parametric part. Shape [batch, n_zks_total, 1, 1].</span>
+<span class="sd">        padded_zk_prior: tf.Tensor</span>
+<span class="sd">            Padded Zernike coefficients for the prior part. Shape [batch, n_zks_total, 1, 1].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Calculate the number of Zernikes to pad for parametric and prior parts</span>
+        <span class="n">pad_num_param</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_zks_total</span> <span class="o">-</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">zk_param</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">pad_num_prior</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_zks_total</span> <span class="o">-</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">zk_prior</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Pad the Zernike coefficients for parametric and prior parts</span>
+        <span class="n">padded_zk_param</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">not_equal</span><span class="p">(</span><span class="n">pad_num_param</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="k">lambda</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">zk_param</span><span class="p">,</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad_num_param</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]),</span>
+            <span class="k">lambda</span><span class="p">:</span> <span class="n">zk_param</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">padded_zk_prior</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">not_equal</span><span class="p">(</span><span class="n">pad_num_prior</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="k">lambda</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">zk_prior</span><span class="p">,</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad_num_prior</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]),</span>
+            <span class="k">lambda</span><span class="p">:</span> <span class="n">zk_prior</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">padded_zk_param</span><span class="p">,</span> <span class="n">padded_zk_prior</span></div>
+
+
+<div class="viewcode-block" id="TFPhysicalPolychromaticField.predict_step">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_physical_polychromatic.html#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.predict_step">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">evaluate_step</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Predict (inference) step.</span>
+
+<span class="sd">        A method to enable a special type of</span>
+<span class="sd">        interpolation (different from training) for</span>
+<span class="sd">        the physical layer.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : NOT SURE</span>
+
+<span class="sd">        evaluate_step : bool</span>
+<span class="sd">            Boolean flag to evaluate step</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        poly_psfs TFBatchPolychromaticPSF</span>
+<span class="sd">            Instance of TFBatchPolychromaticPSF class containing computed polychromatic PSFs.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">evaluate_step</span><span class="p">:</span>
+            <span class="n">input_data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Format input data</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data_adapter</span><span class="o">.</span><span class="n">expand_1d</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">input_data</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">data_adapter</span><span class="o">.</span><span class="n">unpack_x_y_sample_weight</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="c1"># Unpack inputs</span>
+        <span class="n">input_positions</span> <span class="o">=</span> <span class="n">input_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">packed_SEDs</span> <span class="o">=</span> <span class="n">input_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Compute zernikes from parametric model and physical layer</span>
+        <span class="n">zks_coeffs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_zernikes</span><span class="p">(</span><span class="n">input_positions</span><span class="p">)</span>
+        <span class="c1"># Propagate to obtain the OPD</span>
+        <span class="n">param_opd_maps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_zernike_OPD</span><span class="p">(</span><span class="n">zks_coeffs</span><span class="p">)</span>
+        <span class="c1"># Calculate the non parametric part</span>
+        <span class="n">nonparam_opd_maps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_np_poly_opd</span><span class="p">(</span><span class="n">input_positions</span><span class="p">)</span>
+        <span class="c1"># Add the estimations</span>
+        <span class="n">opd_maps</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">param_opd_maps</span><span class="p">,</span> <span class="n">nonparam_opd_maps</span><span class="p">)</span>
+        <span class="c1"># Compute the polychromatic PSFs</span>
+        <span class="n">poly_psfs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_batch_poly_PSF</span><span class="p">([</span><span class="n">opd_maps</span><span class="p">,</span> <span class="n">packed_SEDs</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">poly_psfs</span></div>
+
+
+<div class="viewcode-block" id="TFPhysicalPolychromaticField.predict_mono_psfs">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_physical_polychromatic.html#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.predict_mono_psfs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict_mono_psfs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_positions</span><span class="p">,</span> <span class="n">lambda_obs</span><span class="p">,</span> <span class="n">phase_N</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Predict a set of monochromatic Point Spread Functions (PSFs) at desired positions.</span>
+
+<span class="sd">        This method calculates monochromatic PSFs based on the provided input positions,</span>
+<span class="sd">        observed wavelength, and required wavefront dimension.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        input_positions : Tensor [batch_dim, 2]</span>
+<span class="sd">            Positions at which to compute the PSFs.</span>
+<span class="sd">        lambda_obs : float</span>
+<span class="sd">            Observed wavelength in micrometers (um).</span>
+<span class="sd">        phase_N : int</span>
+<span class="sd">            Required wavefront dimension. This should be calculated using a SimPSFToolkit</span>
+<span class="sd">            instance. Example:</span>
+<span class="sd">            ```</span>
+<span class="sd">            simPSF_np = wf.SimPSFToolkit(...)</span>
+<span class="sd">            phase_N = simPSF_np.feasible_N(lambda_obs)</span>
+<span class="sd">            ```</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        mono_psf_batch : Tensor</span>
+<span class="sd">            Batch of monochromatic PSFs.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Initialise the monochromatic PSF batch calculator</span>
+        <span class="n">tf_batch_mono_psf</span> <span class="o">=</span> <span class="n">TFBatchMonochromaticPSF</span><span class="p">(</span>
+            <span class="n">obscurations</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">obscurations</span><span class="p">,</span>
+            <span class="n">output_Q</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_Q</span><span class="p">,</span>
+            <span class="n">output_dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># Set the lambda_obs and the phase_N parameters</span>
+        <span class="n">tf_batch_mono_psf</span><span class="o">.</span><span class="n">set_lambda_phaseN</span><span class="p">(</span><span class="n">phase_N</span><span class="p">,</span> <span class="n">lambda_obs</span><span class="p">)</span>
+
+        <span class="c1"># Predict zernikes from parametric model and physical layer</span>
+        <span class="n">zks_coeffs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_zernikes</span><span class="p">(</span><span class="n">input_positions</span><span class="p">)</span>
+        <span class="c1"># Propagate to obtain the OPD</span>
+        <span class="n">param_opd_maps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_zernike_OPD</span><span class="p">(</span><span class="n">zks_coeffs</span><span class="p">)</span>
+        <span class="c1"># Calculate the non parametric part</span>
+        <span class="n">nonparam_opd_maps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_np_poly_opd</span><span class="p">(</span><span class="n">input_positions</span><span class="p">)</span>
+        <span class="c1"># Add the estimations</span>
+        <span class="n">opd_maps</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">param_opd_maps</span><span class="p">,</span> <span class="n">nonparam_opd_maps</span><span class="p">)</span>
+
+        <span class="c1"># Compute the monochromatic PSFs</span>
+        <span class="n">mono_psf_batch</span> <span class="o">=</span> <span class="n">tf_batch_mono_psf</span><span class="p">(</span><span class="n">opd_maps</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">mono_psf_batch</span></div>
+
+
+<div class="viewcode-block" id="TFPhysicalPolychromaticField.predict_opd">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_physical_polychromatic.html#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.predict_opd">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict_opd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_positions</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Predict the OPD at some positions.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        input_positions: Tensor [batch_dim, 2]</span>
+<span class="sd">            Positions to predict the OPD.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        opd_maps : Tensor [batch, opd_dim, opd_dim]</span>
+<span class="sd">            OPD at requested positions.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Predict zernikes from parametric model and physical layer</span>
+        <span class="n">zks_coeffs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_zernikes</span><span class="p">(</span><span class="n">input_positions</span><span class="p">)</span>
+        <span class="c1"># Propagate to obtain the OPD</span>
+        <span class="n">param_opd_maps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_zernike_OPD</span><span class="p">(</span><span class="n">zks_coeffs</span><span class="p">)</span>
+        <span class="c1"># Calculate the non parametric part</span>
+        <span class="n">nonparam_opd_maps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_np_poly_opd</span><span class="p">(</span><span class="n">input_positions</span><span class="p">)</span>
+        <span class="c1"># Add the estimations</span>
+        <span class="n">opd_maps</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">param_opd_maps</span><span class="p">,</span> <span class="n">nonparam_opd_maps</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">opd_maps</span></div>
+
+
+<div class="viewcode-block" id="TFPhysicalPolychromaticField.compute_zernikes">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_physical_polychromatic.html#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.compute_zernikes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_zernikes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_positions</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute Zernike coefficients at a batch of positions.</span>
+
+<span class="sd">        This method computes the Zernike coefficients for a batch of input positions</span>
+<span class="sd">        using both the parametric model and the physical layer.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        input_positions: Tensor [batch_dim, 2]</span>
+<span class="sd">            Positions for which to compute the Zernike coefficients.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        zernike_coefficients : Tensor [batch, n_zks_total, 1, 1]</span>
+<span class="sd">            Computed Zernike coefficients for the input positions.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        This method combines the predictions from both the parametric model and</span>
+<span class="sd">        the physical layer to obtain the final Zernike coefficients.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Calculate parametric part</span>
+        <span class="n">zernike_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_poly_Z_field</span><span class="p">(</span><span class="n">input_positions</span><span class="p">)</span>
+
+        <span class="c1"># Calculate the physical layer</span>
+        <span class="n">zernike_prior</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_physical_layer</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">input_positions</span><span class="p">)</span>
+
+        <span class="c1"># Pad and sum the zernike coefficients</span>
+        <span class="n">padded_zernike_params</span><span class="p">,</span> <span class="n">padded_zernike_prior</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pad_zernikes</span><span class="p">(</span>
+            <span class="n">zernike_params</span><span class="p">,</span> <span class="n">zernike_prior</span>
+        <span class="p">)</span>
+        <span class="n">zernike_coeffs</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">padded_zernike_params</span><span class="p">,</span> <span class="n">padded_zernike_prior</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">zernike_coeffs</span></div>
+
+
+<div class="viewcode-block" id="TFPhysicalPolychromaticField.predict_zernikes">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_physical_polychromatic.html#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.predict_zernikes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict_zernikes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_positions</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Predict Zernike coefficients at a batch of positions.</span>
+
+<span class="sd">        This method predicts the Zernike coefficients for a batch of input positions</span>
+<span class="sd">        using both the parametric model and the physical layer. During training,</span>
+<span class="sd">        the prediction from the physical layer is typically not used.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        input_positions: Tensor [batch_dim, 2]</span>
+<span class="sd">            Positions for which to predict the Zernike coefficients.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        zernike_coeffs : Tensor [batch, n_zks_total, 1, 1]</span>
+<span class="sd">            Predicted Zernike coefficients for the input positions.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        At training time, the prediction from the physical layer may not be utilized,</span>
+<span class="sd">        as the model might be trained to rely solely on the parametric part.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Calculate parametric part</span>
+        <span class="n">zernike_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_poly_Z_field</span><span class="p">(</span><span class="n">input_positions</span><span class="p">)</span>
+
+        <span class="c1"># Calculate the prediction from the physical layer</span>
+        <span class="n">physical_layer_prediction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_physical_layer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">input_positions</span><span class="p">)</span>
+
+        <span class="c1"># Pad and sum the Zernike coefficients</span>
+        <span class="n">padded_zernike_params</span><span class="p">,</span> <span class="n">padded_physical_layer_prediction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pad_zernikes</span><span class="p">(</span>
+            <span class="n">zernike_params</span><span class="p">,</span> <span class="n">physical_layer_prediction</span>
+        <span class="p">)</span>
+        <span class="n">zernike_coeffs</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+            <span class="n">padded_zernike_params</span><span class="p">,</span> <span class="n">padded_physical_layer_prediction</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">zernike_coeffs</span></div>
+
+
+<div class="viewcode-block" id="TFPhysicalPolychromaticField.call">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_physical_polychromatic.html#wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.call">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Define the PSF (Point Spread Function) field forward model.</span>
+
+<span class="sd">        This method defines the forward model of the PSF field, which involves several steps:</span>
+<span class="sd">        1. Transforming input positions into Zernike coefficients.</span>
+<span class="sd">        2. Converting Zernike coefficients into Optical Path Difference (OPD) maps.</span>
+<span class="sd">        3. Combining OPD maps with Spectral Energy Distribution (SED) information to generate</span>
+<span class="sd">           polychromatic PSFs.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inputs : list</span>
+<span class="sd">            List containing input data required for PSF computation. It should contain two</span>
+<span class="sd">            elements:</span>
+<span class="sd">            - input_positions: Tensor [batch_dim, 2]</span>
+<span class="sd">                Positions at which to compute the PSFs.</span>
+<span class="sd">            - packed_SEDs: Tensor [batch_dim, ...]</span>
+<span class="sd">                Packed Spectral Energy Distributions (SEDs) for the corresponding positions.</span>
+<span class="sd">        training : bool, optional</span>
+<span class="sd">            Indicates whether the model is being trained or used for inference. Defaults to True.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        poly_psfs : Tensor</span>
+<span class="sd">            Polychromatic PSFs generated by the forward model.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        - The `input_positions` tensor should have a shape of [batch_dim, 2], where each row</span>
+<span class="sd">          represents the x and y coordinates of a position.</span>
+<span class="sd">        - The `packed_SEDs` tensor should have a shape of [batch_dim, ...], containing the SED</span>
+<span class="sd">          information for each position.</span>
+<span class="sd">        - During training, this method computes the Zernike coefficients from the input positions</span>
+<span class="sd">          and calculates the corresponding OPD maps. Additionally, it adds an L2 loss term based on</span>
+<span class="sd">          the parametric OPD maps.</span>
+<span class="sd">        - During inference, this method generates predictions using precomputed OPD maps or by</span>
+<span class="sd">          propagating through the forward model.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        # Usage during training</span>
+<span class="sd">        inputs = [input_positions, packed_SEDs]</span>
+<span class="sd">        poly_psfs = psf_model(inputs)</span>
+
+<span class="sd">        # Usage during inference</span>
+<span class="sd">        inputs = [input_positions, packed_SEDs]</span>
+<span class="sd">        poly_psfs = psf_model(inputs, training=False)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Unpack inputs</span>
+        <span class="n">input_positions</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">packed_SEDs</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># For the training</span>
+        <span class="k">if</span> <span class="n">training</span><span class="p">:</span>
+            <span class="c1"># Compute zernikes from parametric model and physical layer</span>
+            <span class="n">zks_coeffs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_zernikes</span><span class="p">(</span><span class="n">input_positions</span><span class="p">)</span>
+
+            <span class="c1"># Propagate to obtain the OPD</span>
+            <span class="n">param_opd_maps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_zernike_OPD</span><span class="p">(</span><span class="n">zks_coeffs</span><span class="p">)</span>
+
+            <span class="c1"># Add l2 loss on the parametric OPD</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_loss</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">l2_param</span> <span class="o">*</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">param_opd_maps</span><span class="p">))</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Calculate the non parametric part</span>
+            <span class="n">nonparam_opd_maps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_np_poly_opd</span><span class="p">(</span><span class="n">input_positions</span><span class="p">)</span>
+
+            <span class="c1"># Add the estimations</span>
+            <span class="n">opd_maps</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">param_opd_maps</span><span class="p">,</span> <span class="n">nonparam_opd_maps</span><span class="p">)</span>
+
+            <span class="c1"># Compute the polychromatic PSFs</span>
+            <span class="n">poly_psfs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_batch_poly_PSF</span><span class="p">([</span><span class="n">opd_maps</span><span class="p">,</span> <span class="n">packed_SEDs</span><span class="p">])</span>
+        <span class="c1"># For the inference</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Compute predictions</span>
+            <span class="n">poly_psfs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_step</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">evaluate_step</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">poly_psfs</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

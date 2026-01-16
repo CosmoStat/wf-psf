@@ -1,0 +1,441 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.psf_models.psf_models &mdash; wf-psf 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../_static/twemoji.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="wf_psf.psf_models.tf_layers" href="wf_psf.psf_models.tf_layers.html" />
+    <link rel="prev" title="wf_psf.psf_models.psf_model_semiparametric" href="wf_psf.psf_models.psf_model_semiparametric.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.data.html">wf_psf.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.metrics.html">wf_psf.metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.plotting.html">wf_psf.plotting</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="wf_psf.psf_models.html">wf_psf.psf_models</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_parametric.html">wf_psf.psf_models.psf_model_parametric</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_physical_polychromatic.html">wf_psf.psf_models.psf_model_physical_polychromatic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_semiparametric.html">wf_psf.psf_models.psf_model_semiparametric</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">wf_psf.psf_models.psf_models</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.psf_models.PSFModelBaseFactory"><code class="docutils literal notranslate"><span class="pre">PSFModelBaseFactory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.psf_models.PSFModelError"><code class="docutils literal notranslate"><span class="pre">PSFModelError</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.psf_models.build_PSF_model"><code class="docutils literal notranslate"><span class="pre">build_PSF_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.psf_models.generate_zernike_maps_3d"><code class="docutils literal notranslate"><span class="pre">generate_zernike_maps_3d()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.psf_models.get_psf_model"><code class="docutils literal notranslate"><span class="pre">get_psf_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.psf_models.get_psf_model_weights_filepath"><code class="docutils literal notranslate"><span class="pre">get_psf_model_weights_filepath()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.psf_models.register_psfclass"><code class="docutils literal notranslate"><span class="pre">register_psfclass()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.psf_models.set_psf_model"><code class="docutils literal notranslate"><span class="pre">set_psf_model()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.psf_models.simPSF"><code class="docutils literal notranslate"><span class="pre">simPSF()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.psf_models.tf_obscurations"><code class="docutils literal notranslate"><span class="pre">tf_obscurations()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_layers.html">wf_psf.psf_models.tf_layers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_modules.html">wf_psf.psf_models.tf_modules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html">wf_psf.psf_models.tf_psf_field</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.zernikes.html">wf_psf.psf_models.zernikes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.run.html">wf_psf.run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.sims.html">wf_psf.sims</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.training.html">wf_psf.training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.utils.html">wf_psf.utils</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="wf_psf.psf_models.html">wf_psf.psf_models</a></li>
+      <li class="breadcrumb-item active">wf_psf.psf_models.psf_models</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/wf_psf.psf_models.psf_models.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-wf_psf.psf_models.psf_models">
+<span id="wf-psf-psf-models-psf-models"></span><h1>wf_psf.psf_models.psf_models<a class="headerlink" href="#module-wf_psf.psf_models.psf_models" title="Link to this heading"></a></h1>
+<p>PSF_Models.</p>
+<p>A module which provides general utility methods
+to manage the parameters of the psf model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Authors<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tobias Liaudat &lt;<a class="reference external" href="mailto:tobiasliaudat&#37;&#52;&#48;gmail&#46;com">tobiasliaudat<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt; and Jennifer Pollack &lt;<a class="reference external" href="mailto:jennifer&#46;pollack&#37;&#52;&#48;cea&#46;fr">jennifer<span>&#46;</span>pollack<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;</p>
+</dd>
+</dl>
+<p class="rubric">Functions</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_models.build_PSF_model" title="wf_psf.psf_models.psf_models.build_PSF_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_PSF_model</span></code></a>(model_inst[, optimizer, ...])</p></td>
+<td><p>Define the model-compilation parameters.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_models.generate_zernike_maps_3d" title="wf_psf.psf_models.psf_models.generate_zernike_maps_3d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_zernike_maps_3d</span></code></a>(n_zernikes, pupil_diam)</p></td>
+<td><p>Generate 3D Zernike Maps.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_models.get_psf_model" title="wf_psf.psf_models.psf_models.get_psf_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_psf_model</span></code></a>(*psf_model_params)</p></td>
+<td><p>Get PSF Model Class Instance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_models.get_psf_model_weights_filepath" title="wf_psf.psf_models.psf_models.get_psf_model_weights_filepath"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_psf_model_weights_filepath</span></code></a>(weights_filepath)</p></td>
+<td><p>Get PSF model weights filepath.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_models.register_psfclass" title="wf_psf.psf_models.psf_models.register_psfclass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_psfclass</span></code></a>(psf_factory_class)</p></td>
+<td><p>Register PSF Factory Class.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_models.set_psf_model" title="wf_psf.psf_models.psf_models.set_psf_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_psf_model</span></code></a>(model_name)</p></td>
+<td><p>Set PSF Model Class.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_models.simPSF" title="wf_psf.psf_models.psf_models.simPSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simPSF</span></code></a>(model_params)</p></td>
+<td><p>Instantiate and configure a Simulated PSF model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_models.tf_obscurations" title="wf_psf.psf_models.psf_models.tf_obscurations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tf_obscurations</span></code></a>(pupil_diam[, N_filter, ...])</p></td>
+<td><p>Tensor Flow Obscurations.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_models.PSFModelBaseFactory" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PSFModelBaseFactory</span></code></a>()</p></td>
+<td><p>Base factory class for PSF models.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Exceptions</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_models.PSFModelError" title="wf_psf.psf_models.psf_models.PSFModelError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PSFModelError</span></code></a>([message])</p></td>
+<td><p>PSF Model Parameter Error exception class.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_models.PSFModelBaseFactory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.psf_models.</span></span><span class="sig-name descname"><span class="pre">PSFModelBaseFactory</span></span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_models.html#PSFModelBaseFactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_models.PSFModelBaseFactory" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Base factory class for PSF models.</p>
+<p>This class serves as the base factory for instantiating PSF (Point Spread Function) models.
+Subclasses should implement the <cite>get_model_instance</cite> method to provide specific PSF model instances.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None">
+<span class="sig-name descname"><span class="pre">None</span></span><a class="headerlink" href="#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_models.PSFModelBaseFactory.get_model_instance">
+<span class="sig-name descname"><span class="pre">get_model_instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coeff_matrix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_models.html#PSFModelBaseFactory.get_model_instance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_models.PSFModelBaseFactory.get_model_instance" title="Link to this definition"></a></dt>
+<dd><p>Instantiates a PSF model with the provided parameters.</p>
+</dd></dl>
+
+<p class="rubric">Notes</p>
+<p>Subclasses of <cite>PSFModelBaseFactory</cite> should override the <cite>get_model_instance</cite> method to provide
+implementation-specific logic for instantiating PSF model instances.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#id0" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.get_model_instance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_model_instance</span></code></a>(model_params, training_params)</p></td>
+<td><p>Instantiate a PSF model instance.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">get_model_instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coeff_matrix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_models.html#PSFModelBaseFactory.get_model_instance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd><p>Instantiate a PSF model instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_params</strong> (<em>Recursive Namespace</em>) – A Recursive Namespace object containing parameters for this PSF model class.</p></li>
+<li><p><strong>training_params</strong> (<em>Recursive Namespace</em>) – A Recursive Namespace object containing training hyperparameters for this PSF model class.</p></li>
+<li><p><strong>data</strong> (<a class="reference internal" href="wf_psf.utils.configs_handler.html#wf_psf.utils.configs_handler.DataConfigHandler" title="wf_psf.utils.configs_handler.DataConfigHandler"><em>DataConfigHandler</em></a>) – A DataConfigHandler object that provides access to training and test datasets, as well as prior knowledge like Zernike coefficients.</p></li>
+<li><p><strong>coeff_mat</strong> (<em>Tensor</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Coefficient matrix defining the parametric PSF field model.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the PSF model.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>PSF model instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_models.PSFModelError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.psf_models.</span></span><span class="sig-name descname"><span class="pre">PSFModelError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'An</span> <span class="pre">error</span> <span class="pre">with</span> <span class="pre">your</span> <span class="pre">PSF</span> <span class="pre">model</span> <span class="pre">parameter</span> <span class="pre">settings</span> <span class="pre">occurred.'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_models.html#PSFModelError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_models.PSFModelError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
+<p>PSF Model Parameter Error exception class.</p>
+<p>This exception class is used to handle errors related to PSF (Point Spread Function) model parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>message</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Error message to be raised. Defaults to “An error with your PSF model parameter settings occurred.”</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_models.build_PSF_model">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.psf_models.</span></span><span class="sig-name descname"><span class="pre">build_PSF_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_inst</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_models.html#build_PSF_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_models.build_PSF_model" title="Link to this definition"></a></dt>
+<dd><p>Define the model-compilation parameters.</p>
+<p>Specially the loss function, the optimizer and the metrics.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_models.generate_zernike_maps_3d">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.psf_models.</span></span><span class="sig-name descname"><span class="pre">generate_zernike_maps_3d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_zernikes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pupil_diam</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_models.html#generate_zernike_maps_3d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_models.generate_zernike_maps_3d" title="Link to this definition"></a></dt>
+<dd><p>Generate 3D Zernike Maps.</p>
+<p>This function generates Zernike maps on a three-dimensional tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_zernikes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The number of Zernike polynomials.</p></li>
+<li><p><strong>pupil_diam</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – The diameter of the pupil.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A TensorFlow EagerTensor containing the Zernike map tensor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The Zernike maps are generated using the specified number of Zernike
+polynomials and the size of the pupil diameter. The resulting tensor
+contains the Zernike maps in a three-dimensional format.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_models.get_psf_model">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.psf_models.</span></span><span class="sig-name descname"><span class="pre">get_psf_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">psf_model_params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_models.html#get_psf_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_models.get_psf_model" title="Link to this definition"></a></dt>
+<dd><p>Get PSF Model Class Instance.</p>
+<p>A function to instantiate a
+PSF model class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>*psf_model_params</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a>) – Positional arguments representing the parameters required to instantiate the PSF model.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the PSF model class based on the provided parameters.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>PSF model class instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_models.get_psf_model_weights_filepath">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.psf_models.</span></span><span class="sig-name descname"><span class="pre">get_psf_model_weights_filepath</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weights_filepath</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_models.html#get_psf_model_weights_filepath"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_models.get_psf_model_weights_filepath" title="Link to this definition"></a></dt>
+<dd><p>Get PSF model weights filepath.</p>
+<p>A function to return the basename of the user-specified psf model weights path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>weights_filepath</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Basename of the psf model weights to be loaded.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The absolute path concatenated to the basename of the psf model weights to be loaded.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_models.register_psfclass">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.psf_models.</span></span><span class="sig-name descname"><span class="pre">register_psfclass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psf_factory_class</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_models.html#register_psfclass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_models.register_psfclass" title="Link to this definition"></a></dt>
+<dd><p>Register PSF Factory Class.</p>
+<p>A function to register a PSF factory class in a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>factory_class</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><em>type</em></a>) – PSF Factory Class</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_models.set_psf_model">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.psf_models.</span></span><span class="sig-name descname"><span class="pre">set_psf_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_models.html#set_psf_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_models.set_psf_model" title="Link to this definition"></a></dt>
+<dd><p>Set PSF Model Class.</p>
+<p>A function to select a class of
+the PSF model from a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Name of PSF model</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>psf_class</strong> – Name of PSF model class</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>class</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_models.simPSF">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.psf_models.</span></span><span class="sig-name descname"><span class="pre">simPSF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_models.html#simPSF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_models.simPSF" title="Link to this definition"></a></dt>
+<dd><p>Instantiate and configure a Simulated PSF model.</p>
+<p>This function creates a <cite>PSFSimulator</cite> instance with the given model parameters, generates random Zernike coefficients, normalizes them, and produces a monochromatic PSF.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model_params</strong> (<em>Recursive Namespace</em>) – A recursive namespace object storing model parameters</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A configured <cite>PSFSimulator</cite> instance with the specified model parameters.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="wf_psf.sims.psf_simulator.html#wf_psf.sims.psf_simulator.PSFSimulator" title="wf_psf.sims.psf_simulator.PSFSimulator">PSFSimulator</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.psf_models.psf_models.tf_obscurations">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.psf_models.</span></span><span class="sig-name descname"><span class="pre">tf_obscurations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pupil_diam</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N_filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation_angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_models.html#tf_obscurations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_models.tf_obscurations" title="Link to this definition"></a></dt>
+<dd><p>Tensor Flow Obscurations.</p>
+<p>A function to generate obscurations as a tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pupil_diam</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – Size of the pupil diameter</p></li>
+<li><p><strong>N_filters</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of filters</p></li>
+<li><p><strong>rotation_angle</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Rotation angle in degrees to apply to the obscuration pattern. It only supports 90 degree rotations. The rotation will be counterclockwise.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>TensorFlow EagerTensor type</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Obscurations tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="wf_psf.psf_models.psf_model_semiparametric.html" class="btn btn-neutral float-left" title="wf_psf.psf_models.psf_model_semiparametric" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wf_psf.psf_models.tf_layers.html" class="btn btn-neutral float-right" title="wf_psf.psf_models.tf_layers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

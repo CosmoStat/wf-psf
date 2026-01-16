@@ -1,0 +1,902 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.psf_models.tf_layers &mdash; wf-psf 3.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../_static/twemoji.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="wf_psf.psf_models.tf_modules" href="wf_psf.psf_models.tf_modules.html" />
+    <link rel="prev" title="wf_psf.psf_models.psf_models" href="wf_psf.psf_models.psf_models.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.data.html">wf_psf.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.metrics.html">wf_psf.metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.plotting.html">wf_psf.plotting</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="wf_psf.psf_models.html">wf_psf.psf_models</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_parametric.html">wf_psf.psf_models.psf_model_parametric</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_physical_polychromatic.html">wf_psf.psf_models.psf_model_physical_polychromatic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_model_semiparametric.html">wf_psf.psf_models.psf_model_semiparametric</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.psf_models.html">wf_psf.psf_models.psf_models</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">wf_psf.psf_models.tf_layers</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF"><code class="docutils literal notranslate"><span class="pre">TFBatchMonochromaticPSF</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFBatchPolychromaticPSF"><code class="docutils literal notranslate"><span class="pre">TFBatchPolychromaticPSF</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD"><code class="docutils literal notranslate"><span class="pre">TFNonParametricGraphOPD</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2"><code class="docutils literal notranslate"><span class="pre">TFNonParametricMCCDOPDv2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD"><code class="docutils literal notranslate"><span class="pre">TFNonParametricPolynomialVariationsOPD</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFPhysicalLayer"><code class="docutils literal notranslate"><span class="pre">TFPhysicalLayer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFPolynomialZernikeField"><code class="docutils literal notranslate"><span class="pre">TFPolynomialZernikeField</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFZernikeOPD"><code class="docutils literal notranslate"><span class="pre">TFZernikeOPD</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_modules.html">wf_psf.psf_models.tf_modules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.tf_psf_field.html">wf_psf.psf_models.tf_psf_field</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.psf_models.zernikes.html">wf_psf.psf_models.zernikes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.run.html">wf_psf.run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.sims.html">wf_psf.sims</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.training.html">wf_psf.training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.utils.html">wf_psf.utils</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="wf_psf.psf_models.html">wf_psf.psf_models</a></li>
+      <li class="breadcrumb-item active">wf_psf.psf_models.tf_layers</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/wf_psf.psf_models.tf_layers.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-wf_psf.psf_models.tf_layers">
+<span id="wf-psf-psf-models-tf-layers"></span><h1>wf_psf.psf_models.tf_layers<a class="headerlink" href="#module-wf_psf.psf_models.tf_layers" title="Link to this heading"></a></h1>
+<p>TensorFlow layers for PSF modelling.</p>
+<p>This module contains TensorFlow layers to model PSF variations across
+the field of view.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Author<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tobias Liaudat &lt;<a class="reference external" href="mailto:tobias&#46;liaudat&#37;&#52;&#48;cea&#46;fr">tobias<span>&#46;</span>liaudat<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;</p>
+</dd>
+</dl>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF" title="wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TFBatchMonochromaticPSF</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Calculate a monochromatic PSF from a batch of OPDs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFBatchPolychromaticPSF" title="wf_psf.psf_models.tf_layers.TFBatchPolychromaticPSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TFBatchPolychromaticPSF</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Calculate a polychromatic PSF from an OPD and stored SED values.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD" title="wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TFNonParametricGraphOPD</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Non-parametric OPD generation with only graph-cosntraint variations.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2" title="wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TFNonParametricMCCDOPDv2</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Non-parametric OPD generation with hybrid-MCCD variations.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD" title="wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TFNonParametricPolynomialVariationsOPD</span></code></a>(...)</p></td>
+<td><p>Non-parametric OPD generation with polynomial variations.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFPhysicalLayer" title="wf_psf.psf_models.tf_layers.TFPhysicalLayer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TFPhysicalLayer</span></code></a>(*args, **kwargs)</p></td>
+<td><p>The Zernike physical layer.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFPolynomialZernikeField" title="wf_psf.psf_models.tf_layers.TFPolynomialZernikeField"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TFPolynomialZernikeField</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Calculate the zernike coefficients for a given position.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFZernikeOPD" title="wf_psf.psf_models.tf_layers.TFZernikeOPD"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TFZernikeOPD</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Calculate the OPD from Zernike maps and coefficients.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.tf_layers.</span></span><span class="sig-name descname"><span class="pre">TFBatchMonochromaticPSF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFBatchMonochromaticPSF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Layer</span></code></p>
+<p>Calculate a monochromatic PSF from a batch of OPDs.</p>
+<p>The calculation of the <code class="docutils literal notranslate"><span class="pre">phase_N</span></code> variable is done
+with the PSFSimulator class but outside the TF class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obscurations</strong> (<em>Tensor</em><em> [</em><em>opd_dim</em><em>, </em><em>opd_dim</em><em>]</em>) – Obscurations to apply to the wavefront.</p></li>
+<li><p><strong>psf_batch</strong> (<em>Tensor</em><em> [</em><em>batch_size</em><em>, </em><em>output_dim</em><em>, </em><em>output_dim</em><em>]</em>) – Tensor containing the psfs that will be updated each
+time a calculation is required.
+Can be started with zeros.</p></li>
+<li><p><strong>output_Q</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Output oversampling value.</p></li>
+<li><p><strong>output_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Output PSF stamp dimension.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(*args, **kwargs)</p></td>
+<td><p>Call self as a function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF.calculate_monochromatic_PSF" title="wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF.calculate_monochromatic_PSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_monochromatic_PSF</span></code></a>(current_opd)</p></td>
+<td><p>Calculate monochromatic PSF from OPD info.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF.call" title="wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(opd_batch)</p></td>
+<td><p>Calculate the batch poly PSFs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF.init_mono_PSF" title="wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF.init_mono_PSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_mono_PSF</span></code></a>()</p></td>
+<td><p>Initialise or restart the PSF generator.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF.set_lambda_phaseN" title="wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF.set_lambda_phaseN"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_lambda_phaseN</span></code></a>([phase_N, lambda_obs])</p></td>
+<td><p>Set the lambda value for monochromatic PSFs and the phaseN.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF.set_output_params" title="wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF.set_output_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_output_params</span></code></a>(output_Q, output_dim)</p></td>
+<td><p>Set output patams, Q and dimension.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF.calculate_monochromatic_PSF">
+<span class="sig-name descname"><span class="pre">calculate_monochromatic_PSF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_opd</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFBatchMonochromaticPSF.calculate_monochromatic_PSF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF.calculate_monochromatic_PSF" title="Link to this definition"></a></dt>
+<dd><p>Calculate monochromatic PSF from OPD info.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF.call">
+<span class="sig-name descname"><span class="pre">call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">opd_batch</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFBatchMonochromaticPSF.call"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF.call" title="Link to this definition"></a></dt>
+<dd><p>Calculate the batch poly PSFs.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF.init_mono_PSF">
+<span class="sig-name descname"><span class="pre">init_mono_PSF</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFBatchMonochromaticPSF.init_mono_PSF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF.init_mono_PSF" title="Link to this definition"></a></dt>
+<dd><p>Initialise or restart the PSF generator.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF.set_lambda_phaseN">
+<span class="sig-name descname"><span class="pre">set_lambda_phaseN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phase_N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">914</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_obs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.7</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFBatchMonochromaticPSF.set_lambda_phaseN"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF.set_lambda_phaseN" title="Link to this definition"></a></dt>
+<dd><p>Set the lambda value for monochromatic PSFs and the phaseN.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF.set_output_params">
+<span class="sig-name descname"><span class="pre">set_output_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_Q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFBatchMonochromaticPSF.set_output_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFBatchMonochromaticPSF.set_output_params" title="Link to this definition"></a></dt>
+<dd><p>Set output patams, Q and dimension.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFBatchPolychromaticPSF">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.tf_layers.</span></span><span class="sig-name descname"><span class="pre">TFBatchPolychromaticPSF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFBatchPolychromaticPSF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFBatchPolychromaticPSF" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Layer</span></code></p>
+<p>Calculate a polychromatic PSF from an OPD and stored SED values.</p>
+<p>The calculation of the packed values with the respective SED is done
+with the PSFSimulator class but outside the TF class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obscurations</strong> (<em>Tensor</em><em> [</em><em>opd_dim</em><em>, </em><em>opd_dim</em><em>]</em>) – Obscurations to apply to the wavefront.</p></li>
+<li><p><strong>packed_SED_data</strong> (<em>Tensor</em><em> [</em><em>batch_size</em><em>, </em><em>3</em><em>, </em><em>n_bins_lda</em><em>]</em>) – <p>Comes from: tf.convert_to_tensor(list(list(Tensor,Tensor,Tensor)))
+Where each inner list consist of a packed_elem:</p>
+<blockquote>
+<div><p>packed_elems: Tuple of tensors
+Contains three 1D tensors with the parameters needed for
+the calculation of one monochromatic PSF.</p>
+<p>packed_elems[0]: phase_N
+packed_elems[1]: lambda_obs
+packed_elems[2]: SED_norm_val</p>
+</div></blockquote>
+<p>The SED data is constant in a FoV.</p>
+</p></li>
+<li><p><strong>psf_batch</strong> (<em>Tensor</em><em> [</em><em>batch_size</em><em>, </em><em>output_dim</em><em>, </em><em>output_dim</em><em>]</em>) – Tensor containing the psfs that will be updated each
+time a calculation is required. REMOVED!</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(*args, **kwargs)</p></td>
+<td><p>Call self as a function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFBatchPolychromaticPSF.calculate_monochromatic_PSF" title="wf_psf.psf_models.tf_layers.TFBatchPolychromaticPSF.calculate_monochromatic_PSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_monochromatic_PSF</span></code></a>(packed_elems)</p></td>
+<td><p>Calculate monochromatic PSF from packed elements.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFBatchPolychromaticPSF.calculate_polychromatic_PSF" title="wf_psf.psf_models.tf_layers.TFBatchPolychromaticPSF.calculate_polychromatic_PSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_polychromatic_PSF</span></code></a>(packed_elems)</p></td>
+<td><p>Calculate a polychromatic PSF.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFBatchPolychromaticPSF.call" title="wf_psf.psf_models.tf_layers.TFBatchPolychromaticPSF.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(inputs)</p></td>
+<td><p>Calculate the batch polychromatic PSFs.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFBatchPolychromaticPSF.calculate_monochromatic_PSF">
+<span class="sig-name descname"><span class="pre">calculate_monochromatic_PSF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">packed_elems</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFBatchPolychromaticPSF.calculate_monochromatic_PSF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFBatchPolychromaticPSF.calculate_monochromatic_PSF" title="Link to this definition"></a></dt>
+<dd><p>Calculate monochromatic PSF from packed elements.</p>
+<p>packed_elems[0]: phase_N
+packed_elems[1]: lambda_obs
+packed_elems[2]: SED_norm_val</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFBatchPolychromaticPSF.calculate_polychromatic_PSF">
+<span class="sig-name descname"><span class="pre">calculate_polychromatic_PSF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">packed_elems</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFBatchPolychromaticPSF.calculate_polychromatic_PSF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFBatchPolychromaticPSF.calculate_polychromatic_PSF" title="Link to this definition"></a></dt>
+<dd><p>Calculate a polychromatic PSF.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFBatchPolychromaticPSF.call">
+<span class="sig-name descname"><span class="pre">call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFBatchPolychromaticPSF.call"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFBatchPolychromaticPSF.call" title="Link to this definition"></a></dt>
+<dd><p>Calculate the batch polychromatic PSFs.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.tf_layers.</span></span><span class="sig-name descname"><span class="pre">TFNonParametricGraphOPD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFNonParametricGraphOPD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Layer</span></code></p>
+<p>Non-parametric OPD generation with only graph-cosntraint variations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs_pos</strong> (<em>tensor</em><em>(</em><em>n_stars</em><em>, </em><em>2</em><em>)</em>) – Observed positions of the <cite>n_stars</cite> in the dataset. The indexing of the
+positions has to correspond to the indexing in the <cite>spatial_dic</cite>.</p></li>
+<li><p><strong>spatial_dic</strong> (<em>tensor</em><em>(</em><em>n_stars</em><em>, </em><em>n_dic_elems</em><em>)</em>) – Dictionary containing the spatial-constraint dictionary. <cite>n_stars</cite>
+corresponds to the total number of stars in the dataset. <cite>n_dic_elems</cite>
+corresponds to the number of elements of the dictionary, not to be
+confounded with <cite>n_comp</cite>, the total number of non-parametric features
+of the wavefront-PSF.</p></li>
+<li><p><strong>x_lims</strong> (<em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Limits of the x axis.</p></li>
+<li><p><strong>y_lims</strong> (<em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Limits of the y axis.</p></li>
+<li><p><strong>graph_comps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of wavefront-PSF features correspondign to the graph constraint.</p></li>
+<li><p><strong>d_max</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Max degree of polynomial determining the FoV variations. The number of
+wavefront-PSF features of the polynomial part is
+computed <cite>(d_max+1)*(d_max+2)/2</cite>.</p></li>
+<li><p><strong>opd_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Dimension of the OPD maps. Same as pupil diameter.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(*args, **kwargs)</p></td>
+<td><p>Call self as a function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD.call" title="wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(positions)</p></td>
+<td><p>Calculate the OPD maps for the given positions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD.init_vars" title="wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD.init_vars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_vars</span></code></a>()</p></td>
+<td><p>Initialize trainable variables.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD.predict" title="wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(positions)</p></td>
+<td><p>Prediction step.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD.set_alpha_identity" title="wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD.set_alpha_identity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_alpha_identity</span></code></a>()</p></td>
+<td><p>Set alpha matrix to the identity.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD.set_alpha_zero" title="wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD.set_alpha_zero"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_alpha_zero</span></code></a>()</p></td>
+<td><p>Set alpha matrix to zero.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD.call">
+<span class="sig-name descname"><span class="pre">call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">positions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFNonParametricGraphOPD.call"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD.call" title="Link to this definition"></a></dt>
+<dd><p>Calculate the OPD maps for the given positions.</p>
+<p>Calculating: batch(spatial_dict) x alpha x S</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>positions</strong> (<em>Tensor</em><em>(</em><em>batch</em><em>, </em><em>2</em><em>)</em>) – First element is x-axis, second is y-axis.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>opd_maps</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tensor(batch, opd_dim, opd_dim)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD.init_vars">
+<span class="sig-name descname"><span class="pre">init_vars</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFNonParametricGraphOPD.init_vars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD.init_vars" title="Link to this definition"></a></dt>
+<dd><p>Initialize trainable variables.</p>
+<p>Basic initialization. Random uniform for S and identity for alpha.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">positions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFNonParametricGraphOPD.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD.predict" title="Link to this definition"></a></dt>
+<dd><p>Prediction step.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD.set_alpha_identity">
+<span class="sig-name descname"><span class="pre">set_alpha_identity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFNonParametricGraphOPD.set_alpha_identity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD.set_alpha_identity" title="Link to this definition"></a></dt>
+<dd><p>Set alpha matrix to the identity.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD.set_alpha_zero">
+<span class="sig-name descname"><span class="pre">set_alpha_zero</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFNonParametricGraphOPD.set_alpha_zero"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFNonParametricGraphOPD.set_alpha_zero" title="Link to this definition"></a></dt>
+<dd><p>Set alpha matrix to zero.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.tf_layers.</span></span><span class="sig-name descname"><span class="pre">TFNonParametricMCCDOPDv2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFNonParametricMCCDOPDv2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Layer</span></code></p>
+<p>Non-parametric OPD generation with hybrid-MCCD variations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs_pos</strong> (<em>tensor</em><em>(</em><em>n_stars</em><em>, </em><em>2</em><em>)</em>) – Observed positions of the <cite>n_stars</cite> in the dataset. The indexing of the
+positions has to correspond to the indexing in the <cite>spatial_dic</cite>.</p></li>
+<li><p><strong>spatial_dic</strong> (<em>tensor</em><em>(</em><em>n_stars</em><em>, </em><em>n_dic_elems</em><em>)</em>) – Dictionary containing the spatial-constraint dictionary. <cite>n_stars</cite>
+corresponds to the total number of stars in the dataset. <cite>n_dic_elems</cite>
+corresponds to the number of elements of the dictionary, not to be
+confounded with <cite>n_comp</cite>, the total number of non-parametric features
+of the wavefront-PSF.</p></li>
+<li><p><strong>x_lims</strong> (<em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Limits of the x axis.</p></li>
+<li><p><strong>y_lims</strong> (<em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Limits of the y axis.</p></li>
+<li><p><strong>graph_comps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of wavefront-PSF features correspondign to the graph constraint.</p></li>
+<li><p><strong>d_max</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Max degree of polynomial determining the FoV variations. The number of
+wavefront-PSF features of the polynomial part is
+computed <cite>(d_max+1)*(d_max+2)/2</cite>.</p></li>
+<li><p><strong>opd_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Dimension of the OPD maps. Same as pupil diameter.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(*args, **kwargs)</p></td>
+<td><p>Call self as a function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2.call" title="wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(positions)</p></td>
+<td><p>Calculate the OPD maps for the given positions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2.init_vars" title="wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2.init_vars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_vars</span></code></a>()</p></td>
+<td><p>Initialize trainable variables.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2.predict" title="wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(positions)</p></td>
+<td><p>Prediction step.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2.set_alpha_identity" title="wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2.set_alpha_identity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_alpha_identity</span></code></a>()</p></td>
+<td><p>Set alpha matrix to the identity.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2.set_alpha_zero" title="wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2.set_alpha_zero"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_alpha_zero</span></code></a>()</p></td>
+<td><p>Set alpha matrix to zero.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2.call">
+<span class="sig-name descname"><span class="pre">call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">positions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFNonParametricMCCDOPDv2.call"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2.call" title="Link to this definition"></a></dt>
+<dd><p>Calculate the OPD maps for the given positions.</p>
+<p>Calculating: batch(spatial_dict) x alpha x S</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>positions</strong> (<em>Tensor</em><em>(</em><em>batch</em><em>, </em><em>2</em><em>)</em>) – First element is x-axis, second is y-axis.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>opd_maps</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tensor(batch, opd_dim, opd_dim)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2.init_vars">
+<span class="sig-name descname"><span class="pre">init_vars</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFNonParametricMCCDOPDv2.init_vars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2.init_vars" title="Link to this definition"></a></dt>
+<dd><p>Initialize trainable variables.</p>
+<p>Basic initialization. Random uniform for S and identity for alpha.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">positions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFNonParametricMCCDOPDv2.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2.predict" title="Link to this definition"></a></dt>
+<dd><p>Prediction step.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2.set_alpha_identity">
+<span class="sig-name descname"><span class="pre">set_alpha_identity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFNonParametricMCCDOPDv2.set_alpha_identity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2.set_alpha_identity" title="Link to this definition"></a></dt>
+<dd><p>Set alpha matrix to the identity.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2.set_alpha_zero">
+<span class="sig-name descname"><span class="pre">set_alpha_zero</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFNonParametricMCCDOPDv2.set_alpha_zero"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFNonParametricMCCDOPDv2.set_alpha_zero" title="Link to this definition"></a></dt>
+<dd><p>Set alpha matrix to zero.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.tf_layers.</span></span><span class="sig-name descname"><span class="pre">TFNonParametricPolynomialVariationsOPD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFNonParametricPolynomialVariationsOPD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Layer</span></code></p>
+<p>Non-parametric OPD generation with polynomial variations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x_lims</strong> (<em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Limits of the x axis.</p></li>
+<li><p><strong>y_lims</strong> (<em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>]</em>) – Limits of the y axis.</p></li>
+<li><p><strong>random_seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Random seed initialization for Tensor Flow</p></li>
+<li><p><strong>d_max</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Max degree of polynomial determining the FoV variations.</p></li>
+<li><p><strong>opd_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Dimension of the OPD maps. Same as pupil diameter.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(*args, **kwargs)</p></td>
+<td><p>Call self as a function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD.assign_S_mat" title="wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD.assign_S_mat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assign_S_mat</span></code></a>(S_mat)</p></td>
+<td><p>Assign DD features matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD.call" title="wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(positions)</p></td>
+<td><p>Calculate the OPD maps for the given positions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD.init_vars" title="wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD.init_vars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_vars</span></code></a>()</p></td>
+<td><p>Initialize trainable variables.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD.set_alpha_identity" title="wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD.set_alpha_identity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_alpha_identity</span></code></a>()</p></td>
+<td><p>Set alpha matrix to the identity.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD.set_alpha_zero" title="wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD.set_alpha_zero"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_alpha_zero</span></code></a>()</p></td>
+<td><p>Set alpha matrix to zero.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD.assign_S_mat">
+<span class="sig-name descname"><span class="pre">assign_S_mat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">S_mat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFNonParametricPolynomialVariationsOPD.assign_S_mat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD.assign_S_mat" title="Link to this definition"></a></dt>
+<dd><p>Assign DD features matrix.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD.call">
+<span class="sig-name descname"><span class="pre">call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">positions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFNonParametricPolynomialVariationsOPD.call"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD.call" title="Link to this definition"></a></dt>
+<dd><p>Calculate the OPD maps for the given positions.</p>
+<p>Calculating: Pi(pos) x alpha x S</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>positions</strong> (<em>Tensor</em><em>(</em><em>batch</em><em>, </em><em>2</em><em>)</em>) – First element is x-axis, second is y-axis.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>opd_maps</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tensor(batch, opd_dim, opd_dim)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD.init_vars">
+<span class="sig-name descname"><span class="pre">init_vars</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFNonParametricPolynomialVariationsOPD.init_vars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD.init_vars" title="Link to this definition"></a></dt>
+<dd><p>Initialize trainable variables.</p>
+<p>Basic initialization. Random uniform for S and identity for alpha.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD.set_alpha_identity">
+<span class="sig-name descname"><span class="pre">set_alpha_identity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFNonParametricPolynomialVariationsOPD.set_alpha_identity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD.set_alpha_identity" title="Link to this definition"></a></dt>
+<dd><p>Set alpha matrix to the identity.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD.set_alpha_zero">
+<span class="sig-name descname"><span class="pre">set_alpha_zero</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFNonParametricPolynomialVariationsOPD.set_alpha_zero"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFNonParametricPolynomialVariationsOPD.set_alpha_zero" title="Link to this definition"></a></dt>
+<dd><p>Set alpha matrix to zero.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFPhysicalLayer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.tf_layers.</span></span><span class="sig-name descname"><span class="pre">TFPhysicalLayer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFPhysicalLayer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFPhysicalLayer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Layer</span></code></p>
+<p>The Zernike physical layer.</p>
+<p>This layer gives the Zernike contribution of the physical layer.
+It is fixed and not trainable. It can interpolate the Zernike coefficients
+at the input positions using different interpolation schemes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs_pos</strong> (<em>Tensor</em><em> (</em><em>n_stars</em><em>, </em><em>2</em><em>)</em>) – Observed positions of the <cite>n_stars</cite> in the dataset. The indexing of the
+positions has to correspond to the indexing in the <cite>zks_prior</cite>.</p></li>
+<li><p><strong>n_zernikes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of Zernike polynomials</p></li>
+<li><p><strong>zks_prior</strong> (<em>Tensor</em><em> (</em><em>n_stars</em><em>, </em><em>n_zernikes</em><em>)</em>) – Zernike coefficients for each position</p></li>
+<li><p><strong>interpolation_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Type of interpolation to be used.
+Options are: None, ‘all’, ‘top_K’, ‘independent_Zk’.
+Default is None.</p></li>
+<li><p><strong>interpolation_args</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Interpolation hyper-parameters. The order of the RBF interpolation,
+and the K elements in the <cite>top_K</cite> interpolation.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(*args, **kwargs)</p></td>
+<td><p>Call self as a function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFPhysicalLayer.call" title="wf_psf.psf_models.tf_layers.TFPhysicalLayer.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(positions)</p></td>
+<td><p>Calculate the prior Zernike coefficients for a batch of positions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFPhysicalLayer.interpolate_all" title="wf_psf.psf_models.tf_layers.TFPhysicalLayer.interpolate_all"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_all</span></code></a>(positions)</p></td>
+<td><p>Interpolate using all the input elements.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFPhysicalLayer.interpolate_independent_Zk" title="wf_psf.psf_models.tf_layers.TFPhysicalLayer.interpolate_independent_Zk"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_independent_Zk</span></code></a>(positions)</p></td>
+<td><p>Interpolate each Zernike independently.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFPhysicalLayer.interpolate_top_K" title="wf_psf.psf_models.tf_layers.TFPhysicalLayer.interpolate_top_K"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_top_K</span></code></a>(positions)</p></td>
+<td><p>Interpolate using only the K closest elements.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFPhysicalLayer.call">
+<span class="sig-name descname"><span class="pre">call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">positions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFPhysicalLayer.call"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFPhysicalLayer.call" title="Link to this definition"></a></dt>
+<dd><p>Calculate the prior Zernike coefficients for a batch of positions.</p>
+<p>This method calculates the Zernike coefficients for a batch of input positions
+based on the pre-computed Zernike coefficients for observed positions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>positions</strong> (<em>tf.Tensor</em>) – Tensor of shape (batch_size, 2) representing the positions.
+The first element represents the x-axis, and the second element represents the y-axis.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>zernike_coeffs</strong> – Tensor of shape (batch_size, n_zernikes, 1, 1) containing the prior Zernike coefficients
+corresponding to the input positions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The method retrieves the Zernike coefficients for each input position from the pre-computed
+Zernike coefficients stored for observed positions. It matches each input position with
+the closest observed position and retrieves the corresponding Zernike coefficients.</p>
+<p>Before calling this method, ensure that the position polynomial matrix and the
+corresponding Zernike coefficients have been precomputed and set for the layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If the shape of the input <cite>positions</cite> tensor is not compatible.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFPhysicalLayer.interpolate_all">
+<span class="sig-name descname"><span class="pre">interpolate_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">positions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFPhysicalLayer.interpolate_all"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFPhysicalLayer.interpolate_all" title="Link to this definition"></a></dt>
+<dd><p>Interpolate using all the input elements.</p>
+<p>The TensorFlow Addons function <cite>tfa.image.interpolate_spline</cite> is used
+to perform the RBF interpolation of the Zernike coefficients.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>positions</strong> (<em>tf.Tensor</em>) – Tensor of shape (batch_size, 2) representing the positions.
+The first element represents the x-axis, and the second element represents the y-axis.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>interp_zks</strong> – Tensor of shape (batch_size, n_zernikes, 1, 1) containing the interpolated Zernike coefficients
+corresponding to the input positions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFPhysicalLayer.interpolate_independent_Zk">
+<span class="sig-name descname"><span class="pre">interpolate_independent_Zk</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">positions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFPhysicalLayer.interpolate_independent_Zk"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFPhysicalLayer.interpolate_independent_Zk" title="Link to this definition"></a></dt>
+<dd><p>Interpolate each Zernike independently.</p>
+<p>The class wf.utils.IndependentZernikeInterpolation allows to interpolate each
+order of the Zernike polynomials independently using all the points avaialble to build
+the interpolant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>positions</strong> (<em>tf.Tensor</em>) – Tensor of shape (batch_size, 2) representing the positions.
+The first element represents the x-axis, and the second element represents the y-axis.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>interp_zks</strong> – Tensor of shape (batch_size, n_zernikes, 1, 1) containing the interpolated Zernike coefficients
+corresponding to the input positions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFPhysicalLayer.interpolate_top_K">
+<span class="sig-name descname"><span class="pre">interpolate_top_K</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">positions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFPhysicalLayer.interpolate_top_K"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFPhysicalLayer.interpolate_top_K" title="Link to this definition"></a></dt>
+<dd><p>Interpolate using only the K closest elements.</p>
+<p>The class wf.utils.ZernikeInterpolation allows to interpolate the Zernike
+coefficients using only the K closest points to build the interpolant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>positions</strong> (<em>tf.Tensor</em>) – Tensor of shape (batch_size, 2) representing the positions.
+The first element represents the x-axis, and the second element represents the y-axis.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>interp_zks</strong> – Tensor of shape (batch_size, n_zernikes, 1, 1) containing the interpolated Zernike coefficients
+corresponding to the input positions.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFPolynomialZernikeField">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.tf_layers.</span></span><span class="sig-name descname"><span class="pre">TFPolynomialZernikeField</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFPolynomialZernikeField"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFPolynomialZernikeField" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Layer</span></code></p>
+<p>Calculate the zernike coefficients for a given position.</p>
+<p>This module implements a polynomial model of Zernike
+coefficient variation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_zernikes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of Zernike polynomials to consider</p></li>
+<li><p><strong>d_max</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Max degree of polynomial determining the FoV variations.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(*args, **kwargs)</p></td>
+<td><p>Call self as a function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFPolynomialZernikeField.assign_coeff_matrix" title="wf_psf.psf_models.tf_layers.TFPolynomialZernikeField.assign_coeff_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assign_coeff_matrix</span></code></a>(coeff_mat)</p></td>
+<td><p>Assign coefficient matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFPolynomialZernikeField.call" title="wf_psf.psf_models.tf_layers.TFPolynomialZernikeField.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(positions)</p></td>
+<td><p>Calculate the zernike coefficients for a given position.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFPolynomialZernikeField.get_coeff_matrix" title="wf_psf.psf_models.tf_layers.TFPolynomialZernikeField.get_coeff_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_coeff_matrix</span></code></a>()</p></td>
+<td><p>Get coefficient matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFPolynomialZernikeField.get_poly_coefficients_shape" title="wf_psf.psf_models.tf_layers.TFPolynomialZernikeField.get_poly_coefficients_shape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_poly_coefficients_shape</span></code></a>()</p></td>
+<td><p>Return the shape of the coefficient matrix.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFPolynomialZernikeField.init_coeff_matrix" title="wf_psf.psf_models.tf_layers.TFPolynomialZernikeField.init_coeff_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_coeff_matrix</span></code></a>()</p></td>
+<td><p>Initialize coefficient matrix.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFPolynomialZernikeField.assign_coeff_matrix">
+<span class="sig-name descname"><span class="pre">assign_coeff_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coeff_mat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFPolynomialZernikeField.assign_coeff_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFPolynomialZernikeField.assign_coeff_matrix" title="Link to this definition"></a></dt>
+<dd><p>Assign coefficient matrix.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFPolynomialZernikeField.call">
+<span class="sig-name descname"><span class="pre">call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">positions</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFPolynomialZernikeField.call"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFPolynomialZernikeField.call" title="Link to this definition"></a></dt>
+<dd><p>Calculate the zernike coefficients for a given position.</p>
+<p>The position polynomial matrix and the coefficients should be
+set before calling this function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>positions</strong> (<em>Tensor</em><em>(</em><em>batch</em><em>, </em><em>2</em><em>)</em>) – First element is x-axis, second is y-axis.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>zernikes_coeffs</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tensor(batch, n_zernikes, 1, 1)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFPolynomialZernikeField.get_coeff_matrix">
+<span class="sig-name descname"><span class="pre">get_coeff_matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFPolynomialZernikeField.get_coeff_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFPolynomialZernikeField.get_coeff_matrix" title="Link to this definition"></a></dt>
+<dd><p>Get coefficient matrix.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFPolynomialZernikeField.get_poly_coefficients_shape">
+<span class="sig-name descname"><span class="pre">get_poly_coefficients_shape</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFPolynomialZernikeField.get_poly_coefficients_shape"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFPolynomialZernikeField.get_poly_coefficients_shape" title="Link to this definition"></a></dt>
+<dd><p>Return the shape of the coefficient matrix.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFPolynomialZernikeField.init_coeff_matrix">
+<span class="sig-name descname"><span class="pre">init_coeff_matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFPolynomialZernikeField.init_coeff_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFPolynomialZernikeField.init_coeff_matrix" title="Link to this definition"></a></dt>
+<dd><p>Initialize coefficient matrix.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFZernikeOPD">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.tf_layers.</span></span><span class="sig-name descname"><span class="pre">TFZernikeOPD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFZernikeOPD"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFZernikeOPD" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Layer</span></code></p>
+<p>Calculate the OPD from Zernike maps and coefficients.</p>
+<p>This class generates OPD maps from Zernike coefficients and Zernike maps.
+Both Zernike maps and Zernike coefficients must be provided
+to the class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>zernike_maps</strong> (<em>Tensor</em><em> (</em><em>Num_coeffs</em><em>, </em><em>x_dim</em><em>, </em><em>y_dim</em><em>)</em>)</p></li>
+<li><p><strong>z_coeffs</strong> (<em>Tensor</em><em> (</em><em>batch_size</em><em>, </em><em>n_zernikes</em><em>, </em><em>1</em><em>, </em><em>1</em><em>)</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>opd</strong></p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tensor (batch_size, x_dim, y_dim)</p>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(*args, **kwargs)</p></td>
+<td><p>Call self as a function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_layers.TFZernikeOPD.call" title="wf_psf.psf_models.tf_layers.TFZernikeOPD.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(z_coeffs)</p></td>
+<td><p>Perform the weighted sum of Zernikes coeffs and maps.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.psf_models.tf_layers.TFZernikeOPD.call">
+<span class="sig-name descname"><span class="pre">call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_coeffs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/tf_layers.html#TFZernikeOPD.call"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.tf_layers.TFZernikeOPD.call" title="Link to this definition"></a></dt>
+<dd><p>Perform the weighted sum of Zernikes coeffs and maps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>opd</strong></p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor (batch_size, x_dim, y_dim)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="wf_psf.psf_models.psf_models.html" class="btn btn-neutral float-left" title="wf_psf.psf_models.psf_models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wf_psf.psf_models.tf_modules.html" class="btn btn-neutral float-right" title="wf_psf.psf_models.tf_modules" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>
