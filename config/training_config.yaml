@@ -10,7 +10,7 @@ training:
   # Metrics Config file - Enter file to run metrics evaluation else if empty run train only
   metrics_config:
   model_params:
-    # Model type. Options are: 'mccd', 'graph', 'poly, 'param', 'physical_poly'.
+    # Model type. Options are: 'poly' or 'physical_poly'.
     model_name: physical_poly
 
     # Num of wavelength bins to reconstruct polychromatic objects.
