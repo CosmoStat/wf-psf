@@ -6,13 +6,11 @@ A list of command-line arguments can be displayed using the `--help` option:
 
 ```
 > wavediff --help
-usage: run.py [-h] --conffile CONFFILE --repodir REPODIR --outputdir OUTPUTDIR
+usage: run.py [-h] --conffile CONFFILE --outputdir OUTPUTDIR
 
 required arguments:
   --conffile CONFFILE, -c CONFFILE
                         a configuration file containing program settings.
-  --repodir REPODIR, -r REPODIR
-                        the path of the code repository directory.
   --outputdir OUTPUTDIR, -o OUTPUTDIR
                         the path of the output directory.
 
@@ -21,14 +19,12 @@ optional arguments:
 ```
 The first argument: `--confile CONFFILE` specifies the path to the {ref}`master configuration file<master_config_file>` storing the pipeline tasks to be executed at runtime.
 
-The second argument: `--repodir REPODIR` is the path to the `wf-psf` repository.
-
-The third argument: `--outputdir OUTPUTDIR` is used to set the path to the main output directory, which stores the `WaveDiff` results.
+The second argument: `--outputdir OUTPUTDIR` is used to set the path to the main output directory, which stores the `WaveDiff` results.
 
 To run `WaveDiff`, use the following command:
 
 ```
-> wavediff -c /path/to/config/file -r /path/to/wf-psf -o /path/to/output/dir
+> wavediff -c /path/to/config/file -o /path/to/output/dir
 ```
 
 ## WaveDiff Output Directory Structure
