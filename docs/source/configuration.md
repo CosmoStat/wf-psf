@@ -109,7 +109,7 @@ Controls PSF model type, geometry, oversampling, and preprocessing:
 
 ```yaml
 model_params:
-  # Model type. Options: 'mccd', 'graph', 'poly', 'param', 'physical_poly'
+  # Model type. Options: 'poly' and 'physical_poly'
   model_name: physical_poly
 
   # Number of wavelength bins for polychromatic reconstruction
@@ -127,20 +127,31 @@ model_params:
   # OPD/Wavefront space dimensions
   pupil_diameter: 256
 
-  # Flags for physical corrections
+  # Physical correction switches
   use_prior: False
   correct_centroids: True
-  sigma_centroid_window: 2.5       # Standard deviation of window for centroid computation
-  reference_shifts: [-1/3, -1/3]   # Euclid-like default shifts
-  obscuration_rotation_angle: 0     # Obscuration mask rotation (degrees, multiple of 90)
   add_ccd_misalignments: False
-  ccd_misalignments_input_path: /path/to/tiles.npy
 
-  # Sample weighting
-  use_sample_weights: True
+  # Centroid correction parameters
+  sigma_centroid_window: 2.5       # Std dev of centroiding window
+  reference_shifts: [-1/3, -1/3]   # Euclid-like default shifts
+
+  # Obscuration / geometry
+  obscuration_rotation_angle: 0    # Degrees (multiple of 90); counterclockwise rotation. 
+
+  # CCD misalignments input file path
+  ccd_misalignments_input_path: /path/to/ccd_misalignments_file.txt
+    
+  # Boolean to use sample weights based on the noise standard deviation estimation
+  use_sample_weights: True 
+
+  # Sample weight generalised sigmoid function
   sample_weights_sigmoid:
+    # Boolean to define if we apply the sigmoid function to the sample weights
     apply_sigmoid: False
+    # Maximum value of the sigmoid function and consequently the maximum value of the sample weights
     sigmoid_max_val: 5.0
+    # Power of the sigmoid function. The higher the value the steeper the sigmoid function. In the limit
     sigmoid_power_k: 1.0
 
   # Interpolation settings for physical-poly model
