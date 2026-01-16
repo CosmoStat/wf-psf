@@ -18,10 +18,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       
-      - name: Set up Python 3.10.5
+      - name: Set up Python 3.10.11
         uses: actions/setup-python@v3
         with:
-          python-version: "3.10.5"
+          python-version: "3.10.11"
           
       - name: Check Python Version
         run: python --version
@@ -32,11 +32,11 @@ jobs:
      
       - name: Build API documentation
         run: |
-          sphinx-apidoc -Mfeo docs/source src/wf_psf
-          sphinx-build docs/source docs/build
+          make -C docs clean
+          make -C docs html
        
       - name: Deploy API documentation
         uses: peaceiris/actions-gh-pages@v3.5.9
         with:
            github_token: ${{ secrets.GITHUB_TOKEN }}
-           publish_dir: docs/build
+           publish_dir: docs/build/html

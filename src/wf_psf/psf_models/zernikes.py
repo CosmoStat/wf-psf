@@ -5,9 +5,9 @@ A module to make Zernike maps.
 :Author: Tobias Liaudat <tobiasliaudat@gmail.com> and Jennifer Pollack <jennifer.pollack@cea.fr>
 
 """
+
 import numpy as np
 import zernike as zk
-import tensorflow as tf
 import logging
 
 logger = logging.getLogger(__name__)

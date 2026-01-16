@@ -7,26 +7,19 @@ to manage the parameters of the psf parametric model.
 
 """
 
-import numpy as np
 import tensorflow as tf
-from tensorflow.python.keras.engine import data_adapter
 from wf_psf.psf_models.psf_models import register_psfclass
 from wf_psf.psf_models.tf_layers import (
-    TF_poly_Z_field,
-    TF_zernike_OPD,
-    TF_batch_poly_PSF,
+    TFPolynomialZernikeField,
+    TFZernikeOPD,
+    TFBatchPolychromaticPSF,
+    TFBatchMonochromaticPSF,
 )
-from wf_psf.psf_models.tf_layers import (
-    TF_NP_poly_OPD,
-    TF_batch_mono_PSF,
-    TF_physical_layer,
-)
-from wf_psf.utils.utils import PI_zernikes
 
 
 @register_psfclass
-class TF_PSF_field_model(tf.keras.Model):
-    """Parametric PSF field model!
+class TFParametricPSFFieldModel(tf.keras.Model):
+    """Parametric PSF field model.
 
     Fully parametric model based on the Zernike polynomial basis.
 
@@ -86,7 +79,7 @@ class TF_PSF_field_model(tf.keras.Model):
         coeff_mat=None,
         name="TF_PSF_field_model",
     ):
-        super(TF_PSF_field_model, self).__init__()
+        super().__init__(name=name)
 
         self.output_Q = output_Q
 
@@ -109,7 +102,7 @@ class TF_PSF_field_model(tf.keras.Model):
         self.l2_param = l2_param
 
         # Initialize the first layer
-        self.tf_poly_Z_field = TF_poly_Z_field(
+        self.tf_poly_Z_field = TFPolynomialZernikeField(
             x_lims=self.x_lims,
             y_lims=self.y_lims,
             n_zernikes=self.n_zernikes,
@@ -117,10 +110,10 @@ class TF_PSF_field_model(tf.keras.Model):
         )
 
         # Initialize the zernike to OPD layer
-        self.tf_zernike_OPD = TF_zernike_OPD(zernike_maps=zernike_maps)
+        self.tf_zernike_OPD = TFZernikeOPD(zernike_maps=zernike_maps)
 
         # Initialize the batch opd to batch polychromatic PSF layer
-        self.tf_batch_poly_PSF = TF_batch_poly_PSF(
+        self.tf_batch_poly_PSF = TFBatchPolychromaticPSF(
             obscurations=self.obscurations,
             output_Q=self.output_Q,
             output_dim=self.output_dim,
@@ -147,14 +140,25 @@ class TF_PSF_field_model(tf.keras.Model):
 
     def set_output_Q(self, output_Q, output_dim=None):
         """Set the value of the output_Q parameter.
+
         Useful for generating/predicting PSFs at a different sampling wrt the
         observation sampling.
+
+        Parameters
+        ----------
+        output_Q: float
+            New value of the output_Q parameter.
+        output_dim: int or None
+            New value of the output_dim parameter. If None, the output_dim
+            parameter is not changed.
+
+
         """
         self.output_Q = output_Q
         if output_dim is not None:
             self.output_dim = output_dim
         # Reinitialize the PSF batch poly generator
-        self.tf_batch_poly_PSF = TF_batch_poly_PSF(
+        self.tf_batch_poly_PSF = TFBatchPolychromaticPSF(
             obscurations=self.obscurations,
             output_Q=self.output_Q,
             output_dim=self.output_dim,
@@ -170,12 +174,11 @@ class TF_PSF_field_model(tf.keras.Model):
 
         phase_N: int
             Required wavefront dimension. Should be calculated with as:
-            ``simPSF_np = wf.SimPSFToolkit(...)``
+            ``simPSF_np = wf_psf.sims.psf_simulator.PSFSimulator(...)``
             ``phase_N = simPSF_np.feasible_N(lambda_obs)``
         """
-
         # Initialise the monochromatic PSF batch calculator
-        tf_batch_mono_psf = TF_batch_mono_PSF(
+        tf_batch_mono_psf = TFBatchMonochromaticPSF(
             obscurations=self.obscurations,
             output_Q=self.output_Q,
             output_dim=self.output_dim,

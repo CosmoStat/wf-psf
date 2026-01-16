@@ -11,11 +11,10 @@ maintainers = [
 
 description = 'A software framework to perform Differentiable wavefront-based PSF modelling.'
 dependencies = [
-    "numpy",
+    "numpy>=1.26.4,<2.0",
     "scipy",
-    "keras==2.9.0",
-    "tensorflow==2.9.1",
-    "tensorflow-addons>=0.23.0",
+    "tensorflow==2.11.0",
+    "tensorflow-addons",
     "tensorflow-estimator",
     "zernike",
     "opencv-python",
@@ -26,7 +25,7 @@ dependencies = [
     "seaborn",
 ]
 
-version = "2.0.1"
+version = "3.0.0"
 
 [project.optional-dependencies]
 docs = [
@@ -39,11 +38,11 @@ docs = [
     "sphinx-gallery",
     "sphinxemoji",
     "sphinx_rtd_theme",
-
+    "scriv",
 ]
 
 lint = [
-    "black",
+    "ruff",
 ]
 
 release = [
@@ -53,8 +52,7 @@ release = [
 
 test = [
   "pytest",
-  "pytest-black",
-  "pytest-cases",
+  "pytest-mock",
   "pytest-cov",
   "pytest-emoji",
   "pytest-raises",
@@ -67,17 +65,37 @@ dev = ["wf_psf[docs,lint,release,test]"]
 [project.scripts]
 wavediff = "wf_psf.run:mainMethod"
 
-[tool.black]
+[tool.ruff]
 line-length = 88
+indent-width = 4
 
-[tool.pydocstyle]
+# Enable more rules: Pyupgrade (`UP`) and Pydocstyle (`D`)
+[tool.ruff.lint]
+extend-select = ["UP", "D"]
+
+# Use numpy-style docstrings
+[tool.ruff.lint.pydocstyle]
 convention = "numpy"
+
+# Enable Ruff's built-in formatter
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+[tool.setuptools.package-data]
+"wf_psf.config" = ["*.conf"]
+
+# Set per-file-ignores
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "D"]
+"*_test.py" = ["D"]
+"conftest.py" = ["D"]
 
 
 [tool.pytest.ini_options]
 addopts = [
     "--verbose",
-    "--black",
     "--emoji",
     "--cov=wf_psf",
     "--cov-report=term-missing",

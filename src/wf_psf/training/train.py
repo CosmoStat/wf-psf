@@ -3,38 +3,69 @@
 A module which defines the classes and methods
 to manage training of the psf model.
 
-:Author: Jennifer Pollack <jennifer.pollack@cea.fr>
+:Authors: Jennifer Pollack <jennifer.pollack@cea.fr>, Tobias Liaudat <tobias.liaudat@cea.fr>, Ezequiel Centofanti <ezequiel.centofanti@cea.fr>
 
 """
 
-import sys
 import numpy as np
 import time
 import tensorflow as tf
 import tensorflow_addons as tfa
-from wf_psf.utils.read_config import read_conf
-import os
 import logging
-import wf_psf.utils.io as io
-from wf_psf.psf_models import psf_models, psf_model_semiparametric
+from wf_psf.psf_models import psf_models
 import wf_psf.training.train_utils as train_utils
-import wf_psf.data.training_preprocessing as training_preprocessing
 
 logger = logging.getLogger(__name__)
 
 
+def get_gpu_info():
+    """Get GPU Information.
+
+    A function to return GPU
+    device name.
+
+    Returns
+    -------
+    device_name: str
+        Name of GPU device
+
+    """
+    device_name = tf.test.gpu_device_name()
+    return device_name
+
+
 def setup_training():
-    """Setup Training.
+    """Set up Training.
 
     A function to setup training.
 
-
     """
     device_name = get_gpu_info()
-    logger.info("Found GPU at: {}".format(device_name))
+    logger.info(f"Found GPU at: {device_name}")
 
 
-def filepath_chkp_callback(checkpoint_dir, model_name, id_name, current_cycle):
+def filepath_chkp_callback(
+    checkpoint_dir: str, model_name: str, id_name: str, current_cycle: int
+) -> str:
+    """
+    Generate a file path for a checkpoint callback.
+
+    Parameters
+    ----------
+    checkpoint_dir : str
+        The directory where the checkpoint will be saved.
+    model_name : str
+        The name of the model.
+    id_name : str
+        The unique identifier for the model instance.
+    current_cycle : int
+        The current cycle number.
+
+    Returns
+    -------
+    str
+        A string representing the full file path for the checkpoint callback.
+    """
     return (
         checkpoint_dir
         + "/checkpoint_callback_"
@@ -205,7 +236,9 @@ class TrainingParamsHandler:
         """
         return self.multi_cycle_params.learning_rate_non_params
 
-    def _prepare_callbacks(self, checkpoint_dir, current_cycle):
+    def _prepare_callbacks(
+        self, checkpoint_dir, current_cycle, monitor="mean_squared_error"
+    ):
         """Prepare Callbacks.
 
         A function to prepare to save the model as a callback.
@@ -223,14 +256,13 @@ class TrainingParamsHandler:
                 Class to save the Keras model or model weights at some frequency
 
         """
-
         # -----------------------------------------------------
-        logger.info(f"Preparing Keras model callback...")
+        logger.info("Preparing Keras model callback...")
         return tf.keras.callbacks.ModelCheckpoint(
             filepath_chkp_callback(
                 checkpoint_dir, self.model_name, self.id_name, current_cycle
             ),
-            monitor="mean_squared_error",
+            monitor=monitor,
             verbose=1,
             save_best_only=True,
             save_weights_only=True,
@@ -240,49 +272,112 @@ class TrainingParamsHandler:
         )
 
 
-def get_gpu_info():
-    """Get GPU Information.
+def get_loss_metrics_monitor_and_outputs(training_handler, data_conf):
+    """Generate factory for loss, metrics, monitor, and outputs.
 
-    A function to return GPU
-    device name.
+    A function to generate loss, metrics, monitor, and outputs
+    for training.
+
+    Parameters
+    ----------
+    training_handler: TrainingParamsHandler
+        TrainingParamsHandler object containing training parameters
+    data_conf: object
+        Data configuration object containing training and test data
 
     Returns
     -------
-    device_name: str
-        Name of GPU device
+    loss: tf.keras.losses.Loss
+        Loss function to be used for training
+    param_metrics: list
+        List of metrics for the parametric model
+    non_param_metrics: list
+        List of metrics for the non-parametric model
+    monitor: str
+        Metric to monitor for saving the model
+    outputs: tf.Tensor
+        Tensor containing the outputs for training
+    output_val: tf.Tensor
+        Tensor containing the outputs for validation
 
     """
-    device_name = tf.test.gpu_device_name()
-    return device_name
+    if training_handler.training_hparams.loss == "mask_mse":
+        loss = train_utils.MaskedMeanSquaredError()
+        monitor = "loss"
+        param_metrics = [train_utils.MaskedMeanSquaredErrorMetric()]
+        non_param_metrics = [train_utils.MaskedMeanSquaredErrorMetric()]
+        outputs = tf.stack(
+            [
+                data_conf.training_data.dataset["noisy_stars"],
+                data_conf.training_data.dataset["masks"],
+            ],
+            axis=-1,
+        )
+        output_val = tf.stack(
+            [
+                data_conf.test_data.dataset["stars"],
+                data_conf.test_data.dataset["masks"],
+            ],
+            axis=-1,
+        )
+    else:
+        loss = tf.keras.losses.MeanSquaredError()
+        monitor = "mean_squared_error"
+        param_metrics = [tf.keras.metrics.MeanSquaredError()]
+        non_param_metrics = [tf.keras.metrics.MeanSquaredError()]
+        outputs = data_conf.training_data.dataset["noisy_stars"]
+        output_val = data_conf.test_data.dataset["stars"]
+
+    return loss, param_metrics, non_param_metrics, monitor, outputs, output_val
 
 
 def train(
     training_params,
-    training_data,
-    test_data,
+    data_conf,
     checkpoint_dir,
     optimizer_dir,
     psf_model_dir,
 ):
-    """Train.
+    """
+    Train the PSF model over one or more parametric and non-parametric training cycles.
 
-    A function to train the psf model.
+    This function manages multi-cycle training of a parametric + non-parametric PSF model,
+    including initialization, loss/metric configuration, optimizer setup, model checkpointing,
+    and optional projection or resetting of non-parametric features. Each cycle can include
+    both parametric and non-parametric training stages, and training history is saved for each.
 
     Parameters
     ----------
-    training_params: Recursive Namespace object
-        Recursive Namespace object containing the training parameters
-    training_data: obj
-        TrainingDataHandler object containing the training data parameters
-    test_data: object
-        TestDataHandler object containing the test data parameters
-    checkpoint_dir: str
-        Absolute path to checkpoint directory
-    optimizer_dir: str
-        Absolute path to optimizer history directory
-    psf_model_dir: str
-        Absolute path to psf model directory
+    training_params : RecursiveNamespace
+        Contains all training configuration parameters, including:
+        - learning rates per cycle
+        - number of epochs per component per cycle
+        - model type and training behavior flags
+        - multi-cycle definitions and callbacks
 
+    data_conf : object
+        Contains training and validation datasets via attributes:
+        - data_conf.training_data: TrainingDataHandler instance with SEDs and positions
+        - data_conf.test_data: TestDataHandler instance with validation SEDs and positions
+
+    checkpoint_dir : str
+        Directory where model checkpoints will be saved during training.
+
+    optimizer_dir : str
+        Directory where the optimizer history (as a NumPy .npy file) will be stored.
+
+    psf_model_dir : str
+        Directory where the final trained PSF model weights will be saved per cycle.
+
+    Notes
+    -----
+    - Utilizes TensorFlow and TensorFlow Addons for model training and optimization.
+    - Supports masked mean squared error loss for training with masked data.
+    - Allows for projection of data-driven features onto parametric models between cycles.
+    - Supports resetting of non-parametric features to initial states.
+    - Saves model weights to `psf_model_dir` per training cycle (or final one if not all saved)
+    - Saves optimizer histories to `optimizer_dir`
+    - Logs cycle information and time durations
     """
     # Start measuring elapsed time
     starting_time = time.time()
@@ -292,6 +387,7 @@ def train(
     psf_model = psf_models.get_psf_model(
         training_handler.model_params,
         training_handler.training_hparams,
+        data_conf,
     )
 
     logger.info(f"PSF Model class: `{training_handler.model_name}` initialized...")
@@ -302,27 +398,33 @@ def train(
 
     # Perform all the necessary cycles
     current_cycle = 0
-
     while training_handler.total_cycles > current_cycle:
         current_cycle += 1
 
+        # Instantiate fresh loss, monitor, and independent metric objects per training phase (param / non-param)
+        loss, param_metrics, non_param_metrics, monitor, outputs, output_val = (
+            get_loss_metrics_monitor_and_outputs(training_handler, data_conf)
+        )
+
         # If projected learning is enabled project DD_features.
-        if psf_model.project_dd_features:  # need to change this
-            psf_model.project_DD_features(
-                psf_model.zernike_maps
-            )  # make this a callable function
-            logger.info("Project non-param DD features onto param model: done!")
-            if psf_model.reset_dd_features:
-                psf_model.tf_np_poly_opd.init_vars()
-                logger.info("DD features reset to random initialisation.")
+        if hasattr(psf_model, "project_dd_features") and psf_model.project_dd_features:
+            if current_cycle > 1:
+                psf_model.project_DD_features(
+                    psf_model.zernike_maps
+                )  # make this a callable function
+                logger.info(
+                    "Projected non-parametric DD features onto the parametric model."
+                )
+
+        if hasattr(psf_model, "reset_dd_features") and psf_model.reset_dd_features:
+            psf_model.tf_np_poly_opd.init_vars()
+            logger.info("DataDriven features were reset to random initialisation.")
 
         # Prepare the saving callback
         # Prepare to save the model as a callback
         # -----------------------------------------------------
-        logger.info(f"Preparing Keras model callback...")
-
         model_chkp_callback = training_handler._prepare_callbacks(
-            checkpoint_dir, current_cycle
+            checkpoint_dir, current_cycle, monitor=monitor
         )
 
         # Prepare the optimizers
@@ -332,7 +434,8 @@ def train(
         non_param_optim = tfa.optimizers.RectifiedAdam(
             learning_rate=training_handler.learning_rate_non_params[current_cycle - 1]
         )
-        logger.info("Starting cycle {}..".format(current_cycle))
+        logger.info(f"Starting cycle {current_cycle}..")
+
         start_cycle = time.time()
 
         # Compute training per cycle
@@ -342,18 +445,17 @@ def train(
             hist_non_param,
         ) = train_utils.general_train_cycle(
             psf_model,
-            # training data
             inputs=[
-                training_data.train_dataset["positions"],
-                training_data.sed_data,
+                data_conf.training_data.dataset["positions"],
+                data_conf.training_data.sed_data,
             ],
-            outputs=training_data.train_dataset["noisy_stars"],
+            outputs=outputs,
             validation_data=(
                 [
-                    test_data.test_dataset["positions"],
-                    test_data.sed_data,
+                    data_conf.test_data.dataset["positions"],
+                    data_conf.test_data.sed_data,
                 ],
-                test_data.test_dataset["stars"],
+                output_val,
             ),
             batch_size=training_handler.training_hparams.batch_size,
             learning_rate_param=training_handler.learning_rate_params[
@@ -366,16 +468,19 @@ def train(
             n_epochs_non_param=training_handler.n_epochs_non_params[current_cycle - 1],
             param_optim=param_optim,
             non_param_optim=non_param_optim,
-            param_loss=None,
-            non_param_loss=None,
-            param_metrics=None,
-            non_param_metrics=None,
+            param_loss=loss,
+            non_param_loss=loss,
+            param_metrics=param_metrics,
+            non_param_metrics=non_param_metrics,
             param_callback=None,
             non_param_callback=None,
             general_callback=[model_chkp_callback],
             first_run=True if current_cycle == 1 else False,
             cycle_def=training_handler.multi_cycle_params.cycle_def,
             use_sample_weights=training_handler.model_params.use_sample_weights,
+            apply_sigmoid=training_handler.model_params.sample_weights_sigmoid.apply_sigmoid,
+            sigmoid_max_val=training_handler.model_params.sample_weights_sigmoid.sigmoid_max_val,
+            sigmoid_power_k=training_handler.model_params.sample_weights_sigmoid.sigmoid_power_k,
             verbose=2,
         )
 
@@ -391,19 +496,20 @@ def train(
             )
 
         end_cycle = time.time()
-        logger.info(
-            "Cycle{} elapsed time: {}".format(current_cycle, end_cycle - start_cycle)
-        )
+        logger.info(f"Cycle{current_cycle} elapsed time: {end_cycle - start_cycle}")
 
         # Save optimisation history in the saving dict
-        if psf_model.save_optim_history_param:
-            saving_optim_hist[
-                "param_cycle{}".format(current_cycle)
-            ] = hist_param.history
-        if psf_model.save_optim_history_nonparam:
-            saving_optim_hist[
-                "nonparam_cycle{}".format(current_cycle)
-            ] = hist_non_param.history
+        if (
+            hasattr(psf_model, "save_optim_history_param")
+            and psf_model.save_optim_history_param
+        ):
+            saving_optim_hist[f"param_cycle{current_cycle}"] = hist_param.history
+
+        if (
+            hasattr(psf_model, "save_optim_history_nonparam")
+            and psf_model.save_optim_history_nonparam
+        ):
+            saving_optim_hist[f"nonparam_cycle{current_cycle}"] = hist_non_param.history
 
     # Save last cycle if no cycles were saved
     if not training_handler.multi_cycle_params.save_all_cycles:

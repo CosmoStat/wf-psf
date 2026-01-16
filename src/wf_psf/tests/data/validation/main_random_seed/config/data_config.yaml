@@ -26,7 +26,7 @@ data:
       euclid_obsc: true
       n_stars: 200
   test:
-    data_dir: data/coherent_euclid_dataset/
+    data_dir: wf-psf/data/coherent_euclid_dataset/
     file: test_Euclid_res_id_001.npy
     # If test dataset file not provided produce a new one
     stars: null
