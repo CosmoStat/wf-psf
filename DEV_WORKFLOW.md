@@ -111,6 +111,9 @@ This approach:
    ```bash
    scriv create
    ```
+**Notes**: 
+- Do not collect fragments in your PR; leave [Unreleased] in CHANGELOG.md.
+- [Unreleased] is always at the top; contributors never write directly into it.
 
 Fragment creation and writing guidelines are documented in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
