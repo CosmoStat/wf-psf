@@ -83,9 +83,9 @@ class TestFileIOTimestampCollision:
             workdirs.append(handler.workdir)
 
         # All workdirs should be unique
-        assert len(workdirs) == len(
-            set(workdirs)
-        ), f"Collision detected! Workdirs: {workdirs}"
+        assert len(workdirs) == len(set(workdirs)), (
+            f"Collision detected! Workdirs: {workdirs}"
+        )
 
     def test_collision_with_same_timestamp(self, temp_dirs):
         """Test collision scenario when timestamps are identical (simulated)."""
@@ -103,9 +103,9 @@ class TestFileIOTimestampCollision:
 
             # If using the OLD format, this assertion would FAIL (which is the bug)
             # With the NEW format, this should PASS
-            assert (
-                handler1.workdir == handler2.workdir
-            ), "This test demonstrates the collision when timestamps are mocked to be identical"
+            assert handler1.workdir == handler2.workdir, (
+                "This test demonstrates the collision when timestamps are mocked to be identical"
+            )
 
     def test_batch_submission_simulation(self, temp_dirs):
         """Simulate batch job submissions within the same second."""
@@ -130,9 +130,9 @@ class TestFileIOTimestampCollision:
 
         # All workdirs should be unique
         unique_workdirs = set(workdirs)
-        assert len(workdirs) == len(
-            unique_workdirs
-        ), f"Collision detected in batch simulation! Got {len(unique_workdirs)} unique dirs from {len(workdirs)} jobs"
+        assert len(workdirs) == len(unique_workdirs), (
+            f"Collision detected in batch simulation! Got {len(unique_workdirs)} unique dirs from {len(workdirs)} jobs"
+        )
 
     def test_directory_creation_no_overwrite(self, temp_dirs):
         """Test that actual directory creation doesn't overwrite existing directories."""
@@ -157,9 +157,9 @@ class TestFileIOTimestampCollision:
             pytest.fail(f"Directory collision detected: {handler1._run_output_dir}")
         else:
             # Directories are different - verify first handler's data is intact
-            assert os.path.exists(
-                marker_file
-            ), "First handler's data was affected by second handler"
+            assert os.path.exists(marker_file), (
+                "First handler's data was affected by second handler"
+            )
 
     def test_timestamp_format_includes_sufficient_precision(self):
         """Test that the timestamp format has sufficient precision (seconds or microseconds)."""
@@ -177,9 +177,9 @@ class TestFileIOTimestampCollision:
         )
 
         # Verify timestamp is all digits (or digits + microseconds)
-        assert (
-            timestamp.isdigit()
-        ), f"Timestamp '{timestamp}' contains non-digit characters"
+        assert timestamp.isdigit(), (
+            f"Timestamp '{timestamp}' contains non-digit characters"
+        )
 
     @pytest.mark.parametrize("num_instances", [2, 5, 10, 20])
     def test_rapid_instantiation_uniqueness(self, temp_dirs, num_instances):

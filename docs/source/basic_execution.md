@@ -29,7 +29,7 @@ To run `WaveDiff`, use the following command:
 
 ## WaveDiff Output Directory Structure
 
-WaveDiff creates an output directory at the location specified by `--outputdir` for each run. The parent directory is named with the prefix `wf-outputs-` and a timestamp accurate to the microsecond, e.g., `wf-outputs-20231119151932213823`.  
+WaveDiff creates an output directory at the location specified by `--outputdir` for each run. The parent directory is named with the prefix `wf-outputs-` and a timestamp accurate to the microsecond, e.g., `wf-outputs-20231119151932213823`.
 
 Inside this directory, the following subdirectories are generated:
 

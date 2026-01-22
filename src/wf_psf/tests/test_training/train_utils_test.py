@@ -433,7 +433,6 @@ def test_general_train_cycle_with_callbacks(
         patch("wf_psf.training.train_utils.get_callbacks") as mock_get_callbacks,
         patch("wf_psf.training.train_utils.train_cycle_part") as mock_train_cycle_part,
     ):
-
         # Define side effect behavior dynamically
         callback_side_effects = []
         if parametric_callbacks:

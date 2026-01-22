@@ -2,13 +2,13 @@
    :hidden:
    :titlesonly:
    :caption: About WaveDiff
-   
+
    about
 
 .. toctree::
    :hidden:
    :caption: Installing WaveDiff
-   
+
    dependencies
    installation
 
@@ -16,7 +16,7 @@
    :maxdepth: 4
    :hidden:
    :caption: Running WaveDiff
-   
+
    basic_execution
    configuration
 
@@ -24,7 +24,7 @@
    :maxdepth: 4
    :hidden:
    :caption: API Documentation
-   
+
    api
 
 .. toctree::

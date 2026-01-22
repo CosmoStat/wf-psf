@@ -9,7 +9,6 @@ manage wf-psf inputs and outputs.
 
 import pathlib
 import os
-import logging
 from datetime import datetime
 import shutil
 
@@ -117,7 +116,6 @@ class FileIOHandler:
         timestamp: str
             A string representation of the date and time.
         """
-
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")
         return timestamp
 

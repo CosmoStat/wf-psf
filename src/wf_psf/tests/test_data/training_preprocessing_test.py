@@ -315,7 +315,6 @@ def test_compute_centroid_correction_with_masks(mock_data):
             "wf_psf.data.training_preprocessing.compute_zernike_tip_tilt"
         ) as mock_compute_zernike_tip_tilt,
     ):
-
         # Mock the return values of extract_star_data and compute_zernike_tip_tilt
         mock_extract_star_data.side_effect = lambda data, train_key, test_key: (
             np.array([[1, 2], [3, 4]])
@@ -360,7 +359,6 @@ def test_compute_centroid_correction_without_masks(mock_data):
             "wf_psf.data.training_preprocessing.compute_zernike_tip_tilt"
         ) as mock_compute_zernike_tip_tilt,
     ):
-
         # Mock extract_star_data to return synthetic star postage stamps
         mock_extract_star_data.side_effect = lambda data, train_key, test_key: (
             np.array([[1, 2], [3, 4]])

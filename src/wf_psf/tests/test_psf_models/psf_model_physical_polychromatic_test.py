@@ -181,9 +181,7 @@ def physical_layer_instance(mocker, mock_model_params, mock_data, zks_prior):
     )
 
     # Create a mock for the TFPhysicalLayer class
-    mocker.patch(
-        "wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalLayer"
-    )
+    mocker.patch("wf_psf.psf_models.psf_model_physical_polychromatic.TFPhysicalLayer")
 
     # Create TFPhysicalPolychromaticField instance
     psf_field_instance = TFPhysicalPolychromaticField(
