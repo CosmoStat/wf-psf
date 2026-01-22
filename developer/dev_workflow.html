@@ -134,22 +134,36 @@
 </section>
 <section id="git-workflow-branching-model-made-with-mermaid">
 <h2>2.  <strong>Git Workflow Branching Model (Made with</strong> <a class="reference external" href="https://mermaid.js.org"><strong>mermaid</strong></a><strong>)</strong><a class="headerlink" href="#git-workflow-branching-model-made-with-mermaid" title="Link to this heading"></a></h2>
-<p><img alt="" src="../_images/branching_model.png" /></p>
+<p><img alt="" src="../_images/Git-Branching-Model.png" /></p>
 <ul class="simple">
 <li><p><strong>main</strong>: Stores official release history with tagged version numbers (see top row in the diagram above).</p></li>
 <li><p><strong>develop</strong>: This branch is the integration branch for features.</p></li>
-<li><p><strong>feature</strong>: Branch off of develop for new feature development.  Features get merged to develop (never to main).</p></li>
+<li><p><strong>feature</strong>: Branch off of <code class="docutils literal notranslate"><span class="pre">develop</span></code> for new feature development.  Features get merged to <code class="docutils literal notranslate"><span class="pre">develop</span></code> (never to main).</p></li>
 <li><p><strong>bug</strong>: For fixing specific bugs introduced during the production phase.</p></li>
-<li><p><strong>hotfix</strong>: Quickly corrects bugs in the latest release version; branched off main.</p></li>
+<li><p><strong>hotfix</strong>: Quickly corrects bugs in the latest release version; branched off <code class="docutils literal notranslate"><span class="pre">main</span></code>.</p></li>
+<li><p><strong>release/vX.Y.Z</strong>: Temporary branch created from <code class="docutils literal notranslate"><span class="pre">develop</span></code>; used to:</p>
+<ul>
+<li><p>Collect Scriv changelog fragments here.</p></li>
+<li><p>Apply final QA or documentation updates.</p></li>
+<li><p>Merge into <code class="docutils literal notranslate"><span class="pre">main</span></code> when ready and tag the release.</p></li>
+</ul>
+</li>
 </ul>
 </section>
 <section id="new-branch-naming-conventions">
 <h2>3.  <strong>New Branch naming conventions</strong><a class="headerlink" href="#new-branch-naming-conventions" title="Link to this heading"></a></h2>
 <p>Branches created for the purpose of a Pull Request should be directly related to an open issue within the project’s issue tracker.  This ensures that all code changes are tied to specific tasks or features, facilitating better organisation and tracking of contributions. Below are the branch naming conventions:</p>
 <ul class="simple">
-<li><p><strong>Feature</strong>: feature/<issue number>/short-description</p></li>
-<li><p><strong>Bug</strong>: bug/<issue number>/short-description</p></li>
-<li><p><strong>Hotfix</strong>: hotfix/<issue number>/short-description</p></li>
+<li><p><strong>Feature</strong>: <code class="docutils literal notranslate"><span class="pre">feature/&lt;issue</span> <span class="pre">number&gt;/short-description</span></code></p></li>
+<li><p><strong>Bug</strong>: <code class="docutils literal notranslate"><span class="pre">bug/&lt;issue</span> <span class="pre">number&gt;/short-description</span></code></p></li>
+<li><p><strong>Hotfix</strong>: <code class="docutils literal notranslate"><span class="pre">hotfix/&lt;issue</span> <span class="pre">number&gt;/short-description</span></code></p></li>
+<li><p><strong>Release</strong>: <code class="docutils literal notranslate"><span class="pre">release/v&lt;MAJOR&gt;.&lt;MINOR&gt;.&lt;PATCH&gt;</span></code></p></li>
+</ul>
+<p><strong>Notes:</strong></p>
+<ul class="simple">
+<li><p>Replace <code class="docutils literal notranslate"><span class="pre">&lt;ISSUE_NUMBER&gt;</span></code> with the tracker issue number.</p></li>
+<li><p>Keep short-description concise.</p></li>
+<li><p>Release branches are short-lived and should not include ongoing development.</p></li>
 </ul>
 <p>Replace with the corresponding issue number and provide a brief description of the changes in `short_description`.</p>
 </section>
@@ -157,7 +171,7 @@
 <h2>4.  <strong>Feature branch creation</strong><a class="headerlink" href="#feature-branch-creation" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>Pull the latest changes from the remote repository</p></li>
-<li><p>Checkout develop</p></li>
+<li><p>Checkout <code class="docutils literal notranslate"><span class="pre">develop</span></code></p></li>
 <li><p>Create a new feature branch</p></li>
 <li><p>Ensure the feature branch’s commits align with the defined scope</p></li>
 </ul>
@@ -167,7 +181,7 @@
 <h2>5.  <strong>Completion of development</strong><a class="headerlink" href="#completion-of-development" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>Run training and metrics validation tests locally to confirm no breaking behaviour or errors were introduced.  Include test reports as per the PR template.</p></li>
-<li><p>Open a Pull Request to start the review process, ensuring to map the branch correctly to the target branch (i.e. feature_branch -&gt; develop or hotfix_branch -&gt; main).</p></li>
+<li><p>Open a Pull Request to start the review process, ensuring to map the branch correctly to the target branch (i.e. <code class="docutils literal notranslate"><span class="pre">feature</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">develop</span></code> or <code class="docutils literal notranslate"><span class="pre">hotfix</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">main</span></code>).</p></li>
 <li><p>In the description of the Pull Request, explicitly state whether the PR resolves or closes an open issue by using one of the following formats:</p>
 <ul>
 <li><p>“Solves #”</p></li>
@@ -210,6 +224,11 @@
 </div>
 </li>
 </ul>
+<p><strong>Notes</strong>:</p>
+<ul class="simple">
+<li><p>Do not collect fragments in your PR; leave [Unreleased] in CHANGELOG.md.</p></li>
+<li><p>[Unreleased] is always at the top; contributors never write directly into it.</p></li>
+</ul>
 <p>Fragment creation and writing guidelines are documented in <a class="reference internal" href="#./CONTRIBUTING.md"><span class="xref myst">CONTRIBUTING.md</span></a>.</p>
 </section>
 <section id="branching-and-scope">
@@ -226,7 +245,7 @@ This separation keeps release notes accurate and enables clean backports</p></li
 <h2>8.  <strong>Preparing for a Release</strong><a class="headerlink" href="#preparing-for-a-release" title="Link to this heading"></a></h2>
 <ul>
 <li><p>Each milestone targets a release (feature, patch, etc).</p></li>
-<li><p>Open a PR from develop to main upon completing a milestone</p></li>
+<li><p>Open a PR from <code class="docutils literal notranslate"><span class="pre">develop</span></code> to <code class="docutils literal notranslate"><span class="pre">release/vX.Y.Z</span></code> upon completing a milestone</p></li>
 <li><p>Collect changelog fragments and generate release notes using:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>scriv<span class="w"> </span>collect<span class="w"> </span>--version<span class="w"> </span>vX.Y.Z
 </pre></div>
