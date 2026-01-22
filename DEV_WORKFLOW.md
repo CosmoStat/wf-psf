@@ -11,17 +11,22 @@
 Make a milestone related to a release on possibly a minor release schedule (e.g. monthly schedule). Differentiate between the different types of releases (minor, major, patch).
 
 ## 2.  **Git Workflow Branching Model (Made with** [**mermaid**](https://mermaid.js.org)**)**
-![](assets/branching_model.png)
+![](assets/Git-Branching-Model.png)
 
    *   **main**: Stores official release history with tagged version numbers (see top row in the diagram above).
     
    *   **develop**: This branch is the integration branch for features.
     
-   *   **feature**: Branch off of develop for new feature development.  Features get merged to develop (never to main).
+   *   **feature**: Branch off of `develop` for new feature development.  Features get merged to `develop` (never to main).
     
    *   **bug**: For fixing specific bugs introduced during the production phase.
     
-   *   **hotfix**: Quickly corrects bugs in the latest release version; branched off main.
+   *   **hotfix**: Quickly corrects bugs in the latest release version; branched off `main`.
+
+   *   **release/vX.Y.Z**: Temporary branch created from `develop`; used to:
+         * Collect Scriv changelog fragments here.
+         * Apply final QA or documentation updates.
+         * Merge into `main` when ready and tag the release.
     
 
 ## 3.  **New Branch naming conventions**
@@ -29,11 +34,18 @@ Make a milestone related to a release on possibly a minor release schedule (e.g.
 
 Branches created for the purpose of a Pull Request should be directly related to an open issue within the project’s issue tracker.  This ensures that all code changes are tied to specific tasks or features, facilitating better organisation and tracking of contributions. Below are the branch naming conventions:
 
-   *   **Feature**: feature/<issue number>/short-description
+   *   **Feature**: `feature/<issue number>/short-description`
     
-   *   **Bug**: bug/<issue number>/short-description
+   *   **Bug**: `bug/<issue number>/short-description`
     
-   *   **Hotfix**: hotfix/<issue number>/short-description
+   *   **Hotfix**: `hotfix/<issue number>/short-description`
+
+   *   **Release**: `release/v<MAJOR>.<MINOR>.<PATCH>` 
+
+**Notes:**
+- Replace `<ISSUE_NUMBER>` with the tracker issue number.
+- Keep short-description concise.
+- Release branches are short-lived and should not include ongoing development.
     
 
 Replace with the corresponding issue number and provide a brief description of the changes in \`short\_description\`.
@@ -43,7 +55,7 @@ Replace with the corresponding issue number and provide a brief description of t
 
 *   Pull the latest changes from the remote repository
     
-*   Checkout develop
+*   Checkout `develop`
     
 *   Create a new feature branch
     
@@ -57,7 +69,7 @@ Replace with the corresponding issue number and provide a brief description of t
 
 *   Run training and metrics validation tests locally to confirm no breaking behaviour or errors were introduced.  Include test reports as per the PR template.
     
-*   Open a Pull Request to start the review process, ensuring to map the branch correctly to the target branch (i.e. feature\_branch -> develop or hotfix\_branch -> main).
+*   Open a Pull Request to start the review process, ensuring to map the branch correctly to the target branch (i.e. `feature` -> `develop` or `hotfix` -> `main`).
     
 *   In the description of the Pull Request, explicitly state whether the PR resolves or closes an open issue by using one of the following formats:
     
@@ -77,7 +89,6 @@ Example: "Solves #12345" or "Closes #8679".
 
 ## 6.  **Merging Pull Requests** 
     
-
 *   Approval and Merging: Once the reviewer approves the PR and all feedback is addressed, merge the feature branch into develop.  Note, it is the reviewer who is responsible for merging the PR when satisfied with the changes.
     
 ## 7.  **Changelog and release notes**
@@ -100,6 +111,9 @@ This approach:
    ```bash
    scriv create
    ```
+**Notes**: 
+- Do not collect fragments in your PR; leave [Unreleased] in CHANGELOG.md.
+- [Unreleased] is always at the top; contributors never write directly into it.
 
 Fragment creation and writing guidelines are documented in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
@@ -114,7 +128,7 @@ This separation keeps release notes accurate and enables clean backports
 
 *   Each milestone targets a release (feature, patch, etc).
     
-*   Open a PR from develop to main upon completing a milestone
+*   Open a PR from `develop` to `release/vX.Y.Z` upon completing a milestone
     
 * Collect changelog fragments and generate release notes using:
 

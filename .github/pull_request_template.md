@@ -33,6 +33,7 @@
 - [ ] Hotfix  
 - [ ] Documentation / process change  
 - [ ] Internal / refactor  
+- [ ] Release
 
 > Optionally, note if this PR is part of a larger milestone or set of related PRs.
 
@@ -49,7 +50,7 @@
 
 > Reviewers should confirm the following before approving and merging:
 
-- [ ] The PR targets the `develop` branch
+- [ ] The PR targets the correct base branch (`develop`, or `main` for release PRs)
 - [ ] The PR is assigned to the developer
 - [ ] Appropriate labels are applied
 - [ ] The PR is included in relevant projects and/or milestones
