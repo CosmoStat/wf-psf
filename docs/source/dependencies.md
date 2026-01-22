@@ -1,12 +1,12 @@
 # Dependencies
 
-Third-party software packages required by WaveDiff are installed automatically (see [Installation](installation.md)). 
+Third-party software packages required by WaveDiff are installed automatically (see [Installation](installation.md)).
 
 ## Python Dependencies
 
 | Package Name | References                                        |
 |--------------|---------------------------------------------------|
-| [numpy](https://numpy.org/)                  | {cite:t}`harris:20` | 
+| [numpy](https://numpy.org/)                  | {cite:t}`harris:20` |
 | [scipy](https://scipy.org)                   | {cite:t}`SciPy-NMeth:20` |
 | [keras](https://keras.io)                    | {cite:t}`chollet:2015keras`|
 | [tensorflow](https://www.tensorflow.org)     | {cite:t}`tensorflow:15` |

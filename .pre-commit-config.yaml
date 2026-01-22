@@ -1,3 +1,12 @@
+# .pre-commit-config.yaml
+# WaveDiff pre-commit configuration
+# Globally excludes notebooks and historical papers directories
+
+default_stages: [commit]
+
+# Apply globally to all hooks
+exclude: '(^papers/|\.ipynb$)'
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
@@ -11,6 +20,7 @@ repos:
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
+
       - id: ruff-format
 
   - repo: https://github.com/adamchainz/blacken-docs
@@ -19,3 +29,18 @@ repos:
       - id: blacken-docs
         additional_dependencies: [black==24.10.0]
         args: [-l, '120', -t, py312]
+
+  - repo: local
+    hooks:
+      - id: check-scriv-fragment
+        name: Ensure Scriv fragment exists for PR
+        entry: bash -c
+        args:
+          - |
+            CHANGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E "\.py$|\.md$|\.rst$|\.yaml$" | grep -v "^docs/")
+            FRAGMENTS=$(git diff --cached --name-only --diff-filter=ACM | grep "^changelog.d/")
+            if [ -n "$CHANGED_FILES" ] && [ -z "$FRAGMENTS" ]; then
+              echo "ERROR: Please add a Scriv changelog fragment in changelog.d/ for this PR."
+              exit 1
+            fi
+        language: system

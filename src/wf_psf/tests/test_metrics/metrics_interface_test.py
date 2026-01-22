@@ -101,7 +101,6 @@ def test_evaluate_model_flags(
         ) as mock_shape,
         patch("numpy.save") as mock_np_save,
     ):
-
         evaluate_model(
             metrics_params=metrics_params,
             trained_model_params=mock_trained_model_params,
@@ -201,9 +200,8 @@ def test_evaluate_model(
         ) as mock_evaluate_shape_results_dict,
         patch("numpy.save", new_callable=MagicMock) as mock_np_save,
     ):
-
         # Mock the logger
-        logger = mocker.patch("wf_psf.metrics.metrics_interface.logger")
+        _ = mocker.patch("wf_psf.metrics.metrics_interface.logger")
 
         # Call evaluate_model
         evaluate_model(

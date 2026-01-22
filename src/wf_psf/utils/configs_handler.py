@@ -506,9 +506,7 @@ class MetricsConfigHandler:
         input configuration.
 
         """
-        logger.info(
-            f"Running metrics evaluation on psf model: {self.weights_path}"
-        )
+        logger.info(f"Running metrics evaluation on psf model: {self.weights_path}")
 
         model_metrics = evaluate_model(
             self.metrics_conf.metrics,
