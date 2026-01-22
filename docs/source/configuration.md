@@ -20,13 +20,7 @@ You configure these tasks by passing a configuration file to the `wavediff` comm
 
 WaveDiff expects the following configuration files under the `config/` directory:
 
-You configure these tasks by passing a configuration file to the `wavediff` command (e.g., `--config configs.yaml`).
-
-## Configuration File Structure
-
-WaveDiff expects the following configuration files under the `config/` directory:
-
-```arduino
+```
 config
 ├── configs.yaml
 ├── data_config.yaml
@@ -226,111 +220,7 @@ training_hparams:
     n_epochs_non_params: [100, 120]
 ```
 
-Controls PSF model type, geometry, oversampling, and preprocessing:
 
-```yaml
-model_params:
-  # Model type. Options: 'mccd', 'graph', 'poly', 'param', 'physical_poly'
-  model_name: physical_poly
-
-  # Number of wavelength bins for polychromatic reconstruction
-  n_bins_lda: 8 
-
-  # Downsampling rate to match telescope pixel sampling
-  output_Q: 3
-
-  # Oversampling rate of OPD/WFE PSF model
-  oversampling_rate: 3
-
-  # Pixel PSF postage stamp size
-  output_dim: 32
-
-  # OPD/Wavefront space dimensions
-  pupil_diameter: 256
-
-  # Flags for physical corrections
-  use_prior: False
-  correct_centroids: True
-  sigma_centroid_window: 2.5       # Standard deviation of window for centroid computation
-  reference_shifts: [-1/3, -1/3]   # Euclid-like default shifts
-  obscuration_rotation_angle: 0     # Obscuration mask rotation (degrees, multiple of 90)
-  add_ccd_misalignments: False
-  ccd_misalignments_input_path: /path/to/tiles.npy
-
-  # Sample weighting
-  use_sample_weights: True
-  sample_weights_sigmoid:
-    apply_sigmoid: False
-    sigmoid_max_val: 5.0
-    sigmoid_power_k: 1.0
-
-  # Interpolation settings for physical-poly model
-  interpolation_type: None
-  interpolation_args: None
-
-  # Spectral energy distribution (SED) parameters
-  sed_interp_pts_per_bin: 0
-  sed_extrapolate: True
-  sed_interp_kind: linear
-  sed_sigma: 0
-
-  # Field and pixel coordinates
-  x_lims: [0.0, 1.0e3]
-  y_lims: [0.0, 1.0e3]
-  pix_sampling: 12       # in [um]
-
-  # Telescope parameters
-  tel_diameter: 1.2      # [m]
-  tel_focal_length: 24.5 # [m]
-  euclid_obsc: True.     # Use Euclid-specific obscuration mask. Set to False for other instruments or custom masks.
-  LP_filter_length: 3    # Low-pass filter for obscurations
-```
-
-### 5. Parametric Model Hyperparameters (`param_hparams`)
-
-```yaml
-param_hparams:
-  random_seed: 3877572
-  l2_param: 0.0             # L2 loss for OPD/WFE
-  n_zernikes: 15
-  d_max: 2                  # Max polynomial degree
-  save_optim_history_param: true
-```
-
-### 6. Non-Parametric Model Hyperparameters (`nonparam_hparams`)
-
-```yaml
-nonparam_hparams:
-  d_max_nonparam: 5
-  num_graph_features: 0
-  l1_rate: 1.0e-8
-  project_dd_features: False
-  reset_dd_features: False
-  save_optim_history_nonparam: true
-```
-
-### 7. Training Hyperparameters (`training_hparams`)
-
-Controls batches, loss, and multi-cycle learning:
-
-```yaml
-training_hparams:
-  batch_size: 32           # Number of samples per batch
-  loss: 'mask_mse'         # Options: 'mask_mse', 'mse'
-
-  multi_cycle_params:
-    total_cycles: 2
-    cycle_def: complete        # Options: 'parametric', 'non-parametric', 'complete', etc.
-    save_all_cycles: False
-    saved_cycle: cycle2
-
-    learning_rate_params: [1.0e-2, 1.0e-2]
-    learning_rate_non_params: [1.0e-1, 1.0e-1]
-    n_epochs_params: [20, 20]
-    n_epochs_non_params: [100, 120]
-```
-
-Note
 (metrics_config)=
 ## `metrics_config.yaml`  — Metrics Configuration
  
@@ -603,9 +493,7 @@ wf-outputs-20231119151932213823/
 
 To evaluate metrics and generate plots for each trained model, include the corresponding configuration files:
 
-
-
-```arduino
+```
 config/
 ├── configs.yaml
 ├── data_config.yaml
