@@ -7,10 +7,10 @@ the field of view.
 """
 
 import tensorflow as tf
-import tensorflow_addons as tfa
 from wf_psf.psf_models.tf_modules import TFMonochromaticPSF
 from wf_psf.utils.utils import calc_poly_position_mat
 import wf_psf.utils.utils as utils
+from wf_psf.utils.interpolation import tfa_interpolate_spline_rbf
 import logging
 
 logger = logging.getLogger(__name__)
@@ -577,7 +577,7 @@ class TFNonParametricMCCDOPDv2(tf.keras.layers.Layer):
         # Order 2 means a thin_plate RBF interpolation
         # All tensors need to expand one dimension to fulfil requirement in
         # the tfa's interpolate_spline function
-        A_interp_graph = tfa.image.interpolate_spline(
+        A_interp_graph = tfa_interpolate_spline_rbf(
             train_points=tf.expand_dims(self.obs_pos, axis=0),
             train_values=tf.expand_dims(A_graph_train, axis=0),
             query_points=tf.expand_dims(positions, axis=0),
@@ -758,7 +758,7 @@ class TFNonParametricGraphOPD(tf.keras.layers.Layer):
         # Order 2 means a thin_plate RBF interpolation
         # All tensors need to expand one dimension to fulfil requirement in
         # the tfa's interpolate_spline function
-        A_interp_graph = tfa.image.interpolate_spline(
+        A_interp_graph = tfa_interpolate_spline_rbf(
             train_points=tf.expand_dims(self.obs_pos, axis=0),
             train_values=tf.expand_dims(A_graph_train, axis=0),
             query_points=tf.expand_dims(positions, axis=0),
@@ -895,7 +895,7 @@ class TFPhysicalLayer(tf.keras.layers.Layer):
         # Order 2 means a thin_plate RBF interpolation
         # All tensors need to expand one dimension to fulfil requirement in
         # the tfa's interpolate_spline function
-        interp_zks = tfa.image.interpolate_spline(
+        interp_zks = tfa_interpolate_spline_rbf(
             train_points=tf.expand_dims(self.obs_pos, axis=0),
             train_values=tf.expand_dims(self.zks_prior, axis=0),
             query_points=tf.expand_dims(positions, axis=0),

@@ -153,6 +153,10 @@ training:
     # Default: 'mask_mse'. Choose 'mse' if the dataset does not include a mask.
     loss: 'mask_mse'
 
+    # Optimizer to use during training. Options are: 'adam' or 'rectified_adam'.
+    optimizer: 
+      name: 'rectified_adam'                     
+     
     multi_cycle_params:
      
       # Number of training cycles to perform. Each cycle may use different learning rates or number of epochs.

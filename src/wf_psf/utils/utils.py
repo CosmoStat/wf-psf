@@ -6,19 +6,21 @@
 
 import numpy as np
 import tensorflow as tf
-import tensorflow_addons as tfa
 import PIL
 import zernike as zk
+from wf_psf.utils.interpolation import tfa_interpolate_spline_rbf
 
 _HAS_CV2 = False
 _HAS_SKIMAGE = False
 
 try:
     import cv2
+
     _HAS_CV2 = True
 except ImportError:
     try:
         from skimage.transform import downscale_local_mean
+
         _HAS_SKIMAGE = True
     except ImportError:
         pass
@@ -339,6 +341,7 @@ def downsample_im(input_im, output_dim):
         "Neither OpenCV nor scikit-image is available for image downsampling."
     )
 
+
 def zernike_generator(n_zernikes, wfe_dim):
     r"""
     Generate Zernike maps.
@@ -624,7 +627,7 @@ class ZernikeInterpolation:
             batch_dims=0,
         )
         # Interpolate
-        interp_zk = tfa.image.interpolate_spline(
+        interp_zk = tfa_interpolate_spline_rbf(
             train_points=tf.expand_dims(rec_pos, axis=0),
             train_values=tf.expand_dims(rec_zks, axis=0),
             query_points=tf.expand_dims(single_pos[tf.newaxis, :], axis=0),
