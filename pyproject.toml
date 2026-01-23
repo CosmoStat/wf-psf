@@ -29,7 +29,7 @@ version = "3.0.0"
 
 [project.optional-dependencies]
 docs = [
-    "importlib_metadata",    
+    "importlib_metadata",
     "myst-parser",
     "numpydoc",
     "sphinx",
@@ -43,6 +43,8 @@ docs = [
 
 lint = [
     "ruff",
+    "black",
+    "pre-commit",
 ]
 
 release = [

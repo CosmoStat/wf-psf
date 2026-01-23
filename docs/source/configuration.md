@@ -1,4 +1,4 @@
-# Configuration 
+# Configuration
 
 WaveDiff uses a set of YAML and INI configuration files to control each pipeline task.
 This section provides a high-level overview of the configuration system, followed by detailed explanations of each file.
@@ -40,7 +40,7 @@ Each of the configuration files is described in detail below.
 ## `data_config.yaml` — Data Configuration
 
 ### 1. Purpose
-Specifies where WaveDiff loads (or later versions may generate) the training and test datasets.  
+Specifies where WaveDiff loads (or later versions may generate) the training and test datasets.
 All training, evaluation, and metrics pipelines depend on this file for consistent dataset paths.
 
 ### 2. Key Fields
@@ -78,7 +78,7 @@ Controls the training pipeline, including model selection, hyperparameters, opti
 - **All required parameters must be specified.** Missing values will prevent the model from being instantiated, as there is currently no default configuration provided.
 - **Optional fields:**
   - `metrics_config` (run metrics after training)
-  - `param_hparams`, `nonparam_hparams` 
+  - `param_hparams`, `nonparam_hparams`
   - `multi_cycle_params.save_all_cycles`
 - Some parameters are specific to physical or polychromatic PSF models.
 - Example training configuration file is provided in the top-level root directory of the repository (`training_config.yaml`). Users can copy and adapt this template for their own runs.
@@ -94,7 +94,7 @@ training:
   id_name: run__001
 
   # Path to Data Configuration file (required)
-  data_config: data_config.yaml 
+  data_config: data_config.yaml
 
   # Load dataset on initialization (True) or manually later (False)
   load_data_on_init: True
@@ -113,7 +113,7 @@ model_params:
   model_name: physical_poly
 
   # Number of wavelength bins for polychromatic reconstruction
-  n_bins_lda: 8 
+  n_bins_lda: 8
 
   # Downsampling rate to match telescope pixel sampling
   output_Q: 3
@@ -223,7 +223,7 @@ training_hparams:
 
 (metrics_config)=
 ## `metrics_config.yaml`  — Metrics Configuration
- 
+
 ### 1. Purpose
 Defines how a trained PSF model is evaluated. This configuration specifies which metrics to compute, which model weights to use, and how ground truth stars are obtained. It allows you to:
 - Select a fully trained PSF model or a checkpoint for evaluation.
@@ -282,12 +282,12 @@ metrics:
 - `eval_train_shape_results_dict` / `eval_test_shape_results_dict`: Compute Weak Lensing Shape metrics on the training and/or test dataset.
 - `plotting_config:` Optionally provide a `plotting_config.yaml` file to generate plots after metrics evaluation.
 - **Behaviour notes:**
-  - Metrics controlled by flags (`eval_mono_metric`, `eval_opd_metric`, `eval_train_shape_results_dict`, `eval_test_shape_results_dict`) are only computed if their respective flags are True.  
+  - Metrics controlled by flags (`eval_mono_metric`, `eval_opd_metric`, `eval_train_shape_results_dict`, `eval_test_shape_results_dict`) are only computed if their respective flags are True.
   - The Polychromatic Pixel Reconstruction metric is always computed, regardless of flags.
   - Future releases may allow optional `ground_truth_model` instantiation if the dataset already contains precomputed stars.
 
 (section-ground-truth-model)=
-### 5. Ground Truth Model Parameters 
+### 5. Ground Truth Model Parameters
 
 Mirrors training parameters for consistency:
 
@@ -308,7 +308,7 @@ ground_truth_model:
     reference_shifts: [-1/3, -1/3]
     obscuration_rotation_angle: 0
     add_ccd_misalignments: False
-    ccd_misalignments_input_path: 
+    ccd_misalignments_input_path:
     interpolation_type: None
     sed_interp_pts_per_bin: 0
     sed_extrapolate: True
@@ -399,7 +399,7 @@ plotting_params:
   plot_show: False
 ```
 
-### 4. Example Directory Structure
+### 4. Example Directory Structure
 Below is an example of three WaveDiff runs stored under a single parent directory:
 
 ```
@@ -424,7 +424,7 @@ wf-outputs/
 │   │   └── metrics-poly-coherent_euclid_1000stars.npy
 ```
 
-**Example: Plotting Multiple Runs**
+### 5. Plotting Multiple Runs
 To jointly plot metrics from the three runs shown above, the `plotting_config.yaml` would be:
 
 ```yaml
@@ -487,9 +487,7 @@ wf-outputs-20231119151932213823/
 ```
 
 ### 3 Example: Training + Metrics + Plotting
-
 To evaluate metrics and generate plots for each trained model, include the corresponding configuration files:
-
 
 ```
 config/
@@ -502,7 +500,7 @@ config/
 └── training_config_n.yaml
 ```
 
-Note: current WaveDiff versions generate one plot per metric per model. Creating combined plots requires a separate run [Plot Configuration](section-plotting-config). . A future update will support automatic combined plots.
+Note: current WaveDiff versions generate one plot per metric per model. Creating combined plots requires a separate run [Plot Configuration](section-plotting-config). A future update will support automatic combined plots.
 
 ### 4 General Notes
 

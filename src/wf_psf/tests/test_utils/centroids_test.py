@@ -218,9 +218,9 @@ def test_compute_zernike_tip_tilt_batch(mocker, multiple_images):
     )
 
     # Check if the mock function was called once with the full batch
-    assert (
-        len(mock_shift_fn.call_args_list) == 1
-    ), f"Expected 1 call, but got {len(mock_shift_fn.call_args_list)}"
+    assert len(mock_shift_fn.call_args_list) == 1, (
+        f"Expected 1 call, but got {len(mock_shift_fn.call_args_list)}"
+    )
 
     # Get the arguments passed to the mock function for the batch of images
     args, _ = mock_shift_fn.call_args_list[0]
@@ -364,7 +364,6 @@ def test_single_iteration_auto_run(simple_image):
         ) as elliptical_gaussian_mock,
         patch.object(CentroidEstimator, "compute_moments") as compute_moments_mock,
     ):
-
         # Initialize the CentroidEstimator with auto_run=True
         _ = CentroidEstimator(im=simple_image, n_iter=1, auto_run=True)
 
@@ -443,9 +442,9 @@ def test_intra_pixel_shifts(simple_image_with_centroid):
     expected_y_shift = 2.7 - 2.0  # yc - yc0
 
     # Check that the shifts are correct
-    assert np.isclose(
-        shifts[0], expected_x_shift
-    ), f"Expected {expected_x_shift}, got {shifts[0]}"
-    assert np.isclose(
-        shifts[1], expected_y_shift
-    ), f"Expected {expected_y_shift}, got {shifts[1]}"
+    assert np.isclose(shifts[0], expected_x_shift), (
+        f"Expected {expected_x_shift}, got {shifts[0]}"
+    )
+    assert np.isclose(shifts[1], expected_y_shift), (
+        f"Expected {expected_y_shift}, got {shifts[1]}"
+    )

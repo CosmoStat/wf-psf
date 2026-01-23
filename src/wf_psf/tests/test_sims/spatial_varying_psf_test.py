@@ -79,12 +79,12 @@ def test_build_mesh_default_params():
     mesh_x, mesh_y = MeshHelper.build_mesh(x_lims, y_lims, grid_points)
     assert mesh_x.shape == (3, 3), "Mesh grid shape should be (3, 3)"
     assert mesh_y.shape == (3, 3), "Mesh grid shape should be (3, 3)"
-    assert np.allclose(
-        mesh_x, np.array([[0, 0.5, 1], [0, 0.5, 1], [0, 0.5, 1]])
-    ), "Mesh x coordinates are incorrect"
-    assert np.allclose(
-        mesh_y, np.array([[0, 0, 0], [0.5, 0.5, 0.5], [1, 1, 1]])
-    ), "Mesh y coordinates are incorrect"
+    assert np.allclose(mesh_x, np.array([[0, 0.5, 1], [0, 0.5, 1], [0, 0.5, 1]])), (
+        "Mesh x coordinates are incorrect"
+    )
+    assert np.allclose(mesh_y, np.array([[0, 0, 0], [0.5, 0.5, 0.5], [1, 1, 1]])), (
+        "Mesh y coordinates are incorrect"
+    )
 
 
 def test_build_mesh_custom_params():
@@ -95,9 +95,9 @@ def test_build_mesh_custom_params():
     mesh_x, mesh_y = MeshHelper.build_mesh(x_lims, y_lims, grid_points)
     assert mesh_x.shape == (4, 2), "Mesh grid shape should be (4, 2)"
     assert mesh_y.shape == (4, 2), "Mesh grid shape should be (4, 2)"
-    assert np.allclose(
-        mesh_x, np.array([[0, 2], [0, 2], [0, 2], [0, 2]])
-    ), "Mesh x coordinates are incorrect"
+    assert np.allclose(mesh_x, np.array([[0, 2], [0, 2], [0, 2], [0, 2]])), (
+        "Mesh x coordinates are incorrect"
+    )
     assert np.allclose(
         mesh_y,
         np.array(
@@ -117,12 +117,12 @@ def test_build_mesh_grid_size_parameter():
     )
     assert mesh_x.shape == (2, 2), "Mesh grid shape should be (2, 2)"
     assert mesh_y.shape == (2, 2), "Mesh grid shape should be (2, 2)"
-    assert np.allclose(
-        mesh_x, np.array([[0, 1], [0, 1]])
-    ), "Mesh x coordinates are incorrect"
-    assert np.allclose(
-        mesh_y, np.array([[0, 0], [1, 1]])
-    ), "Mesh y coordinates are incorrect"
+    assert np.allclose(mesh_x, np.array([[0, 1], [0, 1]])), (
+        "Mesh x coordinates are incorrect"
+    )
+    assert np.allclose(mesh_y, np.array([[0, 0], [1, 1]])), (
+        "Mesh y coordinates are incorrect"
+    )
 
 
 def test_bounds_of_scaled_positions(example_limits_bounds):
