@@ -15,13 +15,56 @@ _HAS_SKIMAGE = False
 
 try:
     import cv2
+
     _HAS_CV2 = True
 except ImportError:
     try:
         from skimage.transform import downscale_local_mean
+
         _HAS_SKIMAGE = True
     except ImportError:
         pass
+
+
+def scale_to_range(input_array, old_range, new_range):
+    # Scale to [0,1]
+    input_array = (input_array - old_range[0]) / (old_range[1] - old_range[0])
+    # Scale to new_range
+    input_array = input_array * (new_range[1] - new_range[0]) + new_range[0]
+    return input_array
+
+
+def ensure_batch(arr):
+    """
+    Ensure array/tensor has a batch dimension. Converts shape (M, N) → (1, M, N).
+
+    Parameters
+    ----------
+    arr : np.ndarray or tf.Tensor
+        Input 2D or 3D array/tensor.
+
+    Returns
+    -------
+    np.ndarray or tf.Tensor
+        With batch dimension prepended if needed.
+    """
+    if isinstance(arr, np.ndarray):
+        return arr if arr.ndim == 3 else np.expand_dims(arr, axis=0)
+    elif isinstance(arr, tf.Tensor):
+        return arr if arr.ndim == 3 else tf.expand_dims(arr, axis=0)
+    else:
+        raise TypeError(f"Expected np.ndarray or tf.Tensor, got {type(arr)}")
+
+
+def calc_wfe(zernike_basis, zks):
+    wfe = np.einsum("ijk,ijk->jk", zernike_basis, zks.reshape(-1, 1, 1))
+    return wfe
+
+
+def calc_wfe_rms(zernike_basis, zks, pupil_mask):
+    wfe = calc_wfe(zernike_basis, zks)
+    wfe_rms = np.sqrt(np.mean((wfe[pupil_mask] - np.mean(wfe[pupil_mask])) ** 2))
+    return wfe_rms
 
 
 def generalised_sigmoid(x, max_val=1, power_k=1):
@@ -338,6 +381,7 @@ def downsample_im(input_im, output_dim):
     raise ImportError(
         "Neither OpenCV nor scikit-image is available for image downsampling."
     )
+
 
 def zernike_generator(n_zernikes, wfe_dim):
     r"""

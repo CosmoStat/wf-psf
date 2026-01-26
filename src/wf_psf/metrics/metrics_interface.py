@@ -310,7 +310,6 @@ def evaluate_model(
     trained_model_params,
     data,
     psf_model,
-    weights_path,
     metrics_output,
 ):
     """Evaluate the trained model on both training and test datasets by computing various metrics.
@@ -328,8 +327,6 @@ def evaluate_model(
         DataHandler object containing training and test data
     psf_model: object
         PSF model object
-    weights_path: str
-        Directory location of model weights
     metrics_output: str
         Directory location of metrics output
 
@@ -340,8 +337,8 @@ def evaluate_model(
     try:
         ## Load datasets
         # -----------------------------------------------------
-        # Get training data
-        logger.info("Fetching and preprocessing training and test data...")
+        # Get training and test data
+        logger.info("Fetching training and test data...")
 
         # Initialize metrics_handler
         metrics_handler = MetricsParamsHandler(metrics_params, trained_model_params)
@@ -349,14 +346,6 @@ def evaluate_model(
         ## Prepare models
         # Prepare np input
         simPSF_np = data.training_data.simPSF
-
-        ## Load the model's weights
-        try:
-            logger.info(f"Loading PSF model weights from {weights_path}")
-            psf_model.load_weights(weights_path)
-        except Exception as e:
-            logger.exception("An error occurred with the weights_path file: %s", e)
-            exit()
 
         # Define datasets
         datasets = {"test": data.test_data.dataset, "train": data.training_data.dataset}

@@ -186,24 +186,24 @@ def build_PSF_model(model_inst, optimizer=None, loss=None, metrics=None):
 def get_psf_model_weights_filepath(weights_filepath):
     """Get PSF model weights filepath.
 
-    A function to return the basename of the user-specified psf model weights path.
+    A function to return the basename of the user-specified PSF model weights path.
 
     Parameters
     ----------
     weights_filepath: str
-        Basename of the psf model weights to be loaded.
+        Basename of the PSF model weights to be loaded.
 
     Returns
     -------
     str
-        The absolute path concatenated to the basename of the psf model weights to be loaded.
+        The absolute path concatenated to the basename of the PSF model weights to be loaded.
 
     """
     try:
         return glob.glob(weights_filepath)[0].split(".")[0]
     except IndexError:
         logger.exception(
-            "PSF weights file not found. Check that you've specified the correct weights file in the metrics config file."
+            "PSF weights file not found. Check that you've specified the correct weights file in the your config file."
         )
         raise PSFModelError("PSF model weights error.")
 

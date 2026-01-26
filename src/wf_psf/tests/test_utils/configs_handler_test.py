@@ -4,15 +4,17 @@ This module contains unit tests for the wf_psf.utils configs_handler module.
 
 :Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 
-
 """
 
 import pytest
+from wf_psf.data.data_handler import DataHandler
 from wf_psf.utils import configs_handler
 from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.utils.io import FileIOHandler
-from wf_psf.utils.configs_handler import TrainingConfigHandler, DataConfigHandler
-from wf_psf.data.training_preprocessing import DataHandler
+from wf_psf.utils.configs_handler import (
+    TrainingConfigHandler,
+    DataConfigHandler,
+)
 import os
 
 
@@ -116,9 +118,20 @@ def test_data_config_handler_init(mock_training_conf, mock_data_read_conf, mocke
         "wf_psf.psf_models.psf_models.simPSF", return_value=mock_simPSF_instance
     )
 
-    # Patch the load_dataset and process_sed_data methods inside DataHandler
-    mocker.patch.object(DataHandler, "load_dataset")
+    # Patch process_sed_data method
     mocker.patch.object(DataHandler, "process_sed_data")
+
+    # Patch validate_and_process_datasetmethod
+    mocker.patch.object(DataHandler, "validate_and_process_dataset")
+
+    # Patch load_dataset to assign dataset
+    def mock_load_dataset(self):
+        self.dataset = {
+            "SEDs": ["dummy_sed_data"],
+            "positions": ["dummy_positions_data"],
+        }
+
+    mocker.patch.object(DataHandler, "load_dataset", new=mock_load_dataset)
 
     # Create DataConfigHandler instance
     data_config_handler = DataConfigHandler(
@@ -141,7 +154,7 @@ def test_data_config_handler_init(mock_training_conf, mock_data_read_conf, mocke
     assert (
         data_config_handler.batch_size
         == mock_training_conf.training.training_hparams.batch_size
-    )  # Default value
+    )
 
 
 def test_training_config_handler_init(mocker, mock_training_conf, mock_file_handler):
@@ -228,22 +241,4 @@ def test_run_method_calls_train_with_correct_arguments(
         mock_th.checkpoint_dir,
         mock_th.optimizer_dir,
         mock_th.psf_model_dir,
-    )
-
-
-def test_MetricsConfigHandler_weights_basename_filepath(
-    path_to_tmp_output_dir, path_to_config_dir
-):
-    test_file_handler = FileIOHandler(path_to_tmp_output_dir, path_to_config_dir)
-
-    metrics_config_file = "validation/main_random_seed/config/metrics_config.yaml"
-
-    metrics_object = configs_handler.MetricsConfigHandler(
-        os.path.join(path_to_config_dir, metrics_config_file), test_file_handler
-    )
-    weights_filepath = metrics_object.weights_basename_filepath
-
-    assert (
-        weights_filepath
-        == "src/wf_psf/tests/data/validation/main_random_seed/checkpoint/checkpoint*_poly*_sample_w_bis1_2k_cycle2*"
     )

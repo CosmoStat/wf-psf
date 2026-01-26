@@ -13,7 +13,7 @@ from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.training.train import TrainingParamsHandler
 from wf_psf.utils.configs_handler import DataConfigHandler
 from wf_psf.psf_models import psf_models
-from wf_psf.data.training_preprocessing import DataHandler
+from wf_psf.data.data_handler import DataHandler
 
 training_config = RecursiveNamespace(
     id_name="-coherent_euclid_200stars",

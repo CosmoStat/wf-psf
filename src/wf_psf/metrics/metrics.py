@@ -152,8 +152,7 @@ def compute_poly_metric(
 
     # Print RMSE values
     logger.info("Absolute RMSE:\t %.4e \t +/- %.4e", rmse, std_rmse)
-    logger.info("Relative RMSE:\t %.4e % \t +/- %.4e %", rel_rmse, std_rel_rmse)
-
+    logger.info(f"Relative RMSE:\t {rel_rmse:.4e}% \t +/- {std_rel_rmse:.4e}%")
     return rmse, rel_rmse, std_rmse, std_rel_rmse
 
 
@@ -364,9 +363,8 @@ def compute_opd_metrics(tf_semiparam_field, gt_tf_semiparam_field, pos, batch_si
     rel_rmse_std = np.std(rel_rmse_vals)
 
     # Print RMSE values
-    logger.info("Absolute RMSE:\t %.4e % \t +/- %.4e %", rmse, rmse_std)
-    logger.info("Relative RMSE:\t %.4e % \t +/- %.4e %", rel_rmse, rel_rmse_std)
-
+    logger.info("Absolute RMSE:\t %.4e \t +/- %.4e" % (rmse, rmse_std))    
+    logger.info(f"Relative RMSE:\t {rel_rmse:.4e}% \t +/- {rel_rmse_std:.4e}%")
     return rmse, rel_rmse, rmse_std, rel_rmse_std
 
 
@@ -588,10 +586,10 @@ def compute_shape_metrics(
 
     # Print relative shape/size errors
     logger.info(
-        f"\nRelative sigma(e1) RMSE =\t {rel_rmse_e1:.4e} % \t +/- {std_rel_rmse_e1:.4e} %"
+        f"\nRelative sigma(e1) RMSE =\t {rel_rmse_e1:.4e}% \t +/- {std_rel_rmse_e1:.4e}%"
     )
     logger.info(
-        f"Relative sigma(e2) RMSE =\t {rel_rmse_e2:.4e} % \t +/- {std_rel_rmse_e2:.4e} %"
+        f"Relative sigma(e2) RMSE =\t {rel_rmse_e2:.4e}% \t +/- {std_rel_rmse_e2:.4e}%"
     )
 
     # Print number of stars

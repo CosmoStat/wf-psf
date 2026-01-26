@@ -7,6 +7,7 @@ to manage training of the psf model.
 
 """
 
+import gc
 import numpy as np
 import time
 import tensorflow as tf
@@ -273,10 +274,7 @@ class TrainingParamsHandler:
 
 
 def get_loss_metrics_monitor_and_outputs(training_handler, data_conf):
-    """Generate factory for loss, metrics, monitor, and outputs.
-
-    A function to generate loss, metrics, monitor, and outputs
-    for training.
+    """Factory to return fresh loss, metrics (param & non-param), monitor, and outputs for the current cycle.
 
     Parameters
     ----------
@@ -369,12 +367,12 @@ def train(
     psf_model_dir : str
         Directory where the final trained PSF model weights will be saved per cycle.
 
-    Notes
-    -----
-    - Utilizes TensorFlow and TensorFlow Addons for model training and optimization.
-    - Supports masked mean squared error loss for training with masked data.
-    - Allows for projection of data-driven features onto parametric models between cycles.
-    - Supports resetting of non-parametric features to initial states.
+    Returns
+    -------
+    None
+
+    Side Effects
+    ------------
     - Saves model weights to `psf_model_dir` per training cycle (or final one if not all saved)
     - Saves optimizer histories to `optimizer_dir`
     - Logs cycle information and time durations
@@ -536,3 +534,8 @@ def train(
     final_time = time.time()
     logger.info("\nTotal elapsed time: %f" % (final_time - starting_time))
     logger.info("\n Training complete..")
+
+    # Clean up memory
+    del psf_model
+    gc.collect()
+    tf.keras.backend.clear_session()

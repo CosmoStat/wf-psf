@@ -402,6 +402,9 @@ plotting_params:
 ### 4. Example Directory Structure
 Below is an example of three WaveDiff runs stored under a single parent directory:
 
+**Example Directory Structure**
+Below is an example of three WaveDiff runs stored under a single parent directory:
+
 ```
 wf-outputs/
 ├── wf-outputs-202305271829
@@ -489,7 +492,6 @@ wf-outputs-20231119151932213823/
 ### 3 Example: Training + Metrics + Plotting
 
 To evaluate metrics and generate plots for each trained model, include the corresponding configuration files:
-
 
 ```
 config/

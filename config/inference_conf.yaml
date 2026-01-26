@@ -1,0 +1,37 @@
+
+inference:
+  # Inference batch size
+  batch_size: 16
+  # Cycle to use for inference. Can be: 1, 2, ...
+  cycle: 2
+
+  # Paths to the configuration files and trained model directory
+  configs:
+    # Path to the directory containing the trained model
+    trained_model_path: /path/to/trained/model/
+
+    # Subdirectory name of the trained model, e.g. psf_model
+    model_subdir: model
+  
+    # Relative Path to the training configuration file used to train the model
+    trained_model_config_path: config/training_config.yaml
+
+    # Path to the data config file (this could contain prior information)
+    data_config_path: 
+
+  # The following parameters will overwrite the `model_params` in the training config file.
+  model_params:
+    # Num of wavelength bins to reconstruct polychromatic objects.
+    n_bins_lda: 8
+
+    # Downsampling rate to match the oversampled model to the specified telescope's sampling.
+    output_Q: 1
+
+    # Dimension of the pixel PSF postage stamp
+    output_dim: 64
+
+    # Flag to perform centroid error correction
+    correct_centroids: False
+
+    # Flag to perform CCD misalignment error correction
+    add_ccd_misalignments: True

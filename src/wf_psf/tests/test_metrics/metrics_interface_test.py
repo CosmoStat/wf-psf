@@ -1,7 +1,7 @@
 from unittest.mock import patch, MagicMock
 import pytest
 from wf_psf.metrics.metrics_interface import evaluate_model
-from wf_psf.data.training_preprocessing import DataHandler
+from wf_psf.data.data_handler import DataHandler
 
 
 @pytest.fixture
@@ -107,7 +107,6 @@ def test_evaluate_model_flags(
             trained_model_params=mock_trained_model_params,
             data=mock_data,
             psf_model=mock_psf_model,
-            weights_path="/mock/path",
             metrics_output="/mock/output",
         )
 
@@ -135,7 +134,6 @@ def test_missing_ground_truth_model_raises(
             trained_model_params=mock_trained_model_params,
             data=mock_data,
             psf_model=mock_psf_model,
-            weights_path="/mock/weights/path",
             metrics_output="/mock/metrics/output",
         )
 
@@ -169,7 +167,6 @@ def test_plotting_config_passed(
             trained_model_params=mock_trained_model_params,
             data=mock_data,
             psf_model=mock_psf_model,
-            weights_path="/mock/path",
             metrics_output="/mock/output",
         )
 
@@ -202,16 +199,12 @@ def test_evaluate_model(
         patch("numpy.save", new_callable=MagicMock) as mock_np_save,
     ):
 
-        # Mock the logger
-        logger = mocker.patch("wf_psf.metrics.metrics_interface.logger")
-
         # Call evaluate_model
         evaluate_model(
             metrics_params=mock_metrics_params,
             trained_model_params=mock_trained_model_params,
             data=mock_data,
             psf_model=mock_psf_model,
-            weights_path="/mock/weights/path",
             metrics_output="/mock/metrics/output",
         )
 
