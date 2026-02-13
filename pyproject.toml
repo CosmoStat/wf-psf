@@ -13,7 +13,7 @@ description = 'A software framework to perform Differentiable wavefront-based PS
 dependencies = [
     "numpy>=1.18,<1.24",
     "scipy",
-    "tensorflow==2.11.0",
+#    "tensorflow==2.11.0",
     "tensorflow-estimator",
     "zernike",
     "opencv-python",
@@ -88,8 +88,15 @@ quote-style = "double"
 indent-style = "space"
 line-ending = "lf"
 
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["wf_psf*"]
+
 [tool.setuptools.package-data]
-"wf_psf.config" = ["*.conf"]
+"wf_psf.config" = ["*.conf", "*.yaml"]
 
 # Set per-file-ignores
 [tool.ruff.lint.per-file-ignores]

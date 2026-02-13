@@ -1,13 +1,18 @@
 plotting_params:
-  # Specify path to parent folder containing wf-outputs-xxxxxxxxxxx for all runs, ex: $WORK/wf-outputs/
+  # Path to the parent folder containing WaveDiff output directories
   metrics_output_path: <PATH>
-  # List all of the parent output directories (i.e. wf-outputs-xxxxxxxxxxx) that contain metrics results to be included in the plot
+
+  # List of output directories whose metrics should be plotted
+  # Leave commented/empty if plotting immediately after a metrics run
   metrics_dir:
-    #     - wf-outputs-xxxxxxxxxxx1
-    #     - wf-outputs-xxxxxxxxxxx2
-  # List of name of metric config file to add to plot (would like to change such that code goes and finds them in the metrics_dir)
+  #   - wf-outputs-xxxxxxxxxxxxxxxxxxx1
+  #   - wf-outputs-xxxxxxxxxxxxxxxxxxx2
+
+  # List of metrics config filenames corresponding to each directory
+  # Leave commented/empty if plotting immediately after a metrics run
   metrics_config:
-    #     - metrics_config_1.yaml
-    #     - metrics_config_2.yaml
-  # Show Plots Flag
+  #   - metrics_config_1.yaml
+  #   - metrics_config_2.yaml
+
+  # If True, plots are shown interactively during execution
   plot_show: False

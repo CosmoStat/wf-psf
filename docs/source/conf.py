@@ -1,14 +1,15 @@
-# Configuration file for the Sphinx documentation builder.
-#
-# For the full list of built-in configuration values, see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
-import sys
-import os
+"""
+Sphinx configuration for the wf-psf documentation.
+
+This file sets up paths, extensions, theme, and other options
+for building the HTML docs.
+"""
+
 from datetime import datetime
+import os
+import sys
 
-current_year = datetime.now().year
-
-sys.path.insert(0, os.path.abspath("src/wf_psf"))
+sys.path.insert(0, os.path.abspath("../../src"))
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -103,7 +104,7 @@ bibtex_default_style = "unsrt"
 bibtex_reference_style = "author_year"
 
 # -- Mock imports for documentation ------------------------------------------
-autodoc_mock_imports = [
-    "tensorflow",
+optional_deps = [
     "tensorflow_addons",
 ]
+autodoc_mock_imports = optional_deps

@@ -52,7 +52,7 @@ training:
     ccd_misalignments_input_path: /path/to/ccd_misalignments_file.txt
 
     # Boolean to use sample weights based on the noise standard deviation estimation
-    use_sample_weights: True 
+    use_sample_weights: True
 
     # Sample weight generalised sigmoid function
     sample_weights_sigmoid:
@@ -96,7 +96,7 @@ training:
     # Telescope's focal length in [m]. Default is `24.5`[m] (Euclid-like).
     tel_focal_length: 24.5
 
-    # Wheter to use Euclid-like obscurations.
+    # Use Euclid-like obscurations.
     euclid_obsc: True
 
     # Length of one dimension of the Low-Pass (LP) filter to apply to the
@@ -154,9 +154,9 @@ training:
     loss: 'mask_mse'
 
     # Optimizer to use during training. Options are: 'adam' or 'rectified_adam'.
-    optimizer: 
-      name: 'rectified_adam'                     
-     
+    optimizer:
+      name: 'rectified_adam'
+
     multi_cycle_params:
 
       # Number of training cycles to perform. Each cycle may use different learning rates or number of epochs.
