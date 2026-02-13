@@ -1,8 +1,10 @@
 """Utilities for Zernike Data Handling.
 
 This module provides utility functions for working with Zernike coefficients, including:
+
 - Prior generation
 - Data loading
+- Conversions between physical displacements (e.g., defocus, centroid shifts) and modal Zernike coefficients
 - Conversions between physical displacements (e.g., defocus, centroid shifts) and modal Zernike coefficients
 
 Useful in contexts where Zernike representations are used to model optical aberrations or link physical misalignments to wavefront modes.
@@ -26,6 +28,21 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ZernikeInputs:
+    """Zernike-related inputs for PSF modeling, including priors and datasets for corrections.
+
+    All fields are optional to allow flexibility across different run types (training, simulation, inference) and configurations.
+
+    Parameters
+    ----------
+    zernike_prior : Optional[np.ndarray]
+        The true Zernike prior, if provided (e.g., from PDC). Can be None if not used or not available.
+    centroid_dataset : Optional[Union[dict, "RecursiveNamespace"]]
+        Dataset used for computing centroid corrections. Should contain both training and test sets if
+        used. Can be None if centroid correction is not enabled or no dataset is available.
+    misalignment_positions : Optional[np.ndarray]
+        Positions used for computing CCD misalignment corrections. Should be available in inference mode if misalignment correction is enabled. Can be None if not used or not available.
+    """
+
     zernike_prior: Optional[np.ndarray]  # true prior, if provided (e.g. from PDC)
     centroid_dataset: Optional[
         Union[dict, "RecursiveNamespace"]
@@ -34,11 +51,17 @@ class ZernikeInputs:
 
 
 class ZernikeInputsFactory:
+    """Factory class to build ZernikeInputs based on run type and dataset configuration.
+
+    This class abstracts the logic of extracting the relevant Zernike-related inputs from the dataset based on the specified run type (training, simulation, inference) and model parameters. It handles the conditional logic for which inputs are needed and how to extract them, providing a clean interface for constructing the ZernikeInputs dataclass instance.
+
+    """
+
     @staticmethod
     def build(
         data, run_type: str, model_params, prior: Optional[np.ndarray] = None
     ) -> ZernikeInputs:
-        """Builds a ZernikeInputs dataclass instance based on run type and data.
+        """Build a ZernikeInputs dataclass instance based on run type and data.
 
         Parameters
         ----------
@@ -206,9 +229,9 @@ def assemble_zernike_contributions(
     positions=None,
     batch_size=16,
 ):
-    """
-    Assemble the total Zernike contribution map by combining the prior,
-    centroid correction, and CCD misalignment correction.
+    """Assemble Zernike contributions from prior, centroid correction, and CCD misalignment.
+
+    This function checks the model parameters to determine which contributions to include, computes each contribution as needed, and combines them into a single Zernike contribution tensor. It handles the logic for when certain contributions are not used or not available, ensuring that the final output is correctly shaped and contains the appropriate information based on the configuration.
 
     Parameters
     ----------

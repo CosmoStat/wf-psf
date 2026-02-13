@@ -1,11 +1,14 @@
 """Data Handler Module.
 
-Provides tools for loading, preprocessing, and managing data used in both training and inference workflows.
+Provides tools for loading, preprocessing, and managing data used in both
+training and inference workflows.
 
 Includes:
+
 - The `DataHandler` class for managing datasets and associated metadata
 - Utility functions for loading structured data products
-- Preprocessing routines for spectral energy distributions (SEDs), including format conversion (e.g., to TensorFlow) and transformations
+- Preprocessing routines for spectral energy distributions (SEDs), including
+  format conversion (e.g., to TensorFlow) and transformations
 
 This module serves as a central interface between raw data and modeling components.
 
@@ -138,6 +141,7 @@ class DataHandler:
 
     @property
     def tf_positions(self):
+        """Get positions as TensorFlow tensor."""
         return ensure_tensor(self.dataset["positions"])
 
     def load_dataset(self):
@@ -325,8 +329,10 @@ def get_data_array(
         Expected to have methods compatible with the specified run_type.
     run_type : {"training", "simulation", "metrics", "inference"}
         Execution context that determines how data is retrieved:
+
         - "training", "simulation", "metrics": Uses extract_star_data function
         - "inference": Retrieves data directly from dataset using key lookup
+
     key : str, optional
         Primary key for data lookup. Used directly for inference run_type.
         If None, falls back to train_key value. Default is None.
@@ -338,6 +344,7 @@ def get_data_array(
         train_key value. Default is None.
     allow_missing : bool, default True
         Control behavior when data is missing or keys are not found:
+
         - True: Return None instead of raising exceptions
         - False: Raise appropriate exceptions (KeyError, ValueError)
 
@@ -358,6 +365,7 @@ def get_data_array(
     Notes
     -----
     Key resolution follows this priority order:
+
     1. train_key = train_key or key
     2. test_key = test_key or resolved_train_key
     3. key = key or resolved_train_key (for inference fallback)
@@ -372,7 +380,7 @@ def get_data_array(
 
     >>> # Inference with fallback handling
     >>> inference_data = get_data_array(data, "inference", key="positions",
-    ...                                allow_missing=True)
+    ...                                  allow_missing=True)
     >>> if inference_data is None:
     ...     print("No inference data available")
 
