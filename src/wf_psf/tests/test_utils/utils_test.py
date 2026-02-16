@@ -20,11 +20,6 @@ from wf_psf.sims.psf_simulator import PSFSimulator
 from unittest import mock
 
 
-
-def test_sanity():
-    assert 1 + 1 == 2
-
-
 def test_downsample_basic():
     """Test apply_mask when a zeroed mask is provided."""
     img_dim = (10, 10)
@@ -37,9 +32,9 @@ def test_downsample_basic():
 
     # The result should be an array of False values, as the mask excludes all pixels
     expected_result = np.zeros(img_dim, dtype=bool)
-    assert np.array_equal(result, expected_result), (
-        "apply_mask did not handle the zeroed mask correctly."
-    )
+    assert np.array_equal(
+        result, expected_result
+    ), "apply_mask did not handle the zeroed mask correctly."
 
 
 def test_initialization():
@@ -121,9 +116,9 @@ def test_apply_mask_with_none_mask():
     result = estimator.apply_mask(None)  # Pass None as the mask
 
     # It should return the window itself when no mask is provided
-    assert np.array_equal(result, estimator.window), (
-        "apply_mask should return the window when mask is None."
-    )
+    assert np.array_equal(
+        result, estimator.window
+    ), "apply_mask should return the window when mask is None."
 
 
 def test_apply_mask_with_valid_mask():
@@ -139,9 +134,9 @@ def test_apply_mask_with_valid_mask():
 
     # Check that the mask was applied correctly: pixel (5, 5) should be False, others True
     expected_result = estimator.window & custom_mask
-    assert np.array_equal(result, expected_result), (
-        "apply_mask did not apply the mask correctly."
-    )
+    assert np.array_equal(
+        result, expected_result
+    ), "apply_mask did not apply the mask correctly."
 
 
 def test_apply_mask_with_zeroed_mask():
@@ -156,9 +151,9 @@ def test_apply_mask_with_zeroed_mask():
 
     # The result should be an array of False values, as the mask excludes all pixels
     expected_result = np.zeros(img_dim, dtype=bool)
-    assert np.array_equal(result, expected_result), (
-        "apply_mask did not handle the zeroed mask correctly."
-    )
+    assert np.array_equal(
+        result, expected_result
+    ), "apply_mask did not handle the zeroed mask correctly."
 
 
 def test_unobscured_zernike_projection():
@@ -252,6 +247,7 @@ def test_tf_decompose_obscured_opd_basis():
 
     assert rmse_error < tol
 
+
 def test_downsample_basic():
     """Downsample a small array to a smaller square size."""
     arr = np.arange(16).reshape(4, 4).astype(np.float32)
@@ -262,9 +258,10 @@ def test_downsample_basic():
     assert result.shape == (output_dim, output_dim), "Output shape mismatch"
 
     # Values should be averaged/downsampled; simple check
-    assert np.all(result >= arr.min()) and np.all(result <= arr.max()), \
-        "Values outside input range"
-    
+    assert np.all(result >= arr.min()) and np.all(
+        result <= arr.max()
+    ), "Values outside input range"
+
 
 def test_downsample_identity():
     """Downsample to the same size should return same array (approximately)."""
@@ -274,9 +271,11 @@ def test_downsample_identity():
     # Since OpenCV / skimage may do minor interpolation, allow small tolerance
     np.testing.assert_allclose(result, arr, rtol=1e-6, atol=1e-6)
 
+
 # ----------------------------
 # Backend fallback tests
 # ----------------------------
+
 
 @mock.patch("wf_psf.utils.utils._HAS_CV2", False)
 @mock.patch("wf_psf.utils.utils._HAS_SKIMAGE", False)
@@ -295,6 +294,7 @@ def test_downsample_values_average():
     result = downsample_im(arr, output_dim)
     # All output values should be close to input value
     np.testing.assert_allclose(result, 3.0, rtol=1e-6, atol=1e-6)
+
 
 @mock.patch("wf_psf.utils.utils._HAS_CV2", True)
 def test_downsample_non_square_array():

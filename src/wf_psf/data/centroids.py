@@ -8,8 +8,78 @@ A module with utils to handle PSF centroids.
 
 import numpy as np
 import scipy.signal as scisig
-from wf_psf.utils.preprocessing import shift_x_y_to_zk1_2_wavediff
+from fractions import Fraction
 from typing import Optional
+
+
+def compute_centroid_correction(
+    model_params, centroid_dataset, batch_size: int = 1
+) -> np.ndarray:
+    """Compute centroid corrections using Zernike polynomials.
+
+    This function calculates the Zernike contributions required to match the centroid
+    of the WaveDiff PSF model to the observed star centroids, processing in batches.
+
+    Parameters
+    ----------
+    model_params : RecursiveNamespace
+        An object containing parameters for the PSF model, including pixel sampling and initial centroid window parameters.
+
+    centroid_dataset : dict
+        Dictionary containing star data needed for centroiding:
+        - "stamps" : np.ndarray
+            Array of star postage stamps (required).
+        - "masks" : Optional[np.ndarray]
+            Array of star masks (optional, can be None).
+
+    batch_size : int, optional
+        The batch size to use when processing the stars. Default is 16.
+
+    Returns
+    -------
+    zernike_centroid_array : np.ndarray
+         A 2D NumPy array of shape `(n_stars, 3)`, where `n_stars` is the number of
+        observed stars. The array contains the computed Zernike (Z1, Z2) contributions,
+        with zero padding applied to the first column to ensure a consistent shape.
+    """
+    # Retrieve stamps and masks from centroid_dataset
+    star_postage_stamps = centroid_dataset.get("stamps")
+    star_masks = centroid_dataset.get("masks")  # may be None
+
+    if star_postage_stamps is None:
+        raise ValueError("centroid_dataset must contain 'stamps'")
+
+    pix_sampling = model_params.pix_sampling * 1e-6  # Change units from [um] to [m]
+
+    reference_shifts = [
+        float(Fraction(value)) for value in model_params.reference_shifts
+    ]
+
+    n_stars = len(star_postage_stamps)
+    zernike_centroid_array = []
+
+    # Batch process the stars
+    for i in range(0, n_stars, batch_size):
+        batch_postage_stamps = star_postage_stamps[i : i + batch_size]
+        batch_masks = star_masks[i : i + batch_size] if star_masks is not None else None
+
+        # Compute Zernike 1 and Zernike 2 for the batch
+        zk1_2_batch = -1.0 * compute_zernike_tip_tilt(
+            batch_postage_stamps, batch_masks, pix_sampling, reference_shifts
+        )
+
+        # Zero pad array for each batch and append
+        zernike_centroid_array.append(
+            np.pad(
+                zk1_2_batch,
+                pad_width=[(0, 0), (1, 0)],
+                mode="constant",
+                constant_values=0,
+            )
+        )
+
+    # Combine all batches into a single array
+    return np.concatenate(zernike_centroid_array, axis=0)
 
 
 def compute_zernike_tip_tilt(
@@ -58,6 +128,8 @@ def compute_zernike_tip_tilt(
     - This function processes all images at once using vectorized operations.
     - The Zernike coefficients are computed in the WaveDiff convention.
     """
+    from wf_psf.data.data_zernike_utils import shift_x_y_to_zk1_2_wavediff
+
     # Vectorize the centroid computation
     centroid_estimator = CentroidEstimator(
         im=star_images, mask=star_masks, sigma_init=sigma_init, n_iter=n_iter
@@ -178,6 +250,18 @@ class CentroidEstimator:
         self, im, mask=None, sigma_init=7.5, n_iter=5, auto_run=True, xc=None, yc=None
     ):
         """Initialize class attributes."""
+        # Convert to np.ndarray if not already
+        im = np.asarray(im)
+        if mask is not None:
+            mask = np.asarray(mask)
+
+        # Check im dimensions convert to batch, if 2D
+        if im.ndim == 2:
+            # Single stamp → convert to batch of one
+            im = np.expand_dims(im, axis=0)
+        elif im.ndim != 3:
+            raise ValueError(f"Expected 2D or 3D input, got shape {im.shape}")
+
         self.im = im
         self.mask = mask
         if self.mask is not None:

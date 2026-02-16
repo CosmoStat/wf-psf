@@ -137,13 +137,13 @@ model_params:
   reference_shifts: [-1/3, -1/3]   # Euclid-like default shifts
 
   # Obscuration / geometry
-  obscuration_rotation_angle: 0    # Degrees (multiple of 90); counterclockwise rotation. 
+  obscuration_rotation_angle: 0    # Degrees (multiple of 90); counterclockwise rotation.
 
   # CCD misalignments input file path
   ccd_misalignments_input_path: /path/to/ccd_misalignments_file.txt
-    
+
   # Boolean to use sample weights based on the noise standard deviation estimation
-  use_sample_weights: True 
+  use_sample_weights: True
 
   # Sample weight generalised sigmoid function
   sample_weights_sigmoid:
@@ -219,7 +219,6 @@ training_hparams:
     n_epochs_params: [20, 20]
     n_epochs_non_params: [100, 120]
 ```
-
 
 (metrics_config)=
 ## `metrics_config.yaml`  — Metrics Configuration
@@ -402,7 +401,10 @@ plotting_params:
 ### 4. Example Directory Structure
 Below is an example of three WaveDiff runs stored under a single parent directory:
 
-```
+**Example Directory Structure**
+Below is an example of three WaveDiff runs stored under a single parent directory:
+
+```arduino
 wf-outputs/
 ├── wf-outputs-202305271829
 │   ├── config
