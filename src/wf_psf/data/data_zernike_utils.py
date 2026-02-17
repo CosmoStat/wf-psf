@@ -5,7 +5,6 @@ This module provides utility functions for working with Zernike coefficients, in
 - Prior generation
 - Data loading
 - Conversions between physical displacements (e.g., defocus, centroid shifts) and modal Zernike coefficients
-- Conversions between physical displacements (e.g., defocus, centroid shifts) and modal Zernike coefficients
 
 Useful in contexts where Zernike representations are used to model optical aberrations or link physical misalignments to wavefront modes.
 
