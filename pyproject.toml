@@ -106,6 +106,12 @@ include = ["wf_psf*"]
 
 
 [tool.pytest.ini_options]
+markers = [
+    "deprecated: marks tests for deprecated functionality",
+    "slow: marks tests as slow",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
 addopts = [
     "--verbose",
     "--emoji",
@@ -113,6 +119,4 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=xml",
     "--junitxml=pytest.xml",
-
 ]
-testpaths = ["src/wf_psf"]

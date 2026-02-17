@@ -14,85 +14,141 @@ def mock_sed():
     return np.linspace(0.1, 1.0, 50)
 
 
-def test_process_sed_data_auto_load(data_params, simPSF):
-    # load_data=True → dataset is used and SEDs processed automatically
-    data_handler = DataHandler(
-        "training", data_params.training, simPSF, n_bins_lambda=10, load_data=True
-    )
-    assert data_handler.sed_data is not None
-    assert data_handler.sed_data.shape[1] == 10  # n_bins_lambda
+# Helper functions for tests
+def assert_tensors_equal(actual, expected, rtol=1e-5, atol=1e-8):
+    """Assert tensors are equal."""
+    if tf.is_tensor(actual):
+        actual = actual.numpy()
+    if tf.is_tensor(expected):
+        expected = expected.numpy()
+    np.testing.assert_allclose(actual, expected, rtol=rtol, atol=atol)
 
 
-def test_load_train_dataset(tmp_path, simPSF):
-    # Create a temporary directory and a temporary data file
-    data_dir = tmp_path / "data"
-    data_dir.mkdir()
-    temp_data_dir = data_dir / "train_data.npy"
+@pytest.mark.deprecated
+class TestDataHandlerBackwardCompatibility:
+    """Tests for deprecated DataHandler class."""
 
-    # Mock dataset
-    mock_dataset = {
-        "positions": np.array([[1, 2], [3, 4]]),
-        "noisy_stars": np.array([[5, 6], [7, 8]]),
-        "SEDs": np.array([[[0.1, 0.2], [0.3, 0.4]], [[0.5, 0.6], [0.7, 0.8]]]),
-    }
+    def test_load_train_dataset(self, tmp_path, mock_np_dataset, simPSF):
+        # Create a temporary directory and a temporary data file
+        data_dir = tmp_path / "data"
+        data_dir.mkdir()
+        temp_data_dir = data_dir / "train_data.npy"
 
-    # Save the mock dataset to the temporary data file
-    np.save(temp_data_dir, mock_dataset)
+        # Save the mock dataset to the temporary data file
+        np.save(temp_data_dir, mock_np_dataset)
 
-    # Initialize DataHandler instance
-    data_params = RecursiveNamespace(data_dir=str(data_dir), file="train_data.npy")
+        # Initialize DataHandler instance
+        data_params = RecursiveNamespace(data_dir=str(data_dir), file="train_data.npy")
 
-    n_bins_lambda = 10
-    data_handler = DataHandler(
-        "training", data_params, simPSF, n_bins_lambda, load_data=False
-    )
+        n_bins_lambda = 10
+        data_handler = DataHandler(
+            "training", data_params, simPSF, n_bins_lambda, load_data=False
+        )
 
-    # Call the load_dataset method
-    data_handler.load_dataset()
+        # Call the load_dataset method
+        data_handler.load_dataset()
 
-    # Assertions
-    assert np.array_equal(data_handler.dataset["positions"], mock_dataset["positions"])
-    assert np.array_equal(
-        data_handler.dataset["noisy_stars"], mock_dataset["noisy_stars"]
-    )
-    assert np.array_equal(data_handler.dataset["SEDs"], mock_dataset["SEDs"])
+        # Assertions
+        assert_tensors_equal(
+            data_handler.dataset["positions"], mock_np_dataset["positions"]
+        )
+        assert_tensors_equal(
+            data_handler.dataset["noisy_stars"], mock_np_dataset["noisy_stars"]
+        )
 
+        assert isinstance(data_handler.dataset["SEDs"], tf.Tensor)
+        assert data_handler.dataset["SEDs"].dtype == tf.float32
+        assert data_handler.dataset["SEDs"].shape == (
+            2,
+            10,
+            3,
+        )  # (N_sources, n_bins_lambda, 3 components)
 
-def test_load_test_dataset(tmp_path, simPSF):
-    # Create a temporary directory and a temporary data file
-    data_dir = tmp_path / "data"
-    data_dir.mkdir()
-    temp_data_dir = data_dir / "test_data.npy"
+        # Test each component has physically meaningful values
+        processed = data_handler.dataset["SEDs"]
+        feasible_N = processed[:, :, 0]  # Integer N values
+        feasible_wv = processed[:, :, 1]  # Wavelengths in [um]
+        SED_norm = processed[:, :, 2]  # Normalized SED values
 
-    # Mock dataset
-    mock_dataset = {
-        "positions": np.array([[1, 2], [3, 4]]),
-        "stars": np.array([[5, 6], [7, 8]]),
-        "SEDs": np.array([[[0.1, 0.2], [0.3, 0.4]], [[0.5, 0.6], [0.7, 0.8]]]),
-    }
+        # Test each component has physically meaningful values
+        assert np.all(feasible_N >= 0), "N values should be non-negative"
+        assert np.all(feasible_wv > 0), "Wavelengths should be positive"
+        assert np.all(SED_norm >= 0), "SED normalization should be non-negative"
 
-    # Save the mock dataset to the temporary data file
-    np.save(temp_data_dir, mock_dataset)
+        # feasible_wv should be in [um] range (visible light ~0.4-0.9 um)
+        assert tf.reduce_all(feasible_wv > 0.3)
+        assert tf.reduce_all(feasible_wv < 1.0)
 
-    # Initialize DataHandler instance
-    data_params = RecursiveNamespace(data_dir=str(data_dir), file="test_data.npy")
+        # SED_norm should sum to ~1.0 per source (normalized)
+        sed_sums = tf.reduce_sum(SED_norm, axis=1)  # Sum over wavelength bins
+        np.testing.assert_allclose(
+            sed_sums.numpy(),
+            np.ones(2),  # One per source
+            rtol=1e-5,
+            err_msg="SED_norm should sum to 1.0 per source",
+        )
 
-    n_bins_lambda = 10
-    data_handler = DataHandler(
-        dataset_type="test",
-        data_params=data_params,
-        simPSF=simPSF,
-        n_bins_lambda=n_bins_lambda,
-        load_data=False,
-    )
+    def test_load_test_dataset(self, tmp_path, mock_np_dataset, simPSF):
+        # Create a temporary directory and a temporary data file
+        data_dir = tmp_path / "data"
+        data_dir.mkdir()
+        temp_data_dir = data_dir / "test_data.npy"
 
-    # Call the load_dataset method
-    data_handler.load_dataset()
+        # Save the mock dataset to the temporary data file
+        np.save(temp_data_dir, mock_np_dataset)
 
-    # Assertions
-    assert np.array_equal(data_handler.dataset["positions"], mock_dataset["positions"])
-    assert np.array_equal(data_handler.dataset["stars"], mock_dataset["stars"])
-    assert np.array_equal(data_handler.dataset["SEDs"], mock_dataset["SEDs"])
+        # Initialize DataHandler instance
+        data_params = RecursiveNamespace(data_dir=str(data_dir), file="test_data.npy")
+
+        n_bins_lambda = 10
+        data_handler = DataHandler(
+            dataset_type="test",
+            data_params=data_params,
+            simPSF=simPSF,
+            n_bins_lambda=n_bins_lambda,
+            load_data=False,
+        )
+
+        # Call the load_dataset method
+        data_handler.load_dataset()
+
+        # Assertions
+        assert_tensors_equal(
+            data_handler.dataset["positions"], mock_np_dataset["positions"]
+        )
+        assert_tensors_equal(data_handler.dataset["stars"], mock_np_dataset["stars"])
+
+        assert isinstance(data_handler.dataset["SEDs"], tf.Tensor)
+        assert data_handler.dataset["SEDs"].dtype == tf.float32
+        assert data_handler.dataset["SEDs"].shape == (
+            2,
+            10,
+            3,
+        )  # (N_sources, n_bins_lambda, 3 components)
+
+        # Test each component has physically meaningful values
+        processed = data_handler.dataset["SEDs"]
+        feasible_N = processed[:, :, 0]  # Integer N values
+        feasible_wv = processed[:, :, 1]  # Wavelengths in [um]
+        SED_norm = processed[:, :, 2]  # Normalized SED values
+
+        # Test each component has physically meaningful values
+        assert np.all(feasible_N >= 0), "N values should be non-negative"
+        assert np.all(feasible_wv > 0), "Wavelengths should be positive"
+        assert np.all(SED_norm >= 0), "SED normalization should be non-negative"
+
+        # feasible_wv should be in [um] range (visible light ~0.4-0.9 um)
+        assert tf.reduce_all(feasible_wv > 0.3)
+        assert tf.reduce_all(feasible_wv < 1.0)
+
+        # SED_norm should sum to ~1.0 per source (normalized)
+        sed_sums = tf.reduce_sum(SED_norm, axis=1)  # Sum over wavelength bins
+        np.testing.assert_allclose(
+            sed_sums.numpy(),
+            np.ones(2),  # One per source
+            rtol=1e-5,
+            err_msg="SED_norm should sum to 1.0 per source",
+        )
 
 
 def test_validate_train_dataset_missing_noisy_stars_raises(tmp_path, simPSF):

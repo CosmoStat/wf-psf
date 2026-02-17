@@ -132,6 +132,24 @@ def mock_data(scope="module"):
 
 
 @pytest.fixture
+def mock_np_dataset():
+    """Fixture to create a mock .npy dataset for testing DataHandler."""
+    # Mock dataset
+    mock_dataset = {
+        "positions": np.array([[1, 2], [3, 4]]),
+        "noisy_stars": np.array([[5, 6], [7, 8]]),
+        "stars": np.array([[5, 6], [7, 8]]),
+        "SEDs": np.array(
+            [
+                [[400.0, 0.1], [500.0, 0.2], [600.0, 0.3]],  # Source 1
+                [[400.0, 0.4], [500.0, 0.5], [600.0, 0.6]],  # Source 2
+            ]
+        ),
+    }
+    return mock_dataset
+
+
+@pytest.fixture
 def mock_data_inference():
     """Flat dataset for inference path only."""
     return SimpleNamespace(
