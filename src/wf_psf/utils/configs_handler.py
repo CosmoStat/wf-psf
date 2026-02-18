@@ -140,16 +140,18 @@ class DataConfigHandler:
         test_params = self.data_conf.data.test
 
         self.training_data = DataHandlerFactory.create_from_config(
-            dataset_type="training",
             data_params=train_params,
             simPSF=self.simPSF,
             n_bins_lambda=training_model_params.n_bins_lda,
+            dataset_type="training",
+            load_data=load_data,
         )
         self.test_data = DataHandlerFactory.create_from_config(
-            dataset_type="test",
             data_params=test_params,
             simPSF=self.simPSF,
             n_bins_lambda=training_model_params.n_bins_lda,
+            dataset_type="test",
+            load_data=load_data,
         )
 
         self.batch_size = batch_size
@@ -186,6 +188,7 @@ class TrainingConfigHandler:
             self.training_conf.training.training_hparams.batch_size,
             self.training_conf.training.load_data_on_init,
         )
+
         self.data_conf.run_type = "training"
         self.file_handler.copy_conffile_to_output_dir(
             self.training_conf.training.data_config
