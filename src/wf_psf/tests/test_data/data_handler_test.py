@@ -38,7 +38,7 @@ class TestDataHandlerBackwardCompatibility:
         np.save(temp_data_dir, mock_np_dataset)
 
         # Initialize DataHandler instance
-        data_params = RecursiveNamespace(data_dir=str(data_dir), file="train_data.npy")
+        data_params = RecursiveNamespace(data_dir=str(data_dir), file="train_data.npy", target_field="noisy_stars",)
 
         n_bins_lambda = 10
         data_handler = DataHandler(
@@ -98,7 +98,7 @@ class TestDataHandlerBackwardCompatibility:
         np.save(temp_data_dir, mock_np_dataset)
 
         # Initialize DataHandler instance
-        data_params = RecursiveNamespace(data_dir=str(data_dir), file="test_data.npy")
+        data_params = RecursiveNamespace(data_dir=str(data_dir), file="test_data.npy", target_field="stars",)
 
         n_bins_lambda = 10
         data_handler = DataHandler(
@@ -151,58 +151,58 @@ class TestDataHandlerBackwardCompatibility:
         )
 
 
-def test_validate_train_dataset_missing_noisy_stars_raises(tmp_path, simPSF):
-    """Test that validation raises an error if 'noisy_stars' is missing in training data."""
-    data_dir = tmp_path / "data"
-    data_dir.mkdir()
-    temp_data_file = data_dir / "train_data.npy"
+    def test_validate_train_dataset_missing_noisy_stars_raises(self, tmp_path, simPSF):
+        """Test that validation raises an error if 'noisy_stars' is missing in training data."""
+        data_dir = tmp_path / "data"
+        data_dir.mkdir()
+        temp_data_file = data_dir / "train_data.npy"
 
-    mock_dataset = {
-        "positions": np.array([[1, 2], [3, 4]]),  # No 'noisy_stars' key
-        "SEDs": np.array([[[0.1, 0.2], [0.3, 0.4]], [[0.5, 0.6], [0.7, 0.8]]]),
-    }
+        mock_dataset = {
+            "positions": np.array([[1, 2], [3, 4]]),  # No 'noisy_stars' key
+            "SEDs": np.array([[[0.1, 0.2], [0.3, 0.4]], [[0.5, 0.6], [0.7, 0.8]]]),
+        }
 
-    np.save(temp_data_file, mock_dataset)
+        np.save(temp_data_file, mock_dataset)
 
-    data_params = RecursiveNamespace(data_dir=str(data_dir), file="train_data.npy")
+        data_params = RecursiveNamespace(data_dir=str(data_dir), file="train_data.npy", target_field="noisy_stars",)
 
-    n_bins_lambda = 10
-    data_handler = DataHandler(
-        "training", data_params, simPSF, n_bins_lambda, load_data=False
-    )
+        n_bins_lambda = 10
+        data_handler = DataHandler(
+            "training", data_params, simPSF, n_bins_lambda, load_data=False
+        )
 
-    with pytest.raises(
-        ValueError, match="Missing required field 'noisy_stars' in training dataset."
-    ):
-        data_handler.load_dataset()
-        data_handler.validate_and_process_dataset()
+        with pytest.raises(
+            ValueError, match="Missing required field 'noisy_stars' in training dataset."
+        ):
+            data_handler.load_dataset()
+            data_handler.validate_and_process_dataset()
 
 
-def test_load_test_dataset_missing_stars(tmp_path, simPSF):
-    """Test that a warning is raised if 'stars' is missing in test data."""
-    data_dir = tmp_path / "data"
-    data_dir.mkdir()
-    temp_data_file = data_dir / "test_data.npy"
+    def test_load_test_dataset_missing_stars(self, tmp_path, simPSF):
+        """Test that a warning is raised if 'stars' is missing in test data."""
+        data_dir = tmp_path / "data"
+        data_dir.mkdir()
+        temp_data_file = data_dir / "test_data.npy"
 
-    mock_dataset = {
-        "positions": np.array([[1, 2], [3, 4]]),  # No 'stars' key
-        "SEDs": np.array([[[0.1, 0.2], [0.3, 0.4]], [[0.5, 0.6], [0.7, 0.8]]]),
-    }
+        mock_dataset = {
+            "positions": np.array([[1, 2], [3, 4]]),  # No 'stars' key
+            "SEDs": np.array([[[0.1, 0.2], [0.3, 0.4]], [[0.5, 0.6], [0.7, 0.8]]]),
+        }
 
-    np.save(temp_data_file, mock_dataset)
+        np.save(temp_data_file, mock_dataset)
 
-    data_params = RecursiveNamespace(data_dir=str(data_dir), file="test_data.npy")
+        data_params = RecursiveNamespace(data_dir=str(data_dir), file="test_data.npy", target_field="stars")
 
-    n_bins_lambda = 10
-    data_handler = DataHandler(
-        "test", data_params, simPSF, n_bins_lambda, load_data=False
-    )
+        n_bins_lambda = 10
+        data_handler = DataHandler(
+            "test", data_params, simPSF, n_bins_lambda, load_data=False
+        )
 
-    with pytest.raises(
-        ValueError, match="Missing required field 'stars' in test dataset."
-    ):
-        data_handler.load_dataset()
-        data_handler.validate_and_process_dataset()
+        with pytest.raises(
+            ValueError, match="Missing required field 'stars' in test dataset."
+        ):
+            data_handler.load_dataset()
+            data_handler.validate_and_process_dataset()
 
 
 def test_extract_star_data_valid_keys(mock_data):

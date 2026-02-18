@@ -90,10 +90,12 @@ data = RecursiveNamespace(
     training=RecursiveNamespace(
         data_dir="data",
         file="coherent_euclid_dataset/train_Euclid_res_200_TrainStars_id_001.npy",
+        target_field="noisy_stars",
     ),
     test=RecursiveNamespace(
         data_dir="data",
         file="coherent_euclid_dataset/test_Euclid_res_id_001.npy",
+        target_field="stars",
     ),
 )
 
@@ -186,7 +188,7 @@ def multiple_images(scope="module"):
     return images
 
 
-@pytest.fixture(scope="module", params=[data])
+@pytest.fixture(scope="module")
 def data_params():
     return data
 

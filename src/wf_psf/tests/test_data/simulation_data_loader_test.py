@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+from pathlib import Path
 import tensorflow as tf
 from wf_psf.data.simulation_data_loader import SimulationDataLoader
 from wf_psf.utils.read_config import RecursiveNamespace
@@ -11,12 +12,6 @@ def data_dir(tmp_path):
     data_dir = tmp_path / "data"
     data_dir.mkdir()
     return data_dir
-
-
-@pytest.fixture
-def data_params(data_dir):
-    """RecursiveNamespace data params pointing to tmp directory."""
-    return RecursiveNamespace(data_dir=str(data_dir), file="dataset.npy")
 
 
 @pytest.fixture
@@ -100,27 +95,31 @@ def make_loader(dataset_type, data_params, simPSF, n_bins_lambda=8):
 # TestSimulationDataLoaderInit
 # ============================================================================
 
-
 class TestSimulationDataLoaderInit:
     """Tests for SimulationDataLoader initialisation."""
 
     @pytest.mark.parametrize(
-        "dataset_type", ["training", "test"], ids=["training", "test"]
+        "dataset_type", 
+        ["training", "test"], 
+        ids=["training", "test"]
     )
     def test_attributes_set_on_init(self, dataset_type, data_params, simPSF):
         """Test all attributes are set correctly on initialisation."""
+        
+        config = getattr(data_params, dataset_type)
 
-        loader = make_loader(dataset_type, data_params, simPSF)
-
-        assert loader.dataset_type == dataset_type
-        assert loader.data_params == data_params
+        loader = make_loader(dataset_type, config, simPSF)
+        
+        assert loader.data_params == config
         assert loader.n_bins_lambda == 8
         assert loader.dataset is None
         assert loader.sed_data is None
 
     def test_converter_instantiated_on_init(self, data_params, simPSF):
         """Test TensorFlowDatasetConverter is instantiated on init."""
-        loader = make_loader("training", data_params, simPSF)
+        dataset_type = "training"
+        config = getattr(data_params, dataset_type)
+        loader = make_loader(dataset_type, config, simPSF)
 
         assert loader.converter is not None
 
@@ -156,7 +155,9 @@ class TestSimulationDataLoaderLoad:
         dataset = request.getfixturevalue(dataset_fixture)
         save_dataset(data_dir, dataset)
 
-        loader = make_loader(dataset_type, data_params, simPSF)
+        config = getattr(data_params, dataset_type)
+
+        loader = make_loader(dataset_type, config, simPSF)
         returned_dataset, returned_sed_data = loader.load()
 
         assert returned_dataset is not None
@@ -185,7 +186,8 @@ class TestSimulationDataLoaderLoad:
         dataset = request.getfixturevalue(dataset_fixture)
         save_dataset(data_dir, dataset)
 
-        loader = make_loader(dataset_type, data_params, simPSF)
+        config = getattr(data_params, dataset_type)
+        loader = make_loader(dataset_type, config, simPSF)
         loader.load()
 
         assert loader.dataset is not None
@@ -214,7 +216,9 @@ class TestSimulationDataLoaderLoad:
         dataset = request.getfixturevalue(dataset_fixture)
         save_dataset(data_dir, dataset)
 
-        loader = make_loader(dataset_type, data_params, simPSF)
+        config = getattr(data_params, dataset_type)
+
+        loader = make_loader(dataset_type, config, simPSF)
         loader.load()
 
         mock_process_seds.assert_called_once()
@@ -242,7 +246,8 @@ class TestSimulationDataLoaderLoad:
         dataset = request.getfixturevalue(dataset_fixture)
         save_dataset(data_dir, dataset)
 
-        loader = make_loader(dataset_type, data_params, simPSF)
+        config = getattr(data_params, dataset_type)
+        loader = make_loader(dataset_type, config, simPSF)
         loader.load()
 
         mock_convert_dict.assert_called_once()
@@ -306,48 +311,52 @@ class TestSimulationDataLoaderValidation:
         mock_convert_dict,
     ):
         """Test ValueError raised for each missing required field."""
-        save_dataset(data_dir, dataset)
+    
+        config = getattr(data_params, dataset_type)
 
-        loader = make_loader(dataset_type, data_params, simPSF)
+        config.data_dir = str(data_dir)
+        config.file = "test.npy"
+
+        save_path = Path(data_dir) / "test.npy"
+        np.save(save_path, dataset)
+        
+        loader = make_loader(dataset_type, config, simPSF)
 
         with pytest.raises(ValueError, match=missing_field):
             loader.load()
 
-    def test_unrecognized_dataset_type_raises_value_error(
-        self, data_dir, data_params, simPSF, mock_process_seds, mock_convert_dict
-    ):
-        """Test ValueError raised for unrecognized dataset_type."""
-
-        dataset = {
-            "positions": np.array([[1.0, 2.0]]),
-            "SEDs": np.random.randn(1, 3, 2),
-        }
-        save_dataset(data_dir, dataset)
-
-        loader = make_loader("invalid_type", data_params, simPSF)
-
-        with pytest.raises(ValueError, match="Unrecognized dataset_type"):
-            loader.load()
 
     def test_missing_seds_raises_value_error(
         self, data_dir, data_params, simPSF, mock_process_seds, mock_convert_dict
     ):
         """Test ValueError raised when SEDs are missing."""
+
+        dataset_type = "training"
+        config = getattr(data_params, dataset_type)
+        config.data_dir = str(data_dir)
+        config.file = "train.npy"
+
         dataset = {
             "positions": np.array([[1.0, 2.0]]),
             "noisy_stars": np.random.randn(1, 32, 32),
             # No SEDs
         }
-        save_dataset(data_dir, dataset)
 
-        loader = make_loader("training", data_params, simPSF)
+        save_path = Path(data_dir) / config.file
+        np.save(save_path, dataset)
+
+        loader = make_loader(dataset_type, config, simPSF)
 
         with pytest.raises(ValueError, match="SEDs"):
             loader.load()
 
     def test_file_not_found_raises_error(self, data_params, simPSF):
         """Test error raised when .npy file does not exist."""
-        loader = make_loader("training", data_params, simPSF)
+        dataset_type = "training"   
+        config = getattr(data_params, dataset_type)
+        config.file = "no_exist.npy"
+
+        loader = make_loader(dataset_type, config, simPSF)
 
         with pytest.raises(FileNotFoundError):
             loader.load()

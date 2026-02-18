@@ -54,6 +54,15 @@ class SimulationDataLoader:
         self.data_params = data_params
         self.converter = TensorFlowDatasetConverter(simPSF, n_bins_lambda)
         self.n_bins_lambda = n_bins_lambda
+
+        # Require target_field in params
+        if not hasattr(data_params, 'target_field'):
+            raise ValueError(
+                "data_params must specify 'target_field'. "
+                "This should be set by DataConfigHandler or in the config file."
+            )
+        self.target_field = data_params.target_field
+
         self.dataset = None
         self.sed_data = None
 
@@ -80,18 +89,10 @@ class SimulationDataLoader:
         if "positions" not in self.dataset:
             raise ValueError("Dataset missing required field: 'positions'")
 
-        if self.dataset_type == "training":
-            if "noisy_stars" not in self.dataset:
-                raise ValueError(
-                    f"Missing required field 'noisy_stars' in {self.dataset_type} dataset."
-                )
-        elif self.dataset_type == "test":
-            if "stars" not in self.dataset:
-                raise ValueError(
-                    f"Missing required field 'stars' in {self.dataset_type} dataset."
-                )
-        else:
-            raise ValueError(f"Unrecognized dataset_type: {self.dataset_type}")
+        if self.target_field not in self.dataset:
+            raise ValueError(
+                f"Missing required field '{self.target_field}' in {self.dataset_type} dataset."
+            )
 
     def _convert_to_tensorflow(self):
         """Convert dataset to TensorFlow tensors."""
