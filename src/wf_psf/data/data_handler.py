@@ -52,6 +52,7 @@ class DataHandlerFactory:
         simPSF,
         n_bins_lambda,
         dataset_type,
+        load_data,
     ):
         """
         Create appropriate loader based on data_type in config.
@@ -84,12 +85,16 @@ class DataHandlerFactory:
         data_type = getattr(data_params, "data_type", "simulation")
 
         if data_type == "simulation":
-            return DataHandlerFactory.create_simulation_loader(
+            loader = DataHandlerFactory.create_simulation_loader(
                 data_params=data_params,
                 simPSF=simPSF,
                 n_bins_lambda=n_bins_lambda,
                 dataset_type=dataset_type,
             )
+            if load_data:
+                loader.load()
+            return loader
+
         elif data_type == "real":
             # Implemented in future PR (PSFDatasetAdapter)
             raise NotImplementedError(
