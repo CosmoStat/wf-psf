@@ -88,8 +88,15 @@ quote-style = "double"
 indent-style = "space"
 line-ending = "lf"
 
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["wf_psf*"]
+
 [tool.setuptools.package-data]
-"wf_psf.config" = ["*.conf"]
+"wf_psf.config" = ["*.conf", "*.yaml"]
 
 # Set per-file-ignores
 [tool.ruff.lint.per-file-ignores]

@@ -12,12 +12,12 @@ inference:
 
     # Subdirectory name of the trained model, e.g. psf_model
     model_subdir: model
-  
+
     # Relative Path to the training configuration file used to train the model
     trained_model_config_path: config/training_config.yaml
 
     # Path to the data config file (this could contain prior information)
-    data_config_path: 
+    data_config_path:
 
   # The following parameters will overwrite the `model_params` in the training config file.
   model_params:

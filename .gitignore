@@ -89,6 +89,7 @@ instance/
 
 # Sphinx documentation
 docs/build/
+docs/_build/
 docs/source/wf_psf*.rst
 docs/source/_static/file.png
 docs/source/_static/images/logo_colab.png
