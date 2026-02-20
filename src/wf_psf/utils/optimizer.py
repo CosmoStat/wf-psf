@@ -7,6 +7,7 @@ This module provides utility functions to create optimizers for training or eval
 """
 
 import tensorflow as tf
+import logging
 
 
 def is_optimizer_instance(obj):
@@ -30,7 +31,7 @@ def get_optimizer(optimizer_config=None, **overrides):
     """
     # Detect TensorFlow version
     version = tuple(map(int, tf.__version__.split(".")[:2]))
-    is_legacy = version < (2, 11)
+    is_legacy = version <= (2, 11)
 
     # --- Normalize input to a dictionary
     if isinstance(optimizer_config, str):
@@ -52,7 +53,7 @@ def get_optimizer(optimizer_config=None, **overrides):
     optimizer_params.update(overrides)
 
     # Extract learning_rate
-    learning_rate = optimizer_params.pop("learning_rate", 1e-3)
+    learning_rate = float(optimizer_params.pop("learning_rate", 1e-3))
 
     # --- Rectified Adam (TensorFlow Addons)
     if optimizer_name in ["rectified_adam", "radam"]:
@@ -72,9 +73,9 @@ def get_optimizer(optimizer_config=None, **overrides):
         )
         return opt_cls(
             learning_rate=learning_rate,
-            beta_1=optimizer_params.get("beta_1", 0.9),
-            beta_2=optimizer_params.get("beta_2", 0.999),
-            epsilon=optimizer_params.get("epsilon", 1e-07),
+            beta_1=float(optimizer_params.get("beta_1", 0.9)),
+            beta_2=float(optimizer_params.get("beta_2", 0.999)),
+            epsilon=float(optimizer_params.get("epsilon", 1e-07)),
             amsgrad=optimizer_params.get("amsgrad", False),
         )
 
