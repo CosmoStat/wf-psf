@@ -52,6 +52,7 @@ class SimulationDataLoader:
     def __init__(self, dataset_type, data_params, simPSF, n_bins_lambda):
         self.dataset_type = dataset_type
         self.data_params = data_params
+        self.simPSF = simPSF
         self.converter = TensorFlowDatasetConverter(simPSF, n_bins_lambda)
         self.n_bins_lambda = n_bins_lambda
 
