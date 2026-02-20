@@ -106,54 +106,37 @@ class TensorFlowDatasetConverter:
 
         return result
 
-    def convert_dict(self, dataset_dict, dataset_type="training", seds=None):
+    def convert_dict(self, dataset_dict, seds=None):
         """
-        Convert dict-based dataset to TensorFlow.
-
-        Handles both simulation dicts and inference dicts.
-
+        Convert all numpy arrays in dataset dict to TensorFlow tensors in-place.
+    
         Parameters
         ----------
         dataset_dict : dict
-            Dict with 'positions', and optionally 'SEDs', 'noisy_stars', etc.
-        dataset_type : str
-             'training', 'test', or 'inference'
+            Dict with dataset fields. Modified in-place.
         seds : array_like, optional
             Pre-provided SEDs (if not in dataset_dict['SEDs'])
-
+    
         Returns
         -------
         dict
-            TensorFlow-converted dataset
+            The same dict (modified in-place) for convenience
         """
-        result = {
-            "positions": ensure_tensor(dataset_dict["positions"], dtype=tf.float32),
-        }
-
-        # Process SEDs - either from dict or provided separately
+        # Process SEDs first (special handling)
         sed_data = seds if seds is not None else dataset_dict.get("SEDs")
         if sed_data is not None:
-            result["SEDs"] = self.process_seds(sed_data)
-
-        # Add target field based on dataset type
-        if dataset_type == "training" and "noisy_stars" in dataset_dict:
-            result["noisy_stars"] = ensure_tensor(
-                dataset_dict["noisy_stars"], dtype=tf.float32
-            )
-        elif dataset_type == "test" and "stars" in dataset_dict:
-            result["stars"] = ensure_tensor(dataset_dict["stars"], dtype=tf.float32)
-        elif dataset_type == "inference":
-            if "sources" in dataset_dict:
-                result["sources"] = ensure_tensor(
-                    dataset_dict["sources"], dtype=tf.float32
-                )
-
-        # Add masks if present
-        if "masks" in dataset_dict:
-            result["masks"] = ensure_tensor(dataset_dict["masks"], dtype=tf.float32)
-
-        return result
-
+            dataset_dict["SEDs"] = self.process_seds(sed_data)
+    
+        # Convert all remaining numpy arrays to tensors
+        for key, value in dataset_dict.items():
+            if key == "SEDs":
+                continue  # Already processed above
+        
+            if isinstance(value, np.ndarray) and not tf.is_tensor(value):
+                dataset_dict[key] = ensure_tensor(value, dtype=tf.float32)
+    
+        return dataset_dict
+    
     def convert_inference_data(self, positions, sources=None, masks=None, seds=None):
         """
         Convert inference data to TensorFlow format.
