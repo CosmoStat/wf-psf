@@ -12,7 +12,7 @@ import numpy as np
 import tensorflow as tf
 import galsim as gs
 import wf_psf.utils.utils as utils
-from wf_psf.psf_models.psf_models import build_PSF_model
+from wf_psf.psf_models.psf_models import compile_PSF_model
 from wf_psf.sims import psf_simulator as psf_simulator
 import logging
 
@@ -446,11 +446,11 @@ def compute_shape_metrics(
     tf_semiparam_field.set_output_Q(output_Q=output_Q, output_dim=output_dim)
     gt_tf_semiparam_field.set_output_Q(output_Q=output_Q, output_dim=output_dim)
 
-    # Need to compile the models again
-    tf_semiparam_field = build_PSF_model(
+    # Re-compile PSF model
+    tf_semiparam_field = compile_PSF_model(
         tf_semiparam_field, optimizer=optimizer_settings
     )
-    gt_tf_semiparam_field = build_PSF_model(
+    gt_tf_semiparam_field = compile_PSF_model(
         gt_tf_semiparam_field, optimizer=optimizer_settings
     )
 
@@ -614,9 +614,9 @@ def compute_shape_metrics(
         output_Q=gt_original_out_Q, output_dim=gt_original_out_dim
     )
 
-    # Need to compile the models again
-    tf_semiparam_field = build_PSF_model(tf_semiparam_field)
-    gt_tf_semiparam_field = build_PSF_model(gt_tf_semiparam_field)
+    # Re-compile PSF models
+    tf_semiparam_field = compile_PSF_model(tf_semiparam_field)
+    gt_tf_semiparam_field = compile_PSF_model(gt_tf_semiparam_field)
 
     # Moment results
     result_dict = {

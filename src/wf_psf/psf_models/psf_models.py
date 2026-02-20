@@ -152,11 +152,28 @@ def get_psf_model(*psf_model_params):
     return psf_factory_class().get_model_instance(*psf_model_params)
 
 
-def build_PSF_model(model_inst, optimizer=None, loss=None, metrics=None):
-    """Define the model-compilation parameters.
+def compile_PSF_model(model_inst, optimizer=None, loss=None, metrics=None):
+    """Compile PSF Model.
 
-    Specially the loss function, the optimizer and the metrics.
-    """
+    A function to compile a PSF model instance.
+
+    Parameters
+    ----------
+    model_inst: PSF model instance
+        An instance of the PSF model to be compiled.
+    optimizer: str, dict, or Keras optimizer instance, optional
+        The optimizer to use for compiling the model. It can be a string representing the optimizer name, a dictionary containing optimizer configuration, or an instance of a Keras optimizer. Defaults to None, which will use the default optimizer.
+    loss: str or Keras loss instance, optional
+        The loss function to use for compiling the model. It can be a string representing the loss function name or an instance of a Keras loss. Defaults to None, which will use the default loss function.
+    metrics: list of str or Keras metric instances, optional
+        A list of metrics to evaluate during training. Each metric can be a string representing the metric name or an instance of a Keras metric. Defaults to None, which will use the default metrics
+            (Mean Squared Error in this case).
+
+    Returns
+    -------
+    PSF model instance
+        The compiled PSF model instance ready for training.
+    """ 
     # Define model loss function
     if loss is None:
         loss = tf.keras.losses.MeanSquaredError()
@@ -166,7 +183,7 @@ def build_PSF_model(model_inst, optimizer=None, loss=None, metrics=None):
         pass
     else:
         optimizer = get_optimizer(optimizer_config=optimizer)
-    
+   
     # Define metric functions
     if metrics is None:
         metrics = [tf.keras.metrics.MeanSquaredError()]
@@ -183,6 +200,33 @@ def build_PSF_model(model_inst, optimizer=None, loss=None, metrics=None):
 
     return model_inst
 
+def rebuild_PSF_model_for_evaluation(model, output_Q, output_dim):
+    """Reuild PSF Model for Evaluation.
+
+    Adjust the PSF model to produce outputs with the desired sampling/output_dim
+    for metric evaluation. Does NOT set optimizer, loss, or metrics.
+
+    Parameters
+    ----------
+    model: PSF model instance
+        An instance of the PSF model to be adjusted for evaluation.
+    output_Q: int
+        The desired output sampling for the PSF model during evaluation.
+    output_dim: int
+        The desired output dimension for the PSF model during evaluation.
+
+    Returns
+    -------
+    PSF model instance
+        The PSF model instance adjusted to produce outputs with the specified sampling and dimension for evaluation.
+
+    """
+    model.set_output_Q(output_Q=output_Q, output_dim=output_dim)
+    # Optionally trigger Keras to rebuild layers if needed
+    if hasattr(model, "build"):
+        # Provide a dummy input shape if required
+        model.build(input_shape=[None, model.input_shape[-1]])
+    return model
 
 def get_psf_model_weights_filepath(weights_filepath):
     """Get PSF model weights filepath.
