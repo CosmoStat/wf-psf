@@ -7,8 +7,6 @@ This module provides utility functions to create optimizers for training or eval
 """
 
 import tensorflow as tf
-import logging
-
 
 def is_optimizer_instance(obj):
     return hasattr(obj, "apply_gradients") and hasattr(obj, "get_config")
