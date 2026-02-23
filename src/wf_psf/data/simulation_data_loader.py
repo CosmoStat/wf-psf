@@ -97,7 +97,8 @@ class SimulationDataLoader:
 
     def _convert_to_tensorflow(self):
         """Convert dataset to TensorFlow tensors."""
-        self.dataset = self.converter.convert_dict(self.dataset, self.dataset_type)
+        self.dataset = self.converter.convert_psf_dict(self.dataset, self.target_field)
+
 
     def _process_seds(self):
         """Process SEDs from loaded dataset."""
