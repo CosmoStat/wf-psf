@@ -279,11 +279,12 @@ class DataHandler:
             self.sed_data = converter.process_seds(sed_data)
         elif "SEDs" in dataset:
             self.sed_data = converter.process_seds(dataset["SEDs"])
+            _ = dataset.pop("SEDs")
         else:
             self.sed_data = None
 
         # Convert dataset
-        self.dataset = converter.convert_dict(dataset, self.dataset_type)
+        self.dataset = converter.convert_inference_data(dataset)
 
         # Add processed SEDs back
         if self.sed_data is not None:
