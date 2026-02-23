@@ -67,28 +67,28 @@ def inference_dict():
     }
 
 
-class TestConvertDict:
-    """Tests for TensorFlowDatasetConverter.convert_dict()."""
+class TestConvertPSFDict:
+    """Tests for TensorFlowDatasetConverter.convert_psf_dict()."""
 
     @pytest.mark.parametrize(
-        "dataset_type,input_fixture,expected_keys,forbidden_keys",
+        "input_fixture,expected_keys, source_field, forbidden_keys",
         [
             (
-                "training",
                 "simulation_train_dict",
                 {"positions", "noisy_stars", "SEDs"},
+                "noisy_stars",
                 {"stars"},
             ),
             (
-                "test",
                 "simulation_test_dict",
                 {"positions", "stars", "SEDs"},
+                "stars",
                 {"noisy_stars"},
             ),
             (
-                "inference",
                 "inference_dict",
                 {"positions", "sources"},
+                "sources",
                 set(),
             ),
         ],
@@ -97,26 +97,22 @@ class TestConvertDict:
         self,
         request,
         converter,
-        dataset_type,
         input_fixture,
         expected_keys,
+        source_field,
         forbidden_keys,
-        mock_process_seds,
     ):
         dataset_dict = request.getfixturevalue(input_fixture)
 
-        result = converter.convert_dict(dataset_dict, dataset_type=dataset_type)
+        result = converter.convert_psf_dict(dataset_dict, source_field)
 
         assert expected_keys.issubset(result.keys())
         assert forbidden_keys.isdisjoint(result.keys())
 
-    def test_training_tensor_properties(
-        self, converter, simulation_train_dict, mock_process_seds
-    ):
-        result = converter.convert_dict(simulation_train_dict, dataset_type="training")
-
-        # All values are tensors
-        assert all(tf.is_tensor(v) for v in result.values())
+    def test_training_tensor_properties(self, converter, simulation_train_dict):
+        result = converter.convert_psf_dict(
+            simulation_train_dict, source_field="noisy_stars"
+        )
 
         # Positions dtype and shape
         assert_tensor(
@@ -140,13 +136,14 @@ class TestConvertDict:
         self,
         converter,
         simulation_train_dict,
-        mock_process_seds,
         remove_masks,
     ):
         if remove_masks:
             simulation_train_dict.pop("masks", None)
 
-        result = converter.convert_dict(simulation_train_dict, dataset_type="training")
+        result = converter.convert_psf_dict(
+            simulation_train_dict, source_field="noisy_stars"
+        )
 
         if remove_masks:
             assert "masks" not in result
@@ -154,52 +151,13 @@ class TestConvertDict:
             assert "masks" in result
             assert_tensor(result["masks"])
 
-    @pytest.mark.parametrize(
-        "external_seds,expect_call,expect_seds_key",
-        [
-            (None, True, True),  # from dict
-            ("external", True, True),  # override
-            ("missing", False, False),  # none anywhere
-        ],
-    )
-    def test_seds_resolution(
-        self,
-        converter,
-        simulation_train_dict,
-        mock_process_seds,
-        external_seds,
-        expect_call,
-        expect_seds_key,
-    ):
-        if external_seds == "external":
-            external_seds = np.random.randn(2, 5, 2).astype(np.float32)
-        elif external_seds == "missing":
-            simulation_train_dict.pop("SEDs", None)
-            external_seds = None
-
-        result = converter.convert_dict(
-            simulation_train_dict,
-            dataset_type="training",
-            seds=external_seds,
-        )
-
-        if expect_call:
-            if external_seds is not None:
-                mock_process_seds.assert_called_once_with(external_seds)
-            else:
-                mock_process_seds.assert_called_once_with(simulation_train_dict["SEDs"])
-        else:
-            mock_process_seds.assert_not_called()
-
-        assert ("SEDs" in result) is expect_seds_key
-
-    def test_missing_positions_raises_error(self, converter, mock_process_seds):
+    def test_missing_positions_raises_error(self, converter):
         dataset_dict = {
             "noisy_stars": np.random.randn(2, 32, 32).astype(np.float32),
         }
 
         with pytest.raises(KeyError):
-            converter.convert_dict(dataset_dict, dataset_type="training")
+            converter.convert_psf_dict(dataset_dict, source_field="noisy_stars")
 
 
 class TestTensorFlowDatasetConverter:
@@ -319,69 +277,54 @@ class TestConvertInferenceData:
         }
 
     @pytest.mark.parametrize(
-        "sources, masks, seds, expected_keys",
+        "dataset, expected_keys",
         [
             # Positions only
             (
-                None,
-                None,
-                None,
+                {"positions": np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.float32)},
                 {"positions"},
             ),
             # Positions + sources
             (
-                np.random.randn(2, 32, 32).astype(np.float32),
-                None,
-                None,
+                {
+                    "positions": np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.float32),
+                    "sources": np.random.randn(2, 32, 32).astype(np.float32),
+                },
                 {"positions", "sources"},
             ),
             # Positions + masks
             (
-                None,
-                np.ones((2, 32, 32), dtype=np.float32),
-                None,
+                {
+                    "positions": np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.float32),
+                    "masks": np.ones((2, 32, 32), dtype=np.float32),
+                },
                 {"positions", "masks"},
-            ),
-            # Positions + seds
-            (
-                None,
-                None,
-                np.random.randn(2, 3, 2).astype(np.float32),
-                {"positions", "seds"},
             ),
             # All fields
             (
-                np.random.randn(2, 32, 32).astype(np.float32),
-                np.ones((2, 32, 32), dtype=np.float32),
-                np.random.randn(2, 3, 2).astype(np.float32),
-                {"positions", "sources", "masks", "seds"},
+                {
+                    "positions": np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.float32),
+                    "sources": np.random.randn(2, 32, 32).astype(np.float32),
+                    "masks": np.ones((2, 32, 32), dtype=np.float32),
+                },
+                {"positions", "sources", "masks"},
             ),
         ],
         ids=[
             "positions_only",
             "positions_and_sources",
             "positions_and_masks",
-            "positions_and_seds",
             "all_fields",
         ],
     )
     def test_output_keys(
         self,
         converter,
-        positions,
-        sources,
-        masks,
-        seds,
+        dataset,
         expected_keys,
-        mock_process_seds,
     ):
         """Test result contains exactly the expected keys for each input combination."""
-        result = converter.convert_inference_data(
-            positions=positions,
-            sources=sources,
-            masks=masks,
-            seds=seds,
-        )
+        result = converter.convert_inference_data(dataset)
 
         assert set(result.keys()) == expected_keys
 
@@ -394,9 +337,7 @@ class TestConvertInferenceData:
         ],
         ids=["positions", "sources", "masks"],
     )
-    def test_tensor_shapes_and_dtype(
-        self, converter, field, array, expected_shape, mock_process_seds
-    ):
+    def test_tensor_shapes_and_dtype(self, converter, field, array, expected_shape):
         """Test each field produces correct tensor shape and float32 dtype."""
         positions = (
             array
@@ -408,50 +349,15 @@ class TestConvertInferenceData:
             **({field: array} if field != "positions" else {}),
         }
 
-        result = converter.convert_inference_data(**kwargs)
+        result = converter.convert_inference_data(kwargs)
 
         assert_tensor(
             result[field], expected_shape=expected_shape, expected_dtype=tf.float32
         )
 
-    @pytest.mark.parametrize(
-        "field, value",
-        [
-            ("sources", None),
-            ("masks", None),
-            ("seds", None),
-        ],
-        ids=["sources_none", "masks_none", "seds_none"],
-    )
-    def test_optional_fields_absent_when_none(
-        self, converter, positions, field, value, mock_process_seds
-    ):
-        """Test optional fields are excluded from result when None."""
-        result = converter.convert_inference_data(positions=positions, **{field: value})
-
-        assert field not in result
-
-    @pytest.mark.parametrize(
-        "provide_seds, expected_call_count",
-        [
-            (True, 1),
-            (False, 0),
-        ],
-        ids=["seds_provided", "no_seds"],
-    )
-    def test_process_seds_call_count(
-        self, converter, positions, provide_seds, expected_call_count, mock_process_seds
-    ):
-        """Test process_seds is called only when SEDs are provided."""
-        seds = np.random.randn(2, 3, 2).astype(np.float32) if provide_seds else None
-
-        converter.convert_inference_data(positions=positions, seds=seds)
-
-        assert mock_process_seds.call_count == expected_call_count
-
     def test_positions_values_preserved(self, converter, positions):
         """Test position values are numerically preserved after conversion."""
-        result = converter.convert_inference_data(positions=positions)
+        result = converter.convert_inference_data({"positions": positions})
 
         np.testing.assert_array_almost_equal(result["positions"].numpy(), positions)
 
