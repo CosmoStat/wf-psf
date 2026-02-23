@@ -153,9 +153,7 @@ class DataHandlerFactory:
         data_params,
         simPSF,
         n_bins_lambda,
-        positions,
-        sources=None,
-        masks=None,
+        dataset: Optional[Union[dict, list]] = None,
         seds=None,
     ):
         """
@@ -171,12 +169,8 @@ class DataHandlerFactory:
             Simulator used to encode SEDs into TensorFlow format
         n_bins_lambda : int
             Number of wavelength bins for discretization
-        positions : array-like
-            Array of source positions for inference
-        sources : array-like, optional
-            Array of source data (e.g., postage stamps) for inference
-        masks : array-like, optional
-            Array of masks for inference
+        dataset : dict or list, optional
+            Pre-loaded dataset for inference. If None, an empty dataset will be used.
         seds : array-like, optional
             Array of SEDs for inference
 
@@ -186,7 +180,8 @@ class DataHandlerFactory:
             Object containing the converted dataset and processed SED data for inference
         """
         converter = TensorFlowDatasetConverter(simPSF, n_bins_lambda)
-        dataset = converter.convert_inference_data(positions, sources, masks, seds)
+        seds = converter.process_seds(seds) if seds is not None else None
+        dataset = converter.convert_inference_data(dataset)
 
         # Create wrapper object that looks like old DataHandler
         wrapper = type(
@@ -194,7 +189,7 @@ class DataHandlerFactory:
             (),
             {
                 "dataset": dataset,
-                "sed_data": dataset.get("seds"),
+                "sed_data": seds,
                 "dataset_type": "inference",
                 "data_params": data_params,
                 "simPSF": simPSF,
