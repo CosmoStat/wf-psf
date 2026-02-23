@@ -3,7 +3,6 @@ import numpy as np
 from pathlib import Path
 import tensorflow as tf
 from wf_psf.data.simulation_data_loader import SimulationDataLoader
-from wf_psf.utils.read_config import RecursiveNamespace
 
 
 @pytest.fixture
