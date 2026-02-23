@@ -126,19 +126,23 @@ class TensorFlowDatasetConverter:
             TensorFlow-converted dataset
         """
         # Positions
-        dataset_dict["positions"] = ensure_tensor(dataset_dict["positions"], dtype=tf.float32) 
+        dataset_dict["positions"] = ensure_tensor(
+            dataset_dict["positions"], dtype=tf.float32
+        )
 
         # Stars
         dataset_dict[source_field] = ensure_tensor(
-                dataset_dict[source_field], dtype=tf.float32
-            )
+            dataset_dict[source_field], dtype=tf.float32
+        )
 
         # Add masks if present
         if "masks" in dataset_dict:
-            dataset_dict["masks"] = ensure_tensor(dataset_dict["masks"], dtype=tf.float32)
+            dataset_dict["masks"] = ensure_tensor(
+                dataset_dict["masks"], dtype=tf.float32
+            )
 
         return dataset_dict
-    
+
     def convert_inference_data(self, dataset):
         """
         Convert inference data to TensorFlow format.
@@ -146,8 +150,8 @@ class TensorFlowDatasetConverter:
         Parameters
         ----------
         dataset_dict : dict
-            Dict with 'positions', and optionally 'SEDs', 'noisy_stars', etc.
-        
+            Dict with 'positions', 'sources', and optionally 'masks'.
+
         Returns
         -------
         dict
