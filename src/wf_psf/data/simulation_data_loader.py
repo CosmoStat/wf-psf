@@ -57,7 +57,7 @@ class SimulationDataLoader:
         self.n_bins_lambda = n_bins_lambda
 
         # Require target_field in params
-        if not hasattr(data_params, 'target_field'):
+        if not hasattr(data_params, "target_field"):
             raise ValueError(
                 "data_params must specify 'target_field'. "
                 "This should be set by DataConfigHandler or in the config file."
@@ -98,7 +98,6 @@ class SimulationDataLoader:
     def _convert_to_tensorflow(self):
         """Convert dataset to TensorFlow tensors."""
         self.dataset = self.converter.convert_psf_dict(self.dataset, self.target_field)
-
 
     def _process_seds(self):
         """Process SEDs from loaded dataset."""
