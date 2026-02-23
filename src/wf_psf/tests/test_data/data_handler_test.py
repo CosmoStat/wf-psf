@@ -38,7 +38,11 @@ class TestDataHandlerBackwardCompatibility:
         np.save(temp_data_dir, mock_np_dataset)
 
         # Initialize DataHandler instance
-        data_params = RecursiveNamespace(data_dir=str(data_dir), file="train_data.npy", target_field="noisy_stars",)
+        data_params = RecursiveNamespace(
+            data_dir=str(data_dir),
+            file="train_data.npy",
+            target_field="noisy_stars",
+        )
 
         n_bins_lambda = 10
         data_handler = DataHandler(
@@ -56,16 +60,16 @@ class TestDataHandlerBackwardCompatibility:
             data_handler.dataset["noisy_stars"], mock_np_dataset["noisy_stars"]
         )
 
-        assert isinstance(data_handler.dataset["SEDs"], tf.Tensor)
-        assert data_handler.dataset["SEDs"].dtype == tf.float32
-        assert data_handler.dataset["SEDs"].shape == (
+        assert isinstance(data_handler.sed_data, tf.Tensor)
+        assert data_handler.sed_data.dtype == tf.float32
+        assert data_handler.sed_data.shape == (
             2,
             10,
             3,
         )  # (N_sources, n_bins_lambda, 3 components)
 
         # Test each component has physically meaningful values
-        processed = data_handler.dataset["SEDs"]
+        processed = data_handler.sed_data
         feasible_N = processed[:, :, 0]  # Integer N values
         feasible_wv = processed[:, :, 1]  # Wavelengths in [um]
         SED_norm = processed[:, :, 2]  # Normalized SED values
@@ -98,7 +102,11 @@ class TestDataHandlerBackwardCompatibility:
         np.save(temp_data_dir, mock_np_dataset)
 
         # Initialize DataHandler instance
-        data_params = RecursiveNamespace(data_dir=str(data_dir), file="test_data.npy", target_field="stars",)
+        data_params = RecursiveNamespace(
+            data_dir=str(data_dir),
+            file="test_data.npy",
+            target_field="stars",
+        )
 
         n_bins_lambda = 10
         data_handler = DataHandler(
@@ -118,16 +126,16 @@ class TestDataHandlerBackwardCompatibility:
         )
         assert_tensors_equal(data_handler.dataset["stars"], mock_np_dataset["stars"])
 
-        assert isinstance(data_handler.dataset["SEDs"], tf.Tensor)
-        assert data_handler.dataset["SEDs"].dtype == tf.float32
-        assert data_handler.dataset["SEDs"].shape == (
+        assert isinstance(data_handler.sed_data, tf.Tensor)
+        assert data_handler.sed_data.dtype == tf.float32
+        assert data_handler.sed_data.shape == (
             2,
             10,
             3,
         )  # (N_sources, n_bins_lambda, 3 components)
 
         # Test each component has physically meaningful values
-        processed = data_handler.dataset["SEDs"]
+        processed = data_handler.sed_data
         feasible_N = processed[:, :, 0]  # Integer N values
         feasible_wv = processed[:, :, 1]  # Wavelengths in [um]
         SED_norm = processed[:, :, 2]  # Normalized SED values
@@ -150,7 +158,6 @@ class TestDataHandlerBackwardCompatibility:
             err_msg="SED_norm should sum to 1.0 per source",
         )
 
-
     def test_validate_train_dataset_missing_noisy_stars_raises(self, tmp_path, simPSF):
         """Test that validation raises an error if 'noisy_stars' is missing in training data."""
         data_dir = tmp_path / "data"
@@ -164,7 +171,11 @@ class TestDataHandlerBackwardCompatibility:
 
         np.save(temp_data_file, mock_dataset)
 
-        data_params = RecursiveNamespace(data_dir=str(data_dir), file="train_data.npy", target_field="noisy_stars",)
+        data_params = RecursiveNamespace(
+            data_dir=str(data_dir),
+            file="train_data.npy",
+            target_field="noisy_stars",
+        )
 
         n_bins_lambda = 10
         data_handler = DataHandler(
@@ -172,11 +183,11 @@ class TestDataHandlerBackwardCompatibility:
         )
 
         with pytest.raises(
-            ValueError, match="Missing required field 'noisy_stars' in training dataset."
+            ValueError,
+            match="Missing required field 'noisy_stars' in training dataset.",
         ):
             data_handler.load_dataset()
             data_handler.validate_and_process_dataset()
-
 
     def test_load_test_dataset_missing_stars(self, tmp_path, simPSF):
         """Test that a warning is raised if 'stars' is missing in test data."""
@@ -191,7 +202,9 @@ class TestDataHandlerBackwardCompatibility:
 
         np.save(temp_data_file, mock_dataset)
 
-        data_params = RecursiveNamespace(data_dir=str(data_dir), file="test_data.npy", target_field="stars")
+        data_params = RecursiveNamespace(
+            data_dir=str(data_dir), file="test_data.npy", target_field="stars"
+        )
 
         n_bins_lambda = 10
         data_handler = DataHandler(
