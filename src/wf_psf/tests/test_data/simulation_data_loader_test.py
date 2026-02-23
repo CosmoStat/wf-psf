@@ -23,6 +23,7 @@ def training_dataset(mock_np_dataset):
         "positions": mock_np_dataset["positions"],
         "noisy_stars": mock_np_dataset["noisy_stars"],
         "SEDs": mock_np_dataset["SEDs"],
+        "target_field": "noisy_stars",
     }
 
 
@@ -35,6 +36,7 @@ def test_dataset(mock_np_dataset):
         "positions": mock_np_dataset["positions"],
         "stars": mock_np_dataset["stars"],
         "SEDs": mock_np_dataset["SEDs"],
+        "target_field": "stars",
     }
 
 
@@ -55,18 +57,18 @@ def mock_process_seds(mocker):
 
 
 @pytest.fixture
-def mock_convert_dict(mocker):
-    """Mock convert_dict on TensorFlowDatasetConverter."""
+def mock_convert_psf_dict(mocker):
+    """Mock convert_psf_dict on TensorFlowDatasetConverter."""
 
-    def _mock_convert_dict(dataset, dataset_type):
+    def _mock_convert_psf_dict(dataset, source_field):
         return {
             k: tf.constant(v) if isinstance(v, np.ndarray) else v
             for k, v in dataset.items()
         }
 
     return mocker.patch(
-        "wf_psf.data.simulation_data_loader.TensorFlowDatasetConverter.convert_dict",
-        side_effect=_mock_convert_dict,
+        "wf_psf.data.simulation_data_loader.TensorFlowDatasetConverter.convert_psf_dict",
+        side_effect=_mock_convert_psf_dict,
     )
 
 
@@ -95,21 +97,20 @@ def make_loader(dataset_type, data_params, simPSF, n_bins_lambda=8):
 # TestSimulationDataLoaderInit
 # ============================================================================
 
+
 class TestSimulationDataLoaderInit:
     """Tests for SimulationDataLoader initialisation."""
 
     @pytest.mark.parametrize(
-        "dataset_type", 
-        ["training", "test"], 
-        ids=["training", "test"]
+        "dataset_type", ["training", "test"], ids=["training", "test"]
     )
     def test_attributes_set_on_init(self, dataset_type, data_params, simPSF):
         """Test all attributes are set correctly on initialisation."""
-        
+
         config = getattr(data_params, dataset_type)
 
         loader = make_loader(dataset_type, config, simPSF)
-        
+
         assert loader.data_params == config
         assert loader.n_bins_lambda == 8
         assert loader.dataset is None
@@ -149,7 +150,7 @@ class TestSimulationDataLoaderLoad:
         data_params,
         simPSF,
         mock_process_seds,
-        mock_convert_dict,
+        mock_convert_psf_dict,
     ):
         """Test load() returns dataset and sed_data for both dataset types."""
         dataset = request.getfixturevalue(dataset_fixture)
@@ -180,7 +181,7 @@ class TestSimulationDataLoaderLoad:
         data_params,
         simPSF,
         mock_process_seds,
-        mock_convert_dict,
+        mock_convert_psf_dict,
     ):
         """Test load() sets dataset and sed_data instance attributes."""
         dataset = request.getfixturevalue(dataset_fixture)
@@ -210,7 +211,6 @@ class TestSimulationDataLoaderLoad:
         data_params,
         simPSF,
         mock_process_seds,
-        mock_convert_dict,
     ):
         """Test load() calls process_seds exactly once."""
         dataset = request.getfixturevalue(dataset_fixture)
@@ -224,25 +224,25 @@ class TestSimulationDataLoaderLoad:
         mock_process_seds.assert_called_once()
 
     @pytest.mark.parametrize(
-        "dataset_type, dataset_fixture",
+        "dataset_type, dataset_fixture, source_field",
         [
-            ("training", "training_dataset"),
-            ("test", "test_dataset"),
+            ("training", "training_dataset", "noisy_stars"),
+            ("test", "test_dataset", "stars"),
         ],
         ids=["training", "test"],
     )
-    def test_load_calls_convert_dict_with_correct_type(
+    def test_load_calls_convert_psf_dict_with_correct_type(
         self,
         request,
         dataset_type,
         dataset_fixture,
+        source_field,
         data_dir,
         data_params,
         simPSF,
-        mock_process_seds,
-        mock_convert_dict,
+        mock_convert_psf_dict,
     ):
-        """Test load() calls convert_dict with correct dataset_type."""
+        """Test load() calls convert_psf_dict with correct dataset_type."""
         dataset = request.getfixturevalue(dataset_fixture)
         save_dataset(data_dir, dataset)
 
@@ -250,11 +250,11 @@ class TestSimulationDataLoaderLoad:
         loader = make_loader(dataset_type, config, simPSF)
         loader.load()
 
-        mock_convert_dict.assert_called_once()
-        actual_dataset_type = mock_convert_dict.call_args[0][
+        mock_convert_psf_dict.assert_called_once()
+        actual_source = mock_convert_psf_dict.call_args[0][
             1
-        ]  # dataset_type is second positional argument
-        assert actual_dataset_type == dataset_type
+        ]  # source_field is second positional argument
+        assert actual_source == source_field
 
 
 # ============================================================================
@@ -307,11 +307,9 @@ class TestSimulationDataLoaderValidation:
         data_dir,
         data_params,
         simPSF,
-        mock_process_seds,
-        mock_convert_dict,
     ):
         """Test ValueError raised for each missing required field."""
-    
+
         config = getattr(data_params, dataset_type)
 
         config.data_dir = str(data_dir)
@@ -319,16 +317,13 @@ class TestSimulationDataLoaderValidation:
 
         save_path = Path(data_dir) / "test.npy"
         np.save(save_path, dataset)
-        
+
         loader = make_loader(dataset_type, config, simPSF)
 
         with pytest.raises(ValueError, match=missing_field):
             loader.load()
 
-
-    def test_missing_seds_raises_value_error(
-        self, data_dir, data_params, simPSF, mock_process_seds, mock_convert_dict
-    ):
+    def test_missing_seds_raises_value_error(self, data_dir, data_params, simPSF):
         """Test ValueError raised when SEDs are missing."""
 
         dataset_type = "training"
@@ -352,7 +347,7 @@ class TestSimulationDataLoaderValidation:
 
     def test_file_not_found_raises_error(self, data_params, simPSF):
         """Test error raised when .npy file does not exist."""
-        dataset_type = "training"   
+        dataset_type = "training"
         config = getattr(data_params, dataset_type)
         config.file = "no_exist.npy"
 
