@@ -10,9 +10,9 @@ to manage the parameters of the psf semi-parametric model.
 import numpy as np
 import tensorflow as tf
 from wf_psf.psf_models import psf_models as psfm
-from wf_psf.psf_models import tf_layers as tfl
+from wf_psf.psf_models.tf_modules import tf_layers as tfl
 from wf_psf.utils.utils import decompose_tf_obscured_opd_basis
-from wf_psf.psf_models.tf_layers import (
+from wf_psf.psf_models.tf_modules.tf_layers import (
     TFBatchPolychromaticPSF,
     TFBatchMonochromaticPSF,
 )
@@ -421,7 +421,7 @@ class TFSemiParametricField(tf.keras.Model):
         s_new = self.tf_np_poly_opd.S_mat - s_mat_projected
         self.assign_S_mat(s_new)
 
-    def call(self, inputs):
+    def call(self, inputs, **kwargs):
         """Define the PSF field forward model.
 
         [1] From positions to Zernike coefficients

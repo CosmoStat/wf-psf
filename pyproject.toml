@@ -11,10 +11,9 @@ maintainers = [
 
 description = 'A software framework to perform Differentiable wavefront-based PSF modelling.'
 dependencies = [
-    "numpy>=1.26.4,<2.0",
+    "numpy>=1.18,<1.24",
     "scipy",
     "tensorflow==2.11.0",
-    "tensorflow-addons",
     "tensorflow-estimator",
     "zernike",
     "opencv-python",
@@ -25,11 +24,11 @@ dependencies = [
     "seaborn",
 ]
 
-version = "3.0.0"
+version = "3.1.0"
 
 [project.optional-dependencies]
 docs = [
-    "importlib_metadata",    
+    "importlib_metadata",
     "myst-parser",
     "numpydoc",
     "sphinx",
@@ -41,8 +40,14 @@ docs = [
     "scriv",
 ]
 
+addons = [
+    "tensorflow-addons",
+]
+
 lint = [
     "ruff",
+    "black",
+    "pre-commit",
 ]
 
 release = [
@@ -83,8 +88,15 @@ quote-style = "double"
 indent-style = "space"
 line-ending = "lf"
 
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["wf_psf*"]
+
 [tool.setuptools.package-data]
-"wf_psf.config" = ["*.conf"]
+"wf_psf.config" = ["*.conf", "*.yaml"]
 
 # Set per-file-ignores
 [tool.ruff.lint.per-file-ignores]

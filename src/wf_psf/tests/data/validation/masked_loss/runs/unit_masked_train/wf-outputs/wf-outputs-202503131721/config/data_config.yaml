@@ -11,7 +11,7 @@ data:
     SEDS: null
     zernike_coef: null
     C_poly: null
-    params: # 
+    params: #
       d_max: 2
       max_order: 45
       x_lims: [0, 1000.0]

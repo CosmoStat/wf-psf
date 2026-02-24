@@ -12,7 +12,7 @@ import numpy as np
 import tensorflow as tf
 import galsim as gs
 import wf_psf.utils.utils as utils
-from wf_psf.psf_models.psf_models import build_PSF_model
+from wf_psf.psf_models.psf_models import compile_PSF_model
 from wf_psf.sims import psf_simulator as psf_simulator
 import logging
 
@@ -152,8 +152,7 @@ def compute_poly_metric(
 
     # Print RMSE values
     logger.info("Absolute RMSE:\t %.4e \t +/- %.4e", rmse, std_rmse)
-    logger.info("Relative RMSE:\t %.4e % \t +/- %.4e %", rel_rmse, std_rel_rmse)
-
+    logger.info(f"Relative RMSE:\t {rel_rmse:.4e}% \t +/- {std_rel_rmse:.4e}%")
     return rmse, rel_rmse, std_rmse, std_rel_rmse
 
 
@@ -364,9 +363,8 @@ def compute_opd_metrics(tf_semiparam_field, gt_tf_semiparam_field, pos, batch_si
     rel_rmse_std = np.std(rel_rmse_vals)
 
     # Print RMSE values
-    logger.info("Absolute RMSE:\t %.4e % \t +/- %.4e %", rmse, rmse_std)
-    logger.info("Relative RMSE:\t %.4e % \t +/- %.4e %", rel_rmse, rel_rmse_std)
-
+    logger.info("Absolute RMSE:\t %.4e \t +/- %.4e" % (rmse, rmse_std))    
+    logger.info(f"Relative RMSE:\t {rel_rmse:.4e}% \t +/- {rel_rmse_std:.4e}%")
     return rmse, rel_rmse, rmse_std, rel_rmse_std
 
 
@@ -381,8 +379,9 @@ def compute_shape_metrics(
     output_Q=1,
     output_dim=64,
     batch_size=16,
-    opt_stars_rel_pix_rmse=False,
+    optimizer_settings=None,
     dataset_dict=None,
+    opt_stars_rel_pix_rmse=False,
 ):
     """Compute the pixel, shape and size RMSE of a PSF model.
 
@@ -418,15 +417,18 @@ def compute_shape_metrics(
         Output dimension of the square PSF stamps.
     batch_size: int
         Batch size to process the PSF estimations.
-    opt_stars_rel_pix_rmse: bool
-        If `True`, the relative pixel RMSE of each star is added to ther saving dictionary.
-        The summary statistics are always computed.
-        Default is `False`.
+    optimizer_settings: RecursiveNamespace, dict, str, optional
+        Optimizer configuration (from YAML or programmatically), or string name.
     dataset_dict: dict
         Dictionary containing the dataset information. If provided, and if the `'super_res_stars'`
         key is present, the noiseless super resolved stars from the dataset are used to compute
         the metrics. Otherwise, the stars are generated from the gt model.
         Default is `None`.
+    opt_stars_rel_pix_rmse: bool
+        If `True`, the relative pixel RMSE of each star is added to ther saving dictionary.
+        The summary statistics are always computed.
+        Default is `False`.
+
 
     Returns
     -------
@@ -444,9 +446,13 @@ def compute_shape_metrics(
     tf_semiparam_field.set_output_Q(output_Q=output_Q, output_dim=output_dim)
     gt_tf_semiparam_field.set_output_Q(output_Q=output_Q, output_dim=output_dim)
 
-    # Need to compile the models again
-    tf_semiparam_field = build_PSF_model(tf_semiparam_field)
-    gt_tf_semiparam_field = build_PSF_model(gt_tf_semiparam_field)
+    # Re-compile PSF model
+    tf_semiparam_field = compile_PSF_model(
+        tf_semiparam_field, optimizer=optimizer_settings
+    )
+    gt_tf_semiparam_field = compile_PSF_model(
+        gt_tf_semiparam_field, optimizer=optimizer_settings
+    )
 
     # Generate SED data list
     packed_SED_data = [
@@ -588,10 +594,10 @@ def compute_shape_metrics(
 
     # Print relative shape/size errors
     logger.info(
-        f"\nRelative sigma(e1) RMSE =\t {rel_rmse_e1:.4e} % \t +/- {std_rel_rmse_e1:.4e} %"
+        f"\nRelative sigma(e1) RMSE =\t {rel_rmse_e1:.4e}% \t +/- {std_rel_rmse_e1:.4e}%"
     )
     logger.info(
-        f"Relative sigma(e2) RMSE =\t {rel_rmse_e2:.4e} % \t +/- {std_rel_rmse_e2:.4e} %"
+        f"Relative sigma(e2) RMSE =\t {rel_rmse_e2:.4e}% \t +/- {std_rel_rmse_e2:.4e}%"
     )
 
     # Print number of stars
@@ -608,9 +614,9 @@ def compute_shape_metrics(
         output_Q=gt_original_out_Q, output_dim=gt_original_out_dim
     )
 
-    # Need to compile the models again
-    tf_semiparam_field = build_PSF_model(tf_semiparam_field)
-    gt_tf_semiparam_field = build_PSF_model(gt_tf_semiparam_field)
+    # Re-compile PSF models
+    tf_semiparam_field = compile_PSF_model(tf_semiparam_field)
+    gt_tf_semiparam_field = compile_PSF_model(gt_tf_semiparam_field)
 
     # Moment results
     result_dict = {

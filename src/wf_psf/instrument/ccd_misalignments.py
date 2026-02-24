@@ -10,7 +10,47 @@ from typing import Union
 import numpy as np
 import matplotlib.path as mpltPath
 from scipy.spatial import KDTree
-from wf_psf.utils.preprocessing import defocus_to_zk4_wavediff
+
+
+def compute_ccd_misalignment(model_params, positions: np.ndarray) -> np.ndarray:
+    """Compute CCD misalignment.
+
+    Parameters
+    ----------
+    model_params : RecursiveNamespace
+        Object containing parameters for this PSF model class.
+    positions : np.ndarray
+        Numpy array containing the positions of the stars in the focal plane.
+        Shape: (n_stars, 2), where n_stars is the number of stars and 2 corresponds to x and y coordinates.
+
+    Returns
+    -------
+    zernike_ccd_misalignment_array : np.ndarray
+        Numpy array containing the Zernike contributions to model the CCD chip misalignments.
+    """
+    obs_positions = positions
+
+    ccd_misalignment_calculator = CCDMisalignmentCalculator(
+        tiles_path=model_params.ccd_misalignments_input_path,
+        x_lims=model_params.x_lims,
+        y_lims=model_params.y_lims,
+        tel_focal_length=model_params.tel_focal_length,
+        tel_diameter=model_params.tel_diameter,
+    )
+    # Compute required zernike 4 for each position
+    zk4_values = np.array(
+        [
+            ccd_misalignment_calculator.get_zk4_from_position(single_pos)
+            for single_pos in obs_positions
+        ]
+    ).reshape(-1, 1)
+
+    # Zero pad array to get shape (n_stars, n_zernike=4)
+    zernike_ccd_misalignment_array = np.pad(
+        zk4_values, pad_width=[(0, 0), (3, 0)], mode="constant", constant_values=0
+    )
+
+    return zernike_ccd_misalignment_array
 
 
 class CCDMisalignmentCalculator:
@@ -121,11 +161,7 @@ class CCDMisalignmentCalculator:
         self.tiles_z_average = np.mean(self.tiles_z_lims)
 
     def _initialize_polygons(self):
-        """Initialize polygons to look for CCD IDs.
-
-        Each CCD is represented by a polygon defined by its corner points.
-
-        """
+        """Initialize polygons to look for CCD IDs"""
         # Build polygon list corresponding to each CCD
         self.ccd_polygons = []
 
@@ -346,6 +382,8 @@ class CCDMisalignmentCalculator:
             Zernike 4 value in wavediff convention corresponding to
             the delta z of the given input position `pos`.
         """
+        from wf_psf.data.data_zernike_utils import defocus_to_zk4_wavediff
+
         dz = self.get_dz_from_position(pos)
 
         return defocus_to_zk4_wavediff(dz, self.tel_focal_length, self.tel_diameter)

@@ -11,6 +11,7 @@ import numpy as np
 import tensorflow as tf
 from wf_psf.sims.psf_simulator import PSFSimulator
 from wf_psf.utils.utils import zernike_generator
+from wf_psf.utils.optimizer import is_optimizer_instance, get_optimizer
 import glob
 import logging
 
@@ -151,20 +152,37 @@ def get_psf_model(*psf_model_params):
     return psf_factory_class().get_model_instance(*psf_model_params)
 
 
-def build_PSF_model(model_inst, optimizer=None, loss=None, metrics=None):
-    """Define the model-compilation parameters.
+def compile_PSF_model(model_inst, optimizer=None, loss=None, metrics=None):
+    """Compile PSF Model.
 
-    Specially the loss function, the optimizer and the metrics.
+    A function to compile a PSF model instance.
+
+    Parameters
+    ----------
+    model_inst: PSF model instance
+        An instance of the PSF model to be compiled.
+    optimizer: str, dict, or Keras optimizer instance, optional
+        The optimizer to use for compiling the model. It can be a string representing the optimizer name, a dictionary containing optimizer configuration, or an instance of a Keras optimizer. Defaults to None, which will use the default optimizer.
+    loss: str or Keras loss instance, optional
+        The loss function to use for compiling the model. It can be a string representing the loss function name or an instance of a Keras loss. Defaults to None, which will use the default loss function.
+    metrics: list of str or Keras metric instances, optional
+        A list of metrics to evaluate during training. Each metric can be a string representing the metric name or an instance of a Keras metric. Defaults to None, which will use the default metrics
+            (Mean Squared Error in this case).
+
+    Returns
+    -------
+    PSF model instance
+        The compiled PSF model instance ready for training.
     """
     # Define model loss function
     if loss is None:
         loss = tf.keras.losses.MeanSquaredError()
 
-    # Define optimizer function
-    if optimizer is None:
-        optimizer = tf.keras.optimizers.legacy.Adam(
-            learning_rate=1e-2, beta_1=0.9, beta_2=0.999, epsilon=1e-07, amsgrad=False
-        )
+    # Handle optimizer: either config object or a Keras optimizer instance
+    if is_optimizer_instance(optimizer):
+        pass
+    else:
+        optimizer = get_optimizer(optimizer_config=optimizer)
 
     # Define metric functions
     if metrics is None:
@@ -186,24 +204,24 @@ def build_PSF_model(model_inst, optimizer=None, loss=None, metrics=None):
 def get_psf_model_weights_filepath(weights_filepath):
     """Get PSF model weights filepath.
 
-    A function to return the basename of the user-specified psf model weights path.
+    A function to return the basename of the user-specified PSF model weights path.
 
     Parameters
     ----------
     weights_filepath: str
-        Basename of the psf model weights to be loaded.
+        Basename of the PSF model weights to be loaded.
 
     Returns
     -------
     str
-        The absolute path concatenated to the basename of the psf model weights to be loaded.
+        The absolute path concatenated to the basename of the PSF model weights to be loaded.
 
     """
     try:
         return glob.glob(weights_filepath)[0].split(".")[0]
     except IndexError:
         logger.exception(
-            "PSF weights file not found. Check that you've specified the correct weights file in the metrics config file."
+            "PSF weights file not found. Check that you've specified the correct weights file in the your config file."
         )
         raise PSFModelError("PSF model weights error.")
 

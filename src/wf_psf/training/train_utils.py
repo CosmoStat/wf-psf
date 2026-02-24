@@ -12,7 +12,7 @@ Authors: Tobias Liaudat <tobias.liaudat@cea.fr>, Ezequiel Centofanti <ezequiel.c
 import numpy as np
 import tensorflow as tf
 from typing import Optional, Callable, Union
-from wf_psf.psf_models.psf_models import build_PSF_model
+from wf_psf.psf_models.psf_models import compile_PSF_model
 from wf_psf.utils.utils import NoiseEstimator, generalised_sigmoid
 import logging
 
@@ -511,8 +511,8 @@ def train_cycle_part(
     -----
     This function trains the model based on the provided `cycle_part`. If `cycle_part` is set to
     "parametric", the function assumes the model is being trained in a parametric setting, while
-    "non-parametric" indicates the training of a non-parametric part. The model is built using the
-    `build_PSF_model` function before fitting.
+    "non-parametric" indicates the training of a non-parametric part. The model is compile using the
+    `compile_PSF_model` function before fitting.
 
     Examples
     --------
@@ -533,7 +533,7 @@ def train_cycle_part(
     """
     logger.info(f"Starting {cycle_part} update..")
 
-    psf_model = build_PSF_model(
+    psf_model = compile_PSF_model(
         psf_model, optimizer=optimizer, loss=loss, metrics=metrics
     )
 
