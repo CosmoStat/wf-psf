@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wf_psf.psf_models.psf_models &mdash; wf-psf 3.0.0 documentation</title>
+  <title>wf_psf.psf_models.psf_models &mdash; wf-psf 3.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9570fddd" />
       <link rel="stylesheet" type="text/css" href="../../../_static/twemoji.css" />
@@ -110,6 +110,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.sims.psf_simulator</span><span class="w"> </span><span class="kn">import</span> <span class="n">PSFSimulator</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.utils.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">zernike_generator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.utils.optimizer</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_optimizer_instance</span><span class="p">,</span> <span class="n">get_optimizer</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
@@ -268,22 +269,39 @@
 
 
 
-<div class="viewcode-block" id="build_PSF_model">
-<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.build_PSF_model">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">build_PSF_model</span><span class="p">(</span><span class="n">model_inst</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Define the model-compilation parameters.</span>
+<div class="viewcode-block" id="compile_PSF_model">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.compile_PSF_model">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">compile_PSF_model</span><span class="p">(</span><span class="n">model_inst</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compile PSF Model.</span>
 
-<span class="sd">    Specially the loss function, the optimizer and the metrics.</span>
+<span class="sd">    A function to compile a PSF model instance.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model_inst: PSF model instance</span>
+<span class="sd">        An instance of the PSF model to be compiled.</span>
+<span class="sd">    optimizer: str, dict, or Keras optimizer instance, optional</span>
+<span class="sd">        The optimizer to use for compiling the model. It can be a string representing the optimizer name, a dictionary containing optimizer configuration, or an instance of a Keras optimizer. Defaults to None, which will use the default optimizer.</span>
+<span class="sd">    loss: str or Keras loss instance, optional</span>
+<span class="sd">        The loss function to use for compiling the model. It can be a string representing the loss function name or an instance of a Keras loss. Defaults to None, which will use the default loss function.</span>
+<span class="sd">    metrics: list of str or Keras metric instances, optional</span>
+<span class="sd">        A list of metrics to evaluate during training. Each metric can be a string representing the metric name or an instance of a Keras metric. Defaults to None, which will use the default metrics</span>
+<span class="sd">            (Mean Squared Error in this case).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    PSF model instance</span>
+<span class="sd">        The compiled PSF model instance ready for training.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Define model loss function</span>
     <span class="k">if</span> <span class="n">loss</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">MeanSquaredError</span><span class="p">()</span>
 
-    <span class="c1"># Define optimizer function</span>
-    <span class="k">if</span> <span class="n">optimizer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">legacy</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span>
-            <span class="n">learning_rate</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span> <span class="n">beta_1</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">beta_2</span><span class="o">=</span><span class="mf">0.999</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-07</span><span class="p">,</span> <span class="n">amsgrad</span><span class="o">=</span><span class="kc">False</span>
-        <span class="p">)</span>
+    <span class="c1"># Handle optimizer: either config object or a Keras optimizer instance</span>
+    <span class="k">if</span> <span class="n">is_optimizer_instance</span><span class="p">(</span><span class="n">optimizer</span><span class="p">):</span>
+        <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="n">get_optimizer</span><span class="p">(</span><span class="n">optimizer_config</span><span class="o">=</span><span class="n">optimizer</span><span class="p">)</span>
 
     <span class="c1"># Define metric functions</span>
     <span class="k">if</span> <span class="n">metrics</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -308,24 +326,24 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">get_psf_model_weights_filepath</span><span class="p">(</span><span class="n">weights_filepath</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get PSF model weights filepath.</span>
 
-<span class="sd">    A function to return the basename of the user-specified psf model weights path.</span>
+<span class="sd">    A function to return the basename of the user-specified PSF model weights path.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    weights_filepath: str</span>
-<span class="sd">        Basename of the psf model weights to be loaded.</span>
+<span class="sd">        Basename of the PSF model weights to be loaded.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    str</span>
-<span class="sd">        The absolute path concatenated to the basename of the psf model weights to be loaded.</span>
+<span class="sd">        The absolute path concatenated to the basename of the PSF model weights to be loaded.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">weights_filepath</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span>
-            <span class="s2">&quot;PSF weights file not found. Check that you&#39;ve specified the correct weights file in the metrics config file.&quot;</span>
+            <span class="s2">&quot;PSF weights file not found. Check that you&#39;ve specified the correct weights file in the your config file.&quot;</span>
         <span class="p">)</span>
         <span class="k">raise</span> <span class="n">PSFModelError</span><span class="p">(</span><span class="s2">&quot;PSF model weights error.&quot;</span><span class="p">)</span></div>
 

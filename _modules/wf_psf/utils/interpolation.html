@@ -1,0 +1,464 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.utils.interpolation &mdash; wf-psf 3.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../../../_static/twemoji.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../../../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">wf_psf.utils.interpolation</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for wf_psf.utils.interpolation</h1><div class="highlight"><pre>
+<span></span><span class="c1"># ============================================================================</span>
+<span class="c1"># Copyright 2019 The TensorFlow Authors. All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Modified by CosmoStat Laboratory, 2025.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1"># ==============================================================================</span>
+<span class="sd">&quot;&quot;&quot;Polyharmonic spline interpolation.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.utils.types</span><span class="w"> </span><span class="kn">import</span> <span class="n">FloatTensorLike</span><span class="p">,</span> <span class="n">TensorLike</span>
+
+<span class="n">EPSILON</span> <span class="o">=</span> <span class="mf">0.0000000001</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_cross_squared_distance_matrix</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">TensorLike</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">TensorLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pairwise squared distance between two (batch) matrices&#39; rows (2nd dim).</span>
+
+<span class="sd">    Computes the pairwise distances between rows of x and rows of y.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      x: `[batch_size, n, d]` float `Tensor`.</span>
+<span class="sd">      y: `[batch_size, m, d]` float `Tensor`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      squared_dists: `[batch_size, n, m]` float `Tensor`, where</span>
+<span class="sd">      `squared_dists[b,i,j] = ||x[b,i,:] - y[b,j,:]||^2`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x_norm_squared</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">y_norm_squared</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># Expand so that we can broadcast.</span>
+    <span class="n">x_norm_squared_tile</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">x_norm_squared</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">y_norm_squared_tile</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">y_norm_squared</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">x_y_transpose</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">adjoint_b</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># squared_dists[b,i,j] = ||x_bi - y_bj||^2 =</span>
+    <span class="c1"># x_bi&#39;x_bi- 2x_bi&#39;x_bj + x_bj&#39;x_bj</span>
+    <span class="n">squared_dists</span> <span class="o">=</span> <span class="n">x_norm_squared_tile</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x_y_transpose</span> <span class="o">+</span> <span class="n">y_norm_squared_tile</span>
+
+    <span class="k">return</span> <span class="n">squared_dists</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_pairwise_squared_distance_matrix</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">TensorLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pairwise squared distance among a (batch) matrix&#39;s rows (2nd dim).</span>
+
+<span class="sd">    This saves a bit of computation vs. using</span>
+<span class="sd">    `_cross_squared_distance_matrix(x, x)`</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      x: `[batch_size, n, d]` float `Tensor`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      squared_dists: `[batch_size, n, n]` float `Tensor`, where</span>
+<span class="sd">      `squared_dists[b,i,j] = ||x[b,i,:] - x[b,j,:]||^2`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">x_x_transpose</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">adjoint_b</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">x_norm_squared</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">diag_part</span><span class="p">(</span><span class="n">x_x_transpose</span><span class="p">)</span>
+    <span class="n">x_norm_squared_tile</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">x_norm_squared</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># squared_dists[b,i,j] = ||x_bi - x_bj||^2 =</span>
+    <span class="c1"># = x_bi&#39;x_bi- 2x_bi&#39;x_bj + x_bj&#39;x_bj</span>
+    <span class="n">squared_dists</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">x_norm_squared_tile</span>
+        <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x_x_transpose</span>
+        <span class="o">+</span> <span class="n">tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">x_norm_squared_tile</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">squared_dists</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_solve_interpolation</span><span class="p">(</span>
+    <span class="n">train_points</span><span class="p">:</span> <span class="n">TensorLike</span><span class="p">,</span>
+    <span class="n">train_values</span><span class="p">:</span> <span class="n">TensorLike</span><span class="p">,</span>
+    <span class="n">order</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">regularization_weight</span><span class="p">:</span> <span class="n">FloatTensorLike</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorLike</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Solve for interpolation coefficients.</span>
+
+<span class="sd">    Computes the coefficients of the polyharmonic interpolant for the</span>
+<span class="sd">    &#39;training&#39; data defined by `(train_points, train_values)` using the kernel</span>
+<span class="sd">    $\phi$.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      train_points: `[b, n, d]` interpolation centers.</span>
+<span class="sd">      train_values: `[b, n, k]` function values.</span>
+<span class="sd">      order: order of the interpolation.</span>
+<span class="sd">      regularization_weight: weight to place on smoothness regularization term.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      w: `[b, n, k]` weights on each interpolation center</span>
+<span class="sd">      v: `[b, d, k]` weights on each input dimension</span>
+<span class="sd">    Raises:</span>
+<span class="sd">      ValueError: if d or k is not fully specified.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># These dimensions are set dynamically at runtime.</span>
+    <span class="n">b</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">unstack</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">train_points</span><span class="p">),</span> <span class="n">num</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="n">d</span> <span class="o">=</span> <span class="n">train_points</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">d</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;The dimensionality of the input points (d) must be &quot;</span>
+            <span class="s2">&quot;statically-inferrable.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">k</span> <span class="o">=</span> <span class="n">train_values</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">k</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;The dimensionality of the output values (k) must be &quot;</span>
+            <span class="s2">&quot;statically-inferrable.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="c1"># First, rename variables so that the notation (c, f, w, v, A, B, etc.)</span>
+    <span class="c1"># follows https://en.wikipedia.org/wiki/Polyharmonic_spline.</span>
+    <span class="c1"># To account for python style guidelines we use</span>
+    <span class="c1"># matrix_a for A and matrix_b for B.</span>
+
+    <span class="n">c</span> <span class="o">=</span> <span class="n">train_points</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">train_values</span>
+
+    <span class="c1"># Next, construct the linear system.</span>
+    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">name_scope</span><span class="p">(</span><span class="s2">&quot;construct_linear_system&quot;</span><span class="p">):</span>
+
+        <span class="n">matrix_a</span> <span class="o">=</span> <span class="n">_phi</span><span class="p">(</span><span class="n">_pairwise_squared_distance_matrix</span><span class="p">(</span><span class="n">c</span><span class="p">),</span> <span class="n">order</span><span class="p">)</span>  <span class="c1"># [b, n, n]</span>
+        <span class="k">if</span> <span class="n">regularization_weight</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">batch_identity_matrix</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">c</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">matrix_a</span> <span class="o">+=</span> <span class="n">regularization_weight</span> <span class="o">*</span> <span class="n">batch_identity_matrix</span>
+
+        <span class="c1"># Append ones to the feature values for the bias term</span>
+        <span class="c1"># in the linear model.</span>
+        <span class="n">ones</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">c</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">matrix_b</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">c</span><span class="p">,</span> <span class="n">ones</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># [b, n, d + 1]</span>
+
+        <span class="c1"># [b, n + d + 1, n]</span>
+        <span class="n">left_block</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">matrix_a</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">matrix_b</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])],</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">num_b_cols</span> <span class="o">=</span> <span class="n">matrix_b</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()[</span><span class="mi">2</span><span class="p">]</span>  <span class="c1"># d + 1</span>
+        <span class="n">lhs_zeros</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">b</span><span class="p">,</span> <span class="n">num_b_cols</span><span class="p">,</span> <span class="n">num_b_cols</span><span class="p">],</span> <span class="n">train_points</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">right_block</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">matrix_b</span><span class="p">,</span> <span class="n">lhs_zeros</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># [b, n + d + 1, d + 1]</span>
+        <span class="n">lhs</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">left_block</span><span class="p">,</span> <span class="n">right_block</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># [b, n + d + 1, n + d + 1]</span>
+
+        <span class="n">rhs_zeros</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">b</span><span class="p">,</span> <span class="n">d</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">k</span><span class="p">],</span> <span class="n">train_points</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">rhs</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">f</span><span class="p">,</span> <span class="n">rhs_zeros</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># [b, n + d + 1, k]</span>
+
+    <span class="c1"># Then, solve the linear system and unpack the results.</span>
+    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">name_scope</span><span class="p">(</span><span class="s2">&quot;solve_linear_system&quot;</span><span class="p">):</span>
+        <span class="n">w_v</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">w_v</span><span class="p">[:,</span> <span class="p">:</span><span class="n">n</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">w_v</span><span class="p">[:,</span> <span class="n">n</span><span class="p">:,</span> <span class="p">:]</span>
+
+    <span class="k">return</span> <span class="n">w</span><span class="p">,</span> <span class="n">v</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_apply_interpolation</span><span class="p">(</span>
+    <span class="n">query_points</span><span class="p">:</span> <span class="n">TensorLike</span><span class="p">,</span>
+    <span class="n">train_points</span><span class="p">:</span> <span class="n">TensorLike</span><span class="p">,</span>
+    <span class="n">w</span><span class="p">:</span> <span class="n">TensorLike</span><span class="p">,</span>
+    <span class="n">v</span><span class="p">:</span> <span class="n">TensorLike</span><span class="p">,</span>
+    <span class="n">order</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorLike</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Apply polyharmonic interpolation model to data.</span>
+
+<span class="sd">    Given coefficients w and v for the interpolation model, we evaluate</span>
+<span class="sd">    interpolated function values at query_points.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      query_points: `[b, m, d]` x values to evaluate the interpolation at.</span>
+<span class="sd">      train_points: `[b, n, d]` x values that act as the interpolation centers</span>
+<span class="sd">          (the c variables in the wikipedia article).</span>
+<span class="sd">      w: `[b, n, k]` weights on each interpolation center.</span>
+<span class="sd">      v: `[b, d, k]` weights on each input dimension.</span>
+<span class="sd">      order: order of the interpolation.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      Polyharmonic interpolation evaluated at points defined in `query_points`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># First, compute the contribution from the rbf term.</span>
+    <span class="n">pairwise_dists</span> <span class="o">=</span> <span class="n">_cross_squared_distance_matrix</span><span class="p">(</span><span class="n">query_points</span><span class="p">,</span> <span class="n">train_points</span><span class="p">)</span>
+    <span class="n">phi_pairwise_dists</span> <span class="o">=</span> <span class="n">_phi</span><span class="p">(</span><span class="n">pairwise_dists</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+
+    <span class="n">rbf_term</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">phi_pairwise_dists</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+
+    <span class="c1"># Then, compute the contribution from the linear term.</span>
+    <span class="c1"># Pad query_points with ones, for the bias term in the linear model.</span>
+    <span class="n">query_points_pad</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">query_points</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">query_points</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="mi">1</span><span class="p">],</span> <span class="n">train_points</span><span class="o">.</span><span class="n">dtype</span><span class="p">)],</span> <span class="mi">2</span>
+    <span class="p">)</span>
+    <span class="n">linear_term</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">query_points_pad</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">rbf_term</span> <span class="o">+</span> <span class="n">linear_term</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_phi</span><span class="p">(</span><span class="n">r</span><span class="p">:</span> <span class="n">FloatTensorLike</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">FloatTensorLike</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Coordinate-wise nonlinearity used to define the order of the</span>
+<span class="sd">    interpolation.</span>
+
+<span class="sd">    See https://en.wikipedia.org/wiki/Polyharmonic_spline for the definition.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      r: input op.</span>
+<span class="sd">      order: interpolation order.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      `phi_k` evaluated coordinate-wise on `r`, for `k = r`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># using EPSILON prevents log(0), sqrt0), etc.</span>
+    <span class="c1"># sqrt(0) is well-defined, but its gradient is not</span>
+    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">name_scope</span><span class="p">(</span><span class="s2">&quot;phi&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">EPSILON</span><span class="p">)</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">r</span>
+        <span class="k">elif</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">EPSILON</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">tf</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">*</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">EPSILON</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">order</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">EPSILON</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">tf</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">order</span><span class="p">)</span> <span class="o">*</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">EPSILON</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">order</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="tfa_interpolate_spline_rbf">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.interpolation.html#wf_psf.utils.interpolation.tfa_interpolate_spline_rbf">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">tfa_interpolate_spline_rbf</span><span class="p">(</span>
+    <span class="n">train_points</span><span class="p">:</span> <span class="n">TensorLike</span><span class="p">,</span>
+    <span class="n">train_values</span><span class="p">:</span> <span class="n">TensorLike</span><span class="p">,</span>
+    <span class="n">query_points</span><span class="p">:</span> <span class="n">TensorLike</span><span class="p">,</span>
+    <span class="n">order</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">regularization_weight</span><span class="p">:</span> <span class="n">FloatTensorLike</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;interpolate_spline&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Thin-plate spline interpolation (copied from TensorFlow Addons).</span>
+
+<span class="sd">    Interpolate a signal using polyharmonic interpolation.</span>
+
+<span class="sd">    The interpolant has the form</span>
+<span class="sd">    $$f(x) = \sum_{i = 1}^n w_i \phi(||x - c_i||) + v^T x + b.$$</span>
+
+<span class="sd">    This is a sum of two terms: (1) a weighted sum of radial basis function</span>
+<span class="sd">    (RBF) terms, with the centers \\(c_1, ... c_n\\), and (2) a linear term</span>
+<span class="sd">    with a bias. The \\(c_i\\) vectors are &#39;training&#39; points.</span>
+<span class="sd">    In the code, b is absorbed into v</span>
+<span class="sd">    by appending 1 as a final dimension to x. The coefficients w and v are</span>
+<span class="sd">    estimated such that the interpolant exactly fits the value of the function</span>
+<span class="sd">    at the \\(c_i\\) points, the vector w is orthogonal to each \\(c_i\\),</span>
+<span class="sd">    and the vector w sums to 0. With these constraints, the coefficients</span>
+<span class="sd">    can be obtained by solving a linear system.</span>
+
+<span class="sd">    \\(\phi\\) is an RBF, parametrized by an interpolation</span>
+<span class="sd">    order. Using order=2 produces the well-known thin-plate spline.</span>
+
+<span class="sd">    We also provide the option to perform regularized interpolation. Here, the</span>
+<span class="sd">    interpolant is selected to trade off between the squared loss on the</span>
+<span class="sd">    training data and a certain measure of its curvature</span>
+<span class="sd">    ([details](https://en.wikipedia.org/wiki/Polyharmonic_spline)).</span>
+<span class="sd">    Using a regularization weight greater than zero has the effect that the</span>
+<span class="sd">    interpolant will no longer exactly fit the training data. However, it may</span>
+<span class="sd">    be less vulnerable to overfitting, particularly for high-order</span>
+<span class="sd">    interpolation.</span>
+
+<span class="sd">    Note the interpolation procedure is differentiable with respect to all</span>
+<span class="sd">    inputs besides the order parameter.</span>
+
+<span class="sd">    We support dynamically-shaped inputs, where batch_size, n, and m are None</span>
+<span class="sd">    at graph construction time. However, d and k must be known.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      train_points: `[batch_size, n, d]` float `Tensor` of n d-dimensional</span>
+<span class="sd">        locations. These do not need to be regularly-spaced.</span>
+<span class="sd">      train_values: `[batch_size, n, k]` float `Tensor` of n c-dimensional</span>
+<span class="sd">        values evaluated at train_points.</span>
+<span class="sd">      query_points: `[batch_size, m, d]` `Tensor` of m d-dimensional locations</span>
+<span class="sd">        where we will output the interpolant&#39;s values.</span>
+<span class="sd">      order: order of the interpolation. Common values are 1 for</span>
+<span class="sd">        \\(\phi(r) = r\\), 2 for \\(\phi(r) = r^2 * log(r)\\)</span>
+<span class="sd">        (thin-plate spline), or 3 for \\(\phi(r) = r^3\\).</span>
+<span class="sd">      regularization_weight: weight placed on the regularization term.</span>
+<span class="sd">        This will depend substantially on the problem, and it should always be</span>
+<span class="sd">        tuned. For many problems, it is reasonable to use no regularization.</span>
+<span class="sd">        If using a non-zero value, we recommend a small value like 0.001.</span>
+<span class="sd">      name: name prefix for ops created by this function</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">      `[b, m, k]` float `Tensor` of query values. We use train_points and</span>
+<span class="sd">      train_values to perform polyharmonic interpolation. The query values are</span>
+<span class="sd">      the values of the interpolant evaluated at the locations specified in</span>
+<span class="sd">      query_points.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">name_scope</span><span class="p">(</span><span class="n">name</span> <span class="ow">or</span> <span class="s2">&quot;interpolate_spline&quot;</span><span class="p">):</span>
+        <span class="n">train_points</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">train_points</span><span class="p">)</span>
+        <span class="n">train_values</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">train_values</span><span class="p">)</span>
+        <span class="n">query_points</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">query_points</span><span class="p">)</span>
+
+        <span class="c1"># First, fit the spline to the observed data.</span>
+        <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">name_scope</span><span class="p">(</span><span class="s2">&quot;solve&quot;</span><span class="p">):</span>
+            <span class="n">w</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">_solve_interpolation</span><span class="p">(</span>
+                <span class="n">train_points</span><span class="p">,</span> <span class="n">train_values</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">regularization_weight</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Then, evaluate the spline at the query locations.</span>
+        <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">name_scope</span><span class="p">(</span><span class="s2">&quot;predict&quot;</span><span class="p">):</span>
+            <span class="n">query_values</span> <span class="o">=</span> <span class="n">_apply_interpolation</span><span class="p">(</span><span class="n">query_points</span><span class="p">,</span> <span class="n">train_points</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">query_values</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

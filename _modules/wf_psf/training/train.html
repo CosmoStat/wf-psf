@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wf_psf.training.train &mdash; wf-psf 3.0.0 documentation</title>
+  <title>wf_psf.training.train &mdash; wf-psf 3.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9570fddd" />
       <link rel="stylesheet" type="text/css" href="../../../_static/twemoji.css" />
@@ -106,13 +106,14 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">gc</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow_addons</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tfa</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.psf_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">psf_models</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">wf_psf.training.train_utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">train_utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.utils.optimizer</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_optimizer</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -386,10 +387,7 @@
 <div class="viewcode-block" id="get_loss_metrics_monitor_and_outputs">
 <a class="viewcode-back" href="../../../_autosummary/wf_psf.training.train.html#wf_psf.training.train.get_loss_metrics_monitor_and_outputs">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_loss_metrics_monitor_and_outputs</span><span class="p">(</span><span class="n">training_handler</span><span class="p">,</span> <span class="n">data_conf</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate factory for loss, metrics, monitor, and outputs.</span>
-
-<span class="sd">    A function to generate loss, metrics, monitor, and outputs</span>
-<span class="sd">    for training.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Factory to return fresh loss, metrics (param &amp; non-param), monitor, and outputs for the current cycle.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -485,12 +483,12 @@
 <span class="sd">    psf_model_dir : str</span>
 <span class="sd">        Directory where the final trained PSF model weights will be saved per cycle.</span>
 
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    - Utilizes TensorFlow and TensorFlow Addons for model training and optimization.</span>
-<span class="sd">    - Supports masked mean squared error loss for training with masked data.</span>
-<span class="sd">    - Allows for projection of data-driven features onto parametric models between cycles.</span>
-<span class="sd">    - Supports resetting of non-parametric features to initial states.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    Side Effects</span>
+<span class="sd">    ------------</span>
 <span class="sd">    - Saves model weights to `psf_model_dir` per training cycle (or final one if not all saved)</span>
 <span class="sd">    - Saves optimizer histories to `optimizer_dir`</span>
 <span class="sd">    - Logs cycle information and time durations</span>
@@ -544,10 +542,12 @@
         <span class="p">)</span>
 
         <span class="c1"># Prepare the optimizers</span>
-        <span class="n">param_optim</span> <span class="o">=</span> <span class="n">tfa</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">RectifiedAdam</span><span class="p">(</span>
-            <span class="n">learning_rate</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">learning_rate_params</span><span class="p">[</span><span class="n">current_cycle</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">param_optim</span> <span class="o">=</span> <span class="n">get_optimizer</span><span class="p">(</span>
+            <span class="n">optimizer_config</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">training_hparams</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span>
+            <span class="n">learning_rate</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">learning_rate_params</span><span class="p">[</span><span class="n">current_cycle</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span>
         <span class="p">)</span>
-        <span class="n">non_param_optim</span> <span class="o">=</span> <span class="n">tfa</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">RectifiedAdam</span><span class="p">(</span>
+        <span class="n">non_param_optim</span> <span class="o">=</span> <span class="n">get_optimizer</span><span class="p">(</span>
+            <span class="n">optimizer_config</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">training_hparams</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span>
             <span class="n">learning_rate</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">learning_rate_non_params</span><span class="p">[</span><span class="n">current_cycle</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
         <span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting cycle </span><span class="si">{</span><span class="n">current_cycle</span><span class="si">}</span><span class="s2">..&quot;</span><span class="p">)</span>
@@ -651,7 +651,12 @@
     <span class="c1"># Print final time</span>
     <span class="n">final_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Total elapsed time: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">final_time</span> <span class="o">-</span> <span class="n">starting_time</span><span class="p">))</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Training complete..&quot;</span><span class="p">)</span></div>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> Training complete..&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Clean up memory</span>
+    <span class="k">del</span> <span class="n">psf_model</span>
+    <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+    <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">clear_session</span><span class="p">()</span></div>
 
 </pre></div>
 

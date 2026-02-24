@@ -1,0 +1,23 @@
+wf\_psf.data.centroids
+======================
+
+.. automodule:: wf_psf.data.centroids
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      compute_centroid_correction
+      compute_zernike_tip_tilt
+      decim
+      degradation_op
+      lanczos
+      shift_ker_stack
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CentroidEstimator
+   

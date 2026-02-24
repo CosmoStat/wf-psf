@@ -4,13 +4,13 @@ wf\_psf.psf\_models.tf\_modules
 .. automodule:: wf_psf.psf_models.tf_modules
 
    
-   .. rubric:: Classes
+.. rubric:: Modules
 
-   .. autosummary::
-   
-      TFBuildPhase
-      TFFftDiffract
-      TFMonochromaticPSF
-      TFZernikeMonochromaticPSF
-      TFZernikeOPD
-   
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   tf_layers
+   tf_modules
+   tf_psf_field
+   tf_utils

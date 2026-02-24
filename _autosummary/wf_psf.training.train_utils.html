@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wf_psf.training.train_utils &mdash; wf-psf 3.0.0 documentation</title>
+  <title>wf_psf.training.train_utils &mdash; wf-psf 3.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
       <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
@@ -66,6 +66,8 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.data.html">wf_psf.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.inference.html">wf_psf.inference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.instrument.html">wf_psf.instrument</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.metrics.html">wf_psf.metrics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.plotting.html">wf_psf.plotting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.html">wf_psf.psf_models</a></li>
@@ -166,10 +168,10 @@ callbacks, and related operations.</p>
 <p class="rubric">Classes</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.L1ParamScheduler" title="wf_psf.training.train_utils.L1ParamScheduler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">L1ParamScheduler</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.L1ParamScheduler" title="wf_psf.training.train_utils.L1ParamScheduler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">L1ParamScheduler</span></code></a>(l1_schedule_rule)</p></td>
 <td><p>L1 rate scheduler that adjusts the L1 rate during training according to a specified schedule.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.MaskedMeanSquaredError" title="wf_psf.training.train_utils.MaskedMeanSquaredError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MaskedMeanSquaredError</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.MaskedMeanSquaredError" title="wf_psf.training.train_utils.MaskedMeanSquaredError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MaskedMeanSquaredError</span></code></a>([name])</p></td>
 <td><p>Computes the masked mean squared error (MSE) loss between predictions and targets.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric" title="wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MaskedMeanSquaredErrorMetric</span></code></a>(*args, **kwargs)</p></td>
@@ -179,7 +181,7 @@ callbacks, and related operations.</p>
 </table>
 <dl class="py class">
 <dt class="sig sig-object py" id="wf_psf.training.train_utils.L1ParamScheduler">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.training.train_utils.</span></span><span class="sig-name descname"><span class="pre">L1ParamScheduler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#L1ParamScheduler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.L1ParamScheduler" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.training.train_utils.</span></span><span class="sig-name descname"><span class="pre">L1ParamScheduler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l1_schedule_rule</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#L1ParamScheduler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.L1ParamScheduler" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></p>
 <p>L1 rate scheduler that adjusts the L1 rate during training according to a specified schedule.</p>
 <p>This callback modifies the L1 regularization rate at each epoch based on the given scheduling function.
@@ -196,11 +198,63 @@ The function takes the epoch index and the current L1 rate as inputs, and it out
 <p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(*args, **kwargs)</p></td>
-<td><p>Call self as a function.</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_batch_begin</span></code>(batch[, logs])</p></td>
+<td><p>A backwards compatibility alias for <cite>on_train_batch_begin</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.L1ParamScheduler.on_epoch_begin" title="wf_psf.training.train_utils.L1ParamScheduler.on_epoch_begin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_epoch_begin</span></code></a>(epoch[, logs])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_batch_end</span></code>(batch[, logs])</p></td>
+<td><p>A backwards compatibility alias for <cite>on_train_batch_end</cite>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.L1ParamScheduler.on_epoch_begin" title="wf_psf.training.train_utils.L1ParamScheduler.on_epoch_begin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_epoch_begin</span></code></a>(epoch[, logs])</p></td>
 <td><p>Execute callback function at the beginning of each epoch to adjust the L1 rate.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_epoch_end</span></code>(epoch[, logs])</p></td>
+<td><p>Called at the end of an epoch.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_predict_batch_begin</span></code>(batch[, logs])</p></td>
+<td><p>Called at the beginning of a batch in <cite>predict</cite> methods.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_predict_batch_end</span></code>(batch[, logs])</p></td>
+<td><p>Called at the end of a batch in <cite>predict</cite> methods.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_predict_begin</span></code>([logs])</p></td>
+<td><p>Called at the beginning of prediction.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_predict_end</span></code>([logs])</p></td>
+<td><p>Called at the end of prediction.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_test_batch_begin</span></code>(batch[, logs])</p></td>
+<td><p>Called at the beginning of a batch in <cite>evaluate</cite> methods.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_test_batch_end</span></code>(batch[, logs])</p></td>
+<td><p>Called at the end of a batch in <cite>evaluate</cite> methods.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_test_begin</span></code>([logs])</p></td>
+<td><p>Called at the beginning of evaluation or validation.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_test_end</span></code>([logs])</p></td>
+<td><p>Called at the end of evaluation or validation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_train_batch_begin</span></code>(batch[, logs])</p></td>
+<td><p>Called at the beginning of a training batch in <cite>fit</cite> methods.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_train_batch_end</span></code>(batch[, logs])</p></td>
+<td><p>Called at the end of a training batch in <cite>fit</cite> methods.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_train_begin</span></code>([logs])</p></td>
+<td><p>Called at the beginning of training.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_train_end</span></code>([logs])</p></td>
+<td><p>Called at the end of training.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>set_model</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>set_params</strong></p></td>
+<td></td>
 </tr>
 </tbody>
 </table>
@@ -224,7 +278,7 @@ L1 rate using the <cite>l1_schedule_rule</cite> function, and sets it back to th
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wf_psf.training.train_utils.MaskedMeanSquaredError">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.training.train_utils.</span></span><span class="sig-name descname"><span class="pre">MaskedMeanSquaredError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#MaskedMeanSquaredError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.MaskedMeanSquaredError" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.training.train_utils.</span></span><span class="sig-name descname"><span class="pre">MaskedMeanSquaredError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'masked_mean_squared_error'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#MaskedMeanSquaredError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.MaskedMeanSquaredError" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Loss</span></code></p>
 <p>Computes the masked mean squared error (MSE) loss between predictions and targets.</p>
 <p>This loss function assumes that <cite>y_true</cite> has two components in the last axis:
@@ -246,11 +300,17 @@ L1 rate using the <cite>l1_schedule_rule</cite> function, and sets it back to th
 <tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.MaskedMeanSquaredError.call" title="wf_psf.training.train_utils.MaskedMeanSquaredError.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(y_true, y_pred[, sample_weight])</p></td>
 <td><p>Compute the masked mean squared error loss.</p></td>
 </tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_config</span></code>(config)</p></td>
+<td><p>Instantiates a <cite>Loss</cite> from its config (output of <cite>get_config()</cite>).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_config</span></code>()</p></td>
+<td><p>Returns the config dictionary for a <cite>Loss</cite> instance.</p></td>
+</tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="wf_psf.training.train_utils.MaskedMeanSquaredError.call">
-<span class="sig-name descname"><span class="pre">call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tensorflow.Tensor</span></span></span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#MaskedMeanSquaredError.call"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.MaskedMeanSquaredError.call" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">call</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#MaskedMeanSquaredError.call"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.MaskedMeanSquaredError.call" title="Link to this definition"></a></dt>
 <dd><p>Compute the masked mean squared error loss.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -274,7 +334,7 @@ values and the mask.</p></li>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.training.train_utils.</span></span><span class="sig-name descname"><span class="pre">MaskedMeanSquaredErrorMetric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#MaskedMeanSquaredErrorMetric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.training.train_utils.</span></span><span class="sig-name descname"><span class="pre">MaskedMeanSquaredErrorMetric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#MaskedMeanSquaredErrorMetric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Metric</span></code></p>
 <p>A custom metric class for computing the masked mean squared error (MSE).</p>
 <p>This metric computes the mean squared error over the masked regions of the
@@ -282,11 +342,140 @@ true values and predictions. A mask is applied such that a mask value of
 <cite>1</cite> excludes the pixel and <cite>0</cite> includes the pixel in the error computation.
 The metric is updated after every batch and returns the average masked MSE
 after processing the dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">activity_regularizer</span></code></dt><dd><p>Optional regularizer function for the output of this layer.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_dtype</span></code></dt><dd><p>The dtype of the layer’s computations.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">dtype</span></code></dt><dd><p>The dtype of the layer weights.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">dtype_policy</span></code></dt><dd><p>The dtype policy associated with this layer.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">dynamic</span></code></dt><dd><p>Whether the layer is dynamic (eager-only); set in the constructor.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">inbound_nodes</span></code></dt><dd><p>Return Functional API nodes upstream of this layer.</p>
+</dd>
+<dt><a class="reference external" href="https://docs.python.org/3/library/functions.html#input" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">input</span></code></a></dt><dd><p>Retrieves the input tensor(s) of a layer.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">input_mask</span></code></dt><dd><p>Retrieves the input mask tensor(s) of a layer.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">input_shape</span></code></dt><dd><p>Retrieves the input shape(s) of a layer.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">input_spec</span></code></dt><dd><p><cite>InputSpec</cite> instance(s) describing the input format for this layer.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">losses</span></code></dt><dd><p>List of losses added using the <cite>add_loss()</cite> API.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">metrics</span></code></dt><dd><p>List of metrics added using the <cite>add_metric()</cite> API.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></dt><dd><p>Name of the layer (string), set in the constructor.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">name_scope</span></code></dt><dd><p>Returns a <cite>tf.name_scope</cite> instance for this class.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">non_trainable_variables</span></code></dt><dd><p>Sequence of non-trainable variables owned by this module and its submodules.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">non_trainable_weights</span></code></dt><dd><p>List of all non-trainable weights tracked by this layer.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">outbound_nodes</span></code></dt><dd><p>Return Functional API nodes downstream of this layer.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">output</span></code></dt><dd><p>Retrieves the output tensor(s) of a layer.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">output_mask</span></code></dt><dd><p>Retrieves the output mask tensor(s) of a layer.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">output_shape</span></code></dt><dd><p>Retrieves the output shape(s) of a layer.</p>
+</dd>
+<dt><strong>stateful</strong></dt><dd></dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">submodules</span></code></dt><dd><p>Sequence of all sub-modules.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">supports_masking</span></code></dt><dd><p>Whether this layer supports computing a mask using <cite>compute_mask</cite>.</p>
+</dd>
+<dt><strong>trainable</strong></dt><dd></dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">trainable_variables</span></code></dt><dd><p>Sequence of trainable variables owned by this module and its submodules.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">trainable_weights</span></code></dt><dd><p>List of all trainable weights tracked by this layer.</p>
+</dd>
+<dt><strong>updates</strong></dt><dd></dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">variable_dtype</span></code></dt><dd><p>Alias of <cite>Layer.dtype</cite>, the dtype of the weights.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">variables</span></code></dt><dd><p>Returns the list of all layer variables/weights.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">weights</span></code></dt><dd><p>Returns the list of all layer variables/weights.</p>
+</dd>
+</dl>
+</dd>
+</dl>
 <p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">__call__</span></code>(*args, **kwargs)</p></td>
-<td><p>Call self as a function.</p></td>
+<td><p>Accumulates statistics and then computes metric result value.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_loss</span></code>(losses, **kwargs)</p></td>
+<td><p>Add loss tensor(s), potentially dependent on layer inputs.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_metric</span></code>(value[, name])</p></td>
+<td><p>Adds metric tensor to the layer.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_update</span></code>(updates)</p></td>
+<td><p>Add update op(s), potentially dependent on layer inputs.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_variable</span></code>(*args, **kwargs)</p></td>
+<td><p>Deprecated, do NOT use! Alias for <cite>add_weight</cite>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_weight</span></code>(name[, shape, aggregation, ...])</p></td>
+<td><p>Adds state variable.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build</span></code>(input_shape)</p></td>
+<td><p>Creates the variables of the layer (optional, for subclass implementers).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code>(inputs, *args, **kwargs)</p></td>
+<td><p>This is where the layer's logic lives.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_mask</span></code>(inputs[, mask])</p></td>
+<td><p>Computes an output mask tensor.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_shape</span></code>(input_shape)</p></td>
+<td><p>Computes the output shape of the layer.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_signature</span></code>(input_signature)</p></td>
+<td><p>Compute the output tensor signature of the layer based on the inputs.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_params</span></code>()</p></td>
+<td><p>Count the total number of scalars composing the weights.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalize_state</span></code>()</p></td>
+<td><p>Finalizes the layers state after updating layer weights.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_config</span></code>(config)</p></td>
+<td><p>Creates a layer from its config.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_config</span></code>()</p></td>
+<td><p>Returns the serializable config of the metric.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_input_at</span></code>(node_index)</p></td>
+<td><p>Retrieves the input tensor(s) of a layer at a given node.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_input_mask_at</span></code>(node_index)</p></td>
+<td><p>Retrieves the input mask tensor(s) of a layer at a given node.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_input_shape_at</span></code>(node_index)</p></td>
+<td><p>Retrieves the input shape(s) of a layer at a given node.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_output_at</span></code>(node_index)</p></td>
+<td><p>Retrieves the output tensor(s) of a layer at a given node.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_output_mask_at</span></code>(node_index)</p></td>
+<td><p>Retrieves the output mask tensor(s) of a layer at a given node.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_output_shape_at</span></code>(node_index)</p></td>
+<td><p>Retrieves the output shape(s) of a layer at a given node.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_weights</span></code>()</p></td>
+<td><p>Returns the current weights of the layer, as NumPy arrays.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">merge_state</span></code>(metrics)</p></td>
+<td><p>Merges the state from one or more metrics.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.reset_state" title="wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.reset_state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_state</span></code></a>()</p></td>
 <td><p>Reset the state of the metric, clearing the accumulated total loss and batch count.</p></td>
@@ -294,8 +483,21 @@ after processing the dataset.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.result" title="wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.result"><code class="xref py py-obj docutils literal notranslate"><span class="pre">result</span></code></a>()</p></td>
 <td><p>Compute and return the current masked MSE value, averaged over all batches.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.update_state" title="wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.update_state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_state</span></code></a>(y_true, y_pred[, sample_weight])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_weights</span></code>(weights)</p></td>
+<td><p>Sets the weights of the layer, from NumPy arrays.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.update_state" title="wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.update_state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_state</span></code></a>(y_true, y_pred[, sample_weight])</p></td>
 <td><p>Update the state of the metric with the true values, predictions, and optional sample weights.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_name_scope</span></code>(method)</p></td>
+<td><p>Decorator to automatically enter the module name scope.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>reset_states</strong></p></td>
+<td></td>
 </tr>
 </tbody>
 </table>
@@ -314,7 +516,7 @@ a new epoch.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.result">
-<span class="sig-name descname"><span class="pre">result</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tensorflow.Tensor</span></span></span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#MaskedMeanSquaredErrorMetric.result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.result" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">result</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#MaskedMeanSquaredErrorMetric.result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.result" title="Link to this definition"></a></dt>
 <dd><p>Compute and return the current masked MSE value, averaged over all batches.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -328,7 +530,7 @@ a new epoch.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.update_state">
-<span class="sig-name descname"><span class="pre">update_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#MaskedMeanSquaredErrorMetric.update_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.update_state" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">update_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#MaskedMeanSquaredErrorMetric.update_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.MaskedMeanSquaredErrorMetric.update_state" title="Link to this definition"></a></dt>
 <dd><p>Update the state of the metric with the true values, predictions, and optional sample weights.</p>
 <p>This method calculates the masked MSE loss for the given batch and accumulates the total loss and batch count.</p>
 <dl class="field-list simple">
@@ -515,7 +717,7 @@ the L1 rate is halved. Otherwise, the L1 rate remains unchanged.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="wf_psf.training.train_utils.masked_mse">
-<span class="sig-prename descclassname"><span class="pre">wf_psf.training.train_utils.</span></span><span class="sig-name descname"><span class="pre">masked_mse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tensorflow.Tensor</span></span></span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#masked_mse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.masked_mse" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">wf_psf.training.train_utils.</span></span><span class="sig-name descname"><span class="pre">masked_mse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#masked_mse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.masked_mse" title="Link to this definition"></a></dt>
 <dd><p>Compute the mean squared error over the masked regions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -541,7 +743,7 @@ If provided, it is broadcasted over the spatial dimensions.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="wf_psf.training.train_utils.train_cycle_part">
-<span class="sig-prename descclassname"><span class="pre">wf_psf.training.train_utils.</span></span><span class="sig-name descname"><span class="pre">train_cycle_part</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psf_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.keras.Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.keras.optimizers.Optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">tensorflow.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">tensorflow.Tensor</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callbacks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tensorflow.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cycle_part</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'parametric'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tensorflow.keras.Model</span></span></span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#train_cycle_part"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.train_cycle_part" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">wf_psf.training.train_utils.</span></span><span class="sig-name descname"><span class="pre">train_cycle_part</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">psf_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validation_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tensor</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callbacks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cycle_part</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'parametric'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Model</span></span></span><a class="reference internal" href="../_modules/wf_psf/training/train_utils.html#train_cycle_part"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train_utils.train_cycle_part" title="Link to this definition"></a></dt>
 <dd><p>Train either the parametric or non-parametric part of the PSF model using the specified parameters. This function trains a single component of the model (either parametric or non-parametric) based on the provided configuration.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -571,8 +773,8 @@ If provided, it is broadcasted over the spatial dimensions.</p></li>
 <p class="rubric">Notes</p>
 <p>This function trains the model based on the provided <cite>cycle_part</cite>. If <cite>cycle_part</cite> is set to
 “parametric”, the function assumes the model is being trained in a parametric setting, while
-“non-parametric” indicates the training of a non-parametric part. The model is built using the
-<cite>build_PSF_model</cite> function before fitting.</p>
+“non-parametric” indicates the training of a non-parametric part. The model is compile using the
+<cite>compile_PSF_model</cite> function before fitting.</p>
 <p class="rubric">Examples</p>
 <dl class="simple">
 <dt>model = train_cycle_part(</dt><dd><p>psf_model=model,

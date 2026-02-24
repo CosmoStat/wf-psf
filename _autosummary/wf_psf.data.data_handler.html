@@ -1,0 +1,486 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.data.data_handler &mdash; wf-psf 3.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../_static/twemoji.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="wf_psf.data.data_zernike_utils" href="wf_psf.data.data_zernike_utils.html" />
+    <link rel="prev" title="wf_psf.data.centroids" href="wf_psf.data.centroids.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="wf_psf.data.html">wf_psf.data</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.centroids.html">wf_psf.data.centroids</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">wf_psf.data.data_handler</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.data_handler.DataHandler"><code class="docutils literal notranslate"><span class="pre">DataHandler</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.data_handler.extract_star_data"><code class="docutils literal notranslate"><span class="pre">extract_star_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.data_handler.get_data_array"><code class="docutils literal notranslate"><span class="pre">get_data_array()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.data_zernike_utils.html">wf_psf.data.data_zernike_utils</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.inference.html">wf_psf.inference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.instrument.html">wf_psf.instrument</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.metrics.html">wf_psf.metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.plotting.html">wf_psf.plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.html">wf_psf.psf_models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.run.html">wf_psf.run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.sims.html">wf_psf.sims</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.training.html">wf_psf.training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.utils.html">wf_psf.utils</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="wf_psf.data.html">wf_psf.data</a></li>
+      <li class="breadcrumb-item active">wf_psf.data.data_handler</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/wf_psf.data.data_handler.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-wf_psf.data.data_handler">
+<span id="wf-psf-data-data-handler"></span><h1>wf_psf.data.data_handler<a class="headerlink" href="#module-wf_psf.data.data_handler" title="Link to this heading"></a></h1>
+<p>Data Handler Module.</p>
+<p>Provides tools for loading, preprocessing, and managing data used in both
+training and inference workflows.</p>
+<p>Includes:</p>
+<ul class="simple">
+<li><p>The <cite>DataHandler</cite> class for managing datasets and associated metadata</p></li>
+<li><p>Utility functions for loading structured data products</p></li>
+<li><p>Preprocessing routines for spectral energy distributions (SEDs), including
+format conversion (e.g., to TensorFlow) and transformations</p></li>
+</ul>
+<p>This module serves as a central interface between raw data and modeling components.</p>
+<p>Authors: Jennifer Pollack &lt;<a class="reference external" href="mailto:jennifer&#46;pollack&#37;&#52;&#48;cea&#46;fr">jennifer<span>&#46;</span>pollack<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;, Tobias Liaudat &lt;<a class="reference external" href="mailto:tobiasliaudat&#37;&#52;&#48;gmail&#46;com">tobiasliaudat<span>&#64;</span>gmail<span>&#46;</span>com</a>&gt;</p>
+<p class="rubric">Functions</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.data_handler.extract_star_data" title="wf_psf.data.data_handler.extract_star_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_star_data</span></code></a>(data, train_key, test_key)</p></td>
+<td><p>Extract and concatenate star-related data from training and test datasets.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.data.data_handler.get_data_array" title="wf_psf.data.data_handler.get_data_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_data_array</span></code></a>(data, run_type[, key, ...])</p></td>
+<td><p>Retrieve data from dataset depending on run type.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.data_handler.DataHandler" title="wf_psf.data.data_handler.DataHandler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataHandler</span></code></a>(dataset_type, data_params, ...)</p></td>
+<td><p>DataHandler for WaveDiff PSF modeling.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.data.data_handler.DataHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.data.data_handler.</span></span><span class="sig-name descname"><span class="pre">DataHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simPSF</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins_lambda</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sed_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/data_handler.html#DataHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_handler.DataHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>DataHandler for WaveDiff PSF modeling.</p>
+<p>This class manages loading, preprocessing, and TensorFlow conversion of datasets used
+for PSF model training, testing, and inference in the WaveDiff framework.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Indicates the dataset mode (“train”, “test”, or “inference”).</p></li>
+<li><p><strong>data_params</strong> (<a class="reference internal" href="wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace" title="wf_psf.utils.read_config.RecursiveNamespace"><em>RecursiveNamespace</em></a>) – Configuration object containing dataset parameters (e.g., file paths, preprocessing flags).</p></li>
+<li><p><strong>simPSF</strong> (<a class="reference internal" href="wf_psf.sims.psf_simulator.html#wf_psf.sims.psf_simulator.PSFSimulator" title="wf_psf.sims.psf_simulator.PSFSimulator"><em>PSFSimulator</em></a>) – An instance of the PSFSimulator class used to encode SEDs into a TensorFlow-compatible format.</p></li>
+<li><p><strong>n_bins_lambda</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of wavelength bins used to discretize SEDs.</p></li>
+<li><p><strong>load_data</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True (default), loads and processes data during initialization. If False, data loading
+must be triggered explicitly.</p></li>
+<li><p><strong>dataset</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>, </em><em>optional</em>) – If provided, uses this pre-loaded dataset instead of triggering automatic loading.</p></li>
+<li><p><strong>sed_data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>, </em><em>optional</em>) – If provided, uses this SED data directly instead of extracting it from the dataset.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.data_handler.DataHandler.dataset_type">
+<span class="sig-name descname"><span class="pre">dataset_type</span></span><a class="headerlink" href="#wf_psf.data.data_handler.DataHandler.dataset_type" title="Link to this definition"></a></dt>
+<dd><p>Indicates the dataset mode (“train”, “test”, or “inference”).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.data_handler.DataHandler.data_params">
+<span class="sig-name descname"><span class="pre">data_params</span></span><a class="headerlink" href="#wf_psf.data.data_handler.DataHandler.data_params" title="Link to this definition"></a></dt>
+<dd><p>Configuration parameters for data access and structure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace" title="wf_psf.utils.read_config.RecursiveNamespace">RecursiveNamespace</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.data_handler.DataHandler.simPSF">
+<span class="sig-name descname"><span class="pre">simPSF</span></span><a class="headerlink" href="#wf_psf.data.data_handler.DataHandler.simPSF" title="Link to this definition"></a></dt>
+<dd><p>Simulator used to transform SEDs into TensorFlow-ready tensors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="wf_psf.sims.psf_simulator.html#wf_psf.sims.psf_simulator.PSFSimulator" title="wf_psf.sims.psf_simulator.PSFSimulator">PSFSimulator</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.data_handler.DataHandler.n_bins_lambda">
+<span class="sig-name descname"><span class="pre">n_bins_lambda</span></span><a class="headerlink" href="#wf_psf.data.data_handler.DataHandler.n_bins_lambda" title="Link to this definition"></a></dt>
+<dd><p>Number of wavelength bins in the SED representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.data_handler.DataHandler.load_data_on_init">
+<span class="sig-name descname"><span class="pre">load_data_on_init</span></span><a class="headerlink" href="#wf_psf.data.data_handler.DataHandler.load_data_on_init" title="Link to this definition"></a></dt>
+<dd><p>Whether data was loaded automatically during initialization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.data_handler.DataHandler.dataset">
+<span class="sig-name descname"><span class="pre">dataset</span></span><a class="headerlink" href="#wf_psf.data.data_handler.DataHandler.dataset" title="Link to this definition"></a></dt>
+<dd><p>Loaded dataset including keys such as ‘positions’, ‘stars’, ‘noisy_stars’, or similar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.data_handler.DataHandler.sed_data">
+<span class="sig-name descname"><span class="pre">sed_data</span></span><a class="headerlink" href="#wf_psf.data.data_handler.DataHandler.sed_data" title="Link to this definition"></a></dt>
+<dd><p>TensorFlow-formatted SED data with shape [batch_size, n_bins_lambda, features].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tf.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><a class="reference internal" href="#wf_psf.data.data_handler.DataHandler.tf_positions" title="wf_psf.data.data_handler.DataHandler.tf_positions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tf_positions</span></code></a></dt><dd><p>Get positions as TensorFlow tensor.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.data_handler.DataHandler.load_dataset" title="wf_psf.data.data_handler.DataHandler.load_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_dataset</span></code></a>()</p></td>
+<td><p>Load dataset.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.data.data_handler.DataHandler.process_sed_data" title="wf_psf.data.data_handler.DataHandler.process_sed_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">process_sed_data</span></code></a>(sed_data)</p></td>
+<td><p>Generate and process SED (Spectral Energy Distribution) data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.data_handler.DataHandler.validate_and_process_dataset" title="wf_psf.data.data_handler.DataHandler.validate_and_process_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate_and_process_dataset</span></code></a>()</p></td>
+<td><p>Validate the dataset structure and convert fields to TensorFlow tensors.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.data.data_handler.DataHandler.load_dataset">
+<span class="sig-name descname"><span class="pre">load_dataset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/data_handler.html#DataHandler.load_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_handler.DataHandler.load_dataset" title="Link to this definition"></a></dt>
+<dd><p>Load dataset.</p>
+<p>Load the dataset based on the specified dataset type.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.data.data_handler.DataHandler.process_sed_data">
+<span class="sig-name descname"><span class="pre">process_sed_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sed_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/data_handler.html#DataHandler.process_sed_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_handler.DataHandler.process_sed_data" title="Link to this definition"></a></dt>
+<dd><p>Generate and process SED (Spectral Energy Distribution) data.</p>
+<p>This method transforms raw SED inputs into TensorFlow tensors suitable for model input.
+It generates wavelength-binned SED elements using the PSF simulator, converts the result
+into a tensor, and transposes it to match the expected shape for training or inference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sed_data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> or </em><em>array-like</em>) – A list or array of raw SEDs, where each SED is typically a vector of flux values
+or coefficients. These will be processed using the PSF simulator.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If <cite>sed_data</cite> is None.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The resulting tensor is stored in <cite>self.sed_data</cite> and has shape
+<cite>(num_samples, n_bins_lambda, n_components)</cite>, where:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><cite>num_samples</cite> is the number of SEDs,</p></li>
+<li><p><cite>n_bins_lambda</cite> is the number of wavelength bins,</p></li>
+<li><p><cite>n_components</cite> is the number of components per SED (e.g., filters or basis terms).</p></li>
+</ul>
+</div></blockquote>
+<p>The intermediate tensor is created with <cite>tf.float64</cite> for precision during generation,
+but is converted to <cite>tf.float32</cite> after processing for use in training.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.data.data_handler.DataHandler.tf_positions">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">tf_positions</span></span><a class="headerlink" href="#wf_psf.data.data_handler.DataHandler.tf_positions" title="Link to this definition"></a></dt>
+<dd><p>Get positions as TensorFlow tensor.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.data.data_handler.DataHandler.validate_and_process_dataset">
+<span class="sig-name descname"><span class="pre">validate_and_process_dataset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/data_handler.html#DataHandler.validate_and_process_dataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_handler.DataHandler.validate_and_process_dataset" title="Link to this definition"></a></dt>
+<dd><p>Validate the dataset structure and convert fields to TensorFlow tensors.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.data.data_handler.extract_star_data">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.data.data_handler.</span></span><span class="sig-name descname"><span class="pre">extract_star_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/data/data_handler.html#extract_star_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_handler.extract_star_data" title="Link to this definition"></a></dt>
+<dd><p>Extract and concatenate star-related data from training and test datasets.</p>
+<p>This function retrieves arrays (e.g., postage stamps, masks, positions) from
+both the training and test datasets using the specified keys, converts them
+to NumPy if necessary, and concatenates them along the first axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<a class="reference internal" href="wf_psf.utils.configs_handler.html#wf_psf.utils.configs_handler.DataConfigHandler" title="wf_psf.utils.configs_handler.DataConfigHandler"><em>DataConfigHandler</em></a>) – Object containing training and test datasets.</p></li>
+<li><p><strong>train_key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Key to retrieve data from the training dataset
+(e.g., ‘noisy_stars’, ‘masks’).</p></li>
+<li><p><strong>test_key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Key to retrieve data from the test dataset
+(e.g., ‘stars’, ‘masks’).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Concatenated NumPy array containing the selected data from both
+training and test sets.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.14)"><strong>KeyError</strong></a> – If either the training or test dataset does not contain the
+requested key.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Designed for datasets with separate train/test splits, such as when
+evaluating metrics on held-out data.</p></li>
+<li><p>TensorFlow tensors are automatically converted to NumPy arrays.</p></li>
+<li><p>Requires eager execution if TensorFlow tensors are present.</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.data.data_handler.get_data_array">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.data.data_handler.</span></span><span class="sig-name descname"><span class="pre">get_data_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_missing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/data/data_handler.html#get_data_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_handler.get_data_array" title="Link to this definition"></a></dt>
+<dd><p>Retrieve data from dataset depending on run type.</p>
+<p>This function provides a unified interface for accessing data across different
+execution contexts (training, simulation, metrics, inference). It handles
+key resolution with sensible fallbacks and optional missing data tolerance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<a class="reference internal" href="wf_psf.utils.configs_handler.html#wf_psf.utils.configs_handler.DataConfigHandler" title="wf_psf.utils.configs_handler.DataConfigHandler"><em>DataConfigHandler</em></a>) – Dataset object containing training, test, or inference data.
+Expected to have methods compatible with the specified run_type.</p></li>
+<li><p><strong>run_type</strong> (<em>{&quot;training&quot;</em><em>, </em><em>&quot;simulation&quot;</em><em>, </em><em>&quot;metrics&quot;</em><em>, </em><em>&quot;inference&quot;}</em>) – <p>Execution context that determines how data is retrieved:</p>
+<ul>
+<li><p>”training”, “simulation”, “metrics”: Uses extract_star_data function</p></li>
+<li><p>”inference”: Retrieves data directly from dataset using key lookup</p></li>
+</ul>
+</p></li>
+<li><p><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Primary key for data lookup. Used directly for inference run_type.
+If None, falls back to train_key value. Default is None.</p></li>
+<li><p><strong>train_key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Key for training dataset access. If None and key is provided,
+defaults to key value. Default is None.</p></li>
+<li><p><strong>test_key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Key for test dataset access. If None, defaults to the resolved
+train_key value. Default is None.</p></li>
+<li><p><strong>allow_missing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>default True</em>) – <p>Control behavior when data is missing or keys are not found:</p>
+<ul>
+<li><p>True: Return None instead of raising exceptions</p></li>
+<li><p>False: Raise appropriate exceptions (KeyError, ValueError)</p></li>
+</ul>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Retrieved data as NumPy array. Returns None only when allow_missing=True
+and the requested data is not available.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray or None</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If run_type is not one of the supported values, or if no key can be
+resolved for the operation and allow_missing=False.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.14)"><strong>KeyError</strong></a> – If the specified key is not found in the dataset and allow_missing=False.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Key resolution follows this priority order:</p>
+<ol class="arabic simple">
+<li><p>train_key = train_key or key</p></li>
+<li><p>test_key = test_key or resolved_train_key</p></li>
+<li><p>key = key or resolved_train_key (for inference fallback)</p></li>
+</ol>
+<p>For TensorFlow tensors, the .numpy() method is called to convert to NumPy.
+Other data types are converted using np.asarray().</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Training data retrieval</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">train_data</span> <span class="o">=</span> <span class="n">get_data_array</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;training&quot;</span><span class="p">,</span> <span class="n">train_key</span><span class="o">=</span><span class="s2">&quot;noisy_stars&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Inference with fallback handling</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">inference_data</span> <span class="o">=</span> <span class="n">get_data_array</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;inference&quot;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;positions&quot;</span><span class="p">,</span>
+<span class="gp">... </span>                                 <span class="n">allow_missing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="n">inference_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No inference data available&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Using key parameter for both train and inference</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">get_data_array</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;inference&quot;</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;positions&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="wf_psf.data.centroids.html" class="btn btn-neutral float-left" title="wf_psf.data.centroids" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wf_psf.data.data_zernike_utils.html" class="btn btn-neutral float-right" title="wf_psf.data.data_zernike_utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

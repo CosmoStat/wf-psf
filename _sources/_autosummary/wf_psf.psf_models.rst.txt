@@ -10,11 +10,7 @@
    :toctree:
    :recursive:
 
-   psf_model_parametric
-   psf_model_physical_polychromatic
-   psf_model_semiparametric
+   models
+   psf_model_loader
    psf_models
-   tf_layers
    tf_modules
-   tf_psf_field
-   zernikes

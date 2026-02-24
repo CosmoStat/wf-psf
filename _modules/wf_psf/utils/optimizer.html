@@ -1,0 +1,226 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.utils.optimizer &mdash; wf-psf 3.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../../../_static/twemoji.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../../../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">wf_psf.utils.optimizer</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for wf_psf.utils.optimizer</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Optimizer utilities for WF-PSF.</span>
+
+<span class="sd">This module provides utility functions to create optimizers for training or evaluation of PSF models.</span>
+
+<span class="sd">:Author: Jennifer Pollack &lt;jennifer.pollack@cea.fr&gt;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
+
+<div class="viewcode-block" id="is_optimizer_instance">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.optimizer.html#wf_psf.utils.optimizer.is_optimizer_instance">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_optimizer_instance</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;apply_gradients&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;get_config&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_optimizer">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.optimizer.html#wf_psf.utils.optimizer.get_optimizer">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_optimizer</span><span class="p">(</span><span class="n">optimizer_config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">overrides</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a compiled optimizer instance based on configuration or name.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    optimizer_config : RecursiveNamespace, dict, or str, optional</span>
+<span class="sd">        Optimizer configuration (from YAML or programmatically), or string name.</span>
+<span class="sd">    **overrides : keyword arguments</span>
+<span class="sd">        Optional hyperparameters to override values in optimizer_config</span>
+<span class="sd">        (e.g., learning_rate, beta_1, beta_2, epsilon, amsgrad).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tf.keras.optimizers.Optimizer</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Detect TensorFlow version</span>
+    <span class="n">version</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">__version__</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[:</span><span class="mi">2</span><span class="p">]))</span>
+    <span class="n">is_legacy</span> <span class="o">=</span> <span class="n">version</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">11</span><span class="p">)</span>
+
+    <span class="c1"># --- Normalize input to a dictionary</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">optimizer_config</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">optimizer_name</span> <span class="o">=</span> <span class="n">optimizer_config</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">optimizer_params</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">optimizer_config</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">optimizer_name</span> <span class="o">=</span> <span class="n">optimizer_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;adam&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">optimizer_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">optimizer_config</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">optimizer_config</span><span class="p">,</span> <span class="s2">&quot;__dict__&quot;</span><span class="p">):</span>  <span class="c1"># RecursiveNamespace</span>
+        <span class="n">optimizer_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">optimizer_config</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;adam&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="n">optimizer_params</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">optimizer_config</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">optimizer_config</span><span class="o">.</span><span class="vm">__dict__</span>
+        <span class="p">}</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">optimizer_name</span> <span class="o">=</span> <span class="s2">&quot;adam&quot;</span>
+        <span class="n">optimizer_params</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># Apply any overrides</span>
+    <span class="n">optimizer_params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">overrides</span><span class="p">)</span>
+
+    <span class="c1"># Extract learning_rate</span>
+    <span class="n">learning_rate</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">optimizer_params</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;learning_rate&quot;</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">))</span>
+
+    <span class="c1"># --- Rectified Adam (TensorFlow Addons)</span>
+    <span class="k">if</span> <span class="n">optimizer_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;rectified_adam&quot;</span><span class="p">,</span> <span class="s2">&quot;radam&quot;</span><span class="p">]:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow_addons</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tfa</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;TensorFlow Addons not found. Install with `pip install wf_psf[addons]`.&quot;</span>
+            <span class="p">)</span>
+        <span class="n">optimizer_params</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tfa</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">RectifiedAdam</span><span class="p">(</span><span class="n">learning_rate</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">)</span>
+
+    <span class="c1"># --- Standard Adam (Legacy or Current)</span>
+    <span class="k">if</span> <span class="n">optimizer_name</span> <span class="o">==</span> <span class="s2">&quot;adam&quot;</span><span class="p">:</span>
+        <span class="n">opt_cls</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">legacy</span><span class="o">.</span><span class="n">Adam</span> <span class="k">if</span> <span class="n">is_legacy</span> <span class="k">else</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adam</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">opt_cls</span><span class="p">(</span>
+            <span class="n">learning_rate</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">,</span>
+            <span class="n">beta_1</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">optimizer_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;beta_1&quot;</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">)),</span>
+            <span class="n">beta_2</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">optimizer_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;beta_2&quot;</span><span class="p">,</span> <span class="mf">0.999</span><span class="p">)),</span>
+            <span class="n">epsilon</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">optimizer_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;epsilon&quot;</span><span class="p">,</span> <span class="mf">1e-07</span><span class="p">)),</span>
+            <span class="n">amsgrad</span><span class="o">=</span><span class="n">optimizer_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;amsgrad&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported optimizer: </span><span class="si">{</span><span class="n">optimizer_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

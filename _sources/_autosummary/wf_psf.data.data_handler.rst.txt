@@ -1,0 +1,19 @@
+wf\_psf.data.data\_handler
+==========================
+
+.. automodule:: wf_psf.data.data_handler
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      extract_star_data
+      get_data_array
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DataHandler
+   

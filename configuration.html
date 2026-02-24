@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Configuration &mdash; wf-psf 3.0.0 documentation</title>
+  <title>Configuration &mdash; wf-psf 3.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9570fddd" />
       <link rel="stylesheet" type="text/css" href="_static/twemoji.css" />
@@ -61,24 +61,26 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="basic_execution.html">Basic Execution</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Configuration</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#overview-of-pipeline-tasks">Overview of Pipeline Tasks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#overview-of-workflows">Overview of Workflows</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#configuration-file-structure">Configuration File Structure</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#data-config-yaml-data-configuration"><code class="docutils literal notranslate"><span class="pre">data_config.yaml</span></code> — Data Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#data-configuration">Data Configuration</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#purpose">1. Purpose</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#key-fields">2. Key Fields</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#notes">3. Notes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example">4. Example</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#training-config-yaml-training-pipeline-configuration"><code class="docutils literal notranslate"><span class="pre">training_config.yaml</span></code> — Training Pipeline Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#training-configuration">Training Configuration</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id1">1. Purpose</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#general-notes">2. General Notes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#top-level-training-parameters">3. Top-Level Training Parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#model-parameters-model-params">4. Model Parameters (<code class="docutils literal notranslate"><span class="pre">model_params</span></code>)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#parametric-model-hyperparameters-param-hparams">5. Parametric Model Hyperparameters (<code class="docutils literal notranslate"><span class="pre">param_hparams</span></code>)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#non-parametric-model-hyperparameters-nonparam-hparams">6. Non-Parametric Model Hyperparameters (<code class="docutils literal notranslate"><span class="pre">nonparam_hparams</span></code>)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#training-hyperparameters-training-hparams">7. Training Hyperparameters (<code class="docutils literal notranslate"><span class="pre">training_hparams</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#model-parameters">4. Model Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#parametric-model-hyperparameters">5. Parametric Model Hyperparameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#non-parametric-model-hyperparameters">6. Non-Parametric Model Hyperparameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#training-hyperparameters">7. Training Hyperparameters</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#metrics-config-yaml-metrics-configuration"><code class="docutils literal notranslate"><span class="pre">metrics_config.yaml</span></code>  — Metrics Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#metrics-configuration">Metrics Configuration</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id2">1. Purpose</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id3">2. General Notes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#metrics-overview">3. Metrics Overview</a></li>
@@ -87,17 +89,26 @@
 <li class="toctree-l3"><a class="reference internal" href="#evaluation-hyperparameters">6. Evaluation Hyperparameters</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#plotting-config-yaml-plot-configuration"><code class="docutils literal notranslate"><span class="pre">plotting_config.yaml</span></code> — Plot Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#plotting-configuration">Plotting Configuration</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id4">1. Purpose</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id5">2. General Notes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#basic-structure">3. Basic Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configuration-structure">3. Configuration Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example-directory-structure">4. Example Directory Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plotting-multiple-runs">5. Plotting Multiple Runs</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#inference-configuration">Inference Configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id6">1. Purpose</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id7">2. Key Fields</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id8">3. Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id9">4. Notes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#master-configuration">Master Configuration</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id6">1. Purpose</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#example-multiple-training-runs">2. Example: Multiple Training Runs</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#example-training-metrics-plotting">3 Example: Training + Metrics + Plotting</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id7">4 General Notes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id10">1. Purpose</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id11">2. General Notes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example-multiple-training-runs">3. Example: Multiple Training Runs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example-training-metrics-plotting">4. Example: Training + Metrics + Plotting</a></li>
 </ul>
 </li>
 </ul>
@@ -142,14 +153,13 @@
              
   <section id="configuration">
 <h1>Configuration<a class="headerlink" href="#configuration" title="Link to this heading"></a></h1>
-<p>WaveDiff uses a set of YAML and INI configuration files to control each pipeline task.
-This section provides a high-level overview of the configuration system, followed by detailed explanations of each file.</p>
-<section id="overview-of-pipeline-tasks">
-<h2>Overview of Pipeline Tasks<a class="headerlink" href="#overview-of-pipeline-tasks" title="Link to this heading"></a></h2>
-<p>WaveDiff consists of four main pipeline tasks:</p>
+<p>WaveDiff uses a set of YAML and INI configuration files to control each pipeline task. This section provides a high-level overview of the configuration system, followed by detailed explanations of each file.</p>
+<section id="overview-of-workflows">
+<h2>Overview of Workflows<a class="headerlink" href="#overview-of-workflows" title="Link to this heading"></a></h2>
+<p>WaveDiff consists of three CLI tasks, configured by passing a configuration file to the <code class="docutils literal notranslate"><span class="pre">wavediff</span></code> command (e.g., <code class="docutils literal notranslate"><span class="pre">wavediff</span> <span class="pre">-c</span> <span class="pre">configs.yaml</span> <span class="pre">-o</span> <span class="pre">output/</span></code>):</p>
 <table class="docutils align-default">
 <thead>
-<tr class="row-odd"><th class="head"><p>Pipeline</p></th>
+<tr class="row-odd"><th class="head"><p>Task</p></th>
 <th class="head"><p>Purpose</p></th>
 </tr>
 </thead>
@@ -161,55 +171,116 @@ This section provides a high-level overview of the configuration system, followe
 <td><p>Evaluates model performance using multiple metrics, optionally comparing against a ground-truth model.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">plotting</span></code></p></td>
-<td><p>Generates figures summarizing the results from the metrics pipeline.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sims</span></code></p></td>
-<td><p>Simulates stellar PSFs used as training/test datasets.<br><em>(Currently executed via a standalone script, not via <code class="docutils literal notranslate"><span class="pre">wavediff</span></code>.)</em></p></td>
+<td><p>Generates figures summarising the results from the metrics pipeline.</p></td>
 </tr>
 </tbody>
 </table>
-<p>You configure these tasks by passing a configuration file to the <code class="docutils literal notranslate"><span class="pre">wavediff</span></code> command (e.g., <code class="docutils literal notranslate"><span class="pre">--config</span> <span class="pre">configs.yaml</span></code>).</p>
+<p>WaveDiff also provides two standalone Python APIs used outside the <code class="docutils literal notranslate"><span class="pre">wavediff</span></code> CLI:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Component</p></th>
+<th class="head"><p>Purpose</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sims</span></code></p></td>
+<td><p>Provides classes and methods for simulating monochromatic, polychromatic, and spatially-varying PSFs<br> for generating custom datasets.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">inference</span></code></p></td>
+<td><p>Provides classes and methods for inferring PSFs as a function of position and SED from a trained PSF<br> model.</p></td>
+</tr>
+</tbody>
+</table>
 </section>
 <section id="configuration-file-structure">
 <h2>Configuration File Structure<a class="headerlink" href="#configuration-file-structure" title="Link to this heading"></a></h2>
-<p>WaveDiff expects the following configuration files under the <code class="docutils literal notranslate"><span class="pre">config/</span></code> directory:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>config
-├── configs.yaml
-├── data_config.yaml
-├── logging.conf
-├── metrics_config.yaml
-├── plotting_config.yaml
-└── training_config.yaml
+<p>WaveDiff expects configuration files under the <code class="docutils literal notranslate"><span class="pre">config/</span></code> directory. <strong>Configuration filenames are flexible</strong> — you can name them as you wish (e.g., <code class="docutils literal notranslate"><span class="pre">training_euclid_v2.yaml</span></code>, <code class="docutils literal notranslate"><span class="pre">my_metrics.yaml</span></code>) as long as you reference them correctly in <code class="docutils literal notranslate"><span class="pre">configs.yaml</span></code> or command-line arguments. The filenames shown below are conventional defaults used in documentation examples.</p>
+<p>The files required depend on which task or component you are running:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>config/
+├── configs.yaml          # Master configuration (all CLI tasks)
+├── data_config.yaml      # Dataset paths (training task only)
+├── logging.conf          # Logging configuration (all CLI tasks)
+├── training_config.yaml  # Training task
+├── metrics_config.yaml   # Metrics task
+├── plotting_config.yaml  # Plotting task
+└── inference_config.yaml # Inference API
 </pre></div>
 </div>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Task / Component</p></th>
+<th class="head"><p>Required</p></th>
+<th class="head"><p>Optional</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">training</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">configs.yaml</span></code>, <code class="docutils literal notranslate"><span class="pre">data_config.yaml</span></code> ,<br> <code class="docutils literal notranslate"><span class="pre">logging.conf</span></code>, <code class="docutils literal notranslate"><span class="pre">training_config.yaml</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">metrics_config.yaml</span></code> <br> (<em>triggers post-training metrics</em>)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metrics</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">configs.yaml</span></code>, <code class="docutils literal notranslate"><span class="pre">logging.conf</span></code>, <br> <code class="docutils literal notranslate"><span class="pre">metrics_config.yaml</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">plotting_config.yaml</span></code> <br>(<em>triggers post-metrics plotting</em>)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">plotting</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">configs.yaml</span></code>, <code class="docutils literal notranslate"><span class="pre">logging.conf</span></code>, <br> <code class="docutils literal notranslate"><span class="pre">plotting_config.yaml</span></code></p></td>
+<td><p>—</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">inference</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">inference_config.yaml</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">data_config.yaml</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Notes:</strong></p>
 <ul class="simple">
-<li><p>All <code class="docutils literal notranslate"><span class="pre">.yaml</span></code> files use standard <strong>YAML</strong> syntax and are loaded as nested dictionaries of key–value pairs.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">logging.conf</span></code> uses standard <strong>INI</strong> syntax and configures logging behavior.</p></li>
-<li><p>Users may modify values but should <strong>not rename keys or section names</strong>, as the software depends on them.</p></li>
+<li><p><strong>Configuration filenames are flexible.</strong> The names shown above (e.g., <code class="docutils literal notranslate"><span class="pre">training_config.yaml</span></code>) are conventional defaults. You may use any filename as long as you reference it correctly in <code class="docutils literal notranslate"><span class="pre">configs.yaml</span></code> or via command-line arguments.</p></li>
+<li><p><strong>Keys and section names within configuration files must be preserved.</strong> While you can rename files, the internal YAML structure (keys like <code class="docutils literal notranslate"><span class="pre">model_params</span></code>, <code class="docutils literal notranslate"><span class="pre">training</span></code>, etc.) must remain unchanged, as the software depends on them.</p></li>
+<li><p>The metrics and plotting tasks retrieve dataset paths from the trained model’s configuration and do not require <code class="docutils literal notranslate"><span class="pre">data_config.yaml</span></code>.</p></li>
+<li><p>When <code class="docutils literal notranslate"><span class="pre">metrics_config.yaml</span></code> is specified as optional for the <code class="docutils literal notranslate"><span class="pre">training</span></code> task, metrics evaluation runs automatically after training completes.</p></li>
+<li><p>When <code class="docutils literal notranslate"><span class="pre">plotting_config.yaml</span></code> is specified as optional for the <code class="docutils literal notranslate"><span class="pre">metrics</span></code> task, plots are generated automatically after metrics evaluation completes.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">logging.conf</span></code> uses standard INI syntax and configures logging behaviour for all CLI tasks.</p></li>
 </ul>
 <p>Each of the configuration files is described in detail below.</p>
 </section>
-<section id="data-config-yaml-data-configuration">
-<span id="data-config"></span><h2><code class="docutils literal notranslate"><span class="pre">data_config.yaml</span></code> — Data Configuration<a class="headerlink" href="#data-config-yaml-data-configuration" title="Link to this heading"></a></h2>
+<section id="data-configuration">
+<span id="data-config"></span><h2>Data Configuration<a class="headerlink" href="#data-configuration" title="Link to this heading"></a></h2>
 <section id="purpose">
 <h3>1. Purpose<a class="headerlink" href="#purpose" title="Link to this heading"></a></h3>
-<p>Specifies where WaveDiff loads (or later versions may generate) the training and test datasets.<br />
-All training, evaluation, and metrics pipelines depend on this file for consistent dataset paths.</p>
+<p>Specifies the training and test datasets used by the training CLI task.</p>
 </section>
 <section id="key-fields">
 <h3>2. Key Fields<a class="headerlink" href="#key-fields" title="Link to this heading"></a></h3>
+<p>Both <code class="docutils literal notranslate"><span class="pre">data.training</span></code> and <code class="docutils literal notranslate"><span class="pre">data.test</span></code> share the same structure:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Required</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">data_dir</span></code></p></td>
+<td><p>Yes</p></td>
+<td><p>Path to the directory containing the dataset.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">file</span></code></p></td>
+<td><p>Yes</p></td>
+<td><p>Filename of the dataset (<code class="docutils literal notranslate"><span class="pre">.npy</span></code>).</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="notes">
+<h3>3. Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">data.training.data_dir</span></code> <em>(required)</em> — directory containing training data</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">data.training.file</span></code> <em>(required)</em> — filename of the training dataset</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">data.test.*</span></code> — same structure as <code class="docutils literal notranslate"><span class="pre">training</span></code>, for the test dataset</p></li>
-<li><p><strong>Simulation-related fields</strong> — reserved for future releases</p></li>
+<li><p>The default dataset bundled with WaveDiff can be used by pointing <code class="docutils literal notranslate"><span class="pre">data_dir</span></code> to its installation directory.</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">metrics</span></code> and <code class="docutils literal notranslate"><span class="pre">plotting</span></code> tasks retrieve dataset paths automatically from the trained model’s configuration file and do not require this file.</p></li>
+<li><p>This file is optional for the <code class="docutils literal notranslate"><span class="pre">inference</span></code> API; see <a class="reference internal" href="#inference-config"><span class="std std-ref">inference_config.yaml</span></a> if you need to supply prior information for inference.</p></li>
 </ul>
-<p><strong>Notes</strong></p>
-<ul class="simple">
-<li><p>The simulation options are placeholders; WaveDiff v3.x does <strong>not yet</strong> auto-generate datasets.</p></li>
-<li><p>The default dataset bundled with WaveDiff can be used by simply pointing to its directory.</p></li>
-</ul>
-<p><strong>Example (minimal)</strong></p>
+</section>
+<section id="example">
+<h3>4. Example<a class="headerlink" href="#example" title="Link to this heading"></a></h3>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">data</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">training</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">data_dir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">path/to/training/data</span>
@@ -221,56 +292,57 @@ All training, evaluation, and metrics pipelines depend on this file for consiste
 </div>
 </section>
 </section>
-<section id="training-config-yaml-training-pipeline-configuration">
-<span id="training-config"></span><h2><code class="docutils literal notranslate"><span class="pre">training_config.yaml</span></code> — Training Pipeline Configuration<a class="headerlink" href="#training-config-yaml-training-pipeline-configuration" title="Link to this heading"></a></h2>
+<section id="training-configuration">
+<span id="training-config"></span><h2>Training Configuration<a class="headerlink" href="#training-configuration" title="Link to this heading"></a></h2>
 <section id="id1">
 <h3>1. Purpose<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
-<p>Controls the training pipeline, including model selection, hyperparameters, optional metrics evaluation, and data loading behavior.</p>
+<p>Controls the training pipeline, including model selection, hyperparameters, optional post-training metrics evaluation, and data loading behaviour.</p>
 </section>
 <section id="general-notes">
 <h3>2. General Notes<a class="headerlink" href="#general-notes" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p>Every field has an inline comment in the YAML file.</p></li>
-<li><p><strong>All required parameters must be specified.</strong> Missing values will prevent the model from being instantiated, as there is currently no default configuration provided.</p></li>
+<li><p><strong>All required parameters must be specified.</strong> There is currently no default configuration — missing values will prevent the model from being instantiated.</p></li>
 <li><p><strong>Optional fields:</strong></p>
 <ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">metrics_config</span></code> (run metrics after training)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">param_hparams</span></code>, <code class="docutils literal notranslate"><span class="pre">nonparam_hparams</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">multi_cycle_params.save_all_cycles</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">metrics_config</span></code> — trigger metrics evaluation after training completes</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">multi_cycle_params.save_all_cycles</span></code>— defaults to <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
 </ul>
 </li>
-<li><p>Some parameters are specific to physical or polychromatic PSF models.</p></li>
-<li><p>Example training configuration file is provided in the top-level root directory of the repository (<code class="docutils literal notranslate"><span class="pre">training_config.yaml</span></code>). Users can copy and adapt this template for their own runs.</p></li>
-<li><p>If any descriptions are unclear, or unexpected behaviour occurs, please open a <a class="reference external" href="https://github.com/CosmoStat/wf-psf/issues/new">GitHub issue</a>.</p></li>
+<li><p>Some parameters are specific to the physical PSF model and may be ignored by simpler model types.</p></li>
+<li><p>An example training configuration file is provided in the repository root (<code class="docutils literal notranslate"><span class="pre">config/training_config.yaml</span></code>). Copy and adapt this template for your own runs.</p></li>
+<li><p><strong>Fraction notation</strong>: Fields like <code class="docutils literal notranslate"><span class="pre">reference_shifts</span></code> accept fraction strings (e.g., “<code class="docutils literal notranslate"><span class="pre">-1/3</span></code>”) which are automatically converted to floats. You can also use decimal values directly (e.g., <code class="docutils literal notranslate"><span class="pre">-0.333</span></code>).</p></li>
+<li><p>Every field in the YAML file includes an inline comment. If any descriptions remain unclear or unexpected behavior occurs, please open a <a class="reference external" href="https://github.com/CosmoStat/wf-psf/issues/new">GitHub issue</a>.</p></li>
 </ul>
-<p><strong>Note:</strong> The values in the examples shown below correspond to a typical WaveDiff training run. Users should adapt parameters such as <code class="docutils literal notranslate"><span class="pre">model_name</span></code>, telescope dimensions, pixel/field coordinates, and SED settings to match their own instrument or dataset. All required fields must still be specified.</p>
+<p><strong>Note on example values</strong>: The parameter values shown below correspond to a typical Euclid-like WaveDiff training run. Adapt <code class="docutils literal notranslate"><span class="pre">model_name</span></code>, telescope dimensions, pixel/field coordinates, and SED settings to match your instrument and dataset.</p>
 </section>
 <section id="top-level-training-parameters">
 <h3>3. Top-Level Training Parameters<a class="headerlink" href="#top-level-training-parameters" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">training</span></code></p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">training</span><span class="p">:</span>
-<span class="w">  </span><span class="c1"># ID name for this run (used in output files)</span>
-<span class="w">  </span><span class="nt">id_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">run__001</span>
+<span class="w">  </span><span class="c1"># ID name for this run (used in output filenames and logs)</span>
+<span class="w">  </span><span class="nt">id_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">run_001</span>
 
-<span class="w">  </span><span class="c1"># Path to Data Configuration file (required)</span>
-<span class="w">  </span><span class="nt">data_config</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">data_config.yaml</span><span class="w"> </span>
+<span class="w">  </span><span class="c1"># Path to data configuration file</span>
+<span class="w">  </span><span class="nt">data_config</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">data_config.yaml</span>
 
 <span class="w">  </span><span class="c1"># Load dataset on initialization (True) or manually later (False)</span>
 <span class="w">  </span><span class="nt">load_data_on_init</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
 
-<span class="w">  </span><span class="c1"># Optional: metrics configuration to run after training</span>
+<span class="w">  </span><span class="c1"># Optional: path to metrics configuration to run after training</span>
 <span class="w">  </span><span class="nt">metrics_config</span><span class="p">:</span>
 </pre></div>
 </div>
 </section>
-<section id="model-parameters-model-params">
-<h3>4. Model Parameters (<code class="docutils literal notranslate"><span class="pre">model_params</span></code>)<a class="headerlink" href="#model-parameters-model-params" title="Link to this heading"></a></h3>
-<p>Controls PSF model type, geometry, oversampling, and preprocessing:</p>
+<section id="model-parameters">
+<h3>4. Model Parameters<a class="headerlink" href="#model-parameters" title="Link to this heading"></a></h3>
+<p>Controls PSF model type, geometry, oversampling, and physical corrections.</p>
+<p><code class="docutils literal notranslate"><span class="pre">training.model_params</span></code></p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">model_params</span><span class="p">:</span>
-<span class="w">  </span><span class="c1"># Model type. Options: &#39;poly&#39; and &#39;physical_poly&#39;</span>
+<span class="w">  </span><span class="c1"># Model type. Options: &#39;poly&#39;, &#39;physical_poly&#39;</span>
 <span class="w">  </span><span class="nt">model_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">physical_poly</span>
 
 <span class="w">  </span><span class="c1"># Number of wavelength bins for polychromatic reconstruction</span>
-<span class="w">  </span><span class="nt">n_bins_lda</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8</span><span class="w"> </span>
+<span class="w">  </span><span class="nt">n_bins_lda</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8</span>
 
 <span class="w">  </span><span class="c1"># Downsampling rate to match telescope pixel sampling</span>
 <span class="w">  </span><span class="nt">output_Q</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
@@ -291,25 +363,22 @@ All training, evaluation, and metrics pipelines depend on this file for consiste
 
 <span class="w">  </span><span class="c1"># Centroid correction parameters</span>
 <span class="w">  </span><span class="nt">sigma_centroid_window</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.5</span><span class="w">       </span><span class="c1"># Std dev of centroiding window</span>
-<span class="w">  </span><span class="nt">reference_shifts</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-1/3</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-1/3</span><span class="p p-Indicator">]</span><span class="w">   </span><span class="c1"># Euclid-like default shifts</span>
+<span class="w">  </span><span class="nt">reference_shifts</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-0.333</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-0.333</span><span class="p p-Indicator">]</span><span class="w">   </span><span class="c1"># Reference pixel shifts (Euclid default: -1/3, -1/3)</span>
 
-<span class="w">  </span><span class="c1"># Obscuration / geometry</span>
-<span class="w">  </span><span class="nt">obscuration_rotation_angle</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w">    </span><span class="c1"># Degrees (multiple of 90); counterclockwise rotation. </span>
+<span class="w">  </span><span class="c1"># Obscuration geometry</span>
+<span class="w">  </span><span class="nt">obscuration_rotation_angle</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w">    </span><span class="c1"># Rotation in degrees (multiples of 90); counterclockwise</span>
 
 <span class="w">  </span><span class="c1"># CCD misalignments input file path</span>
 <span class="w">  </span><span class="nt">ccd_misalignments_input_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/ccd_misalignments_file.txt</span>
-<span class="w">    </span>
-<span class="w">  </span><span class="c1"># Boolean to use sample weights based on the noise standard deviation estimation</span>
-<span class="w">  </span><span class="nt">use_sample_weights</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span><span class="w"> </span>
 
-<span class="w">  </span><span class="c1"># Sample weight generalised sigmoid function</span>
+<span class="w">  </span><span class="c1"># Sample weighting based on noise standard deviation</span>
+<span class="w">  </span><span class="nt">use_sample_weights</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+
+<span class="w">  </span><span class="c1"># Sample weight sigmoid function parameters</span>
 <span class="w">  </span><span class="nt">sample_weights_sigmoid</span><span class="p">:</span>
-<span class="w">    </span><span class="c1"># Boolean to define if we apply the sigmoid function to the sample weights</span>
-<span class="w">    </span><span class="nt">apply_sigmoid</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
-<span class="w">    </span><span class="c1"># Maximum value of the sigmoid function and consequently the maximum value of the sample weights</span>
-<span class="w">    </span><span class="nt">sigmoid_max_val</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5.0</span>
-<span class="w">    </span><span class="c1"># Power of the sigmoid function. The higher the value the steeper the sigmoid function. In the limit</span>
-<span class="w">    </span><span class="nt">sigmoid_power_k</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span>
+<span class="w">    </span><span class="nt">apply_sigmoid</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span><span class="w">           </span><span class="c1"># Enable sigmoid weighting transform</span>
+<span class="w">    </span><span class="nt">sigmoid_max_val</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5.0</span><span class="w">           </span><span class="c1"># Maximum sample weight value</span>
+<span class="w">    </span><span class="nt">sigmoid_power_k</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0</span><span class="w">           </span><span class="c1"># Sigmoid steepness (higher = steeper)</span>
 
 <span class="w">  </span><span class="c1"># Interpolation settings for physical-poly model</span>
 <span class="w">  </span><span class="nt">interpolation_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">None</span>
@@ -322,64 +391,75 @@ All training, evaluation, and metrics pipelines depend on this file for consiste
 <span class="w">  </span><span class="nt">sed_sigma</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
 
 <span class="w">  </span><span class="c1"># Field and pixel coordinates</span>
-<span class="w">  </span><span class="nt">x_lims</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1.0e3</span><span class="p p-Indicator">]</span>
-<span class="w">  </span><span class="nt">y_lims</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1.0e3</span><span class="p p-Indicator">]</span>
-<span class="w">  </span><span class="nt">pix_sampling</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">12</span><span class="w">       </span><span class="c1"># in [um]</span>
+<span class="w">  </span><span class="nt">x_lims</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1000.0</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">y_lims</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1000.0</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">pix_sampling</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">12</span><span class="w">       </span><span class="c1"># Pixel size in microns</span>
 
 <span class="w">  </span><span class="c1"># Telescope parameters</span>
-<span class="w">  </span><span class="nt">tel_diameter</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.2</span><span class="w">      </span><span class="c1"># [m]</span>
-<span class="w">  </span><span class="nt">tel_focal_length</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">24.5</span><span class="w"> </span><span class="c1"># [m]</span>
-<span class="w">  </span><span class="nt">euclid_obsc</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True.</span><span class="w">     </span><span class="c1"># Use Euclid-specific obscuration mask. Set to False for other instruments or custom masks.</span>
-<span class="w">  </span><span class="nt">LP_filter_length</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span><span class="w">    </span><span class="c1"># Low-pass filter for obscurations</span>
+<span class="w">  </span><span class="nt">tel_diameter</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.2</span><span class="w">      </span><span class="c1"># Aperture diameter in meters</span>
+<span class="w">  </span><span class="nt">tel_focal_length</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">24.5</span><span class="w"> </span><span class="c1"># Focal length in meters</span>
+<span class="w">  </span><span class="nt">euclid_obsc</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span><span class="w">      </span><span class="c1"># Use Euclid-specific obscuration mask (set False for other instruments)</span>
+<span class="w">  </span><span class="nt">LP_filter_length</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span><span class="w">    </span><span class="c1"># Low-pass filter kernel size for obscurations</span>
 </pre></div>
 </div>
 </section>
-<section id="parametric-model-hyperparameters-param-hparams">
-<h3>5. Parametric Model Hyperparameters (<code class="docutils literal notranslate"><span class="pre">param_hparams</span></code>)<a class="headerlink" href="#parametric-model-hyperparameters-param-hparams" title="Link to this heading"></a></h3>
+<section id="parametric-model-hyperparameters">
+<h3>5. Parametric Model Hyperparameters<a class="headerlink" href="#parametric-model-hyperparameters" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">training.model_params.param_hparams</span></code></p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">param_hparams</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">random_seed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3877572</span>
-<span class="w">  </span><span class="nt">l2_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.0</span><span class="w">             </span><span class="c1"># L2 loss for OPD/WFE</span>
-<span class="w">  </span><span class="nt">n_zernikes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15</span>
-<span class="w">  </span><span class="nt">d_max</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span><span class="w">                  </span><span class="c1"># Max polynomial degree</span>
-<span class="w">  </span><span class="nt">save_optim_history_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">  </span><span class="nt">l2_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.0</span><span class="w">             </span><span class="c1"># L2 regularization weight for OPD/WFE</span>
+<span class="w">  </span><span class="nt">n_zernikes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15</span><span class="w">            </span><span class="c1"># Number of Zernike polynomials</span>
+<span class="w">  </span><span class="nt">d_max</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span><span class="w">                  </span><span class="c1"># Maximum polynomial degree</span>
+<span class="w">  </span><span class="nt">save_optim_history_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
 </pre></div>
 </div>
 </section>
-<section id="non-parametric-model-hyperparameters-nonparam-hparams">
-<h3>6. Non-Parametric Model Hyperparameters (<code class="docutils literal notranslate"><span class="pre">nonparam_hparams</span></code>)<a class="headerlink" href="#non-parametric-model-hyperparameters-nonparam-hparams" title="Link to this heading"></a></h3>
+<section id="non-parametric-model-hyperparameters">
+<h3>6. Non-Parametric Model Hyperparameters<a class="headerlink" href="#non-parametric-model-hyperparameters" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">training.model_params.nonparam_hparams</span></code></p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">nonparam_hparams</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">d_max_nonparam</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
 <span class="w">  </span><span class="nt">num_graph_features</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
 <span class="w">  </span><span class="nt">l1_rate</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0e-8</span>
 <span class="w">  </span><span class="nt">project_dd_features</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
 <span class="w">  </span><span class="nt">reset_dd_features</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
-<span class="w">  </span><span class="nt">save_optim_history_nonparam</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">  </span><span class="nt">save_optim_history_nonparam</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
 </pre></div>
 </div>
 </section>
-<section id="training-hyperparameters-training-hparams">
-<h3>7. Training Hyperparameters (<code class="docutils literal notranslate"><span class="pre">training_hparams</span></code>)<a class="headerlink" href="#training-hyperparameters-training-hparams" title="Link to this heading"></a></h3>
-<p>Controls batches, loss, and multi-cycle learning:</p>
+<section id="training-hyperparameters">
+<h3>7. Training Hyperparameters<a class="headerlink" href="#training-hyperparameters" title="Link to this heading"></a></h3>
+<p>Controls batch size, loss function, optimizer selection, and multi-cycle learning.</p>
+<p><code class="docutils literal notranslate"><span class="pre">training.training_hparams</span></code></p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">training_hparams</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">batch_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">32</span><span class="w">           </span><span class="c1"># Number of samples per batch</span>
-<span class="w">  </span><span class="nt">loss</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;mask_mse&#39;</span><span class="w">         </span><span class="c1"># Options: &#39;mask_mse&#39;, &#39;mse&#39;</span>
+<span class="w">  </span><span class="nt">batch_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">32</span><span class="w">           </span><span class="c1"># Number of samples per training batch</span>
+<span class="w">  </span><span class="nt">loss</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;mask_mse&#39;</span><span class="w">         </span><span class="c1"># Loss function. Options: &#39;mask_mse&#39;, &#39;mse&#39;</span>
+<span class="w">  </span><span class="nt">optimizer</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;rectified_adam&#39;</span><span class="w"> </span><span class="c1"># Options: &#39;adam&#39;, &#39;rectified_adam&#39;</span>
 
 <span class="w">  </span><span class="nt">multi_cycle_params</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">total_cycles</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
-<span class="w">    </span><span class="nt">cycle_def</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">complete</span><span class="w">        </span><span class="c1"># Options: &#39;parametric&#39;, &#39;non-parametric&#39;, &#39;complete&#39;, etc.</span>
-<span class="w">    </span><span class="nt">save_all_cycles</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
-<span class="w">    </span><span class="nt">saved_cycle</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cycle2</span>
+<span class="w">    </span><span class="nt">cycle_def</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">complete</span><span class="w">        </span><span class="c1"># Options: &#39;parametric&#39;, &#39;non-parametric&#39;, &#39;complete&#39;</span>
+<span class="w">    </span><span class="nt">save_all_cycles</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span><span class="w">     </span><span class="c1"># If True, saves checkpoints for all cycles; otherwise only saved_cycle</span>
+<span class="w">    </span><span class="nt">saved_cycle</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cycle2</span><span class="w">        </span><span class="c1"># Which cycle checkpoint to retain</span>
 
-<span class="w">    </span><span class="nt">learning_rate_params</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">1.0e-2</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1.0e-2</span><span class="p p-Indicator">]</span>
-<span class="w">    </span><span class="nt">learning_rate_non_params</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">1.0e-1</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1.0e-1</span><span class="p p-Indicator">]</span>
-<span class="w">    </span><span class="nt">n_epochs_params</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">20</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">20</span><span class="p p-Indicator">]</span>
-<span class="w">    </span><span class="nt">n_epochs_non_params</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">100</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">120</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">learning_rate_params</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">1.0e-2</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1.0e-2</span><span class="p p-Indicator">]</span><span class="w">      </span><span class="c1"># Per-cycle learning rate for parametric model</span>
+<span class="w">    </span><span class="nt">learning_rate_non_params</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">1.0e-1</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1.0e-1</span><span class="p p-Indicator">]</span><span class="w">  </span><span class="c1"># Per-cycle learning rate for non-parametric model</span>
+<span class="w">    </span><span class="nt">n_epochs_params</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">20</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">20</span><span class="p p-Indicator">]</span><span class="w">                   </span><span class="c1"># Per-cycle epochs for parametric model</span>
+<span class="w">    </span><span class="nt">n_epochs_non_params</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">100</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">120</span><span class="p p-Indicator">]</span><span class="w">             </span><span class="c1"># Per-cycle epochs for non-parametric model</span>
 </pre></div>
 </div>
+<p><strong>Optimizer Notes:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">rectified_adam</span></code> requires tensorflow-addons to be installed manually.</p></li>
+<li><p>If TensorFlow Addons is not installed and <code class="docutils literal notranslate"><span class="pre">rectified_adam</span></code> is requested, WaveDiff will raise a runtime error with installation instructions.</p></li>
+<li><p>Standard workflows (<code class="docutils literal notranslate"><span class="pre">training</span></code>, <code class="docutils literal notranslate"><span class="pre">metrics</span></code>, <code class="docutils literal notranslate"><span class="pre">plotting</span></code>) run without TensorFlow Addons.</p></li>
+</ul>
 </section>
 </section>
-<section id="metrics-config-yaml-metrics-configuration">
-<span id="metrics-config"></span><h2><code class="docutils literal notranslate"><span class="pre">metrics_config.yaml</span></code>  — Metrics Configuration<a class="headerlink" href="#metrics-config-yaml-metrics-configuration" title="Link to this heading"></a></h2>
+<section id="metrics-configuration">
+<span id="metrics-config"></span><h2>Metrics Configuration<a class="headerlink" href="#metrics-configuration" title="Link to this heading"></a></h2>
 <section id="id2">
 <h3>1. Purpose<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
 <p>Defines how a trained PSF model is evaluated. This configuration specifies which metrics to compute, which model weights to use, and how ground truth stars are obtained. It allows you to:</p>
@@ -396,7 +476,7 @@ All training, evaluation, and metrics pipelines depend on this file for consiste
 <ul class="simple">
 <li><p>WaveDiff automatically searches the dataset used for training. If the dataset contains <code class="docutils literal notranslate"><span class="pre">stars</span></code>, <code class="docutils literal notranslate"><span class="pre">SR_stars</span></code>, or <code class="docutils literal notranslate"><span class="pre">super_res_stars</span></code> fields, these are used as the ground truth for metrics evaluation.</p></li>
 <li><p>If precomputed ground truth stars are not found in the dataset, WaveDiff regenerates them using the <code class="docutils literal notranslate"><span class="pre">ground_truth_model</span></code> parameters. <strong>All required fields in <code class="docutils literal notranslate"><span class="pre">model_params</span></code> must be specified</strong>; leaving them empty will prevent the metrics pipeline from running (see <a class="reference internal" href="#section-ground-truth-model"><span class="std std-ref">Ground Truth Model Parameters</span></a> for details).</p></li>
-<li><p>The metrics evaluation can be run independently of training by specifying trained_model_path and <code class="docutils literal notranslate"><span class="pre">trained_model_config</span></code>.</p></li>
+<li><p>Metrics evaluation can be run independently of training by specifying both <code class="docutils literal notranslate"><span class="pre">trained_model_path</span></code> and <code class="docutils literal notranslate"><span class="pre">trained_model_config</span></code> to point to a previously trained model.</p></li>
 <li><p>Metrics defined in <a class="reference internal" href="#metrics-table"><span class="std std-ref">Metrics Overview table</span></a> are selectively computed according to their boolean flags. The Polychromatic Pixel Reconstruction metric is always computed.</p></li>
 <li><p>The <code class="docutils literal notranslate"><span class="pre">plotting_config</span></code> parameter triggers plotting of the metrics results if a valid configuration file is provided. If left empty, metrics are computed without generating plots (see <a class="reference internal" href="#section-plotting-config"><span class="std std-ref">Plotting Configuration</span></a>).</p></li>
 <li><p>Batch size and other evaluation hyperparameters can be set under <code class="docutils literal notranslate"><span class="pre">metrics_hparams</span></code> (see <a class="reference internal" href="#section-evaluation-hyperparameters"><span class="std std-ref">Evaluation Hyperparameters</span></a>)</p></li>
@@ -439,6 +519,7 @@ All training, evaluation, and metrics pipelines depend on this file for consiste
 </section>
 <section id="top-level-configuration-parameters">
 <h3>4. Top-Level Configuration Parameters<a class="headerlink" href="#top-level-configuration-parameters" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">metrics</span></code></p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">metrics</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">model_save_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;enter psf_model or checkpoint&gt;</span>
 <span class="w">  </span><span class="nt">saved_training_cycle</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
@@ -451,28 +532,28 @@ All training, evaluation, and metrics pipelines depend on this file for consiste
 <span class="w">  </span><span class="nt">plotting_config</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;enter name of plotting_config.yaml or leave empty&gt;</span>
 </pre></div>
 </div>
+<p><strong>Parameter descriptions:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">model_save_path</span></code>: Specifies which weights to load. Options: <code class="docutils literal notranslate"><span class="pre">psf_model</span></code> (final trained weights) or <code class="docutils literal notranslate"><span class="pre">checkpoint</span></code> (intermediate checkpoint).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">saved_training_cycle</span></code>: Which training cycle to evaluate (e.g., <code class="docutils literal notranslate"><span class="pre">1</span></code>, <code class="docutils literal notranslate"><span class="pre">2</span></code>, …).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">trained_model_path</span></code>: Absolute path to the parent directory of a previously trained model. Leave empty if running <code class="docutils literal notranslate"><span class="pre">training</span></code> + <code class="docutils literal notranslate"><span class="pre">metrics</span></code> sequentially in the same workflow.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">trained_model_config</span></code>: Filename of the training configuration (located in <code class="docutils literal notranslate"><span class="pre">&lt;trained_model_path&gt;/config/</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">eval_mono_metric</span></code>: If <code class="docutils literal notranslate"><span class="pre">True</span></code>, computes the monochromatic pixel reconstruction metric. Requires <code class="docutils literal notranslate"><span class="pre">ground_truth_model</span></code> to be configured (see <a class="reference internal" href="#section-ground-truth-model"><span class="std std-ref">Ground Truth Model Parameters</span></a>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">eval_opd_metric</span></code>: If <code class="docutils literal notranslate"><span class="pre">True</span></code>, computes the optical path difference (OPD) metric. Requires <code class="docutils literal notranslate"><span class="pre">ground_truth_model</span></code> to be configured.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">eval_train_shape_results_dict</span></code>: If <code class="docutils literal notranslate"><span class="pre">True</span></code>, computes Weak Lensing Shape metrics on the training dataset.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">eval_test_shape_results_dict</span></code>: If <code class="docutils literal notranslate"><span class="pre">True</span></code>, computes Weak Lensing Shape metrics on the test dataset.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">plotting_config</span></code>: Optional filename of a plotting configuration (e.g., <code class="docutils literal notranslate"><span class="pre">plotting_config.yaml</span></code>) to automatically generate plots after metrics evaluation. Leave empty to skip plotting.</p></li>
+</ul>
 <p><strong>Notes:</strong></p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">model_save_path</span></code>: Load final PSF model weights (<code class="docutils literal notranslate"><span class="pre">psf_model</span></code>) or checkpoint weights (<code class="docutils literal notranslate"><span class="pre">checkpoint</span></code>).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">saved_training_cycle</span></code>: Choose which training cycle to evaluate (1, 2, …).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">trained_model_path</span></code>: Absolute path to parent directory of previously trained model. Leave empty for training + metrics in serial.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">trained_model_config</span></code>: Name of training config file in <code class="docutils literal notranslate"><span class="pre">trained_model_path/config/</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">eval_mono_metric</span></code>: If True, computes the monochromatic pixel reconstruction metric. Requires a <code class="docutils literal notranslate"><span class="pre">ground_truth_model</span></code> (see).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">eval_opd_metric</span></code>: If True, computes the optical path difference (OPD) metric. Requires a <code class="docutils literal notranslate"><span class="pre">ground_truth_model</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">eval_train_shape_results_dict</span></code> / <code class="docutils literal notranslate"><span class="pre">eval_test_shape_results_dict</span></code>: Compute Weak Lensing Shape metrics on the training and/or test dataset.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">plotting_config:</span></code> Optionally provide a <code class="docutils literal notranslate"><span class="pre">plotting_config.yaml</span></code> file to generate plots after metrics evaluation.</p></li>
-<li><p><strong>Behaviour notes:</strong></p>
-<ul>
-<li><p>Metrics controlled by flags (<code class="docutils literal notranslate"><span class="pre">eval_mono_metric</span></code>, <code class="docutils literal notranslate"><span class="pre">eval_opd_metric</span></code>, <code class="docutils literal notranslate"><span class="pre">eval_train_shape_results_dict</span></code>, <code class="docutils literal notranslate"><span class="pre">eval_test_shape_results_dict</span></code>) are only computed if their respective flags are True.</p></li>
-<li><p>The Polychromatic Pixel Reconstruction metric is always computed, regardless of flags.</p></li>
-<li><p>Future releases may allow optional <code class="docutils literal notranslate"><span class="pre">ground_truth_model</span></code> instantiation if the dataset already contains precomputed stars.</p></li>
-</ul>
-</li>
+<li><p>The Polychromatic Pixel Reconstruction metric is <strong>always computed</strong> regardless of flag settings.</p></li>
+<li><p>All other metrics (<code class="docutils literal notranslate"><span class="pre">eval_mono_metric</span></code>, <code class="docutils literal notranslate"><span class="pre">eval_opd_metric</span></code>, <code class="docutils literal notranslate"><span class="pre">eval_train_shape_results_dict</span></code>, <code class="docutils literal notranslate"><span class="pre">eval_test_shape_results_dict</span></code>) are only computed when their respective flags are set to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
 </ul>
 </section>
 <section id="ground-truth-model-parameters">
 <span id="section-ground-truth-model"></span><h3>5. Ground Truth Model Parameters<a class="headerlink" href="#ground-truth-model-parameters" title="Link to this heading"></a></h3>
-<p>Mirrors training parameters for consistency:</p>
+<p>Specifies parameters for generating ground truth PSFs when precomputed stars are not available in the dataset. This configuration includes a subset of the training parameters — only those needed to simulate ground truth PSFs for comparison.</p>
+<p><code class="docutils literal notranslate"><span class="pre">metrics.ground_truth_model</span></code></p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">ground_truth_model</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">model_params</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">model_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;ground_truth_poly or ground_truth_physical_poly&gt;</span>
@@ -482,24 +563,23 @@ All training, evaluation, and metrics pipelines depend on this file for consiste
 <span class="w">    </span><span class="nt">output_dim</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">32</span>
 <span class="w">    </span><span class="nt">pupil_diameter</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">256</span>
 <span class="w">    </span><span class="nt">LP_filter_length</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
-<span class="w">    </span><span class="nt">use_sample_weights</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
 <span class="w">    </span><span class="nt">use_prior</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
 <span class="w">    </span><span class="nt">correct_centroids</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
 <span class="w">    </span><span class="nt">sigma_centroid_window</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.5</span>
-<span class="w">    </span><span class="nt">reference_shifts</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-1/3</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-1/3</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">reference_shifts</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">-0.333</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">-0.333</span><span class="p p-Indicator">]</span>
 <span class="w">    </span><span class="nt">obscuration_rotation_angle</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
 <span class="w">    </span><span class="nt">add_ccd_misalignments</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
-<span class="w">    </span><span class="nt">ccd_misalignments_input_path</span><span class="p">:</span><span class="w"> </span>
+<span class="w">    </span><span class="nt">ccd_misalignments_input_path</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">interpolation_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">None</span>
 <span class="w">    </span><span class="nt">sed_interp_pts_per_bin</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
 <span class="w">    </span><span class="nt">sed_extrapolate</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
 <span class="w">    </span><span class="nt">sed_interp_kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">linear</span>
 <span class="w">    </span><span class="nt">sed_sigma</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span>
-<span class="w">    </span><span class="nt">x_lims</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1.0e+3</span><span class="p p-Indicator">]</span>
-<span class="w">    </span><span class="nt">y_lims</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1.0e+3</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">x_lims</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1000.0</span><span class="p p-Indicator">]</span>
+<span class="w">    </span><span class="nt">y_lims</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">0.0</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">1000.0</span><span class="p p-Indicator">]</span>
 <span class="w">    </span><span class="nt">param_hparams</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">random_seed</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3877572</span>
-<span class="w">      </span><span class="nt">l2_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.</span>
+<span class="w">      </span><span class="nt">l2_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.0</span>
 <span class="w">      </span><span class="nt">n_zernikes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">45</span>
 <span class="w">      </span><span class="nt">d_max</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
 <span class="w">      </span><span class="nt">save_optim_history_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
@@ -514,33 +594,53 @@ All training, evaluation, and metrics pipelines depend on this file for consiste
 </div>
 <p><strong>Notes:</strong></p>
 <ul class="simple">
-<li><p><strong>All fields in <code class="docutils literal notranslate"><span class="pre">model_params</span></code> are required.</strong> Do not leave them empty. Even if the dataset contains precomputed ground truth stars, omitting <code class="docutils literal notranslate"><span class="pre">model_params</span></code> will prevent the metrics pipeline from running.</p></li>
-<li><p>Parameters mirror <code class="docutils literal notranslate"><span class="pre">training_config.yaml</span></code> for consistency.</p></li>
+<li><p><strong>All fields shown above are required.</strong>  Do not leave them empty. Even if the dataset contains precomputed ground truth stars, omitting these fields will prevent the metrics pipeline from running.</p></li>
+<li><p>This configuration uses a subset of the training parameters — telescope geometry (<code class="docutils literal notranslate"><span class="pre">tel_diameter</span></code>, <code class="docutils literal notranslate"><span class="pre">tel_focal_length</span></code>, <code class="docutils literal notranslate"><span class="pre">pix_sampling</span></code>) and sample weighting (<code class="docutils literal notranslate"><span class="pre">use_sample_weights</span></code>, <code class="docutils literal notranslate"><span class="pre">sample_weights_sigmoid</span></code>) are not required for metrics evaluation, as these are only needed during model training.</p></li>
+<li><p>Ground truth model parameters should match the simulation settings used to generate your dataset for meaningful comparison.</p></li>
 <li><p>Future releases may allow optional instantiation of <code class="docutils literal notranslate"><span class="pre">ground_truth_model</span></code> when precomputed stars are available in the dataset.</p></li>
 </ul>
 </section>
 <section id="evaluation-hyperparameters">
 <span id="section-evaluation-hyperparameters"></span><h3>6. Evaluation Hyperparameters<a class="headerlink" href="#evaluation-hyperparameters" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">metrics.metrics_hparams</span></code></p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">metrics_hparams</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">batch_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16</span>
 <span class="w">  </span><span class="nt">opt_stars_rel_pix_rmse</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
-<span class="w">  </span><span class="nt">l2_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.</span>
+<span class="w">  </span><span class="nt">l2_param</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.0</span>
 <span class="w">  </span><span class="nt">output_Q</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
 <span class="w">  </span><span class="nt">output_dim</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">64</span>
+
+<span class="w">  </span><span class="c1"># Optimizer configuration for metrics evaluation</span>
+<span class="w">  </span><span class="nt">optimizer</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;adam&#39;</span><span class="w">           </span><span class="c1"># Fixed to Adam for metrics evaluation</span>
+<span class="w">    </span><span class="nt">learning_rate</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0e-2</span>
+<span class="w">    </span><span class="nt">beta_1</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.9</span>
+<span class="w">    </span><span class="nt">beta_2</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.999</span>
+<span class="w">    </span><span class="nt">epsilon</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.0e-7</span>
+<span class="w">    </span><span class="nt">amsgrad</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
 </pre></div>
 </div>
-<p><strong>Parameter explanations:</strong></p>
+<p><strong>Parameter descriptions:</strong></p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">batch_size</span></code>: Number of samples processed per batch during evaluation.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">opt_stars_rel_pix_rmse</span></code>: If <code class="docutils literal notranslate"><span class="pre">True</span></code>, saves RMSE for each individual star in addition to mean across FOV.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">l2_param</span></code>: L2 loss weight for OPD.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">output_Q</span></code>: Downsampling rate from high-resolution pixel modeling space.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">output_dim</span></code>: Size of the PSF postage stamp for evaluation.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">opt_stars_rel_pix_rmse</span></code>: (<em>optional individual star RMSE</em>) If <code class="docutils literal notranslate"><span class="pre">True</span></code>, saves the relative pixel RMSE for each individual star in the test dataset in addition to the mean across the field of view.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">l2_param</span></code>: L2 loss weight for the OPD metric.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">output_Q</span></code>: Downsampling rate from the high-resolution pixel modeling space to the resolution at which PSF shapes are measured. Recommended value: <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">output_dim</span></code>: Pixel dimension of the PSF postage stamp. Should be large enough to contain most of the PSF signal. The required size depends on the <code class="docutils literal notranslate"><span class="pre">output_Q</span></code> value used. Recommended value: <code class="docutils literal notranslate"><span class="pre">64</span></code> or higher.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">optimizer</span></code>: Optimizer configuration for metrics evaluation. Unlike training, metrics evaluation always uses the standard Adam optimizer.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code>: Fixed to <code class="docutils literal notranslate"><span class="pre">'adam'</span></code> (no other optimizers supported for metrics).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">learning_rate</span></code>: Learning rate for optimizer.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">beta_1,</span> <span class="pre">beta_2</span></code>: Exponential decay rates for moment estimates.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">epsilon</span></code>: Small constant for numerical stability.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">amsgrad</span></code>: If <code class="docutils literal notranslate"><span class="pre">True</span></code>, uses AMSGrad variant of Adam.</p></li>
+</ul>
+</li>
 </ul>
 </section>
 </section>
-<section id="plotting-config-yaml-plot-configuration">
-<span id="section-plotting-config"></span><h2><code class="docutils literal notranslate"><span class="pre">plotting_config.yaml</span></code> — Plot Configuration<a class="headerlink" href="#plotting-config-yaml-plot-configuration" title="Link to this heading"></a></h2>
+<section id="plotting-configuration">
+<span id="section-plotting-config"></span><h2>Plotting Configuration<a class="headerlink" href="#plotting-configuration" title="Link to this heading"></a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">plotting_config.yaml</span></code> file defines how WaveDiff generates diagnostic plots from the metrics produced during model evaluation. While the plotting routines are mostly pre-configured internally, this file allows you to combine and compare metrics from multiple training runs, or simply visualize the results of the most recent <code class="docutils literal notranslate"><span class="pre">metrics</span></code> pipeline execution.</p>
 <section id="id4">
 <h3>1. Purpose<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
@@ -558,46 +658,57 @@ All training, evaluation, and metrics pipelines depend on this file for consiste
 <li><p>All plotting styles and figure settings are hard-coded and do not require user modification.</p></li>
 <li><p>If the plotting task is executed immediately after a metrics evaluation run, all fields except <code class="docutils literal notranslate"><span class="pre">plot_show</span></code> may be left empty—the pipeline will automatically locate the outputs of the active run.</p></li>
 <li><p>When plotting results from multiple runs, the entries in <code class="docutils literal notranslate"><span class="pre">metrics_dir</span></code> and <code class="docutils literal notranslate"><span class="pre">metrics_config</span></code> must appear <strong>row-aligned</strong>, with each position referring to the same run.</p></li>
-<li><p>If any descriptions are unclear, or if you encounter unexpected behavior, please open a GitHub issue (<a class="reference external" href="https://github.com/CosmoStat/wf-psf/issues/new">https://github.com/CosmoStat/wf-psf/issues/new</a>).</p></li>
+<li><p>If any descriptions are unclear, or if you encounter unexpected behavior, please open a <a class="reference external" href="https://github.com/CosmoStat/wf-psf/issues/new">GitHub issue</a>.</p></li>
 </ul>
 </section>
-<section id="basic-structure">
-<h3>3. Basic Structure<a class="headerlink" href="#basic-structure" title="Link to this heading"></a></h3>
-<p>An example <code class="docutils literal notranslate"><span class="pre">plotting_config.yaml</span></code> is shown below:</p>
+<section id="configuration-structure">
+<h3>3. Configuration Structure<a class="headerlink" href="#configuration-structure" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">plotting_params</span></code></p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">plotting_params</span><span class="p">:</span>
-<span class="w">  </span><span class="c1"># Path to the parent folder containing wf-psf output directories (e.g. $WORK/wf-outputs/)</span>
-<span class="w">  </span><span class="nt">metrics_output_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;PATH&gt;</span>
+<span class="w">  </span><span class="c1"># Path to the parent folder containing WaveDiff output directories</span>
+<span class="w">  </span><span class="nt">metrics_output_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/wf-outputs/</span>
 
-<span class="w">  </span><span class="c1"># List of output directories (e.g. wf-outputs-xxxxxxxxxxx) whose metrics should be plotted</span>
+<span class="w">  </span><span class="c1"># List of output directories whose metrics should be plotted</span>
+<span class="w">  </span><span class="c1"># Leave commented/empty if plotting immediately after a metrics run</span>
 <span class="w">  </span><span class="nt">metrics_dir</span><span class="p">:</span>
-<span class="w">    </span><span class="c1"># - wf-outputs-xxxxxxxxxxx1</span>
-<span class="w">    </span><span class="c1"># - wf-outputs-xxxxxxxxxxx2</span>
+<span class="w">  </span><span class="c1">#   - wf-outputs-xxxxxxxxxxxxxxxxxxx1</span>
+<span class="w">  </span><span class="c1">#   - wf-outputs-xxxxxxxxxxxxxxxxxxx2</span>
 
-<span class="w">  </span><span class="c1"># List of the metric config filenames corresponding to each listed directory</span>
+<span class="w">  </span><span class="c1"># List of metrics config filenames corresponding to each directory</span>
+<span class="w">  </span><span class="c1"># Leave commented/empty if plotting immediately after a metrics run</span>
 <span class="w">  </span><span class="nt">metrics_config</span><span class="p">:</span>
-<span class="w">    </span><span class="c1"># - metrics_config_1.yaml</span>
-<span class="w">    </span><span class="c1"># - metrics_config_2.yaml</span>
+<span class="w">  </span><span class="c1">#   - metrics_config_1.yaml</span>
+<span class="w">  </span><span class="c1">#   - metrics_config_2.yaml</span>
 
 <span class="w">  </span><span class="c1"># If True, plots are shown interactively during execution</span>
 <span class="w">  </span><span class="nt">plot_show</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
 </pre></div>
 </div>
-<p>### 4. Example Directory Structure
-Below is an example of three WaveDiff runs stored under a single parent directory:</p>
+<p><strong>Parameter descriptions:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">metrics_output_path</span></code>: Absolute path to the parent directory containing WaveDiff output folders (e.g., <code class="docutils literal notranslate"><span class="pre">/home/user/wf-outputs/</span></code>). Can be left as <code class="docutils literal notranslate"><span class="pre">&lt;PATH&gt;</span></code> placeholder if plotting immediately after a metrics run.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">metrics_dir</span></code>: List of output directory names (e.g., <code class="docutils literal notranslate"><span class="pre">wf-outputs-xxxxxxxxxxxxxxxxxxx1</span></code>) whose metrics should be included in plots. <strong>Leave empty or commented out if plotting immediately after a metrics run</strong> — WaveDiff will automatically locate the current run’s outputs.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">metrics_config</span></code>: List of <code class="docutils literal notranslate"><span class="pre">metrics_config.yaml</span></code> filenames corresponding to each directory in <code class="docutils literal notranslate"><span class="pre">metrics_dir</span></code>. Each entry should match the config file in <code class="docutils literal notranslate"><span class="pre">&lt;metrics_dir&gt;/config/</span></code>. Must be row-aligned with <code class="docutils literal notranslate"><span class="pre">metrics_dir</span></code>. <strong>Leave empty or commented out if plotting immediately after a metrics run.</strong></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">plot_show</span></code>: If <code class="docutils literal notranslate"><span class="pre">True</span></code>, displays plots interactively during execution. If <code class="docutils literal notranslate"><span class="pre">False</span></code>, plots are saved to disk without display.</p></li>
+</ul>
+</section>
+<section id="example-directory-structure">
+<h3>4. Example Directory Structure<a class="headerlink" href="#example-directory-structure" title="Link to this heading"></a></h3>
+<p>Below is an example of three WaveDiff runs stored under a single parent directory:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>wf-outputs/
-├── wf-outputs-202305271829
+├── wf-outputs-xxxxxxxxxxxxxxxxxxx1
 │   ├── config
 │   │   ├── data_config.yaml
 │   │   └── metrics_config_200.yaml
 │   ├── metrics
 │   │   └── metrics-poly-coherent_euclid_200stars.npy
-├── wf-outputs-202305271845
+├── wf-outputs-xxxxxxxxxxxxxxxxxxx2
 │   ├── config
 │   │   ├── data_config.yaml
 │   │   └── metrics_config_500.yaml
 │   ├── metrics
 │   │   └── metrics-poly-coherent_euclid_500stars.npy
-├── wf-outputs-202305271918
+├── wf-outputs-xxxxxxxxxxxxxxxxxxx3
 │   ├── config
 │   │   ├── data_config.yaml
 │   │   └── metrics_config_1000.yaml
@@ -605,15 +716,17 @@ Below is an example of three WaveDiff runs stored under a single parent director
 │   │   └── metrics-poly-coherent_euclid_1000stars.npy
 </pre></div>
 </div>
-<p><strong>Example: Plotting Multiple Runs</strong>
-To jointly plot metrics from the three runs shown above, the <code class="docutils literal notranslate"><span class="pre">plotting_config.yaml</span></code> would be:</p>
+</section>
+<section id="plotting-multiple-runs">
+<h3>5. Plotting Multiple Runs<a class="headerlink" href="#plotting-multiple-runs" title="Link to this heading"></a></h3>
+<p>To jointly plot metrics from the three runs shown above, the <code class="docutils literal notranslate"><span class="pre">plotting_config.yaml</span></code> would be:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">plotting_params</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">metrics_output_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">$WORK/wf-outputs/</span>
+<span class="w">  </span><span class="nt">metrics_output_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/wf-outputs/</span>
 
 <span class="w">  </span><span class="nt">metrics_dir</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wf-outputs-202305271829</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wf-outputs-202305271845</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wf-outputs-202305271918</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wf-outputs-xxxxxxxxxxxxxxxxxxx1</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wf-outputs-xxxxxxxxxxxxxxxxxxx2</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">wf-outputs-xxxxxxxxxxxxxxxxxxx3</span>
 
 <span class="w">  </span><span class="nt">metrics_config</span><span class="p">:</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">metrics_config_200.yaml</span>
@@ -626,17 +739,148 @@ To jointly plot metrics from the three runs shown above, the <code class="docuti
 <p>This configuration instructs the plotting pipeline to load the metrics from each listed run and include them together in summary plots.</p>
 </section>
 </section>
-<section id="master-configuration">
-<span id="master-config-file"></span><h2>Master Configuration<a class="headerlink" href="#master-configuration" title="Link to this heading"></a></h2>
+<section id="inference-configuration">
+<span id="inference-config"></span><h2>Inference Configuration<a class="headerlink" href="#inference-configuration" title="Link to this heading"></a></h2>
 <section id="id6">
 <h3>1. Purpose<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
-<p>The <code class="docutils literal notranslate"><span class="pre">configs.yaml</span></code> file is the <em>master controller</em> for WaveDiff.
-It defines <strong>which pipeline tasks</strong> should be executed (training, metrics evaluation, plotting) and in which order.</p>
+<p>Configures the WaveDiff inference API for generating polychromatic PSFs from a trained model, given a set of source positions and SEDs. Unlike the CLI tasks, the inference API is designed for external use: users are expected to load their own positions and SEDs programmatically and interact with the API directly.</p>
+</section>
+<section id="id7">
+<h3>2. Key Fields<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">inference</span></code></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Required</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">batch_size</span></code></p></td>
+<td><p>Yes</p></td>
+<td><p>Number of PSFs to process per batch.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">cycle</span></code></p></td>
+<td><p>Yes</p></td>
+<td><p>Training cycle checkpoint to load (e.g. <code class="docutils literal notranslate"><span class="pre">2</span></code>). <br> WaveDiff training typically runs two cycles.</p></td>
+</tr>
+</tbody>
+</table>
+<p><code class="docutils literal notranslate"><span class="pre">inference.configs</span></code></p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Required</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">trained_model_path</span></code></p></td>
+<td><p>Yes</p></td>
+<td><p>Absolute path to the directory containing the trained <br> model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">model_subdir</span></code></p></td>
+<td><p>Yes</p></td>
+<td><p>Subdirectory name within <code class="docutils literal notranslate"><span class="pre">trained_model_path</span></code> <br> containing the model weights (e.g. model).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">trained_model_config_path</span></code></p></td>
+<td><p>Yes</p></td>
+<td><p>Path to the training configuration file used to train the <br> model, relative to <code class="docutils literal notranslate"><span class="pre">trained_model_path</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">data_config_path</span></code></p></td>
+<td><p>No.</p></td>
+<td><p>Path to a data configuration file supplying prior <br> information (e.g. a Phase Diversity calibration prior)<br> relevant to the inference context. This may differ <br> from the data configuration used during training. Leave <br> blank if no external prior is required.</p></td>
+</tr>
+</tbody>
+</table>
+<p><code class="docutils literal notranslate"><span class="pre">inference.model_params</span></code></p>
+<p>These fields are optional. Any field left blank inherits its value from the trained model configuration file. Populated fields override the corresponding <code class="docutils literal notranslate"><span class="pre">model_params</span></code> values from the training config.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Required</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">n_bins_lda</span></code></p></td>
+<td><p>inherited</p></td>
+<td><p>Number of wavelength bins used to reconstruct polychromatic PSFs.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">output_Q</span></code></p></td>
+<td><p>inherited</p></td>
+<td><p>Downsampling rate to match the oversampled model to the telescope’s <br> native sampling.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">output_dim</span></code></p></td>
+<td><p>inherited</p></td>
+<td><p>Pixel dimension of the output PSF postage stamp.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">correct_centroids</span></code></p></td>
+<td><p>False</p></td>
+<td><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code>, applies centroid error correction within the PSF model during inference..</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">add_ccd_misalignments</span></code></p></td>
+<td><p>False</p></td>
+<td><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code>, incorporates CCD misalignment corrections into <br> the PSF model during inference. Required data is retrieved <br> from the trained model configuration file.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id8">
+<h3>3. Example<a class="headerlink" href="#id8" title="Link to this heading"></a></h3>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">inference</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">batch_size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">16</span>
+<span class="w">  </span><span class="nt">cycle</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
+<span class="w">  </span><span class="nt">configs</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">trained_model_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/path/to/trained/model/</span>
+<span class="w">    </span><span class="nt">model_subdir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">model</span>
+<span class="w">    </span><span class="nt">trained_model_config_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">config/training_config.yaml</span>
+<span class="w">    </span><span class="nt">data_config_path</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">model_params</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">n_bins_lda</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8</span>
+<span class="w">    </span><span class="nt">output_Q</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">    </span><span class="nt">output_dim</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">64</span>
+<span class="w">  </span><span class="nt">correct_centroids</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">False</span>
+<span class="w">  </span><span class="nt">add_ccd_misalignments</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">True</span>
+</pre></div>
+</div>
+</section>
+<section id="id9">
+<h3>4. Notes<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">trained_model_config_path</span></code> is relative to <code class="docutils literal notranslate"><span class="pre">trained_model_path</span></code>, not to the working directory.</p></li>
+<li><p>All <code class="docutils literal notranslate"><span class="pre">model_params</span></code> fields are optional; omitting them inherits values from the training configuration. - Only populate fields where you explicitly want to override the trained model’s parameters.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data_config_path</span></code> is intended for cases where inference is performed in a different data context than training, for example using an updated or alternative prior. Leave blank if the trained model’s own configuration is sufficient.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">correct_centroids</span></code> and <code class="docutils literal notranslate"><span class="pre">add_ccd_misalignments</span></code> are independent model behaviour flags that modify PSF model computation during inference. Both retrieve their required data from the trained model configuration file — no additional configuration is required to enable them.</p></li>
+</ul>
+</section>
+</section>
+<section id="master-configuration">
+<span id="master-config-file"></span><h2>Master Configuration<a class="headerlink" href="#master-configuration" title="Link to this heading"></a></h2>
+<section id="id10">
+<h3>1. Purpose<a class="headerlink" href="#id10" title="Link to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">configs.yaml</span></code> file is the master controller for WaveDiff CLI tasks. It defines <strong>which pipeline tasks</strong> should be executed (<code class="docutils literal notranslate"><span class="pre">training</span></code>, <code class="docutils literal notranslate"><span class="pre">metrics</span></code>, <code class="docutils literal notranslate"><span class="pre">plotting</span></code>) and in which order. Each task entry points to a dedicated YAML configuration file, allowing WaveDiff to run multiple jobs sequentially from a single entry point.</p>
 <p>Each task points to a dedicated YAML configuration file—allowing WaveDiff to run multiple jobs sequentially using a single entry point.</p>
 </section>
+<section id="id11">
+<h3>2. General Notes<a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">configs.yaml</span></code> may contain any combination of the three CLI task types:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">training</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">metrics</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">plotting</span></code></p></li>
+</ul>
+<p>-Tasks always execute <strong>in the order they appear</strong> in the file.</p>
+<ul class="simple">
+<li><p>The current release runs all jobs sequentially on a single GPU.</p></li>
+<li><p>Parallel multi-GPU execution is planned for a future version.</p></li>
+<li><p>For questions or feedback, please open a <a class="reference external" href="https://github.com/CosmoStat/wf-psf/issues/new">GitHub issue</a>.</p></li>
+</ul>
+</section>
 <section id="example-multiple-training-runs">
-<h3>2. Example: Multiple Training Runs<a class="headerlink" href="#example-multiple-training-runs" title="Link to this heading"></a></h3>
+<h3>3. Example: Multiple Training Runs<a class="headerlink" href="#example-multiple-training-runs" title="Link to this heading"></a></h3>
 <p>To launch a sequence of training runs (models 1…n), list each task and its corresponding configuration file:</p>
+<p><code class="docutils literal notranslate"><span class="pre">configs.yaml</span></code></p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nn">---</span>
 <span class="w">  </span><span class="nt">training_conf_1</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">training_config_1.yaml</span>
 <span class="w">  </span><span class="nt">training_conf_2</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">training_config_2.yaml</span>
@@ -644,8 +888,8 @@ It defines <strong>which pipeline tasks</strong> should be executed (training, m
 <span class="w">  </span><span class="nt">training_conf_n</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">training_config_n.yaml</span>
 </pre></div>
 </div>
-<p>Outputs will be organized as:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>wf-outputs-20231119151932213823/
+<p>WaveDiff will execute each training task sequentially and organize outputs as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>wf-outputs-xxxxxxxxxxxxxxxxxxx1/
 ├── checkpoint/
 │   ├── checkpoint_callback_poly-coherent_euclid_200stars_1_cycle1.*
 │   ├── ...
@@ -666,35 +910,32 @@ It defines <strong>which pipeline tasks</strong> should be executed (training, m
 </div>
 </section>
 <section id="example-training-metrics-plotting">
-<h3>3 Example: Training + Metrics + Plotting<a class="headerlink" href="#example-training-metrics-plotting" title="Link to this heading"></a></h3>
-<p>To evaluate metrics and generate plots for each trained model, include the corresponding configuration files:</p>
+<h3>4. Example: Training + Metrics + Plotting<a class="headerlink" href="#example-training-metrics-plotting" title="Link to this heading"></a></h3>
+<p>To evaluate metrics and generate plots after each training run, include metrics and plotting tasks in
+<code class="docutils literal notranslate"><span class="pre">configs.yaml</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">training_conf_1</span><span class="p">:</span> <span class="n">training_config_1</span><span class="o">.</span><span class="n">yaml</span>
+<span class="n">metrics_conf_1</span><span class="p">:</span> <span class="n">metrics_config_1</span><span class="o">.</span><span class="n">yaml</span>
+<span class="n">plotting_conf_1</span><span class="p">:</span> <span class="n">plotting_config_1</span><span class="o">.</span><span class="n">yaml</span>
+<span class="n">training_conf_2</span><span class="p">:</span> <span class="n">training_config_2</span><span class="o">.</span><span class="n">yaml</span>
+<span class="n">metrics_conf_2</span><span class="p">:</span> <span class="n">metrics_config_2</span><span class="o">.</span><span class="n">yaml</span>
+<span class="n">plotting_conf_2</span><span class="p">:</span> <span class="n">plotting_config_2</span><span class="o">.</span><span class="n">yaml</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p>Required configuration files:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>config/
 ├── configs.yaml
 ├── data_config.yaml
-├── metrics_config.yaml
-├── plotting_config.yaml
 ├── training_config_1.yaml
-├── ...
-└── training_config_n.yaml
+├── metrics_config_1.yaml
+├── plotting_config_1.yaml
+├── training_config_2.yaml
+├── metrics_config_2.yaml
+├── plotting_config_2.yaml
+└── ...
 </pre></div>
 </div>
-<p>Note: current WaveDiff versions generate one plot per metric per model. Creating combined plots requires a separate run <a class="reference internal" href="#section-plotting-config"><span class="std std-ref">Plot Configuration</span></a>. . A future update will support automatic combined plots.</p>
-</section>
-<section id="id7">
-<h3>4 General Notes<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">configs.yaml</span></code> may contain <strong>any combination</strong> of the three task types:</p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">training</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">metrics</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">plotting</span></code></p></li>
-</ul>
-</li>
-<li><p>Tasks always execute <strong>in the order they appear</strong> in the file.</p></li>
-<li><p>The current release runs all jobs on a single GPU, sequentially.</p></li>
-<li><p>Parallel multi-GPU execution is planned for a future version.</p></li>
-<li><p>For questions or feedback, please open a <a class="reference external" href="https://github.com/CosmoStat/wf-psf/issues/new">GitHub issue</a>.</p></li>
-</ul>
+<p><strong>Note:</strong> Current WaveDiff versions generate one plot per metric per model. Creating combined comparison plots across multiple runs requires a separate plotting-only run (see <a class="reference internal" href="#section-plotting-config"><span class="std std-ref">Plot Configuration</span></a>). Automatic combined plots may be supported in a future release.</p>
 </section>
 </section>
 </section>

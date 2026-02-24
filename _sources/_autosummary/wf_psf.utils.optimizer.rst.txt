@@ -1,0 +1,13 @@
+wf\_psf.utils.optimizer
+=======================
+
+.. automodule:: wf_psf.utils.optimizer
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_optimizer
+      is_optimizer_instance
+   

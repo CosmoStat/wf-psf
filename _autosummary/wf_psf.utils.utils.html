@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wf_psf.utils.utils &mdash; wf-psf 3.0.0 documentation</title>
+  <title>wf_psf.utils.utils &mdash; wf-psf 3.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
       <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
@@ -25,7 +25,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Developer Guide" href="../developer/index.html" />
-    <link rel="prev" title="wf_psf.utils.read_config" href="wf_psf.utils.read_config.html" /> 
+    <link rel="prev" title="wf_psf.utils.types" href="wf_psf.utils.types.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -66,6 +66,8 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.data.html">wf_psf.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.inference.html">wf_psf.inference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.instrument.html">wf_psf.instrument</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.metrics.html">wf_psf.metrics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.plotting.html">wf_psf.plotting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.html">wf_psf.psf_models</a></li>
@@ -73,30 +75,34 @@
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.sims.html">wf_psf.sims</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.training.html">wf_psf.training</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="wf_psf.utils.html">wf_psf.utils</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.ccd_misalignments.html">wf_psf.utils.ccd_misalignments</a></li>
-<li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.centroids.html">wf_psf.utils.centroids</a></li>
 <li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.configs_handler.html">wf_psf.utils.configs_handler</a></li>
 <li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.graph_utils.html">wf_psf.utils.graph_utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.interpolation.html">wf_psf.utils.interpolation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.io.html">wf_psf.utils.io</a></li>
-<li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.preprocessing.html">wf_psf.utils.preprocessing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.optimizer.html">wf_psf.utils.optimizer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.read_config.html">wf_psf.utils.read_config</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.types.html">wf_psf.utils.types</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">wf_psf.utils.utils</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.utils.IndependentZernikeInterpolation"><code class="docutils literal notranslate"><span class="pre">IndependentZernikeInterpolation</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.utils.NoiseEstimator"><code class="docutils literal notranslate"><span class="pre">NoiseEstimator</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.utils.ZernikeInterpolation"><code class="docutils literal notranslate"><span class="pre">ZernikeInterpolation</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.utils.add_noise"><code class="docutils literal notranslate"><span class="pre">add_noise()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.utils.calc_poly_position_mat"><code class="docutils literal notranslate"><span class="pre">calc_poly_position_mat()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.utils.calc_wfe"><code class="docutils literal notranslate"><span class="pre">calc_wfe()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.utils.calc_wfe_rms"><code class="docutils literal notranslate"><span class="pre">calc_wfe_rms()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.utils.compute_unobscured_zernike_projection"><code class="docutils literal notranslate"><span class="pre">compute_unobscured_zernike_projection()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.utils.convert_to_tf"><code class="docutils literal notranslate"><span class="pre">convert_to_tf()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.utils.decimate_im"><code class="docutils literal notranslate"><span class="pre">decimate_im()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.utils.decompose_tf_obscured_opd_basis"><code class="docutils literal notranslate"><span class="pre">decompose_tf_obscured_opd_basis()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.utils.downsample_im"><code class="docutils literal notranslate"><span class="pre">downsample_im()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.utils.ensure_batch"><code class="docutils literal notranslate"><span class="pre">ensure_batch()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.utils.generalised_sigmoid"><code class="docutils literal notranslate"><span class="pre">generalised_sigmoid()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.utils.generate_SED_elems"><code class="docutils literal notranslate"><span class="pre">generate_SED_elems()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.utils.generate_SED_elems_in_tensorflow"><code class="docutils literal notranslate"><span class="pre">generate_SED_elems_in_tensorflow()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.utils.generate_n_mask"><code class="docutils literal notranslate"><span class="pre">generate_n_mask()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.utils.generate_packed_elems"><code class="docutils literal notranslate"><span class="pre">generate_packed_elems()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.utils.load_multi_cycle_params_click"><code class="docutils literal notranslate"><span class="pre">load_multi_cycle_params_click()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.utils.scale_to_range"><code class="docutils literal notranslate"><span class="pre">scale_to_range()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.utils.single_mask_generator"><code class="docutils literal notranslate"><span class="pre">single_mask_generator()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.utils.zernike_generator"><code class="docutils literal notranslate"><span class="pre">zernike_generator()</span></code></a></li>
 </ul>
@@ -158,6 +164,12 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.utils.utils.calc_poly_position_mat" title="wf_psf.utils.utils.calc_poly_position_mat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_poly_position_mat</span></code></a>(pos, x_lims, y_lims, ...)</p></td>
 <td><p>Calculate a matrix with position polynomials.</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.utils.utils.calc_wfe" title="wf_psf.utils.utils.calc_wfe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_wfe</span></code></a>(zernike_basis, zks)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.utils.utils.calc_wfe_rms" title="wf_psf.utils.utils.calc_wfe_rms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_wfe_rms</span></code></a>(zernike_basis, zks, pupil_mask)</p></td>
+<td><p></p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.utils.utils.compute_unobscured_zernike_projection" title="wf_psf.utils.utils.compute_unobscured_zernike_projection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_unobscured_zernike_projection</span></code></a>(tf_z1, ...)</p></td>
 <td><p>Compute a zernike projection for unobscured wavefronts (OPDs).</p></td>
 </tr>
@@ -173,23 +185,29 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.utils.utils.downsample_im" title="wf_psf.utils.utils.downsample_im"><code class="xref py py-obj docutils literal notranslate"><span class="pre">downsample_im</span></code></a>(input_im, output_dim)</p></td>
 <td><p>Downsample image to (output_dim, output_dim).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.utils.utils.generalised_sigmoid" title="wf_psf.utils.utils.generalised_sigmoid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generalised_sigmoid</span></code></a>(x[, max_val, power_k])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.utils.utils.ensure_batch" title="wf_psf.utils.utils.ensure_batch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ensure_batch</span></code></a>(arr)</p></td>
+<td><p>Ensure array/tensor has a batch dimension.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.utils.utils.generalised_sigmoid" title="wf_psf.utils.utils.generalised_sigmoid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generalised_sigmoid</span></code></a>(x[, max_val, power_k])</p></td>
 <td><p>Apply a generalized sigmoid function to the input.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.utils.utils.generate_SED_elems" title="wf_psf.utils.utils.generate_SED_elems"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_SED_elems</span></code></a>(SED, psf_simulator[, n_bins])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.utils.utils.generate_SED_elems" title="wf_psf.utils.utils.generate_SED_elems"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_SED_elems</span></code></a>(SED, psf_simulator[, n_bins])</p></td>
 <td><p>Generate SED elements for PSF modeling.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.utils.utils.generate_SED_elems_in_tensorflow" title="wf_psf.utils.utils.generate_SED_elems_in_tensorflow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_SED_elems_in_tensorflow</span></code></a>(SED, ...[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.utils.utils.generate_SED_elems_in_tensorflow" title="wf_psf.utils.utils.generate_SED_elems_in_tensorflow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_SED_elems_in_tensorflow</span></code></a>(SED, ...[, ...])</p></td>
 <td><p>Generate SED Elements in TensorFlow Units.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.utils.utils.generate_n_mask" title="wf_psf.utils.utils.generate_n_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_n_mask</span></code></a>(shape[, n_masks])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.utils.utils.generate_n_mask" title="wf_psf.utils.utils.generate_n_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_n_mask</span></code></a>(shape[, n_masks])</p></td>
 <td><p>Generate n masks with random 2D cosine waves.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.utils.utils.generate_packed_elems" title="wf_psf.utils.utils.generate_packed_elems"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_packed_elems</span></code></a>(SED, psf_simulator[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.utils.utils.generate_packed_elems" title="wf_psf.utils.utils.generate_packed_elems"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_packed_elems</span></code></a>(SED, psf_simulator[, ...])</p></td>
 <td><p>Generate packed SED elements as TensorFlow tensors.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.utils.utils.load_multi_cycle_params_click" title="wf_psf.utils.utils.load_multi_cycle_params_click"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_multi_cycle_params_click</span></code></a>(args)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.utils.utils.load_multi_cycle_params_click" title="wf_psf.utils.utils.load_multi_cycle_params_click"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_multi_cycle_params_click</span></code></a>(args)</p></td>
 <td><p>Load multiple cycle training parameters.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.utils.utils.scale_to_range" title="wf_psf.utils.utils.scale_to_range"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale_to_range</span></code></a>(input_array, old_range, new_range)</p></td>
+<td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.utils.utils.single_mask_generator" title="wf_psf.utils.utils.single_mask_generator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">single_mask_generator</span></code></a>(shape)</p></td>
 <td><p>Generate a single mask with random 2D cosine waves.</p></td>
@@ -512,6 +530,16 @@ to the square [-1,1] x [-1,1]</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.utils.utils.calc_wfe">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.utils.utils.</span></span><span class="sig-name descname"><span class="pre">calc_wfe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zernike_basis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zks</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/utils.html#calc_wfe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.utils.calc_wfe" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.utils.utils.calc_wfe_rms">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.utils.utils.</span></span><span class="sig-name descname"><span class="pre">calc_wfe_rms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zernike_basis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pupil_mask</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/utils.html#calc_wfe_rms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.utils.calc_wfe_rms" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="wf_psf.utils.utils.compute_unobscured_zernike_projection">
 <span class="sig-prename descclassname"><span class="pre">wf_psf.utils.utils.</span></span><span class="sig-name descname"><span class="pre">compute_unobscured_zernike_projection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tf_z1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf_z2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/utils.html#compute_unobscured_zernike_projection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.utils.compute_unobscured_zernike_projection" title="Link to this definition"></a></dt>
 <dd><p>Compute a zernike projection for unobscured wavefronts (OPDs).</p>
@@ -619,6 +647,23 @@ to scikit-image local mean downsampling.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.utils.utils.ensure_batch">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.utils.utils.</span></span><span class="sig-name descname"><span class="pre">ensure_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/utils.html#ensure_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.utils.ensure_batch" title="Link to this definition"></a></dt>
+<dd><p>Ensure array/tensor has a batch dimension. Converts shape (M, N) → (1, M, N).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>arr</strong> (<em>np.ndarray</em><em> or </em><em>tf.Tensor</em>) – Input 2D or 3D array/tensor.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>With batch dimension prepended if needed.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray or tf.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="wf_psf.utils.utils.generalised_sigmoid">
 <span class="sig-prename descclassname"><span class="pre">wf_psf.utils.utils.</span></span><span class="sig-name descname"><span class="pre">generalised_sigmoid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">power_k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/utils.html#generalised_sigmoid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.utils.generalised_sigmoid" title="Link to this definition"></a></dt>
 <dd><p>Apply a generalized sigmoid function to the input.</p>
@@ -702,7 +747,7 @@ optical and instrumental parameters.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="wf_psf.utils.utils.generate_SED_elems_in_tensorflow">
-<span class="sig-prename descclassname"><span class="pre">wf_psf.utils.utils.</span></span><span class="sig-name descname"><span class="pre">generate_SED_elems_in_tensorflow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">SED</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psf_simulator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">tensorflow.float64</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/utils.html#generate_SED_elems_in_tensorflow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.utils.generate_SED_elems_in_tensorflow" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">wf_psf.utils.utils.</span></span><span class="sig-name descname"><span class="pre">generate_SED_elems_in_tensorflow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">SED</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psf_simulator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">tf.float64</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/utils.html#generate_SED_elems_in_tensorflow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.utils.generate_SED_elems_in_tensorflow" title="Link to this definition"></a></dt>
 <dd><p>Generate SED Elements in TensorFlow Units.</p>
 <p>A function to generate the SED elements needed for using the
 TensorFlow class: TF_poly_PSF.</p>
@@ -796,6 +841,11 @@ separated and stored in the args dictionary.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.utils.utils.scale_to_range">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.utils.utils.</span></span><span class="sig-name descname"><span class="pre">scale_to_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">old_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_range</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/utils.html#scale_to_range"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.utils.scale_to_range" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="wf_psf.utils.utils.single_mask_generator">
 <span class="sig-prename descclassname"><span class="pre">wf_psf.utils.utils.</span></span><span class="sig-name descname"><span class="pre">single_mask_generator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/utils/utils.html#single_mask_generator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.utils.utils.single_mask_generator" title="Link to this definition"></a></dt>
 <dd><p>Generate a single mask with random 2D cosine waves.</p>
@@ -842,7 +892,7 @@ The values outside the unit circle are filled with NaNs.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="wf_psf.utils.read_config.html" class="btn btn-neutral float-left" title="wf_psf.utils.read_config" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wf_psf.utils.types.html" class="btn btn-neutral float-left" title="wf_psf.utils.types" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="../developer/index.html" class="btn btn-neutral float-right" title="Developer Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

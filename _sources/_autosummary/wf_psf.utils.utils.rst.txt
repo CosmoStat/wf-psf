@@ -10,17 +10,21 @@ wf\_psf.utils.utils
    
       add_noise
       calc_poly_position_mat
+      calc_wfe
+      calc_wfe_rms
       compute_unobscured_zernike_projection
       convert_to_tf
       decimate_im
       decompose_tf_obscured_opd_basis
       downsample_im
+      ensure_batch
       generalised_sigmoid
       generate_SED_elems
       generate_SED_elems_in_tensorflow
       generate_n_mask
       generate_packed_elems
       load_multi_cycle_params_click
+      scale_to_range
       single_mask_generator
       zernike_generator
    

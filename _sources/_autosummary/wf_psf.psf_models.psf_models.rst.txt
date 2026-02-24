@@ -8,7 +8,7 @@ wf\_psf.psf\_models.psf\_models
 
    .. autosummary::
    
-      build_PSF_model
+      compile_PSF_model
       generate_zernike_maps_3d
       get_psf_model
       get_psf_model_weights_filepath

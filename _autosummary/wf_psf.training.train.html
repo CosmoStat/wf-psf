@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wf_psf.training.train &mdash; wf-psf 3.0.0 documentation</title>
+  <title>wf_psf.training.train &mdash; wf-psf 3.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
       <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
@@ -66,6 +66,8 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.data.html">wf_psf.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.inference.html">wf_psf.inference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.instrument.html">wf_psf.instrument</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.metrics.html">wf_psf.metrics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.plotting.html">wf_psf.plotting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.html">wf_psf.psf_models</a></li>
@@ -143,7 +145,7 @@ to manage training of the psf model.</p>
 <td><p>Get GPU Information.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.training.train.get_loss_metrics_monitor_and_outputs" title="wf_psf.training.train.get_loss_metrics_monitor_and_outputs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_loss_metrics_monitor_and_outputs</span></code></a>(...)</p></td>
-<td><p>Generate factory for loss, metrics, monitor, and outputs.</p></td>
+<td><p>Factory to return fresh loss, metrics (param &amp; non-param), monitor, and outputs for the current cycle.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.training.train.setup_training" title="wf_psf.training.train.setup_training"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_training</span></code></a>()</p></td>
 <td><p>Set up Training.</p></td>
@@ -394,9 +396,7 @@ device name.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="wf_psf.training.train.get_loss_metrics_monitor_and_outputs">
 <span class="sig-prename descclassname"><span class="pre">wf_psf.training.train.</span></span><span class="sig-name descname"><span class="pre">get_loss_metrics_monitor_and_outputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">training_handler</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_conf</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/training/train.html#get_loss_metrics_monitor_and_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train.get_loss_metrics_monitor_and_outputs" title="Link to this definition"></a></dt>
-<dd><p>Generate factory for loss, metrics, monitor, and outputs.</p>
-<p>A function to generate loss, metrics, monitor, and outputs
-for training.</p>
+<dd><p>Factory to return fresh loss, metrics (param &amp; non-param), monitor, and outputs for the current cycle.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -449,17 +449,24 @@ both parametric and non-parametric training stages, and training history is save
 <li><p><strong>psf_model_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Directory where the final trained PSF model weights will be saved per cycle.</p></li>
 </ul>
 </dd>
-</dl>
-<p class="rubric">Notes</p>
-<ul class="simple">
-<li><p>Utilizes TensorFlow and TensorFlow Addons for model training and optimization.</p></li>
-<li><p>Supports masked mean squared error loss for training with masked data.</p></li>
-<li><p>Allows for projection of data-driven features onto parametric models between cycles.</p></li>
-<li><p>Supports resetting of non-parametric features to initial states.</p></li>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>None</em></p></li>
+<li><p><em>Side Effects</em></p></li>
+<li><p><em>————</em></p></li>
+<li><ul>
 <li><p>Saves model weights to <cite>psf_model_dir</cite> per training cycle (or final one if not all saved)</p></li>
-<li><p>Saves optimizer histories to <cite>optimizer_dir</cite></p></li>
-<li><p>Logs cycle information and time durations</p></li>
 </ul>
+</li>
+<li><ul>
+<li><p>Saves optimizer histories to <cite>optimizer_dir</cite></p></li>
+</ul>
+</li>
+<li><p><em>- Logs cycle information and time durations</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
 </dd></dl>
 
 </section>

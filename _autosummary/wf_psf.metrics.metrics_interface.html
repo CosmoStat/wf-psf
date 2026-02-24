@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wf_psf.metrics.metrics_interface &mdash; wf-psf 3.0.0 documentation</title>
+  <title>wf_psf.metrics.metrics_interface &mdash; wf-psf 3.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
       <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
@@ -66,6 +66,8 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.data.html">wf_psf.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.inference.html">wf_psf.inference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.instrument.html">wf_psf.instrument</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="wf_psf.metrics.html">wf_psf.metrics</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="wf_psf.metrics.metrics.html">wf_psf.metrics.metrics</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">wf_psf.metrics.metrics_interface</a><ul>
@@ -388,7 +390,7 @@ corresponding Standard Deviation values for PSF Shape metrics.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="wf_psf.metrics.metrics_interface.evaluate_model">
-<span class="sig-prename descclassname"><span class="pre">wf_psf.metrics.metrics_interface.</span></span><span class="sig-name descname"><span class="pre">evaluate_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metrics_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trained_model_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psf_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics_output</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/metrics/metrics_interface.html#evaluate_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.metrics.metrics_interface.evaluate_model" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">wf_psf.metrics.metrics_interface.</span></span><span class="sig-name descname"><span class="pre">evaluate_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metrics_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trained_model_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psf_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metrics_output</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/metrics/metrics_interface.html#evaluate_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.metrics.metrics_interface.evaluate_model" title="Link to this definition"></a></dt>
 <dd><p>Evaluate the trained model on both training and test datasets by computing various metrics.</p>
 <p>The metrics to evaluate are determined by the configuration in <cite>metrics_params</cite> and <cite>metric_evaluation_flags</cite>.
 Metrics are computed for both the training and test datasets, and results are stored in a dictionary.</p>
@@ -399,7 +401,6 @@ Metrics are computed for both the training and test datasets, and results are st
 <li><p><strong>trained_model_params</strong> (<em>Recursive Namespace object</em>) – Recursive Namespace object containing trained model input parameters</p></li>
 <li><p><strong>data</strong> (<em>DataHandler object</em>) – DataHandler object containing training and test data</p></li>
 <li><p><strong>psf_model</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><em>object</em></a>) – PSF model object</p></li>
-<li><p><strong>weights_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Directory location of model weights</p></li>
 <li><p><strong>metrics_output</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Directory location of metrics output</p></li>
 </ul>
 </dd>

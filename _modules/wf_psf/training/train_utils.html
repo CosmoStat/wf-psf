@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wf_psf.training.train_utils &mdash; wf-psf 3.0.0 documentation</title>
+  <title>wf_psf.training.train_utils &mdash; wf-psf 3.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9570fddd" />
       <link rel="stylesheet" type="text/css" href="../../../_static/twemoji.css" />
@@ -111,7 +111,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.psf_models.psf_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_PSF_model</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.psf_models.psf_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">compile_PSF_model</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.utils.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">NoiseEstimator</span><span class="p">,</span> <span class="n">generalised_sigmoid</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
@@ -648,8 +648,8 @@
 <span class="sd">    -----</span>
 <span class="sd">    This function trains the model based on the provided `cycle_part`. If `cycle_part` is set to</span>
 <span class="sd">    &quot;parametric&quot;, the function assumes the model is being trained in a parametric setting, while</span>
-<span class="sd">    &quot;non-parametric&quot; indicates the training of a non-parametric part. The model is built using the</span>
-<span class="sd">    `build_PSF_model` function before fitting.</span>
+<span class="sd">    &quot;non-parametric&quot; indicates the training of a non-parametric part. The model is compile using the</span>
+<span class="sd">    `compile_PSF_model` function before fitting.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
@@ -670,7 +670,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting </span><span class="si">{</span><span class="n">cycle_part</span><span class="si">}</span><span class="s2"> update..&quot;</span><span class="p">)</span>
 
-    <span class="n">psf_model</span> <span class="o">=</span> <span class="n">build_PSF_model</span><span class="p">(</span>
+    <span class="n">psf_model</span> <span class="o">=</span> <span class="n">compile_PSF_model</span><span class="p">(</span>
         <span class="n">psf_model</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="n">loss</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="n">metrics</span>
     <span class="p">)</span>
 

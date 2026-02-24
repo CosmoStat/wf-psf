@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wf_psf.metrics.metrics_interface &mdash; wf-psf 3.0.0 documentation</title>
+  <title>wf_psf.metrics.metrics_interface &mdash; wf-psf 3.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9570fddd" />
       <link rel="stylesheet" type="text/css" href="../../../_static/twemoji.css" />
@@ -408,9 +408,10 @@
             <span class="n">tf_pos</span><span class="o">=</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">],</span>
             <span class="n">n_bins_lda</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trained_model</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">n_bins_lda</span><span class="p">,</span>
             <span class="n">n_bins_gt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="o">.</span><span class="n">ground_truth_model</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">n_bins_lda</span><span class="p">,</span>
-            <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="o">.</span><span class="n">metrics_hparams</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
             <span class="n">output_Q</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="o">.</span><span class="n">metrics_hparams</span><span class="o">.</span><span class="n">output_Q</span><span class="p">,</span>
             <span class="n">output_dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="o">.</span><span class="n">metrics_hparams</span><span class="o">.</span><span class="n">output_dim</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="o">.</span><span class="n">metrics_hparams</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">optimizer_settings</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="o">.</span><span class="n">metrics_hparams</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span>
             <span class="n">opt_stars_rel_pix_rmse</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="o">.</span><span class="n">metrics_hparams</span><span class="o">.</span><span class="n">opt_stars_rel_pix_rmse</span><span class="p">,</span>
             <span class="n">dataset_dict</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
         <span class="p">)</span>
@@ -426,7 +427,6 @@
     <span class="n">trained_model_params</span><span class="p">,</span>
     <span class="n">data</span><span class="p">,</span>
     <span class="n">psf_model</span><span class="p">,</span>
-    <span class="n">weights_path</span><span class="p">,</span>
     <span class="n">metrics_output</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Evaluate the trained model on both training and test datasets by computing various metrics.</span>
@@ -444,8 +444,6 @@
 <span class="sd">        DataHandler object containing training and test data</span>
 <span class="sd">    psf_model: object</span>
 <span class="sd">        PSF model object</span>
-<span class="sd">    weights_path: str</span>
-<span class="sd">        Directory location of model weights</span>
 <span class="sd">    metrics_output: str</span>
 <span class="sd">        Directory location of metrics output</span>
 
@@ -456,8 +454,8 @@
     <span class="k">try</span><span class="p">:</span>
         <span class="c1">## Load datasets</span>
         <span class="c1"># -----------------------------------------------------</span>
-        <span class="c1"># Get training data</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Fetching and preprocessing training and test data...&quot;</span><span class="p">)</span>
+        <span class="c1"># Get training and test data</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Fetching training and test data...&quot;</span><span class="p">)</span>
 
         <span class="c1"># Initialize metrics_handler</span>
         <span class="n">metrics_handler</span> <span class="o">=</span> <span class="n">MetricsParamsHandler</span><span class="p">(</span><span class="n">metrics_params</span><span class="p">,</span> <span class="n">trained_model_params</span><span class="p">)</span>
@@ -465,14 +463,6 @@
         <span class="c1">## Prepare models</span>
         <span class="c1"># Prepare np input</span>
         <span class="n">simPSF_np</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">training_data</span><span class="o">.</span><span class="n">simPSF</span>
-
-        <span class="c1">## Load the model&#39;s weights</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading PSF model weights from </span><span class="si">{</span><span class="n">weights_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">psf_model</span><span class="o">.</span><span class="n">load_weights</span><span class="p">(</span><span class="n">weights_path</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;An error occurred with the weights_path file: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
-            <span class="n">exit</span><span class="p">()</span>
 
         <span class="c1"># Define datasets</span>
         <span class="n">datasets</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">test_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">training_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">}</span>

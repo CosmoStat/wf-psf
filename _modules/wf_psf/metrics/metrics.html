@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wf_psf.metrics.metrics &mdash; wf-psf 3.0.0 documentation</title>
+  <title>wf_psf.metrics.metrics &mdash; wf-psf 3.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9570fddd" />
       <link rel="stylesheet" type="text/css" href="../../../_static/twemoji.css" />
@@ -111,7 +111,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">galsim</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gs</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">wf_psf.utils.utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">utils</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.psf_models.psf_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_PSF_model</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.psf_models.psf_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">compile_PSF_model</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.sims</span><span class="w"> </span><span class="kn">import</span> <span class="n">psf_simulator</span> <span class="k">as</span> <span class="n">psf_simulator</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
@@ -253,8 +253,7 @@
 
     <span class="c1"># Print RMSE values</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Absolute RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">%.4e</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">rmse</span><span class="p">,</span> <span class="n">std_rmse</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Relative RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> % </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">%.4e</span><span class="s2"> %&quot;</span><span class="p">,</span> <span class="n">rel_rmse</span><span class="p">,</span> <span class="n">std_rel_rmse</span><span class="p">)</span>
-
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Relative RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">{</span><span class="n">rel_rmse</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2">% </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">{</span><span class="n">std_rel_rmse</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">rmse</span><span class="p">,</span> <span class="n">rel_rmse</span><span class="p">,</span> <span class="n">std_rmse</span><span class="p">,</span> <span class="n">std_rel_rmse</span></div>
 
 
@@ -471,9 +470,8 @@
     <span class="n">rel_rmse_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">rel_rmse_vals</span><span class="p">)</span>
 
     <span class="c1"># Print RMSE values</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Absolute RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> % </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">%.4e</span><span class="s2"> %&quot;</span><span class="p">,</span> <span class="n">rmse</span><span class="p">,</span> <span class="n">rmse_std</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Relative RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> % </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">%.4e</span><span class="s2"> %&quot;</span><span class="p">,</span> <span class="n">rel_rmse</span><span class="p">,</span> <span class="n">rel_rmse_std</span><span class="p">)</span>
-
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Absolute RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">%.4e</span><span class="s2"> </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">%.4e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">rmse</span><span class="p">,</span> <span class="n">rmse_std</span><span class="p">))</span>    
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Relative RMSE:</span><span class="se">\t</span><span class="s2"> </span><span class="si">{</span><span class="n">rel_rmse</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2">% </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">{</span><span class="n">rel_rmse_std</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">rmse</span><span class="p">,</span> <span class="n">rel_rmse</span><span class="p">,</span> <span class="n">rmse_std</span><span class="p">,</span> <span class="n">rel_rmse_std</span></div>
 
 
@@ -491,8 +489,9 @@
     <span class="n">output_Q</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="n">output_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
     <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
-    <span class="n">opt_stars_rel_pix_rmse</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">optimizer_settings</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">dataset_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">opt_stars_rel_pix_rmse</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the pixel, shape and size RMSE of a PSF model.</span>
 
@@ -528,15 +527,18 @@
 <span class="sd">        Output dimension of the square PSF stamps.</span>
 <span class="sd">    batch_size: int</span>
 <span class="sd">        Batch size to process the PSF estimations.</span>
-<span class="sd">    opt_stars_rel_pix_rmse: bool</span>
-<span class="sd">        If `True`, the relative pixel RMSE of each star is added to ther saving dictionary.</span>
-<span class="sd">        The summary statistics are always computed.</span>
-<span class="sd">        Default is `False`.</span>
+<span class="sd">    optimizer_settings: RecursiveNamespace, dict, str, optional</span>
+<span class="sd">        Optimizer configuration (from YAML or programmatically), or string name.</span>
 <span class="sd">    dataset_dict: dict</span>
 <span class="sd">        Dictionary containing the dataset information. If provided, and if the `&#39;super_res_stars&#39;`</span>
 <span class="sd">        key is present, the noiseless super resolved stars from the dataset are used to compute</span>
 <span class="sd">        the metrics. Otherwise, the stars are generated from the gt model.</span>
 <span class="sd">        Default is `None`.</span>
+<span class="sd">    opt_stars_rel_pix_rmse: bool</span>
+<span class="sd">        If `True`, the relative pixel RMSE of each star is added to ther saving dictionary.</span>
+<span class="sd">        The summary statistics are always computed.</span>
+<span class="sd">        Default is `False`.</span>
+
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -554,9 +556,13 @@
     <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">set_output_Q</span><span class="p">(</span><span class="n">output_Q</span><span class="o">=</span><span class="n">output_Q</span><span class="p">,</span> <span class="n">output_dim</span><span class="o">=</span><span class="n">output_dim</span><span class="p">)</span>
     <span class="n">gt_tf_semiparam_field</span><span class="o">.</span><span class="n">set_output_Q</span><span class="p">(</span><span class="n">output_Q</span><span class="o">=</span><span class="n">output_Q</span><span class="p">,</span> <span class="n">output_dim</span><span class="o">=</span><span class="n">output_dim</span><span class="p">)</span>
 
-    <span class="c1"># Need to compile the models again</span>
-    <span class="n">tf_semiparam_field</span> <span class="o">=</span> <span class="n">build_PSF_model</span><span class="p">(</span><span class="n">tf_semiparam_field</span><span class="p">)</span>
-    <span class="n">gt_tf_semiparam_field</span> <span class="o">=</span> <span class="n">build_PSF_model</span><span class="p">(</span><span class="n">gt_tf_semiparam_field</span><span class="p">)</span>
+    <span class="c1"># Re-compile PSF model</span>
+    <span class="n">tf_semiparam_field</span> <span class="o">=</span> <span class="n">compile_PSF_model</span><span class="p">(</span>
+        <span class="n">tf_semiparam_field</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer_settings</span>
+    <span class="p">)</span>
+    <span class="n">gt_tf_semiparam_field</span> <span class="o">=</span> <span class="n">compile_PSF_model</span><span class="p">(</span>
+        <span class="n">gt_tf_semiparam_field</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer_settings</span>
+    <span class="p">)</span>
 
     <span class="c1"># Generate SED data list</span>
     <span class="n">packed_SED_data</span> <span class="o">=</span> <span class="p">[</span>
@@ -698,10 +704,10 @@
 
     <span class="c1"># Print relative shape/size errors</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Relative sigma(e1) RMSE =</span><span class="se">\t</span><span class="s2"> </span><span class="si">{</span><span class="n">rel_rmse_e1</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2"> % </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">{</span><span class="n">std_rel_rmse_e1</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2"> %&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Relative sigma(e1) RMSE =</span><span class="se">\t</span><span class="s2"> </span><span class="si">{</span><span class="n">rel_rmse_e1</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2">% </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">{</span><span class="n">std_rel_rmse_e1</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2">%&quot;</span>
     <span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;Relative sigma(e2) RMSE =</span><span class="se">\t</span><span class="s2"> </span><span class="si">{</span><span class="n">rel_rmse_e2</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2"> % </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">{</span><span class="n">std_rel_rmse_e2</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2"> %&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;Relative sigma(e2) RMSE =</span><span class="se">\t</span><span class="s2"> </span><span class="si">{</span><span class="n">rel_rmse_e2</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2">% </span><span class="se">\t</span><span class="s2"> +/- </span><span class="si">{</span><span class="n">std_rel_rmse_e2</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2">%&quot;</span>
     <span class="p">)</span>
 
     <span class="c1"># Print number of stars</span>
@@ -718,9 +724,9 @@
         <span class="n">output_Q</span><span class="o">=</span><span class="n">gt_original_out_Q</span><span class="p">,</span> <span class="n">output_dim</span><span class="o">=</span><span class="n">gt_original_out_dim</span>
     <span class="p">)</span>
 
-    <span class="c1"># Need to compile the models again</span>
-    <span class="n">tf_semiparam_field</span> <span class="o">=</span> <span class="n">build_PSF_model</span><span class="p">(</span><span class="n">tf_semiparam_field</span><span class="p">)</span>
-    <span class="n">gt_tf_semiparam_field</span> <span class="o">=</span> <span class="n">build_PSF_model</span><span class="p">(</span><span class="n">gt_tf_semiparam_field</span><span class="p">)</span>
+    <span class="c1"># Re-compile PSF models</span>
+    <span class="n">tf_semiparam_field</span> <span class="o">=</span> <span class="n">compile_PSF_model</span><span class="p">(</span><span class="n">tf_semiparam_field</span><span class="p">)</span>
+    <span class="n">gt_tf_semiparam_field</span> <span class="o">=</span> <span class="n">compile_PSF_model</span><span class="p">(</span><span class="n">gt_tf_semiparam_field</span><span class="p">)</span>
 
     <span class="c1"># Moment results</span>
     <span class="n">result_dict</span> <span class="o">=</span> <span class="p">{</span>

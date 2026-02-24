@@ -1,0 +1,18 @@
+wf\_psf.instrument.ccd\_misalignments
+=====================================
+
+.. automodule:: wf_psf.instrument.ccd_misalignments
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      compute_ccd_misalignment
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      CCDMisalignmentCalculator
+   

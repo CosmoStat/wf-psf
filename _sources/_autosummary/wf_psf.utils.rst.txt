@@ -10,11 +10,11 @@
    :toctree:
    :recursive:
 
-   ccd_misalignments
-   centroids
    configs_handler
    graph_utils
+   interpolation
    io
-   preprocessing
+   optimizer
    read_config
+   types
    utils

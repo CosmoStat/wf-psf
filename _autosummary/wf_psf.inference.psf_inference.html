@@ -1,0 +1,940 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.inference.psf_inference &mdash; wf-psf 3.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../_static/twemoji.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="wf_psf.instrument" href="wf_psf.instrument.html" />
+    <link rel="prev" title="wf_psf.inference" href="wf_psf.inference.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.data.html">wf_psf.data</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="wf_psf.inference.html">wf_psf.inference</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">wf_psf.inference.psf_inference</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.inference.psf_inference.InferenceConfigHandler"><code class="docutils literal notranslate"><span class="pre">InferenceConfigHandler</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInference"><code class="docutils literal notranslate"><span class="pre">PSFInference</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInferenceEngine"><code class="docutils literal notranslate"><span class="pre">PSFInferenceEngine</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.instrument.html">wf_psf.instrument</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.metrics.html">wf_psf.metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.plotting.html">wf_psf.plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.html">wf_psf.psf_models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.run.html">wf_psf.run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.sims.html">wf_psf.sims</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.training.html">wf_psf.training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.utils.html">wf_psf.utils</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="wf_psf.inference.html">wf_psf.inference</a></li>
+      <li class="breadcrumb-item active">wf_psf.inference.psf_inference</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/wf_psf.inference.psf_inference.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-wf_psf.inference.psf_inference">
+<span id="wf-psf-inference-psf-inference"></span><h1>wf_psf.inference.psf_inference<a class="headerlink" href="#module-wf_psf.inference.psf_inference" title="Link to this heading"></a></h1>
+<p>Inference.</p>
+<p>A module which provides a PSFInference class to perform inference
+with trained PSF models. It is able to load a trained model,
+perform inference on a dataset of SEDs and positions, and generate polychromatic PSFs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Authors<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Jennifer Pollack &lt;<a class="reference external" href="mailto:jennifer&#46;pollack&#37;&#52;&#48;cea&#46;fr">jennifer<span>&#46;</span>pollack<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;, Tobias Liaudat &lt;<a class="reference external" href="mailto:tobias&#46;liaudat&#37;&#52;&#48;cea&#46;fr">tobias<span>&#46;</span>liaudat<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;</p>
+</dd>
+</dl>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.inference.psf_inference.InferenceConfigHandler" title="wf_psf.inference.psf_inference.InferenceConfigHandler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InferenceConfigHandler</span></code></a>(inference_config_path)</p></td>
+<td><p>Handle configuration loading and management for PSF inference.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInference" title="wf_psf.inference.psf_inference.PSFInference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PSFInference</span></code></a>(inference_config_path[, ...])</p></td>
+<td><p>Perform PSF inference using a pre-trained WaveDiff model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInferenceEngine" title="wf_psf.inference.psf_inference.PSFInferenceEngine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PSFInferenceEngine</span></code></a>(trained_model, ...)</p></td>
+<td><p>Engine to perform PSF inference using a trained model.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.InferenceConfigHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.inference.psf_inference.</span></span><span class="sig-name descname"><span class="pre">InferenceConfigHandler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inference_config_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/inference/psf_inference.html#InferenceConfigHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.inference.psf_inference.InferenceConfigHandler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Handle configuration loading and management for PSF inference.</p>
+<p>This class manages the loading of inference, training, and data configuration
+files required for PSF inference operations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>inference_config_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to the inference configuration YAML file.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.InferenceConfigHandler.inference_config_path">
+<span class="sig-name descname"><span class="pre">inference_config_path</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.InferenceConfigHandler.inference_config_path" title="Link to this definition"></a></dt>
+<dd><p>Path to the inference configuration file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.InferenceConfigHandler.inference_config">
+<span class="sig-name descname"><span class="pre">inference_config</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.InferenceConfigHandler.inference_config" title="Link to this definition"></a></dt>
+<dd><p>Loaded inference configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace" title="wf_psf.utils.read_config.RecursiveNamespace">RecursiveNamespace</a> or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.InferenceConfigHandler.training_config">
+<span class="sig-name descname"><span class="pre">training_config</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.InferenceConfigHandler.training_config" title="Link to this definition"></a></dt>
+<dd><p>Loaded training configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace" title="wf_psf.utils.read_config.RecursiveNamespace">RecursiveNamespace</a> or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.InferenceConfigHandler.data_config">
+<span class="sig-name descname"><span class="pre">data_config</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.InferenceConfigHandler.data_config" title="Link to this definition"></a></dt>
+<dd><p>Loaded data configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace" title="wf_psf.utils.read_config.RecursiveNamespace">RecursiveNamespace</a> or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.InferenceConfigHandler.trained_model_path">
+<span class="sig-name descname"><span class="pre">trained_model_path</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.InferenceConfigHandler.trained_model_path" title="Link to this definition"></a></dt>
+<dd><p>Path to the trained model directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.InferenceConfigHandler.model_subdir">
+<span class="sig-name descname"><span class="pre">model_subdir</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.InferenceConfigHandler.model_subdir" title="Link to this definition"></a></dt>
+<dd><p>Subdirectory name for model files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.InferenceConfigHandler.trained_model_config_path">
+<span class="sig-name descname"><span class="pre">trained_model_config_path</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.InferenceConfigHandler.trained_model_config_path" title="Link to this definition"></a></dt>
+<dd><p>Path to the training configuration file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.InferenceConfigHandler.data_config_path">
+<span class="sig-name descname"><span class="pre">data_config_path</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.InferenceConfigHandler.data_config_path" title="Link to this definition"></a></dt>
+<dd><p>Path to the data configuration file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a> or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.inference.psf_inference.InferenceConfigHandler.load_configs" title="wf_psf.inference.psf_inference.InferenceConfigHandler.load_configs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_configs</span></code></a>()</p></td>
+<td><p>Load configuration files based on the inference config.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.inference.psf_inference.InferenceConfigHandler.overwrite_model_params" title="wf_psf.inference.psf_inference.InferenceConfigHandler.overwrite_model_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">overwrite_model_params</span></code></a>([training_config, ...])</p></td>
+<td><p>Overwrite training model_params with values from inference_config if available.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.inference.psf_inference.InferenceConfigHandler.set_config_paths" title="wf_psf.inference.psf_inference.InferenceConfigHandler.set_config_paths"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_config_paths</span></code></a>()</p></td>
+<td><p>Extract and set the configuration paths from the inference config.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.InferenceConfigHandler.ids">
+<span class="sig-name descname"><span class="pre">ids</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('inference_conf',)</span></em><a class="headerlink" href="#wf_psf.inference.psf_inference.InferenceConfigHandler.ids" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.InferenceConfigHandler.load_configs">
+<span class="sig-name descname"><span class="pre">load_configs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/inference/psf_inference.html#InferenceConfigHandler.load_configs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.inference.psf_inference.InferenceConfigHandler.load_configs" title="Link to this definition"></a></dt>
+<dd><p>Load configuration files based on the inference config.</p>
+<p>Loads the inference configuration first, then uses it to determine and load
+the training and data configurations.</p>
+<p class="rubric">Notes</p>
+<p>Updates the following attributes in-place:
+- inference_config
+- training_config
+- data_config (if data_config_path is specified)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.InferenceConfigHandler.overwrite_model_params">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">overwrite_model_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">training_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inference_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/inference/psf_inference.html#InferenceConfigHandler.overwrite_model_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.inference.psf_inference.InferenceConfigHandler.overwrite_model_params" title="Link to this definition"></a></dt>
+<dd><p>Overwrite training model_params with values from inference_config if available.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>training_config</strong> (<a class="reference internal" href="wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace" title="wf_psf.utils.read_config.RecursiveNamespace"><em>RecursiveNamespace</em></a>) – Configuration object from training phase.</p></li>
+<li><p><strong>inference_config</strong> (<a class="reference internal" href="wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace" title="wf_psf.utils.read_config.RecursiveNamespace"><em>RecursiveNamespace</em></a>) – Configuration object from inference phase.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Updates are applied in-place to training_config.training.model_params.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.InferenceConfigHandler.set_config_paths">
+<span class="sig-name descname"><span class="pre">set_config_paths</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/inference/psf_inference.html#InferenceConfigHandler.set_config_paths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.inference.psf_inference.InferenceConfigHandler.set_config_paths" title="Link to this definition"></a></dt>
+<dd><p>Extract and set the configuration paths from the inference config.</p>
+<p>Sets the following attributes:
+- trained_model_path
+- model_subdir
+- trained_model_config_path
+- data_config_path</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.inference.psf_inference.</span></span><span class="sig-name descname"><span class="pre">PSFInference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inference_config_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sources</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/inference/psf_inference.html#PSFInference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Perform PSF inference using a pre-trained WaveDiff model.</p>
+<p>This class handles the setup for PSF inference, including loading configuration
+files, instantiating the PSF simulator and data handler, and preparing the
+input data required for inference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inference_config_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Path to the inference configuration YAML file.</p></li>
+<li><p><strong>x_field</strong> (<em>array-like</em><em>, </em><em>optional</em>) – x coordinates in SHE convention.</p></li>
+<li><p><strong>y_field</strong> (<em>array-like</em><em>, </em><em>optional</em>) – y coordinates in SHE convention.</p></li>
+<li><p><strong>seds</strong> (<em>array-like</em><em>, </em><em>optional</em>) – Spectral energy distributions (SEDs).</p></li>
+<li><p><strong>sources</strong> (<em>array-like</em><em>, </em><em>optional</em>) – Postage stamps of sources, e.g. star images (shape: [n_stars, h, w]).</p></li>
+<li><p><strong>masks</strong> (<em>array-like</em><em>, </em><em>optional</em>) – Corresponding masks for the sources (same shape as sources). Defaults to None.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.inference_config_path">
+<span class="sig-name descname"><span class="pre">inference_config_path</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.inference_config_path" title="Link to this definition"></a></dt>
+<dd><p>Path to the inference configuration file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.x_field">
+<span class="sig-name descname"><span class="pre">x_field</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.x_field" title="Link to this definition"></a></dt>
+<dd><p>x coordinates for PSF positions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array-like or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.y_field">
+<span class="sig-name descname"><span class="pre">y_field</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.y_field" title="Link to this definition"></a></dt>
+<dd><p>y coordinates for PSF positions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array-like or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.seds">
+<span class="sig-name descname"><span class="pre">seds</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.seds" title="Link to this definition"></a></dt>
+<dd><p>Spectral energy distributions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array-like or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.sources">
+<span class="sig-name descname"><span class="pre">sources</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.sources" title="Link to this definition"></a></dt>
+<dd><p>Source postage stamps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array-like or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.masks">
+<span class="sig-name descname"><span class="pre">masks</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.masks" title="Link to this definition"></a></dt>
+<dd><p>Source masks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array-like or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.engine">
+<span class="sig-name descname"><span class="pre">engine</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.engine" title="Link to this definition"></a></dt>
+<dd><p>The inference engine instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInferenceEngine" title="wf_psf.inference.psf_inference.PSFInferenceEngine">PSFInferenceEngine</a> or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Examples</p>
+<p>Basic usage with position coordinates and SEDs:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">psf_inf</span> <span class="o">=</span> <span class="n">PSFInference</span><span class="p">(</span>
+    <span class="n">inference_config_path</span><span class="o">=</span><span class="s2">&quot;config.yaml&quot;</span><span class="p">,</span>
+    <span class="n">x_field</span><span class="o">=</span><span class="p">[</span><span class="mf">100.5</span><span class="p">,</span> <span class="mf">200.3</span><span class="p">],</span>
+    <span class="n">y_field</span><span class="o">=</span><span class="p">[</span><span class="mf">150.2</span><span class="p">,</span> <span class="mf">250.8</span><span class="p">],</span>
+    <span class="n">seds</span><span class="o">=</span><span class="n">sed_array</span>
+<span class="p">)</span>
+<span class="n">psf_inf</span><span class="o">.</span><span class="n">run_inference</span><span class="p">()</span>
+<span class="n">psf</span> <span class="o">=</span> <span class="n">psf_inf</span><span class="o">.</span><span class="n">get_psf</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInference.batch_size" title="wf_psf.inference.psf_inference.PSFInference.batch_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">batch_size</span></code></a></dt><dd><p>Get the batch size for inference.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInference.config_handler" title="wf_psf.inference.psf_inference.PSFInference.config_handler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">config_handler</span></code></a></dt><dd><p>Get or create the configuration handler.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInference.cycle" title="wf_psf.inference.psf_inference.PSFInference.cycle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cycle</span></code></a></dt><dd><p>Get the cycle number for inference.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInference.data_config" title="wf_psf.inference.psf_inference.PSFInference.data_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">data_config</span></code></a></dt><dd><p>Get the data configuration.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInference.data_handler" title="wf_psf.inference.psf_inference.PSFInference.data_handler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">data_handler</span></code></a></dt><dd><p>Get or create the data handler.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInference.inference_config" title="wf_psf.inference.psf_inference.PSFInference.inference_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">inference_config</span></code></a></dt><dd><p>Get the inference configuration.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInference.n_bins_lambda" title="wf_psf.inference.psf_inference.PSFInference.n_bins_lambda"><code class="xref py py-obj docutils literal notranslate"><span class="pre">n_bins_lambda</span></code></a></dt><dd><p>Get the number of wavelength bins for inference.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInference.output_dim" title="wf_psf.inference.psf_inference.PSFInference.output_dim"><code class="xref py py-obj docutils literal notranslate"><span class="pre">output_dim</span></code></a></dt><dd><p>Get the output dimension for PSF inference.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInference.simPSF" title="wf_psf.inference.psf_inference.PSFInference.simPSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">simPSF</span></code></a></dt><dd><p>Get or create the PSF simulator.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInference.trained_psf_model" title="wf_psf.inference.psf_inference.PSFInference.trained_psf_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trained_psf_model</span></code></a></dt><dd><p>Get or load the trained PSF model.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInference.training_config" title="wf_psf.inference.psf_inference.PSFInference.training_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">training_config</span></code></a></dt><dd><p>Get the training configuration.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInference.clear_cache" title="wf_psf.inference.psf_inference.PSFInference.clear_cache"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear_cache</span></code></a>()</p></td>
+<td><p>Clear all cached properties and reset the instance.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInference.get_positions" title="wf_psf.inference.psf_inference.PSFInference.get_positions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_positions</span></code></a>()</p></td>
+<td><p>Combine x_field and y_field into position pairs.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInference.get_psf" title="wf_psf.inference.psf_inference.PSFInference.get_psf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_psf</span></code></a>([index])</p></td>
+<td><p>Get the PSF at a specific index.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInference.get_psfs" title="wf_psf.inference.psf_inference.PSFInference.get_psfs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_psfs</span></code></a>()</p></td>
+<td><p>Get all inferred PSFs.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInference.load_inference_model" title="wf_psf.inference.psf_inference.PSFInference.load_inference_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_inference_model</span></code></a>()</p></td>
+<td><p>Load the trained PSF model based on the inference configuration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInference.prepare_configs" title="wf_psf.inference.psf_inference.PSFInference.prepare_configs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prepare_configs</span></code></a>()</p></td>
+<td><p>Prepare the configuration for inference.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInference.run_inference" title="wf_psf.inference.psf_inference.PSFInference.run_inference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_inference</span></code></a>()</p></td>
+<td><p>Run PSF inference and return the full PSF array.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.batch_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">batch_size</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.batch_size" title="Link to this definition"></a></dt>
+<dd><p>Get the batch size for inference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The batch size for processing during inference.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.clear_cache">
+<span class="sig-name descname"><span class="pre">clear_cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/inference/psf_inference.html#PSFInference.clear_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.clear_cache" title="Link to this definition"></a></dt>
+<dd><p>Clear all cached properties and reset the instance.</p>
+<p>This method resets all lazy-loaded properties, including the config handler,
+PSF simulator, data handler, trained model, and inference engine. Useful for
+freeing memory or forcing a fresh initialization.</p>
+<p class="rubric">Notes</p>
+<p>After calling this method, accessing any property will trigger re-initialization.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.config_handler">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">config_handler</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.config_handler" title="Link to this definition"></a></dt>
+<dd><p>Get or create the configuration handler.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The configuration handler instance with loaded configs.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#wf_psf.inference.psf_inference.InferenceConfigHandler" title="wf_psf.inference.psf_inference.InferenceConfigHandler">InferenceConfigHandler</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.cycle">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cycle</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.cycle" title="Link to this definition"></a></dt>
+<dd><p>Get the cycle number for inference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The cycle number used for loading the trained model.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.data_config">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data_config</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.data_config" title="Link to this definition"></a></dt>
+<dd><p>Get the data configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The data configuration object, or None if not available.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace" title="wf_psf.utils.read_config.RecursiveNamespace">RecursiveNamespace</a> or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.data_handler">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data_handler</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.data_handler" title="Link to this definition"></a></dt>
+<dd><p>Get or create the data handler.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The data handler instance configured for inference.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="wf_psf.data.data_handler.html#wf_psf.data.data_handler.DataHandler" title="wf_psf.data.data_handler.DataHandler">DataHandler</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.get_positions">
+<span class="sig-name descname"><span class="pre">get_positions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/inference/psf_inference.html#PSFInference.get_positions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.get_positions" title="Link to this definition"></a></dt>
+<dd><p>Combine x_field and y_field into position pairs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Array of shape (num_positions, 2) where each row contains [x, y] coordinates.
+Returns None if either x_field or y_field is None.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If x_field and y_field have different lengths.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.get_psf">
+<span class="sig-name descname"><span class="pre">get_psf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/inference/psf_inference.html#PSFInference.get_psf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.get_psf" title="Link to this definition"></a></dt>
+<dd><p>Get the PSF at a specific index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – Index of the PSF to retrieve (default is 0).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The inferred PSF at the specified index with shape (output_dim, output_dim).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Ensures automatically that inference has been completed before accessing the PSF.
+If only a single star was passed during instantiation, the index defaults to 0
+and bounds checking is relaxed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.get_psfs">
+<span class="sig-name descname"><span class="pre">get_psfs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/inference/psf_inference.html#PSFInference.get_psfs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.get_psfs" title="Link to this definition"></a></dt>
+<dd><p>Get all inferred PSFs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Array of inferred PSFs with shape (n_samples, output_dim, output_dim).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Ensures automatically that inference has been completed before accessing the PSFs.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.inference_config">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inference_config</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.inference_config" title="Link to this definition"></a></dt>
+<dd><p>Get the inference configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The inference configuration object.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace" title="wf_psf.utils.read_config.RecursiveNamespace">RecursiveNamespace</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.load_inference_model">
+<span class="sig-name descname"><span class="pre">load_inference_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/inference/psf_inference.html#PSFInference.load_inference_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.load_inference_model" title="Link to this definition"></a></dt>
+<dd><p>Load the trained PSF model based on the inference configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The loaded trained PSF model.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Model</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Constructs the weights path pattern based on the trained model path,
+model subdirectory, model name, id name, and cycle number specified in the
+configuration files.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.n_bins_lambda">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">n_bins_lambda</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.n_bins_lambda" title="Link to this definition"></a></dt>
+<dd><p>Get the number of wavelength bins for inference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The number of wavelength bins used during inference.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.output_dim">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output_dim</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.output_dim" title="Link to this definition"></a></dt>
+<dd><p>Get the output dimension for PSF inference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The output dimension (height and width) of the inferred PSFs.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.prepare_configs">
+<span class="sig-name descname"><span class="pre">prepare_configs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/inference/psf_inference.html#PSFInference.prepare_configs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.prepare_configs" title="Link to this definition"></a></dt>
+<dd><p>Prepare the configuration for inference.</p>
+<p>Overwrites training model parameters with inference configuration values.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.run_inference">
+<span class="sig-name descname"><span class="pre">run_inference</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/inference/psf_inference.html#PSFInference.run_inference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.run_inference" title="Link to this definition"></a></dt>
+<dd><p>Run PSF inference and return the full PSF array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Array of inferred PSFs with shape (n_samples, output_dim, output_dim).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Prepares configurations and input data, initializes the inference engine,
+and computes the PSF for all input positions.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.simPSF">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">simPSF</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.simPSF" title="Link to this definition"></a></dt>
+<dd><p>Get or create the PSF simulator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The PSF simulator instance.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>simPSF</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.trained_psf_model">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">trained_psf_model</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.trained_psf_model" title="Link to this definition"></a></dt>
+<dd><p>Get or load the trained PSF model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The loaded trained PSF model.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInference.training_config">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">training_config</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInference.training_config" title="Link to this definition"></a></dt>
+<dd><p>Get the training configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The training configuration object.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace" title="wf_psf.utils.read_config.RecursiveNamespace">RecursiveNamespace</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInferenceEngine">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.inference.psf_inference.</span></span><span class="sig-name descname"><span class="pre">PSFInferenceEngine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trained_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/inference/psf_inference.html#PSFInferenceEngine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInferenceEngine" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Engine to perform PSF inference using a trained model.</p>
+<p>This class handles the batch-wise computation of PSFs using a trained PSF model.
+It manages the batching of input positions and SEDs, and caches the inferred PSFs for later access.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trained_model</strong> (<em>Model</em>) – The trained PSF model to use for inference.</p></li>
+<li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The batch size for processing during inference.</p></li>
+<li><p><strong>output_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – The output dimension (height and width) of the inferred PSFs.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInferenceEngine.trained_model">
+<span class="sig-name descname"><span class="pre">trained_model</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInferenceEngine.trained_model" title="Link to this definition"></a></dt>
+<dd><p>The trained PSF model used for inference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Model</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInferenceEngine.batch_size">
+<span class="sig-name descname"><span class="pre">batch_size</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInferenceEngine.batch_size" title="Link to this definition"></a></dt>
+<dd><p>The batch size for processing during inference.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInferenceEngine.output_dim">
+<span class="sig-name descname"><span class="pre">output_dim</span></span><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInferenceEngine.output_dim" title="Link to this definition"></a></dt>
+<dd><p>The output dimension (height and width) of the inferred PSFs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Examples</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">engine</span> <span class="o">=</span> <span class="n">PSFInferenceEngine</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">output_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">psfs</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">compute_psfs</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">seds</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">single_psf</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">get_psf</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInferenceEngine.inferred_psfs" title="wf_psf.inference.psf_inference.PSFInferenceEngine.inferred_psfs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">inferred_psfs</span></code></a></dt><dd><p>Access the cached inferred PSFs, if available.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInferenceEngine.clear_cache" title="wf_psf.inference.psf_inference.PSFInferenceEngine.clear_cache"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear_cache</span></code></a>()</p></td>
+<td><p>Clear cached inferred PSFs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInferenceEngine.compute_psfs" title="wf_psf.inference.psf_inference.PSFInferenceEngine.compute_psfs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_psfs</span></code></a>(positions, sed_data)</p></td>
+<td><p>Compute and cache PSFs for the input source parameters.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInferenceEngine.get_psf" title="wf_psf.inference.psf_inference.PSFInferenceEngine.get_psf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_psf</span></code></a>(index)</p></td>
+<td><p>Get the PSF at a specific index.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.inference.psf_inference.PSFInferenceEngine.get_psfs" title="wf_psf.inference.psf_inference.PSFInferenceEngine.get_psfs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_psfs</span></code></a>()</p></td>
+<td><p>Get all the generated PSFs.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInferenceEngine.clear_cache">
+<span class="sig-name descname"><span class="pre">clear_cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/inference/psf_inference.html#PSFInferenceEngine.clear_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInferenceEngine.clear_cache" title="Link to this definition"></a></dt>
+<dd><p>Clear cached inferred PSFs.</p>
+<p>Resets the internal PSF cache to free memory. After calling this method,
+compute_psfs() must be called again before accessing PSFs.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInferenceEngine.compute_psfs">
+<span class="sig-name descname"><span class="pre">compute_psfs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sed_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/inference/psf_inference.html#PSFInferenceEngine.compute_psfs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInferenceEngine.compute_psfs" title="Link to this definition"></a></dt>
+<dd><p>Compute and cache PSFs for the input source parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>positions</strong> (<em>tf.Tensor</em>) – Tensor of shape (n_samples, 2) containing the (x, y) positions</p></li>
+<li><p><strong>sed_data</strong> (<em>tf.Tensor</em>) – Tensor of shape (n_samples, n_bins, 2) containing the SEDs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of inferred PSFs with shape (n_samples, output_dim, output_dim).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>PSFs are computed in batches according to the specified batch_size.
+Results are cached internally for subsequent access via get_psfs() or get_psf().</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInferenceEngine.get_psf">
+<span class="sig-name descname"><span class="pre">get_psf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/inference/psf_inference.html#PSFInferenceEngine.get_psf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInferenceEngine.get_psf" title="Link to this definition"></a></dt>
+<dd><p>Get the PSF at a specific index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><em>numpy.ndarray</em></p></li>
+<li><p><em>The inferred PSF at the specified index with shape (output_dim, output_dim).</em></p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If PSFs have not yet been computed.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInferenceEngine.get_psfs">
+<span class="sig-name descname"><span class="pre">get_psfs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/inference/psf_inference.html#PSFInferenceEngine.get_psfs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInferenceEngine.get_psfs" title="Link to this definition"></a></dt>
+<dd><p>Get all the generated PSFs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Array of inferred PSFs with shape (n_samples, output_dim, output_dim).</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.inference.psf_inference.PSFInferenceEngine.inferred_psfs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">inferred_psfs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></em><a class="headerlink" href="#wf_psf.inference.psf_inference.PSFInferenceEngine.inferred_psfs" title="Link to this definition"></a></dt>
+<dd><p>Access the cached inferred PSFs, if available.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The cached inferred PSFs, or None if not yet computed.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)">numpy.ndarray</a> or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="wf_psf.inference.html" class="btn btn-neutral float-left" title="wf_psf.inference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wf_psf.instrument.html" class="btn btn-neutral float-right" title="wf_psf.instrument" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

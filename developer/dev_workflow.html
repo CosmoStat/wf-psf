@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WaveDiff Development Plan &mdash; wf-psf 3.0.0 documentation</title>
+  <title>WaveDiff Development Plan &mdash; wf-psf 3.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
       <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
@@ -245,7 +245,7 @@ This separation keeps release notes accurate and enables clean backports</p></li
 <h2>8.  <strong>Preparing for a Release</strong><a class="headerlink" href="#preparing-for-a-release" title="Link to this heading"></a></h2>
 <ul>
 <li><p>Each milestone targets a release (feature, patch, etc).</p></li>
-<li><p>Open a PR from <code class="docutils literal notranslate"><span class="pre">develop</span></code> to <code class="docutils literal notranslate"><span class="pre">release/vX.Y.Z</span></code> upon completing a milestone</p></li>
+<li><p>Create release branch with <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">checkout</span> <span class="pre">-b</span> <span class="pre">release/vX.Y.Z</span> <span class="pre">develop</span></code> upon completing a milestone</p></li>
 <li><p>Collect changelog fragments and generate release notes using:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>scriv<span class="w"> </span>collect<span class="w"> </span>--version<span class="w"> </span>vX.Y.Z
 </pre></div>

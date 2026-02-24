@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wf_psf.utils.io &mdash; wf-psf 3.0.0 documentation</title>
+  <title>wf_psf.utils.io &mdash; wf-psf 3.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
       <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
@@ -24,8 +24,8 @@
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="wf_psf.utils.preprocessing" href="wf_psf.utils.preprocessing.html" />
-    <link rel="prev" title="wf_psf.utils.graph_utils" href="wf_psf.utils.graph_utils.html" /> 
+    <link rel="next" title="wf_psf.utils.optimizer" href="wf_psf.utils.optimizer.html" />
+    <link rel="prev" title="wf_psf.utils.interpolation" href="wf_psf.utils.interpolation.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -66,6 +66,8 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.data.html">wf_psf.data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.inference.html">wf_psf.inference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.instrument.html">wf_psf.instrument</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.metrics.html">wf_psf.metrics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.plotting.html">wf_psf.plotting</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.html">wf_psf.psf_models</a></li>
@@ -73,16 +75,16 @@
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.sims.html">wf_psf.sims</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.training.html">wf_psf.training</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="wf_psf.utils.html">wf_psf.utils</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.ccd_misalignments.html">wf_psf.utils.ccd_misalignments</a></li>
-<li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.centroids.html">wf_psf.utils.centroids</a></li>
 <li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.configs_handler.html">wf_psf.utils.configs_handler</a></li>
 <li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.graph_utils.html">wf_psf.utils.graph_utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.interpolation.html">wf_psf.utils.interpolation</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">wf_psf.utils.io</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.utils.io.FileIOHandler"><code class="docutils literal notranslate"><span class="pre">FileIOHandler</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.preprocessing.html">wf_psf.utils.preprocessing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.optimizer.html">wf_psf.utils.optimizer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.read_config.html">wf_psf.utils.read_config</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.types.html">wf_psf.utils.types</a></li>
 <li class="toctree-l3"><a class="reference internal" href="wf_psf.utils.utils.html">wf_psf.utils.utils</a></li>
 </ul>
 </li>
@@ -355,8 +357,8 @@ directories and logging.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="wf_psf.utils.graph_utils.html" class="btn btn-neutral float-left" title="wf_psf.utils.graph_utils" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="wf_psf.utils.preprocessing.html" class="btn btn-neutral float-right" title="wf_psf.utils.preprocessing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="wf_psf.utils.interpolation.html" class="btn btn-neutral float-left" title="wf_psf.utils.interpolation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wf_psf.utils.optimizer.html" class="btn btn-neutral float-right" title="wf_psf.utils.optimizer" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

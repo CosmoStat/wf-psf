@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>wf_psf.utils.configs_handler &mdash; wf-psf 3.0.0 documentation</title>
+  <title>wf_psf.utils.configs_handler &mdash; wf-psf 3.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9570fddd" />
       <link rel="stylesheet" type="text/css" href="../../../_static/twemoji.css" />
@@ -111,12 +111,14 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.utils.read_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_conf</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.data.training_preprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataHandler</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.training</span><span class="w"> </span><span class="kn">import</span> <span class="n">train</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.psf_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">psf_models</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.data.data_handler</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataHandler</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.metrics.metrics_interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">evaluate_model</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.plotting.plots_interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_metrics</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.psf_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">psf_models</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.psf_models.psf_model_loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_trained_psf_model</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.training</span><span class="w"> </span><span class="kn">import</span> <span class="n">train</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.utils.read_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_conf</span>
+
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -240,28 +242,31 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_conf</span><span class="p">,</span> <span class="n">training_model_params</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">load_data</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data_conf</span> <span class="o">=</span> <span class="n">read_conf</span><span class="p">(</span><span class="n">data_conf</span><span class="p">)</span>
-        <span class="k">except</span> <span class="ne">FileNotFoundError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-            <span class="n">exit</span><span class="p">()</span>
-        <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">FileNotFoundError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
             <span class="n">exit</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">simPSF</span> <span class="o">=</span> <span class="n">psf_models</span><span class="o">.</span><span class="n">simPSF</span><span class="p">(</span><span class="n">training_model_params</span><span class="p">)</span>
+
+        <span class="c1"># Extract sub-configs early</span>
+        <span class="n">train_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_conf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">training</span>
+        <span class="n">test_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_conf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">test</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">training_data</span> <span class="o">=</span> <span class="n">DataHandler</span><span class="p">(</span>
             <span class="n">dataset_type</span><span class="o">=</span><span class="s2">&quot;training&quot;</span><span class="p">,</span>
-            <span class="n">data_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_conf</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+            <span class="n">data_params</span><span class="o">=</span><span class="n">train_params</span><span class="p">,</span>
             <span class="n">simPSF</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">simPSF</span><span class="p">,</span>
             <span class="n">n_bins_lambda</span><span class="o">=</span><span class="n">training_model_params</span><span class="o">.</span><span class="n">n_bins_lda</span><span class="p">,</span>
             <span class="n">load_data</span><span class="o">=</span><span class="n">load_data</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">test_data</span> <span class="o">=</span> <span class="n">DataHandler</span><span class="p">(</span>
             <span class="n">dataset_type</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span>
-            <span class="n">data_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_conf</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+            <span class="n">data_params</span><span class="o">=</span><span class="n">test_params</span><span class="p">,</span>
             <span class="n">simPSF</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">simPSF</span><span class="p">,</span>
             <span class="n">n_bins_lambda</span><span class="o">=</span><span class="n">training_model_params</span><span class="o">.</span><span class="n">n_bins_lda</span><span class="p">,</span>
             <span class="n">load_data</span><span class="o">=</span><span class="n">load_data</span><span class="p">,</span>
         <span class="p">)</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span></div>
 
 
@@ -299,6 +304,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">training_conf</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">training_hparams</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">training_conf</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">load_data_on_init</span><span class="p">,</span>
         <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_conf</span><span class="o">.</span><span class="n">run_type</span> <span class="o">=</span> <span class="s2">&quot;training&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">file_handler</span><span class="o">.</span><span class="n">copy_conffile_to_output_dir</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">training_conf</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">data_config</span>
         <span class="p">)</span>
@@ -376,8 +382,13 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrics_conf</span><span class="p">,</span> <span class="n">file_handler</span><span class="p">,</span> <span class="n">training_conf</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_metrics_conf</span> <span class="o">=</span> <span class="n">read_conf</span><span class="p">(</span><span class="n">metrics_conf</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_file_handler</span> <span class="o">=</span> <span class="n">file_handler</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">trained_model_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_trained_model_path</span><span class="p">(</span><span class="n">training_conf</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_training_conf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_training_conf</span><span class="p">(</span><span class="n">training_conf</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">training_conf</span> <span class="o">=</span> <span class="n">training_conf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_conf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_data_conf</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_conf</span><span class="o">.</span><span class="n">run_type</span> <span class="o">=</span> <span class="s2">&quot;metrics&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_handler</span><span class="o">.</span><span class="n">get_metrics_dir</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_file_handler</span><span class="o">.</span><span class="n">_run_output_dir</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trained_psf_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_trained_psf_model</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">metrics_conf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -393,31 +404,28 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metrics_conf</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">metrics_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get Metrics Directory.</span>
-
-<span class="sd">        A function that returns path</span>
-<span class="sd">        of metrics directory.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        str</span>
-<span class="sd">            Absolute path to metrics directory</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_handler</span><span class="o">.</span><span class="n">get_metrics_dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_handler</span><span class="o">.</span><span class="n">_run_output_dir</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">training_conf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get Training Conf.</span>
-
-<span class="sd">        A function to return the training configuration file name.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        RecursiveNamespace</span>
-<span class="sd">            An instance of the training configuration file.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the loaded training configuration.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_training_conf</span>
+
+    <span class="nd">@training_conf</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">training_conf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">training_conf</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the training configuration. If None is provided, attempts to load it</span>
+<span class="sd">        from the trained_model_path in the metrics configuration.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">training_conf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">training_conf_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_training_conf_path_from_metrics</span><span class="p">()</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Loading training config from inferred path: </span><span class="si">{</span><span class="n">training_conf_path</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_training_conf</span> <span class="o">=</span> <span class="n">read_conf</span><span class="p">(</span><span class="n">training_conf_path</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to load training config: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_training_conf</span> <span class="o">=</span> <span class="n">training_conf</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plotting_conf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -432,112 +440,106 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_conf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">plotting_config</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">data_conf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get Data Conf.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_trained_psf_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">trained_model_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_trained_model_path</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">model_subdir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_conf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">model_save_path</span>
+            <span class="n">cycle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metrics_conf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">saved_training_cycle</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Missing required model config fields.&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
-<span class="sd">        A function to return an instance of the DataConfigHandler class.</span>
+        <span class="n">model_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_conf</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">model_name</span>
+        <span class="n">id_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_conf</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">id_name</span>
 
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        An instance of the DataConfigHandler class.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_data_conf</span><span class="p">()</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">psf_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get PSF Model.</span>
-
-<span class="sd">        A function to return an instance of the PSF model</span>
-<span class="sd">        to be evaluated.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        psf_model: obj</span>
-<span class="sd">            An instance of the PSF model to be evaluated.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">psf_models</span><span class="o">.</span><span class="n">get_psf_model</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">training_conf</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">model_params</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">training_conf</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">training_hparams</span><span class="p">,</span>
+        <span class="n">weights_path_pattern</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">trained_model_path</span><span class="p">,</span>
+            <span class="n">model_subdir</span><span class="p">,</span>
+            <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">model_subdir</span><span class="si">}</span><span class="s2">*_</span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&quot;</span> <span class="sa">f</span><span class="s2">&quot;*</span><span class="si">{</span><span class="n">id_name</span><span class="si">}</span><span class="s2">_cycle</span><span class="si">{</span><span class="n">cycle</span><span class="si">}</span><span class="s2">*&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">load_trained_psf_model</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">training_conf</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data_conf</span><span class="p">,</span>
+            <span class="n">weights_path_pattern</span><span class="p">,</span>
         <span class="p">)</span>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">weights_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get Weights Path.</span>
-
-<span class="sd">        A function to return the full path</span>
-<span class="sd">        of the user-specified psf model weights to be loaded.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_training_conf_path_from_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves the full path to the training config based on the metrics configuration.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        str</span>
-<span class="sd">            A string representing the full path to the psf model weights to be loaded.</span>
+<span class="sd">            Full path to the training configuration file.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        KeyError</span>
+<span class="sd">            If &#39;trained_model_config&#39; key is missing.</span>
+<span class="sd">        FileNotFoundError</span>
+<span class="sd">            If the file does not exist at the constructed path.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">psf_models</span><span class="o">.</span><span class="n">get_psf_model_weights_filepath</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weights_basename_filepath</span><span class="p">)</span>
+        <span class="n">trained_model_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_trained_model_path</span><span class="p">()</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_get_trained_model_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">training_conf</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get Trained Model Path.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">training_conf_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metrics_conf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">trained_model_config</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                <span class="s2">&quot;Missing &#39;trained_model_config&#39; key in metrics configuration.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
-<span class="sd">        Helper method to get the trained model path.</span>
+        <span class="n">training_conf_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_file_handler</span><span class="o">.</span><span class="n">get_config_dir</span><span class="p">(</span><span class="n">trained_model_path</span><span class="p">),</span>
+            <span class="n">training_conf_filename</span><span class="p">,</span>
+        <span class="p">)</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        training_conf: None or RecursiveNamespace</span>
-<span class="sd">            None type or RecursiveNamespace</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        str</span>
-<span class="sd">            A string representing the path to the trained model output run directory.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">training_conf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metrics_conf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">trained_model_path</span>
-
-            <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-                <span class="k">raise</span> <span class="n">ConfigParameterError</span><span class="p">(</span>
-                    <span class="s2">&quot;Metrics config file trained model path or config values are empty.&quot;</span>
-                <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_file_handler</span><span class="o">.</span><span class="n">output_path</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_file_handler</span><span class="o">.</span><span class="n">parent_output_dir</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_file_handler</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">training_conf_path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Training config file not found: </span><span class="si">{</span><span class="n">training_conf_path</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_load_training_conf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">training_conf</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load Training Conf.</span>
+        <span class="k">return</span> <span class="n">training_conf_path</span>
 
-<span class="sd">        Load the training configuration if training_conf is not provided.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_trained_model_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determine the trained model path from either:</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        training_conf: None or RecursiveNamespace</span>
-<span class="sd">            None type or a RecursiveNamespace storing the training configuration parameter setttings.</span>
+<span class="sd">        1. The metrics configuration file (i.e., for metrics-only runs after training), or</span>
+<span class="sd">        2. The runtime-generated file handler paths (i.e., for single runs that perform both training and evaluation).</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        RecursiveNamespace storing the training configuration parameter settings.</span>
+<span class="sd">        str</span>
+<span class="sd">            Path to the trained model directory.</span>
 
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ConfigParameterError</span>
+<span class="sd">            If the path specified in the metrics config is invalid or missing.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">training_conf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">read_conf</span><span class="p">(</span>
-                    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_file_handler</span><span class="o">.</span><span class="n">get_config_dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trained_model_path</span><span class="p">),</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_metrics_conf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">trained_model_config</span><span class="p">,</span>
-                    <span class="p">)</span>
-                <span class="p">)</span>
-            <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="n">trained_model_path</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_metrics_conf</span><span class="o">.</span><span class="n">metrics</span><span class="p">,</span> <span class="s2">&quot;trained_model_path&quot;</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">trained_model_path</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">trained_model_path</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="n">ConfigParameterError</span><span class="p">(</span>
-                    <span class="s2">&quot;Metrics config file trained model path or config values are empty.&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;The trained model path provided in the metrics config is not a valid directory: </span><span class="si">{</span><span class="n">trained_model_path</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">training_conf</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Using trained model path from metrics config: </span><span class="si">{</span><span class="n">trained_model_path</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">trained_model_path</span>
+
+        <span class="c1"># Fallback for single-run training + metrics evaluation mode</span>
+        <span class="n">fallback_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_file_handler</span><span class="o">.</span><span class="n">output_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_file_handler</span><span class="o">.</span><span class="n">parent_output_dir</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_file_handler</span><span class="o">.</span><span class="n">workdir</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Using fallback trained model path from runtime file handler: </span><span class="si">{</span><span class="n">fallback_path</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">fallback_path</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_load_data_conf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load Data Conf.</span>
@@ -560,27 +562,6 @@
         <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
             <span class="k">raise</span> <span class="n">ConfigParameterError</span><span class="p">(</span><span class="s2">&quot;Data configuration loading error.&quot;</span><span class="p">)</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">weights_basename_filepath</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get PSF model weights filepath.</span>
-
-<span class="sd">        A function to return the basename of the user-specified psf model weights path.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        weights_basename: str</span>
-<span class="sd">            The basename of the psf model weights to be loaded.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">trained_model_path</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">metrics_conf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">model_save_path</span><span class="p">,</span>
-            <span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_conf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">model_save_path</span><span class="si">}</span><span class="s2">*_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">training_conf</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">model_name</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;*</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">training_conf</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">id_name</span><span class="si">}</span><span class="s2">_cycle</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_conf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">saved_training_cycle</span><span class="si">}</span><span class="s2">*&quot;</span>
-            <span class="p">),</span>
-        <span class="p">)</span>
 
 <div class="viewcode-block" id="MetricsConfigHandler.call_plot_config_handler_run">
 <a class="viewcode-back" href="../../../_autosummary/wf_psf.utils.configs_handler.html#wf_psf.utils.configs_handler.MetricsConfigHandler.call_plot_config_handler_run">[docs]</a>
@@ -629,20 +610,17 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run.</span>
 
-<span class="sd">        A function to run wave-diff according to the</span>
+<span class="sd">        A function to run WaveDiff according to the</span>
 <span class="sd">        input configuration.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Running metrics evaluation on psf model: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">weights_path</span><span class="si">}</span><span class="s2">&quot;</span>
-        <span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Running metrics evaluation on trained PSF model...&quot;</span><span class="p">)</span>
 
         <span class="n">model_metrics</span> <span class="o">=</span> <span class="n">evaluate_model</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">metrics_conf</span><span class="o">.</span><span class="n">metrics</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">training_conf</span><span class="o">.</span><span class="n">training</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data_conf</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">psf_model</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">weights_path</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trained_psf_model</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">metrics_dir</span><span class="p">,</span>
         <span class="p">)</span>
 
