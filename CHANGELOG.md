@@ -62,10 +62,7 @@ All notable changes to WaveDiff are documented in this file.
   - Improved markdown formatting and fixed broken anchor links
 - Updated `dependencies.md` to document `tensorflow-addons` as optional dependency with manual installation instructions
 - `tensorflow-addons` from core dependencies documentation (now documented as optional)
-
-
-=======
->>>>>>> main
+s
 ## [3.0.0] – 2026-01-20
 
 Major update with PSF model refactoring, masked training, and CI/doc improvements.
