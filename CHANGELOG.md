@@ -8,6 +8,7 @@ All notable changes to WaveDiff are documented in this file.
 
 - Changes in progress for the next release.
 
+<<<<<<< release/v3.1.0
 <a id='changelog-v3.1.0'></a>
 # v3.1.0 — 2026-02-23
 
@@ -64,6 +65,8 @@ All notable changes to WaveDiff are documented in this file.
 - `tensorflow-addons` from core dependencies documentation (now documented as optional)
 
 
+=======
+>>>>>>> main
 ## [3.0.0] – 2026-01-20
 
 Major update with PSF model refactoring, masked training, and CI/doc improvements.

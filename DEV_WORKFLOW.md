@@ -128,7 +128,11 @@ This separation keeps release notes accurate and enables clean backports
 
 * Each milestone targets a release (feature, patch, etc).
     
+<<<<<<< release/v3.1.0
 * Create release branch with `git checkout -b release/vX.Y.Z develop` upon completing a milestone
+=======
+*   Open a PR from `develop` to `release/vX.Y.Z` upon completing a milestone
+>>>>>>> main
     
 * Collect changelog fragments and generate release notes using:
 
