@@ -126,9 +126,9 @@ This separation keeps release notes accurate and enables clean backports
 ## 8.  **Preparing for a Release**
     
 
-*   Each milestone targets a release (feature, patch, etc).
+* Each milestone targets a release (feature, patch, etc).
     
-*   Open a PR from `develop` to `release/vX.Y.Z` upon completing a milestone
+* Create release branch with `git checkout -b release/vX.Y.Z develop` upon completing a milestone
     
 * Collect changelog fragments and generate release notes using:
 
