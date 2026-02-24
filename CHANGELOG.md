@@ -7,8 +7,7 @@ All notable changes to WaveDiff are documented in this file.
 ## [Unreleased]
 
 - Changes in progress for the next release.
-
-<<<<<<< release/v3.1.0
+  
 <a id='changelog-v3.1.0'></a>
 # v3.1.0 — 2026-02-23
 
