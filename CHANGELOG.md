@@ -7,20 +7,17 @@ All notable changes to WaveDiff are documented in this file.
 ## [Unreleased]
 
 - Changes in progress for the next release.
-  
+
 <a id='changelog-v3.1.0'></a>
 # v3.1.0 — 2026-02-23
 
 ## New features
 
 - Added PSF inference capabilities for generating broadband (polychromatic) PSFs from trained models given star positions and SEDs
-- Introduced `PSFInferenceEngine` class to centralize training, simulation, metrics, and inference workflows
 - Added `run_type` attribute to `DataHandler` supporting training, simulation, metrics, and inference modes
 - Implemented `ZernikeInputsFactory` class for building `ZernikeInputs` instances based on run type
 - Added `psf_model_loader.py` module for centralized model weights loading
-
 - Added configurable optimizer selection system via new `optimizer.py` module with `get_optimizer` function
-- Optimizer configuration now supports multiple input types: `RecursiveNamespace` from configs, dictionaries, or string names
 - Added support for hyperparameter overrides (learning rate, beta1/beta2, epsilon, amsgrad) via YAML or programmatic configuration
 - `RectifiedAdam` optimizer now dynamically imports TensorFlow Addons only when explicitly specified in configuration
 
@@ -47,9 +44,9 @@ All notable changes to WaveDiff are documented in this file.
 - Updated README and added THIRD_PARTY_LICENSE directory with TensorFlow Addons license
 - Training now runs on TensorFlow 2.11 without requiring TensorFlow Addons installation
 - Removed TensorFlow Addons as a required dependency; RectifiedAdam optimizer now requires explicit TFA installation if needed
-- Remove deprecated/optional import tensorflow-addons statement from tf_layers.py
+- Remove deprecated/optional import tensorflow-addons statement from `tf_layers.py`
 - Fixed Sphinx autosummary import errors by removing core dependencies (tensorflow) from `autodoc_mock_imports` in `conf.py`.
-- Updated pyproject.toml to include all wf_psf packages under `src/` and include config/yaml files.
+- Updated `pyproject.toml` to include all `wf_psf` packages under `src/` when executing CD
 - Updated example configuration files with clearer inline comments.
 - Generated API documentation for new `inference` package in `api.rst`
 - Generated API documentation for new `instrument` package in `api.rst`
@@ -62,7 +59,7 @@ All notable changes to WaveDiff are documented in this file.
   - Improved markdown formatting and fixed broken anchor links
 - Updated `dependencies.md` to document `tensorflow-addons` as optional dependency with manual installation instructions
 - `tensorflow-addons` from core dependencies documentation (now documented as optional)
-s
+
 ## [3.0.0] – 2026-01-20
 
 Major update with PSF model refactoring, masked training, and CI/doc improvements.
