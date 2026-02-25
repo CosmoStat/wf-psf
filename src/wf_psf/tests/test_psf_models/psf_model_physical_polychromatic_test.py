@@ -13,7 +13,7 @@ from unittest.mock import patch
 from wf_psf.psf_models.models.psf_model_physical_polychromatic import (
     TFPhysicalPolychromaticField,
 )
-from wf_psf.utils.configs_handler import DataConfigHandler
+from wf_psf.data.data_config_handler import DataConfigHandler
 
 
 @pytest.fixture

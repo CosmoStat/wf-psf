@@ -11,7 +11,7 @@ various wf_psf packages.
 import pytest
 from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.training.train import TrainingParamsHandler
-from wf_psf.utils.configs_handler import DataConfigHandler
+from wf_psf.data.data_config_handler import DataConfigHandler
 from wf_psf.psf_models import psf_models
 from wf_psf.data.data_handler import DataHandler
 
