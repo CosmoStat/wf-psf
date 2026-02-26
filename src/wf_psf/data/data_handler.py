@@ -15,58 +15,218 @@ This module serves as a central interface between raw data and modeling componen
 Authors: Jennifer Pollack <jennifer.pollack@cea.fr>, Tobias Liaudat <tobiasliaudat@gmail.com>
 """
 
-import os
 import numpy as np
-import wf_psf.utils.utils as utils
-from wf_psf.psf_models.tf_modules.tf_utils import ensure_tensor
-import tensorflow as tf
 from typing import Optional, Union
+import tensorflow as tf
+from wf_psf.data.simulation_data_loader import SimulationDataLoader
+from wf_psf.data.tensorflow_converter import TensorFlowDatasetConverter
+from wf_psf.psf_models.tf_modules.tf_utils import ensure_tensor
+import wf_psf.utils.utils as utils
 import logging
+import warnings
+
 
 logger = logging.getLogger(__name__)
 
 
+class DataHandlerFactory:
+    """Factory for creating appropriate data handlers/converters.
+
+    Single entry point that reads data_type from config
+    and creates the appropriate loader internally.
+
+    Attributes
+    ----------
+    _SUPPORTED_TYPES : set
+        Set of supported data types for loading (e.g., 'simulation', 'real')
+
+    """
+
+    _SUPPORTED_TYPES = {
+        "simulation"
+    }  # 'real' added in next version when real data handling is implemented
+
+    @staticmethod
+    def create_from_config(
+        data_params,
+        simPSF,
+        n_bins_lambda,
+        dataset_type,
+        load_data,
+    ):
+        """
+        Create appropriate loader based on data_type in config.
+
+        Parameters
+        ----------
+        data_params : RecursiveNamespace
+            Configuration parameters including data_type
+        simPSF : PSFSimulator
+            SED encoder for processing SEDs
+        n_bins_lambda : int
+            Number of wavelength bins
+        dataset_type : str
+            One of {"training", "test", "inference"}
+        load_data : bool
+            Whether to load data immediately
+
+        Returns
+        -------
+        SimulationDataLoader
+            Appropriate loader for the data type
+
+        Raises
+        ------
+        ValueError
+            If data_type is not supported
+        NotImplementedError
+            If data_type is recognised but not yet implemented
+        """
+        data_type = getattr(data_params, "data_type", "simulation")
+
+        if data_type == "simulation":
+            loader = DataHandlerFactory.create_simulation_loader(
+                data_params=data_params,
+                simPSF=simPSF,
+                n_bins_lambda=n_bins_lambda,
+                dataset_type=dataset_type,
+            )
+            if load_data:
+                loader.load()
+            return loader
+
+        elif data_type == "real":
+            # Implemented in future PR (PSFDatasetAdapter)
+            raise NotImplementedError(
+                "Real data loading not yet implemented. "
+                "Coming in future PR (PSFDatasetAdapter)."
+            )
+        else:
+            raise ValueError(
+                f"Unsupported data_type: '{data_type}'. "
+                f"Must be one of {DataHandlerFactory._SUPPORTED_TYPES}"
+            )
+
+    @staticmethod
+    def create_simulation_loader(dataset_type, data_params, simPSF, n_bins_lambda):
+        """Create loader for simulation .npy files.
+
+        Parameters
+        ----------
+        dataset_type : str
+            One of {"training", "test", "inference"}
+        data_params : RecursiveNamespace
+            Configuration parameters for data access and structure
+        simPSF : PSFSimulator
+            Simulator used to transform SEDs into TensorFlow-ready tensors
+        n_bins_lambda : int
+            Number of wavelength bins in the SED representation
+
+        Returns
+        -------
+        SimulationDataLoader
+            Loader configured for the specified dataset type and parameters
+        """
+        return SimulationDataLoader(dataset_type, data_params, simPSF, n_bins_lambda)
+
+    @staticmethod
+    def create_converter(simPSF, n_bins_lambda):
+        """Create TensorFlow converter for datasets.
+
+        Parameters
+        ----------
+        simPSF : PSFSimulator
+            Simulator used to encode SEDs into TensorFlow format
+        n_bins_lambda : int
+            Number of wavelength bins for discretization
+
+        Returns
+        -------
+        TensorFlowDatasetConverter
+            Converter instance for processing datasets into TensorFlow format
+
+        """
+        return TensorFlowDatasetConverter(simPSF, n_bins_lambda)
+
+    @staticmethod
+    def create_for_inference(
+        data_params,
+        simPSF,
+        n_bins_lambda,
+        dataset: Optional[Union[dict, list]] = None,
+        seds=None,
+    ):
+        """
+        Create converter configured for inference.
+
+        Returns a converter with pre-processed inference data.
+
+        Parameters
+        ----------
+        data_params : RecursiveNamespace
+            Configuration parameters for data access and structure
+        simPSF : PSFSimulator
+            Simulator used to encode SEDs into TensorFlow format
+        n_bins_lambda : int
+            Number of wavelength bins for discretization
+        dataset : dict or list, optional
+            Pre-loaded dataset for inference. If None, an empty dataset will be used.
+        seds : array-like, optional
+            Array of SEDs for inference
+
+        Returns
+        -------
+        wrapper object
+            Object containing the converted dataset and processed SED data for inference
+        """
+        converter = TensorFlowDatasetConverter(simPSF, n_bins_lambda)
+        seds = converter.process_seds(seds) if seds is not None else None
+        dataset = converter.convert_inference_data(dataset)
+
+        # Create wrapper object that looks like old DataHandler
+        wrapper = type(
+            "InferenceDataWrapper",
+            (),
+            {
+                "dataset": dataset,
+                "sed_data": seds,
+                "dataset_type": "inference",
+                "data_params": data_params,
+                "simPSF": simPSF,
+                "n_bins_lambda": n_bins_lambda,
+            },
+        )()
+
+        return wrapper
+
+
 class DataHandler:
     """
-    DataHandler for WaveDiff PSF modeling.
+    DEPRECATED: Legacy DataHandler for backward compatibility.
 
-    This class manages loading, preprocessing, and TensorFlow conversion of datasets used
-    for PSF model training, testing, and inference in the WaveDiff framework.
+    This class is maintained for backward compatibility but will be removed
+    in a future version. Use the specialized classes instead:
+
+    - For simulation data: Use SimulationDataLoader
+    - For PSF datasets: Use TensorFlowDatasetConverter.convert_psf_dataset()
+    - For inference: Use DataHandlerFactory.create_for_inference()
 
     Parameters
     ----------
     dataset_type : str
-        Indicates the dataset mode ("train", "test", or "inference").
+        One of {"train", "test", "inference"}
     data_params : RecursiveNamespace
-        Configuration object containing dataset parameters (e.g., file paths, preprocessing flags).
+        Configuration parameters
     simPSF : PSFSimulator
-        An instance of the PSFSimulator class used to encode SEDs into a TensorFlow-compatible format.
+        SED encoder
     n_bins_lambda : int
-        Number of wavelength bins used to discretize SEDs.
+        Number of wavelength bins
     load_data : bool, optional
-        If True (default), loads and processes data during initialization. If False, data loading
-        must be triggered explicitly.
-    dataset : dict or list, optional
-        If provided, uses this pre-loaded dataset instead of triggering automatic loading.
-    sed_data : dict or list, optional
-        If provided, uses this SED data directly instead of extracting it from the dataset.
-
-    Attributes
-    ----------
-    dataset_type : str
-        Indicates the dataset mode ("train", "test", or "inference").
-    data_params : RecursiveNamespace
-        Configuration parameters for data access and structure.
-    simPSF : PSFSimulator
-        Simulator used to transform SEDs into TensorFlow-ready tensors.
-    n_bins_lambda : int
-        Number of wavelength bins in the SED representation.
-    load_data_on_init : bool
-        Whether data was loaded automatically during initialization.
-    dataset : dict
-        Loaded dataset including keys such as 'positions', 'stars', 'noisy_stars', or similar.
-    sed_data : tf.Tensor
-        TensorFlow-formatted SED data with shape [batch_size, n_bins_lambda, features].
+        Whether to load data from disk (default: True)
+    dataset : dict, optional
+        Pre-loaded dataset to use
+    sed_data : array-like, optional
+        Pre-loaded SED data
     """
 
     def __init__(
@@ -79,81 +239,68 @@ class DataHandler:
         dataset: Optional[Union[dict, list]] = None,
         sed_data: Optional[Union[dict, list]] = None,
     ):
-        """
-        Initialize the DataHandler for PSF dataset preparation.
+        warnings.warn(
+            "DataHandler is deprecated. Use SimulationDataLoader for loading "
+            ".npy files, TensorFlowDatasetConverter for converting PSF datasets, "
+            "or DataHandlerFactory.create_for_inference() for inference.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
 
-        This constructor sets up the dataset handler used for PSF simulation tasks,
-        such as training, testing, or inference. It supports three modes of use:
-
-        1. **Manual mode** (`load_data=False`, no `dataset`): data loading and SED processing
-           must be triggered manually via `load_dataset()` and `process_sed_data()`.
-        2. **Pre-loaded dataset mode** (`dataset` is provided): the given dataset is used directly,
-           and `process_sed_data()` is called with either the given `sed_data` or `dataset["SEDs"]`.
-        3. **Automatic loading mode** (`load_data=True` and no `dataset`): the dataset is loaded
-           from disk using `data_params`, and SEDs are extracted and processed automatically.
-
-        Parameters
-        ----------
-        dataset_type : str
-            One of {"train", "test", "inference"} indicating dataset usage.
-        data_params : RecursiveNamespace
-            Configuration object with paths, preprocessing options, and metadata.
-        simPSF : PSFSimulator
-            Used to convert SEDs to TensorFlow format.
-        n_bins_lambda : int
-            Number of wavelength bins for the SEDs.
-        load_data : bool, optional
-            Whether to automatically load and process the dataset (default: True).
-        dataset : dict or list, optional
-            A pre-loaded dataset to use directly (overrides `load_data`).
-        sed_data : array-like, optional
-            Pre-loaded SED data to use directly. If not provided but `dataset` is,
-            SEDs are taken from `dataset["SEDs"]`.
-
-        Raises
-        ------
-        ValueError
-            If SEDs cannot be found in either `dataset` or as `sed_data`.
-
-        Notes
-        -----
-        - `self.dataset` and `self.sed_data` are both `None` if neither `dataset` nor
-          `load_data=True` is used.
-        - TensorFlow conversion is performed at the end of initialization via `convert_dataset_to_tensorflow()`.
-        """
         self.dataset_type = dataset_type
         self.data_params = data_params
         self.simPSF = simPSF
         self.n_bins_lambda = n_bins_lambda
         self.load_data_on_init = load_data
 
+        # Delegate to appropriate implementation
         if dataset is not None:
-            self.dataset = dataset
-            self.process_sed_data(sed_data)
-            self.validate_and_process_dataset()
-        elif self.load_data_on_init:
-            self.load_dataset()
-            self.process_sed_data(self.dataset["SEDs"])
-            self.validate_and_process_dataset()
+            # Inference or pre-loaded mode
+            self._handle_preloaded_dataset(dataset, sed_data)
+        elif load_data:
+            # Simulation mode - load from disk
+            self._handle_simulation_load()
         else:
+            # Manual mode
             self.dataset = None
             self.sed_data = None
 
+    def _handle_preloaded_dataset(self, dataset, sed_data):
+        """Handle pre-loaded dataset (inference use case)."""
+        converter = TensorFlowDatasetConverter(self.simPSF, self.n_bins_lambda)
+
+        # Process SEDs if provided separately
+        if sed_data is not None:
+            self.sed_data = converter.process_seds(sed_data)
+        elif "SEDs" in dataset:
+            self.sed_data = converter.process_seds(dataset["SEDs"])
+            _ = dataset.pop("SEDs")
+        else:
+            self.sed_data = None
+
+        # Convert dataset
+        self.dataset = converter.convert_inference_data(dataset)
+
+        # Add processed SEDs back
+        if self.sed_data is not None:
+            self.dataset["seds"] = self.sed_data
+
+    def _handle_simulation_load(self):
+        """Handle loading from disk (simulation use case)."""
+        loader = SimulationDataLoader(
+            self.dataset_type, self.data_params, self.simPSF, self.n_bins_lambda
+        )
+        self.dataset, self.sed_data = loader.load()
+
     @property
     def tf_positions(self):
-        """Get positions as TensorFlow tensor."""
+        """Backward compatibility property."""
         return ensure_tensor(self.dataset["positions"])
 
+    # Keep other methods for backward compatibility if needed
     def load_dataset(self):
-        """Load dataset.
-
-        Load the dataset based on the specified dataset type.
-
-        """
-        self.dataset = np.load(
-            os.path.join(self.data_params.data_dir, self.data_params.file),
-            allow_pickle=True,
-        )[()]
+        """Legacy method - delegates to loader."""
+        self._handle_simulation_load()
 
     def validate_and_process_dataset(self):
         """Validate the dataset structure and convert fields to TensorFlow tensors."""

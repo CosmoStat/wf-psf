@@ -12,7 +12,7 @@ import logging
 import os
 import re
 import glob
-from wf_psf.data.data_handler import DataHandler
+from wf_psf.data.data_handler import DataHandlerFactory
 from wf_psf.metrics.metrics_interface import evaluate_model
 from wf_psf.plotting.plots_interface import plot_metrics
 from wf_psf.psf_models import psf_models
@@ -139,18 +139,18 @@ class DataConfigHandler:
         train_params = self.data_conf.data.training
         test_params = self.data_conf.data.test
 
-        self.training_data = DataHandler(
-            dataset_type="training",
+        self.training_data = DataHandlerFactory.create_from_config(
             data_params=train_params,
             simPSF=self.simPSF,
             n_bins_lambda=training_model_params.n_bins_lda,
+            dataset_type="training",
             load_data=load_data,
         )
-        self.test_data = DataHandler(
-            dataset_type="test",
+        self.test_data = DataHandlerFactory.create_from_config(
             data_params=test_params,
             simPSF=self.simPSF,
             n_bins_lambda=training_model_params.n_bins_lda,
+            dataset_type="test",
             load_data=load_data,
         )
 
@@ -188,6 +188,7 @@ class TrainingConfigHandler:
             self.training_conf.training.training_hparams.batch_size,
             self.training_conf.training.load_data_on_init,
         )
+
         self.data_conf.run_type = "training"
         self.file_handler.copy_conffile_to_output_dir(
             self.training_conf.training.data_config
@@ -289,7 +290,9 @@ class MetricsConfigHandler:
     @training_conf.setter
     def training_conf(self, training_conf):
         """
-        Sets the training configuration. If None is provided, attempts to load it
+        Set the training configuration.
+
+        If None is provided, attempts to load it
         from the trained_model_path in the metrics configuration.
         """
         if training_conf is None:
@@ -332,7 +335,7 @@ class MetricsConfigHandler:
         weights_path_pattern = os.path.join(
             trained_model_path,
             model_subdir,
-            (f"{model_subdir}*_{model_name}" f"*{id_name}_cycle{cycle}*"),
+            (f"{model_subdir}*_{model_name}*{id_name}_cycle{cycle}*"),
         )
         return load_trained_psf_model(
             self.training_conf,
@@ -342,7 +345,7 @@ class MetricsConfigHandler:
 
     def _get_training_conf_path_from_metrics(self):
         """
-        Retrieves the full path to the training config based on the metrics configuration.
+        Retrieve the full path to the training config based on the metrics configuration.
 
         Returns
         -------
@@ -378,7 +381,8 @@ class MetricsConfigHandler:
         return training_conf_path
 
     def _get_trained_model_path(self):
-        """
+        """Get Trained Model Path.
+
         Determine the trained model path from either:
 
         1. The metrics configuration file (i.e., for metrics-only runs after training), or
