@@ -179,9 +179,19 @@ class DataHandlerFactory:
         wrapper object
             Object containing the converted dataset and processed SED data for inference
         """
-        converter = TensorFlowDatasetConverter(simPSF, n_bins_lambda)
-        seds = converter.process_seds(seds) if seds is not None else None
-        dataset = converter.convert_inference_data(dataset)
+        converter = TensorFlowDatasetConverter()
+        dataset = converter.convert_dataset(
+            data_params, simPSF=simPSF, n_bins_lambda=n_bins_lambda
+        )
+        if "SEDs" in dataset:
+            seds = dataset.pop("SEDs")
+        elif seds is not None:
+            seds = converter.process_seds(
+                seds, simPSF=simPSF, n_bins_lambda=n_bins_lambda
+            )
+        else:
+            seds = None
+            logger.warning("No SEDs provided, setting SEDs to None.")
 
         # Create wrapper object that looks like old DataHandler
         wrapper = type(
@@ -287,10 +297,9 @@ class DataHandler:
 
     def _handle_simulation_load(self):
         """Handle loading from disk (simulation use case)."""
-        loader = SimulationDataLoader(
-            self.dataset_type, self.data_params, self.simPSF, self.n_bins_lambda
-        )
-        self.dataset, self.sed_data = loader.load()
+        loader = SimulationDataLoader(self.data_params)
+        loader.load()
+        return loader.dataset
 
     @property
     def tf_positions(self):
@@ -300,7 +309,7 @@ class DataHandler:
     # Keep other methods for backward compatibility if needed
     def load_dataset(self):
         """Legacy method - delegates to loader."""
-        self._handle_simulation_load()
+        self.dataset = self._handle_simulation_load()
 
     def validate_and_process_dataset(self):
         """Validate the dataset structure and convert fields to TensorFlow tensors."""
