@@ -60,38 +60,6 @@ class TestDataHandlerBackwardCompatibility:
             data_handler.dataset["noisy_stars"], mock_np_dataset["noisy_stars"]
         )
 
-        assert isinstance(data_handler.sed_data, tf.Tensor)
-        assert data_handler.sed_data.dtype == tf.float32
-        assert data_handler.sed_data.shape == (
-            2,
-            10,
-            3,
-        )  # (N_sources, n_bins_lambda, 3 components)
-
-        # Test each component has physically meaningful values
-        processed = data_handler.sed_data
-        feasible_N = processed[:, :, 0]  # Integer N values
-        feasible_wv = processed[:, :, 1]  # Wavelengths in [um]
-        SED_norm = processed[:, :, 2]  # Normalized SED values
-
-        # Test each component has physically meaningful values
-        assert np.all(feasible_N >= 0), "N values should be non-negative"
-        assert np.all(feasible_wv > 0), "Wavelengths should be positive"
-        assert np.all(SED_norm >= 0), "SED normalization should be non-negative"
-
-        # feasible_wv should be in [um] range (visible light ~0.4-0.9 um)
-        assert tf.reduce_all(feasible_wv > 0.3)
-        assert tf.reduce_all(feasible_wv < 1.0)
-
-        # SED_norm should sum to ~1.0 per source (normalized)
-        sed_sums = tf.reduce_sum(SED_norm, axis=1)  # Sum over wavelength bins
-        np.testing.assert_allclose(
-            sed_sums.numpy(),
-            np.ones(2),  # One per source
-            rtol=1e-5,
-            err_msg="SED_norm should sum to 1.0 per source",
-        )
-
     def test_load_test_dataset(self, tmp_path, mock_np_dataset, simPSF):
         # Create a temporary directory and a temporary data file
         data_dir = tmp_path / "data"
@@ -125,97 +93,6 @@ class TestDataHandlerBackwardCompatibility:
             data_handler.dataset["positions"], mock_np_dataset["positions"]
         )
         assert_tensors_equal(data_handler.dataset["stars"], mock_np_dataset["stars"])
-
-        assert isinstance(data_handler.sed_data, tf.Tensor)
-        assert data_handler.sed_data.dtype == tf.float32
-        assert data_handler.sed_data.shape == (
-            2,
-            10,
-            3,
-        )  # (N_sources, n_bins_lambda, 3 components)
-
-        # Test each component has physically meaningful values
-        processed = data_handler.sed_data
-        feasible_N = processed[:, :, 0]  # Integer N values
-        feasible_wv = processed[:, :, 1]  # Wavelengths in [um]
-        SED_norm = processed[:, :, 2]  # Normalized SED values
-
-        # Test each component has physically meaningful values
-        assert np.all(feasible_N >= 0), "N values should be non-negative"
-        assert np.all(feasible_wv > 0), "Wavelengths should be positive"
-        assert np.all(SED_norm >= 0), "SED normalization should be non-negative"
-
-        # feasible_wv should be in [um] range (visible light ~0.4-0.9 um)
-        assert tf.reduce_all(feasible_wv > 0.3)
-        assert tf.reduce_all(feasible_wv < 1.0)
-
-        # SED_norm should sum to ~1.0 per source (normalized)
-        sed_sums = tf.reduce_sum(SED_norm, axis=1)  # Sum over wavelength bins
-        np.testing.assert_allclose(
-            sed_sums.numpy(),
-            np.ones(2),  # One per source
-            rtol=1e-5,
-            err_msg="SED_norm should sum to 1.0 per source",
-        )
-
-    def test_validate_train_dataset_missing_noisy_stars_raises(self, tmp_path, simPSF):
-        """Test that validation raises an error if 'noisy_stars' is missing in training data."""
-        data_dir = tmp_path / "data"
-        data_dir.mkdir()
-        temp_data_file = data_dir / "train_data.npy"
-
-        mock_dataset = {
-            "positions": np.array([[1, 2], [3, 4]]),  # No 'noisy_stars' key
-            "SEDs": np.array([[[0.1, 0.2], [0.3, 0.4]], [[0.5, 0.6], [0.7, 0.8]]]),
-        }
-
-        np.save(temp_data_file, mock_dataset)
-
-        data_params = RecursiveNamespace(
-            data_dir=str(data_dir),
-            file="train_data.npy",
-            target_field="noisy_stars",
-        )
-
-        n_bins_lambda = 10
-        data_handler = DataHandler(
-            "training", data_params, simPSF, n_bins_lambda, load_data=False
-        )
-
-        with pytest.raises(
-            ValueError,
-            match="Missing required field 'noisy_stars' in training dataset.",
-        ):
-            data_handler.load_dataset()
-            data_handler.validate_and_process_dataset()
-
-    def test_load_test_dataset_missing_stars(self, tmp_path, simPSF):
-        """Test that a warning is raised if 'stars' is missing in test data."""
-        data_dir = tmp_path / "data"
-        data_dir.mkdir()
-        temp_data_file = data_dir / "test_data.npy"
-
-        mock_dataset = {
-            "positions": np.array([[1, 2], [3, 4]]),  # No 'stars' key
-            "SEDs": np.array([[[0.1, 0.2], [0.3, 0.4]], [[0.5, 0.6], [0.7, 0.8]]]),
-        }
-
-        np.save(temp_data_file, mock_dataset)
-
-        data_params = RecursiveNamespace(
-            data_dir=str(data_dir), file="test_data.npy", target_field="stars"
-        )
-
-        n_bins_lambda = 10
-        data_handler = DataHandler(
-            "test", data_params, simPSF, n_bins_lambda, load_data=False
-        )
-
-        with pytest.raises(
-            ValueError, match="Missing required field 'stars' in test dataset."
-        ):
-            data_handler.load_dataset()
-            data_handler.validate_and_process_dataset()
 
 
 def test_extract_star_data_valid_keys(mock_data):

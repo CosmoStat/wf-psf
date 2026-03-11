@@ -5,7 +5,6 @@ various wf_psf packages.
 
 :Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 
-
 """
 
 import pytest
@@ -87,16 +86,19 @@ training_config = RecursiveNamespace(
 )
 
 data = RecursiveNamespace(
-    training=RecursiveNamespace(
-        data_dir="data",
-        file="coherent_euclid_dataset/train_Euclid_res_200_TrainStars_id_001.npy",
-        target_field="noisy_stars",
-    ),
-    test=RecursiveNamespace(
-        data_dir="data",
-        file="coherent_euclid_dataset/test_Euclid_res_id_001.npy",
-        target_field="stars",
-    ),
+    params=RecursiveNamespace(
+        train=RecursiveNamespace(
+            data_dir="data",
+            file="coherent_euclid_dataset/train_Euclid_res_200_TrainStars_id_001.npy",
+            target_field="noisy_stars",
+        ),
+        test=RecursiveNamespace(
+            data_dir="data",
+            file="coherent_euclid_dataset/test_Euclid_res_id_001.npy",
+            target_field="stars",
+        ),
+        canonical_keys=["sources", "masks", "positions"],
+    )
 )
 
 
