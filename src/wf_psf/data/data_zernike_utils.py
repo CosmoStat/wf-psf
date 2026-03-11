@@ -13,212 +13,74 @@ Useful in contexts where Zernike representations are used to model optical aberr
 """
 
 from dataclasses import dataclass
-from typing import Optional, Union
+from typing import Optional
 import numpy as np
 import tensorflow as tf
+from wf_psf.data.data_utils import DatasetContainer
 from wf_psf.data.centroids import compute_centroid_correction
-from wf_psf.data.data_handler import get_data_array
 from wf_psf.instrument.ccd_misalignments import compute_ccd_misalignment
-from wf_psf.utils.read_config import RecursiveNamespace
 import logging
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
-class ZernikeInputs:
-    """Zernike-related inputs for PSF modeling, including priors and datasets for corrections.
+class ZernikeDataset:
+    """
+    Domain-specific canonical view over a DatasetContainer PSF modelling with Zernike input layers.
 
-    All fields are optional to allow flexibility across different run types (training, simulation, inference) and configurations.
+    Provides access to Zernike-related inputs, priors, and datasets for
+    centroid and misalignment corrections
 
-    Parameters
+    Attributes
     ----------
+    container : DatasetContainer
+        Container storing the underlying datasets.
     zernike_prior : Optional[np.ndarray]
-        The true Zernike prior, if provided (e.g., from PDC). Can be None if not used or not available.
-    centroid_dataset : Optional[Union[dict, "RecursiveNamespace"]]
-        Dataset used for computing centroid corrections. Should contain both training and test sets if
-        used. Can be None if centroid correction is not enabled or no dataset is available.
-    misalignment_positions : Optional[np.ndarray]
-        Positions used for computing CCD misalignment corrections. Should be available in inference mode if misalignment correction is enabled. Can be None if not used or not available.
+        True Zernike prior (e.g., from PDC). May be None.
+    sources : Optional[np.ndarray]
+        2D image stamps of sources for centroid correction. May be None.
+    masks : Optional[np.ndarray]
+        Masks corresponding to the sources. May be None.
+    positions : Optional[np.ndarray]
+        Positions for CCD misalignment corrections. May be None.
     """
 
-    zernike_prior: Optional[np.ndarray]  # true prior, if provided (e.g. from PDC)
-    centroid_dataset: Optional[
-        Union[dict, "RecursiveNamespace"]
-    ]  # only used in training/simulation
-    misalignment_positions: Optional[np.ndarray]  # needed for CCD corrections
+    container: DatasetContainer
 
+    @property
+    def sources(self) -> Optional[np.ndarray]:
+        """Return 2D source images (stamps)."""
+        return self.container.get("sources")
 
-class ZernikeInputsFactory:
-    """Factory class to build ZernikeInputs based on run type and dataset configuration.
+    @property
+    def masks(self) -> Optional[np.ndarray]:
+        """Return masks corresponding to source images."""
+        return self.container.get("masks")
 
-    This class abstracts the logic of extracting the relevant Zernike-related inputs from the dataset based on the specified run type (training, simulation, inference) and model parameters. It handles the conditional logic for which inputs are needed and how to extract them, providing a clean interface for constructing the ZernikeInputs dataclass instance.
+    @property
+    def positions(self) -> Optional[np.ndarray]:
+        """Return positions for CCD misalignment correction."""
+        return self.container.get("positions")
 
-    """
+    @property
+    def zernike_prior(self) -> Optional[np.ndarray]:
+        """Return Zernike prior."""
+        return self.container.get("zernike_prior")
 
-    @staticmethod
-    def build(
-        data, run_type: str, model_params, prior: Optional[np.ndarray] = None
-    ) -> ZernikeInputs:
-        """Build a ZernikeInputs dataclass instance based on run type and data.
+    @property
+    def centroid_inputs(self) -> Optional[dict]:
+        """Return a dictionary suitable for centroid correction.
 
-        Parameters
-        ----------
-        data : Union[dict, DataConfigHandler]
-            Dataset object containing star positions, priors, and optionally pixel data.
-        run_type : str
-            One of 'training', 'simulation', or 'inference'.
-        model_params : RecursiveNamespace
-            Model parameters, including flags for prior/corrections.
-        prior : Optional[np.ndarray]
-            An explicitly passed prior (overrides any inferred one if provided).
-
-        Returns
-        -------
-        ZernikeInputs
+        Includes 'stamps' (sources) and optionally 'masks' if available.
+        Returns None if sources are not available.
         """
-        centroid_dataset, positions = None, None
-
-        if run_type in {"training", "simulation", "metrics"}:
-            stamps = get_data_array(
-                data, run_type, train_key="noisy_stars", test_key="stars"
-            )
-            masks = get_data_array(data, run_type, key="masks", allow_missing=True)
-            centroid_dataset = {"stamps": stamps, "masks": masks}
-
-            positions = get_data_array(data=data, run_type=run_type, key="positions")
-
-            if model_params.use_prior:
-                if prior is not None:
-                    logger.warning(
-                        "Explicit prior provided; ignoring dataset-based prior."
-                    )
-                else:
-                    prior = get_np_zernike_prior(data)
-
-        elif run_type == "inference":
-            stamps = get_data_array(data=data, run_type=run_type, key="sources")
-            masks = get_data_array(data, run_type, key="masks", allow_missing=True)
-            centroid_dataset = {"stamps": stamps, "masks": masks}
-
-            positions = get_data_array(data=data, run_type=run_type, key="positions")
-
-            if model_params.use_prior:
-                # Try to extract prior from `data`, if present
-                prior = (
-                    getattr(data.dataset, "zernike_prior", None)
-                    if not isinstance(data.dataset, dict)
-                    else data.dataset.get("zernike_prior")
-                )
-
-                if prior is None:
-                    logger.warning(
-                        "model_params.use_prior=True but no prior found in inference data. Proceeding with None."
-                    )
-
-        else:
-            raise ValueError(f"Unsupported run_type: {run_type}")
-
-        return ZernikeInputs(
-            zernike_prior=prior,
-            centroid_dataset=centroid_dataset,
-            misalignment_positions=positions,
-        )
-
-
-def get_np_zernike_prior(data):
-    """Get the zernike prior from the provided dataset.
-
-    This method concatenates the stars from both the training
-    and test datasets to obtain the full prior.
-
-    Parameters
-    ----------
-    data : DataConfigHandler
-        Object containing training and test datasets.
-
-    Returns
-    -------
-    zernike_prior : np.ndarray
-        Numpy array containing the full prior.
-    """
-    zernike_prior = np.concatenate(
-        (
-            data.training_data.dataset["zernike_prior"],
-            data.test_data.dataset["zernike_prior"],
-        ),
-        axis=0,
-    )
-
-    return zernike_prior
-
-
-def pad_contribution_to_order(contribution: np.ndarray, max_order: int) -> np.ndarray:
-    """Pad a Zernike contribution array to the max Zernike order."""
-    current_order = contribution.shape[1]
-    pad_width = ((0, 0), (0, max_order - current_order))
-    return np.pad(contribution, pad_width=pad_width, mode="constant", constant_values=0)
-
-
-def combine_zernike_contributions(contributions: list[np.ndarray]) -> np.ndarray:
-    """Combine multiple Zernike contributions, padding each to the max order before summing."""
-    if not contributions:
-        raise ValueError("No contributions provided.")
-
-    if len(contributions) == 1:
-        return contributions[0]
-
-    max_order = max(contrib.shape[1] for contrib in contributions)
-    n_samples = contributions[0].shape[0]
-
-    if any(c.shape[0] != n_samples for c in contributions):
-        raise ValueError("All contributions must have the same number of samples.")
-
-    combined = np.zeros((n_samples, max_order))
-    # Pad each contribution to the max order and sum them
-    for contrib in contributions:
-        padded = pad_contribution_to_order(contrib, max_order)
-        combined += padded
-
-    return combined
-
-
-def pad_tf_zernikes(zk_param: tf.Tensor, zk_prior: tf.Tensor, n_zks_total: int):
-    """
-    Pad the Zernike coefficient tensors to match the specified total number of Zernikes.
-
-    Parameters
-    ----------
-    zk_param : tf.Tensor
-        Zernike coefficients for the parametric part. Shape [batch, n_zks_param, 1, 1].
-    zk_prior : tf.Tensor
-        Zernike coefficients for the prior part. Shape [batch, n_zks_prior, 1, 1].
-    n_zks_total : int
-        Total number of Zernikes to pad to.
-
-    Returns
-    -------
-    padded_zk_param : tf.Tensor
-        Padded Zernike coefficients for the parametric part. Shape [batch, n_zks_total, 1, 1].
-    padded_zk_prior : tf.Tensor
-        Padded Zernike coefficients for the prior part. Shape [batch, n_zks_total, 1, 1].
-    """
-    pad_num_param = n_zks_total - tf.shape(zk_param)[1]
-    pad_num_prior = n_zks_total - tf.shape(zk_prior)[1]
-
-    padded_zk_param = tf.cond(
-        tf.not_equal(pad_num_param, 0),
-        lambda: tf.pad(zk_param, [(0, 0), (0, pad_num_param), (0, 0), (0, 0)]),
-        lambda: zk_param,
-    )
-
-    padded_zk_prior = tf.cond(
-        tf.not_equal(pad_num_prior, 0),
-        lambda: tf.pad(zk_prior, [(0, 0), (0, pad_num_prior), (0, 0), (0, 0)]),
-        lambda: zk_prior,
-    )
-
-    return padded_zk_param, padded_zk_prior
+        if self.sources is None:
+            return None
+        data = {"stamps": self.sources}
+        if self.masks is not None:
+            data["masks"] = self.masks
+        return data
 
 
 def assemble_zernike_contributions(
@@ -240,7 +102,7 @@ def assemble_zernike_contributions(
         The precomputed Zernike prior. Can be either a NumPy array or a TensorFlow tensor.
         If a Tensor, will be converted to NumPy in eager mode.
     centroid_dataset : Optional[object]
-        Dataset used to compute centroid correction. Must have both training and test sets.
+        Dataset used to compute centroid correction. Must have both training and validation sets.
     positions : Optional[np.ndarray or tf.Tensor]
         Positions used for computing CCD misalignment. Must be available in inference mode.
     batch_size : int
@@ -304,6 +166,109 @@ def assemble_zernike_contributions(
     combined_zernike_prior = combine_zernike_contributions(zernike_contribution_list)
 
     return tf.convert_to_tensor(combined_zernike_prior, dtype=tf.float32)
+
+
+def pad_contribution_to_order(contribution: np.ndarray, max_order: int) -> np.ndarray:
+    """Pad a Zernike contribution array to the max Zernike order.
+
+    Parameters
+    ----------
+    contribution : np.ndarray
+        Array of shape (n_samples, n_orders) representing Zernike contributions.
+    max_order : int
+        Target number of Zernike order; determines the number of columns after padding
+
+    Returns
+    -------
+    np.ndarray
+        Padded array of shape (n_samples, max_order) with zeros appended to the right if `max_order` > current number of orders.
+    """
+    current_order = contribution.shape[1]
+    pad_width = ((0, 0), (0, max_order - current_order))
+    return np.pad(contribution, pad_width=pad_width, mode="constant", constant_values=0)
+
+
+def combine_zernike_contributions(contributions: list[np.ndarray]) -> np.ndarray:
+    """Combine multiple Zernike contribution arrays into a single array.
+
+    Each contribution is zero-padded along the second dimension (Zernike order) to
+    match the maximum order across inputs, then summed element-wise.
+
+    Parameters
+    ----------
+    contributions: list[np.ndarray]
+        List of arrays of shape (n_samples, n_orders_i), where all arrays must share
+        the same number of samples (first dimension) but may differ in Zernike order
+        (second dimension).
+
+    Returns
+    -------
+    np.ndarray
+        Array of shape (n_samples, max_order) containing the summed contributions after
+        zero-padding
+
+    Raises
+    ------
+    ValueError
+        If the list is empty or contributions have inconsistent number of samples.
+    """
+    if not contributions:
+        raise ValueError("No contributions provided.")
+
+    if len(contributions) == 1:
+        return contributions[0]
+
+    max_order = max(contrib.shape[1] for contrib in contributions)
+    n_samples = contributions[0].shape[0]
+
+    if any(c.shape[0] != n_samples for c in contributions):
+        raise ValueError("All contributions must have the same number of samples.")
+
+    combined = np.zeros((n_samples, max_order))
+    # Pad each contribution to the max order and sum them
+    for contrib in contributions:
+        padded = pad_contribution_to_order(contrib, max_order)
+        combined += padded
+
+    return combined
+
+
+def pad_tf_zernikes(zk_param: tf.Tensor, zk_prior: tf.Tensor, n_zks_total: int):
+    """
+    Pad the Zernike coefficient tensors to match the specified total number of Zernikes.
+
+    Parameters
+    ----------
+    zk_param : tf.Tensor
+        Zernike coefficients for the parametric part. Shape [batch, n_zks_param, 1, 1].
+    zk_prior : tf.Tensor
+        Zernike coefficients for the prior part. Shape [batch, n_zks_prior, 1, 1].
+    n_zks_total : int
+        Total number of Zernikes to pad to.
+
+    Returns
+    -------
+    padded_zk_param : tf.Tensor
+        Padded Zernike coefficients for the parametric part. Shape [batch, n_zks_total, 1, 1].
+    padded_zk_prior : tf.Tensor
+        Padded Zernike coefficients for the prior part. Shape [batch, n_zks_total, 1, 1].
+    """
+    pad_num_param = n_zks_total - tf.shape(zk_param)[1]
+    pad_num_prior = n_zks_total - tf.shape(zk_prior)[1]
+
+    padded_zk_param = tf.cond(
+        tf.not_equal(pad_num_param, 0),
+        lambda: tf.pad(zk_param, [(0, 0), (0, pad_num_param), (0, 0), (0, 0)]),
+        lambda: zk_param,
+    )
+
+    padded_zk_prior = tf.cond(
+        tf.not_equal(pad_num_prior, 0),
+        lambda: tf.pad(zk_prior, [(0, 0), (0, pad_num_prior), (0, 0), (0, 0)]),
+        lambda: zk_prior,
+    )
+
+    return padded_zk_param, padded_zk_prior
 
 
 def shift_x_y_to_zk1_2_wavediff(dxy, tel_focal_length=24.5, tel_diameter=1.2):
@@ -406,7 +371,7 @@ def compute_zernike_tip_tilt(
     reference_shifts = np.broadcast_to(reference_shifts, shifts.shape)
 
     # Compute displacements
-    displacements = reference_shifts - shifts  #
+    displacements = reference_shifts - shifts
 
     # Ensure the correct axis order for displacements (x-axis, then y-axis)
     displacements_swapped = displacements[:, [1, 0]]  # Adjust axis order if necessary
