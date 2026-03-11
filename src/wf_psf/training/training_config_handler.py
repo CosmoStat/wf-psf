@@ -9,6 +9,7 @@ A module which provides a class to manage the parameters of the training config 
 import os
 from wf_psf.utils.configs_handler import ConfigHandler, register_configclass
 from wf_psf.data.data_config_handler import DataConfigHandler
+from wf_psf.psf_models import psf_models
 from wf_psf.utils.read_config import read_conf
 from wf_psf.training import train
 from wf_psf.metrics.metrics_config_handler import MetricsConfigHandler
@@ -41,15 +42,13 @@ class TrainingConfigHandler(ConfigHandler):
     def __init__(self, training_conf, file_handler):
         self.training_conf = read_conf(training_conf)
         self.file_handler = file_handler
-        self.data_conf = DataConfigHandler(
+        self.data_params = DataConfigHandler(
             os.path.join(
                 file_handler.config_path, self.training_conf.training.data_config
             ),
-            self.training_conf.training.model_params,
-            self.training_conf.training.training_hparams.batch_size,
-            self.training_conf.training.load_data_on_init,
         )
-        self.data_conf.run_type = "training"
+        self.n_bins_lambda = self.training_conf.training.model_params.n_bins_lambda
+        self.simPSF = psf_models.simPSF(self.training_conf.training.model_params)
         self.file_handler.copy_conffile_to_output_dir(
             self.training_conf.training.data_config
         )
@@ -72,7 +71,9 @@ class TrainingConfigHandler(ConfigHandler):
         """
         train.train(
             self.training_conf.training,
-            self.data_conf,
+            self.data_params,
+            self.simPSF,
+            self.n_bins_lambda,
             self.checkpoint_dir,
             self.optimizer_dir,
             self.psf_model_dir,
