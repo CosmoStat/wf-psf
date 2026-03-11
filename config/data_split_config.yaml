@@ -1,0 +1,22 @@
+# Training and test data sets for training and/or metrics evaluation
+params:
+  train:
+    # Specify directory path to training dataset
+    data_dir: /path/to/training/dataset
+    # Provide name of training dataset (only .npy are loaded)
+    file: train.npy
+    # Provide name of the field in the dataset representing sources (stars)
+    target_field: noisy_stars
+  test:
+    # Specify directory path to validation dataset
+    data_dir: /path/to/validation/data
+    # Provide name of test dataset (only .npy are loaded)
+    file: test.npy
+    # Provide name of the field in the dataset representing sources (stars)
+    target_field: stars
+  # Define your own canonical keys used for training (overrides DEFAULT)
+  canonical_keys:
+      - sources
+      - masks
+      - positions
+      - seds

@@ -1,0 +1,15 @@
+# Training and test data sets for training and/or metrics evaluation
+params:
+  complete:
+    # Specify directory path to full (un-split) dataset
+    data_dir: /path/to/data
+    # Provide name of dataset (so far only .npy files are loaded)
+    file: data.npy
+    # Provide name of the field in the dataset representing sources (stars)
+    target_field: stars
+  # Define your own canonical keys used for training (overrides DEFAULT)
+  canonical_keys:
+      - sources
+      - masks
+      - positions
+      - seds
