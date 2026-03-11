@@ -12,8 +12,11 @@ import numpy as np
 import time
 import tensorflow as tf
 import logging
+from wf_psf.data.factory import DataAdapterFactory
+from wf_psf.data.data_adapter import StructureState, RepresentationState
 from wf_psf.psf_models import psf_models
 import wf_psf.training.train_utils as train_utils
+from wf_psf.training.training_data_adapter import TrainingDataAdapter
 from wf_psf.utils.optimizer import get_optimizer
 
 logger = logging.getLogger(__name__)
@@ -269,19 +272,18 @@ class TrainingParamsHandler:
             save_weights_only=True,
             mode="min",
             save_freq="epoch",
-            options=None,
         )
 
 
-def get_loss_metrics_monitor_and_outputs(training_handler, data_conf):
-    """Factory to return fresh loss, metrics (param & non-param), monitor, and outputs for the current cycle.
+def get_loss_metrics_monitor_and_outputs(training_handler):
+    """Get Loss Metrics.
+
+    Factory to return fresh loss, metrics (param & non-param), monitor, and outputs for the current cycle.
 
     Parameters
     ----------
-    training_handler: TrainingParamsHandler
+    training_handler : TrainingParamsHandler
         TrainingParamsHandler object containing training parameters
-    data_conf: object
-        Data configuration object containing training and test data
 
     Returns
     -------
@@ -291,47 +293,29 @@ def get_loss_metrics_monitor_and_outputs(training_handler, data_conf):
         List of metrics for the parametric model
     non_param_metrics: list
         List of metrics for the non-parametric model
-    monitor: str
-        Metric to monitor for saving the model
-    outputs: tf.Tensor
-        Tensor containing the outputs for training
-    output_val: tf.Tensor
-        Tensor containing the outputs for validation
-
     """
-    if training_handler.training_hparams.loss == "mask_mse":
+    loss_type = training_handler.training_hparams.loss
+
+    if loss_type == "mask_mse":
         loss = train_utils.MaskedMeanSquaredError()
-        monitor = "loss"
         param_metrics = [train_utils.MaskedMeanSquaredErrorMetric()]
         non_param_metrics = [train_utils.MaskedMeanSquaredErrorMetric()]
-        outputs = tf.stack(
-            [
-                data_conf.training_data.dataset["noisy_stars"],
-                data_conf.training_data.dataset["masks"],
-            ],
-            axis=-1,
-        )
-        output_val = tf.stack(
-            [
-                data_conf.test_data.dataset["stars"],
-                data_conf.test_data.dataset["masks"],
-            ],
-            axis=-1,
-        )
-    else:
+    elif loss_type == "mse" or None:
         loss = tf.keras.losses.MeanSquaredError()
-        monitor = "mean_squared_error"
         param_metrics = [tf.keras.metrics.MeanSquaredError()]
         non_param_metrics = [tf.keras.metrics.MeanSquaredError()]
-        outputs = data_conf.training_data.dataset["noisy_stars"]
-        output_val = data_conf.test_data.dataset["stars"]
+        logger.warning("Loss function set to standard MeanSquaredError")
+    else:
+        raise ValueError(f"Unknown loss type: {loss_type}")
 
-    return loss, param_metrics, non_param_metrics, monitor, outputs, output_val
+    return loss, param_metrics, non_param_metrics
 
 
 def train(
     training_params,
-    data_conf,
+    data_params,
+    simPSF,
+    n_bins_lambda,
     checkpoint_dir,
     optimizer_dir,
     psf_model_dir,
@@ -353,10 +337,14 @@ def train(
         - model type and training behavior flags
         - multi-cycle definitions and callbacks
 
-    data_conf : object
-        Contains training and validation datasets via attributes:
-        - data_conf.training_data: TrainingDataHandler instance with SEDs and positions
-        - data_conf.test_data: TestDataHandler instance with validation SEDs and positions
+    data_params : RecursiveNamespace or dataclass
+        Data configuration parameters to load training data or a dataclass instance containing pre-loaded data.
+
+    simPSF : PSFSimulator
+        An instance of the PSFSimulator class used to encode SEDs into a TensorFlow-compatible format.
+
+    n_bins_lambda : int
+        Number of wavelength bins for discretizing SEDs, used by the TensorFlowDatasetConverter.
 
     checkpoint_dir : str
         Directory where model checkpoints will be saved during training.
@@ -382,11 +370,31 @@ def train(
 
     training_handler = TrainingParamsHandler(training_params)
 
+    # Create adapter
+    adapter = DataAdapterFactory.build(data_params)
+
+    # Join data, if not already complete
+    if adapter.structure_state == StructureState.SPLIT:
+        adapter.join_data()
+
+    # Instantiate PSF model
+    # Certain PSF models require full dataset
     psf_model = psf_models.get_psf_model(
         training_handler.model_params,
         training_handler.training_hparams,
-        data_conf,
+        adapter.complete_data,
     )
+
+    # Split dataset just before training, idempotent
+    if adapter.structure_state == StructureState.COMPLETE:
+        adapter.split_data()
+
+    # Convert to TF for training
+    if adapter.representation_state == RepresentationState.NUMPY:
+        adapter.convert_to_tensorflow(simPSF, n_bins_lambda)
+
+    # Wrap in training-specific adapter
+    training_adapter = TrainingDataAdapter(adapter, training_handler.training_hparams)
 
     logger.info(f"PSF Model class: `{training_handler.model_name}` initialized...")
     # Model Training
@@ -400,8 +408,8 @@ def train(
         current_cycle += 1
 
         # Instantiate fresh loss, monitor, and independent metric objects per training phase (param / non-param)
-        loss, param_metrics, non_param_metrics, monitor, outputs, output_val = (
-            get_loss_metrics_monitor_and_outputs(training_handler, data_conf)
+        loss, param_metrics, non_param_metrics = get_loss_metrics_monitor_and_outputs(
+            training_handler
         )
 
         # If projected learning is enabled project DD_features.
@@ -422,7 +430,9 @@ def train(
         # Prepare to save the model as a callback
         # -----------------------------------------------------
         model_chkp_callback = training_handler._prepare_callbacks(
-            checkpoint_dir, current_cycle, monitor=monitor
+            checkpoint_dir,
+            current_cycle,
+            monitor=training_handler.training_hparams.monitor,
         )
 
         # Prepare the optimizers
@@ -432,7 +442,7 @@ def train(
         )
         non_param_optim = get_optimizer(
             optimizer_config=training_handler.training_hparams.optimizer,
-            learning_rate=training_handler.learning_rate_non_params[current_cycle - 1]
+            learning_rate=training_handler.learning_rate_non_params[current_cycle - 1],
         )
         logger.info(f"Starting cycle {current_cycle}..")
 
@@ -445,17 +455,11 @@ def train(
             hist_non_param,
         ) = train_utils.general_train_cycle(
             psf_model,
-            inputs=[
-                data_conf.training_data.dataset["positions"],
-                data_conf.training_data.sed_data,
-            ],
-            outputs=outputs,
+            inputs=training_adapter.train_inputs,
+            outputs=training_adapter.train_targets,
             validation_data=(
-                [
-                    data_conf.test_data.dataset["positions"],
-                    data_conf.test_data.sed_data,
-                ],
-                output_val,
+                training_adapter.validation_inputs,
+                training_adapter.validation_targets,
             ),
             batch_size=training_handler.training_hparams.batch_size,
             learning_rate_param=training_handler.learning_rate_params[
