@@ -7,9 +7,7 @@ A module which provides a class to manage the parameters of the data config file
 """
 
 from wf_psf.utils.configs_handler import ConfigHandler
-from wf_psf.data.data_handler import DataHandler
 from wf_psf.utils.read_config import read_conf
-from wf_psf.psf_models import psf_models
 import logging
 
 
@@ -26,44 +24,24 @@ class DataConfigHandler(ConfigHandler):
     ----------
     data_conf : str
         Path of the data configuration file
-    training_model_params : Recursive Namespace object
-        Recursive Namespace object containing the training model parameters
-    batch_size : int
-       Training hyperparameter used for batched pre-processing of data.
-
     """
 
     ids = ("data_conf",)
 
-    def __init__(self, data_conf, training_model_params, batch_size=16, load_data=True):
+    DEFAULTS = {
+        "train_fraction": 0.8,
+        "seed": 42,
+        "canonical_keys": ["sources", "positions", "masks", "seds"],
+    }
+
+    def __init__(self, data_conf):
         try:
-            self.data_conf = read_conf(data_conf)
+            self.params = read_conf(data_conf)
         except (FileNotFoundError, TypeError) as e:
             logger.exception(e)
             exit()
-
-        self.simPSF = psf_models.simPSF(training_model_params)
-
-        # Extract sub-configs early
-        train_params = self.data_conf.data.training
-        test_params = self.data_conf.data.test
-
-        self.training_data = DataHandler(
-            dataset_type="training",
-            data_params=train_params,
-            simPSF=self.simPSF,
-            n_bins_lambda=training_model_params.n_bins_lda,
-            load_data=load_data,
-        )
-        self.test_data = DataHandler(
-            dataset_type="test",
-            data_params=test_params,
-            simPSF=self.simPSF,
-            n_bins_lambda=training_model_params.n_bins_lda,
-            load_data=load_data,
-        )
-
-        self.batch_size = batch_size
+        # Normalize parameters
+        self.run()
 
     def run(self):
         """Run DataConfigHandler.
@@ -71,4 +49,21 @@ class DataConfigHandler(ConfigHandler):
         A function to run the data configuration handler.
 
         """
-        raise NotImplementedError
+        """Normalize and validate data configuration."""
+
+        params = self.params
+
+        # Apply defaults
+        for key, value in self.DEFAULTS.items():
+            if getattr(params, key, None) is None:
+                setattr(params, key, value)
+
+        # Validate train_fraction
+        if not 0 < params.train_fraction < 1:
+            raise ValueError("train_fraction must be between 0 and 1")
+
+        # Ensure canonical_keys is a list
+        if not isinstance(params.canonical_keys, list):
+            raise TypeError("canonical_keys must be a list")
+
+        self.params = params
