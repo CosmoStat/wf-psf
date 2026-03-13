@@ -59,7 +59,7 @@ Authors: Jennifer Pollack <jennifer.pollack@cea.fr>
 
 from enum import Enum, auto
 import numpy as np
-from typing import Any, Optional
+from typing import Any, List, Optional
 from wf_psf.data.data_utils import DatasetUtils, DatasetContainer
 from wf_psf.data.tensorflow_converter import TensorFlowDatasetConverter
 import logging
@@ -384,7 +384,7 @@ class DataAdapter:
 
         self._structure_state = StructureState.SPLIT
 
-    def join_data(self, keys: list[str] | None = None):
+    def join_data(self, keys: Optional[List[str]] = None):
         """Join train/test dictionaries into complete dataset."""
         if self._structure_state != StructureState.SPLIT:
             raise RuntimeError("Join only allowed from SPLIT state.")
@@ -420,16 +420,18 @@ class DataAdapter:
         if self._converter is None:
             raise RuntimeError("No converter provided.")
 
+        required_keys = tuple(self._canonical_keys)
+
         if self._structure_state == StructureState.SPLIT:
             self._train_tf = self._converter.convert_dataset(
-                self._train_data, simPSF, n_bins_lambda
+                self._train_data, simPSF, n_bins_lambda, required_keys=required_keys
             )
             self._test_tf = self._converter.convert_dataset(
-                self._test_data, simPSF, n_bins_lambda
+                self._test_data, simPSF, n_bins_lambda, required_keys=required_keys
             )
         else:
             self._complete_tf = self._converter.convert_dataset(
-                self._complete_data, simPSF, n_bins_lambda
+                self._complete_data, simPSF, n_bins_lambda, required_keys=required_keys
             )
 
         self._representation_state = RepresentationState.TENSORFLOW
