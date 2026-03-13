@@ -95,9 +95,9 @@ class MetricsParamsHandler:
             ),
             simPSF_np=simPSF,
             tf_pos=dataset["positions"],
-            tf_SEDs=dataset["SEDs"],
-            n_bins_lda=self.trained_model.model_params.n_bins_lda,
-            n_bins_gt=self.metrics_params.ground_truth_model.model_params.n_bins_lda,
+            tf_SEDs=dataset["seds"],
+            n_bins_lda=self.trained_model.model_params.n_bins_lambda,
+            n_bins_gt=self.metrics_params.ground_truth_model.model_params.n_bins_lambda,
             batch_size=self.metrics_params.metrics_hparams.batch_size,
             dataset_dict=dataset,
             mask=mask,
@@ -292,10 +292,10 @@ class MetricsParamsHandler:
                 dataset.get("C_poly", None),
             ),
             simPSF_np=simPSF,
-            SEDs=dataset["SEDs"],
+            tf_SEDs=dataset["seds"],
             tf_pos=dataset["positions"],
-            n_bins_lda=self.trained_model.model_params.n_bins_lda,
-            n_bins_gt=self.metrics_params.ground_truth_model.model_params.n_bins_lda,
+            n_bins_lda=self.trained_model.model_params.n_bins_lambda,
+            n_bins_gt=self.metrics_params.ground_truth_model.model_params.n_bins_lambda,
             output_Q=self.metrics_params.metrics_hparams.output_Q,
             output_dim=self.metrics_params.metrics_hparams.output_dim,
             batch_size=self.metrics_params.metrics_hparams.batch_size,
@@ -310,6 +310,7 @@ def evaluate_model(
     metrics_params,
     trained_model_params,
     data,
+    simPSF,
     psf_model,
     metrics_output,
 ):
@@ -321,13 +322,15 @@ def evaluate_model(
     Parameters
     ----------
     metrics_params: Recursive Namespace object
-        Recursive Namespace object containing metrics input parameters
+        Recursive Namespace object containing metrics input parameters.
     trained_model_params: Recursive Namespace object
-        Recursive Namespace object containing trained model input parameters
-    data: DataHandler object
-        DataHandler object containing training and test data
+        Recursive Namespace object containing trained model input parameters.
+    data: DataAdapter
+        An instance of the DataAdapter class containing datasets used to evaluate a trained PSF model.
+    simPSF: PSFSimulator
+        An instance of the PSFSimulator class used to encode SEDs into a TensorFlow-compatible format.
     psf_model: object
-        PSF model object
+        Instance of a trained PSF model with loaded weights. The concrete class depends on the model specified in the training configuration.
     metrics_output: str
         Directory location of metrics output
 
@@ -344,12 +347,11 @@ def evaluate_model(
         # Initialize metrics_handler
         metrics_handler = MetricsParamsHandler(metrics_params, trained_model_params)
 
-        ## Prepare models
         # Prepare np input
-        simPSF_np = data.training_data.simPSF
-
+        simPSF_np = simPSF
+        
         # Define datasets
-        datasets = {"test": data.test_data.dataset, "train": data.training_data.dataset}
+        datasets = {"test": data.test_data, "train": data.train_data}
 
         # Initialise dictionary to store metrics
         all_metrics = {}
