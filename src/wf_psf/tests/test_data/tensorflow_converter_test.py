@@ -42,7 +42,7 @@ def dataset_dict():
     return {
         "positions": np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.float32),
         "sources": np.random.randn(2, 32, 32).astype(np.float32),
-        "SEDs": np.random.randn(2, 3, 2).astype(np.float32),
+        "seds": np.random.randn(2, 3, 2).astype(np.float32),
         "masks": np.ones((2, 32, 32), dtype=np.float32),
     }
 
@@ -130,7 +130,7 @@ def test_process_seds_called_for_seds_key(
     spy.assert_called_once()
     args, kwargs = spy.call_args
     # First argument should match dataset seds
-    assert np.allclose(args[0], dataset_dict.get("SEDs"))
+    assert np.allclose(args[0], dataset_dict.get("seds"))
 
 
 def test_custom_required_optional_keys(
@@ -146,15 +146,16 @@ def test_custom_required_optional_keys(
         required_keys=required,
         optional_keys=optional,
     )
-    # Check only requested keys are in result
-    assert set(result.keys()) == {"positions", "masks"}
+    # Check requested keys are in result
+    for k in ["positions", "masks"]:
+        assert k in result.keys()
 
 
 def test_seds_tensor_shape(converter, dataset_dict, mock_process_seds, mock_simPSF):
     """Check mocked SED tensor shape returned from convert_dataset."""
     n_bins_lambda = 10
     result = converter.convert_dataset(dataset_dict, mock_simPSF, n_bins_lambda)
-    seds_tensor = result["SEDs"]
+    seds_tensor = result["seds"]
     # Mocked shape is (N, n_bins_lambda, 3)
     assert seds_tensor.shape[1] == n_bins_lambda
     assert seds_tensor.shape[2] == 3

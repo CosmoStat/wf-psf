@@ -1,6 +1,7 @@
 """Unit tests for the TrainingConfigHandler class in training_config_handler.py"""
 
 import pytest
+from wf_psf.data.data_config_handler import DataConfigHandler
 from wf_psf.utils.configs_handler import ConfigHandler
 from wf_psf.training.training_config_handler import TrainingConfigHandler
 from wf_psf.utils.read_config import RecursiveNamespace
@@ -92,11 +93,13 @@ def test_training_config_handler_init(
         return_value=mock_training_conf,
     )
 
-    # Mock data_conf instance
-    mock_data_conf = mocker.patch(
-        "wf_psf.training.training_config_handler.DataConfigHandler"
+    # Patch DataConfigHandler to return an object with .params
+    mock_data_conf_instance = mocker.Mock()
+    mock_data_conf_instance.params = mock_data_params
+    data_config_handler_patch = mocker.patch(
+        "wf_psf.training.training_config_handler.DataConfigHandler",
+        return_value=mock_data_conf_instance,
     )
-    mock_data_conf.return_value = mock_data_params
 
     # Mock SimPSF instance
     mock_simPSF_instance = mocker.Mock(name="SimPSFToolkist")
@@ -125,11 +128,13 @@ def test_training_config_handler_init(
     assert training_config_handler.training_conf == mock_training_conf
     assert training_config_handler.file_handler == mock_file_handler
 
-    mock_data_conf.assert_called_once_with(
+    # Assert that DataConfigHandler was instantiated with the correct path
+    data_config_handler_patch.assert_called_once_with(
         os.path.join(
             mock_file_handler.config_path,
             training_config_handler.training_conf.training.data_config,
-        ),
+        )
     )
 
-    assert training_config_handler.data_params == mock_data_conf.return_value
+    # Assert that .params was correctly read
+    assert training_config_handler.data_params == mock_data_conf_instance.params

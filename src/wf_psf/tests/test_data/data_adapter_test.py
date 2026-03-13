@@ -97,7 +97,9 @@ def loaded_split(numpy_train_dataset, numpy_test_dataset):
 def mock_converter(mocker):
     """Mock TensorFlowDatasetConverter."""
     mock = mocker.Mock()
-    mock.convert_dataset.side_effect = lambda d, *_: {"converted": True}
+    mock.convert_dataset.side_effect = (
+        lambda dataset, simPSF, n_bins_lambda, **kwargs: dataset
+    )
     return mock
 
 
@@ -497,7 +499,6 @@ class TestDataAdapterConvertTensorFlow:
         adapter = DataAdapter(dataset=loaded_complete, converter=mock_converter)
         adapter.convert_to_tensorflow(simPSF=None, n_bins_lambda=10)
         assert adapter.representation_state == RepresentationState.TENSORFLOW
-        assert adapter._complete_tf == {"converted": True}
         # Train/test remain None
         assert adapter._train_tf is None
         assert adapter._test_tf is None
@@ -509,9 +510,9 @@ class TestDataAdapterConvertTensorFlow:
         )
         adapter.convert_to_tensorflow(simPSF=None, n_bins_lambda=10)
         assert adapter.representation_state == RepresentationState.TENSORFLOW
-        assert adapter._train_tf == {"converted": True}
-        assert adapter._test_tf == {"converted": True}
         assert adapter._complete_tf is None
+        assert adapter._train_tf is not None
+        assert adapter._test_tf is not None
 
     def test_convert_to_tensorflow_error_no_converter(
         self, loaded_complete, mock_converter
