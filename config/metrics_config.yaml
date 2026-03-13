@@ -34,7 +34,7 @@ metrics:
 
       # Evaluation parameters
       # Number of bins used for the ground truth model poly PSF generation
-      n_bins_lda: 20
+      n_bins_lambda: 20
 
       # Downsampling rate to match the oversampled model to the specified telescope's sampling.
       output_Q: 3

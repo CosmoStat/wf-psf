@@ -79,20 +79,14 @@ def compute_poly_metric(
         Standard deviation of relative RMSEs. Values in %.
 
     """
-    # Generate SED data list for the model
-    packed_SED_data = [
-        utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_lda)
-        for _sed in tf_SEDs
-    ]
-    tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
-    tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
-    pred_inputs = [tf_pos, tf_packed_SED_data]
+    # Set up inputs for the model
+    pred_inputs = [tf_pos, tf_SEDs]
 
     # Model prediction
     preds = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
 
-    # Ground truth data preparation
-    if dataset_dict is None or "stars" not in dataset_dict:
+    # Ground truth data preparation: Check if Ground Truth Dataset is in dataset dict else re-generarate
+    if dataset_dict is None or ("stars" not in dataset_dict and "sources" not in dataset_dict):
         logger.info(
             "No precomputed ground truth stars found. Regenerating from the ground truth model using configured interpolation settings."
         )
@@ -113,7 +107,7 @@ def compute_poly_metric(
 
     else:
         logger.info("Using precomputed ground truth stars from dataset_dict['stars'].")
-        gt_preds = dataset_dict["stars"]
+        gt_preds = dataset_dict.get("stars", dataset_dict.get("sources"))
 
     # If the data is masked, mask the predictions
     if mask:
@@ -372,7 +366,7 @@ def compute_shape_metrics(
     tf_semiparam_field,
     gt_tf_semiparam_field,
     simPSF_np,
-    SEDs,
+    tf_SEDs,
     tf_pos,
     n_bins_lda,
     n_bins_gt,
@@ -396,8 +390,8 @@ def compute_shape_metrics(
         Ground truth model to produce gt observations at any position
         and wavelength.
     simPSF_np:
-    SEDs: numpy.ndarray [batch x SED_samples x 2]
-        SED samples for the corresponding positions.
+    tf_SEDs: tf.float [batch x SED_samples x 2]
+        SED samples for the corresponding positions of type tf.float.
     tf_pos: Tensor [batch x 2]
         Positions at where to predict the PSFs.
     n_bins_lda: int
@@ -454,15 +448,8 @@ def compute_shape_metrics(
         gt_tf_semiparam_field, optimizer=optimizer_settings
     )
 
-    # Generate SED data list
-    packed_SED_data = [
-        utils.generate_packed_elems(_sed, simPSF_np, n_bins=n_bins_lda) for _sed in SEDs
-    ]
-
-    # Prepare inputs
-    tf_packed_SED_data = tf.convert_to_tensor(packed_SED_data, dtype=tf.float32)
-    tf_packed_SED_data = tf.transpose(tf_packed_SED_data, perm=[0, 2, 1])
-    pred_inputs = [tf_pos, tf_packed_SED_data]
+    # Compile inputs: positions and SEDs for model inference
+    pred_inputs = [tf_pos, tf_SEDs]
 
     # PSF model
     predictions = tf_semiparam_field.predict(x=pred_inputs, batch_size=batch_size)
