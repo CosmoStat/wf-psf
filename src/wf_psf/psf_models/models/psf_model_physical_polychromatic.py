@@ -24,6 +24,7 @@ from wf_psf.psf_models.tf_modules.tf_layers import (
     TFNonParametricPolynomialVariationsOPD,
     TFPhysicalLayer,
 )
+from wf_psf.psf_models.tf_modules.tf_utils import ensure_tensor
 import logging
 
 
@@ -113,6 +114,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         self.model_params = model_params
         self.training_params = training_params
         self.data = data
+        self.positions = ensure_tensor(self.data.get("positions"), tf.float32)
 
         # Initialize the model parameters
         self.output_Q = model_params.output_Q
@@ -231,7 +233,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         """Lazy loading of the physical layer of the PSF model."""
         if not hasattr(self, "_tf_physical_layer"):
             self._tf_physical_layer = TFPhysicalLayer(
-                self.data.get("positions"),
+                self.positions,
                 self.zks_total_contribution,
                 interpolation_type=self.model_params.interpolation_type,
                 interpolation_args=self.model_params.interpolation_args,
