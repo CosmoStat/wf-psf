@@ -6,7 +6,7 @@ Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 """
 
 from dataclasses import dataclass, is_dataclass, fields
-from typing import Any, Optional
+from typing import Any, Dict, Optional, Union
 from wf_psf.data.data_adapter import DataAdapter, LoadedDataset
 from wf_psf.data.data_utils import DatasetUtils
 from wf_psf.data.simulation_data_loader import SimulationDataLoader
@@ -54,10 +54,9 @@ class SupportsMetadata(Protocol):
 
     metadata: Any
 
-
 # Define a union type for all acceptable data formats that include parameters
-DataWithParams = dict | SupportsParams
-ParamsType = dict | RecursiveNamespace
+DataWithParams = Union[Dict[str, Any], SupportsParams]
+ParamsType = Union[Dict[str, Any], RecursiveNamespace]
 
 
 @dataclass
@@ -265,7 +264,7 @@ class DataAdapterFactory:
 
         """
         data_cfg = params
-
+        
         # -------------------------
         # Case 1: Split configuration
         # -------------------------
@@ -293,5 +292,5 @@ class DataAdapterFactory:
             )
         else:
             raise ValueError(
-                "Cannot determine dataset source from configuration. Please provide either 'training' and 'test' configs or a 'file' config."
+                "Cannot determine dataset source from configuration. Please provide either 'train' and 'test' configs or a 'file' config."
             )

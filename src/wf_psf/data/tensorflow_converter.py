@@ -6,11 +6,11 @@ Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 """
 
 import tensorflow as tf
+from typing import Optional, Union
 from wf_psf.data.data_utils import DatasetContainer
 from wf_psf.psf_models.psf_models import PSFSimulator
 from wf_psf.psf_models.tf_modules.tf_utils import ensure_tensor
 from wf_psf.utils.utils import generate_SED_elems_in_tensorflow
-
 
 class TensorFlowDatasetConverter:
     """Dataset Converter to TensorFlow tensors."""
@@ -18,7 +18,7 @@ class TensorFlowDatasetConverter:
     TF_CANONICAL_KEYS = (
         "positions",
         "sources",
-        "SEDs",
+        "seds",
         "masks",
     )  # informational
 
@@ -27,11 +27,11 @@ class TensorFlowDatasetConverter:
 
     def convert_dataset(
         self,
-        dataset: DatasetContainer | dict,
+        dataset: Union[DatasetContainer,dict],
         simPSF: PSFSimulator,
         n_bins_lambda: int,
-        required_keys: tuple[str, ...] | None = None,
-        optional_keys: tuple[str, ...] | None = None,
+        required_keys: Optional[tuple[str, ...]] = None,
+        optional_keys: Optional[tuple[str, ...]] = None,
     ):
         """Convert dataset container or dict to TensorFlow tensors.
 
@@ -60,10 +60,10 @@ class TensorFlowDatasetConverter:
         ValueError
             If any required key is missing from the dataset.
         """
-        required_keys = required_keys or self.REQUIRED_KEYS
-        optional_keys = optional_keys or self.OPTIONAL_KEYS
+        required_keys = self.REQUIRED_KEYS if required_keys is None else required_keys
+        optional_keys = self.OPTIONAL_KEYS if optional_keys is None else optional_keys
 
-        result = {}
+        result = dict(dataset)
 
         # Handle required keys
         for k in required_keys:
@@ -72,7 +72,7 @@ class TensorFlowDatasetConverter:
                 raise ValueError(f"Required dataset field '{k}' is missing.")
             result[k] = (
                 self.process_seds(v, simPSF, n_bins_lambda)
-                if k == "SEDs"
+                if k == "seds"
                 else ensure_tensor(v, dtype=tf.float32)
             )
 
@@ -98,6 +98,10 @@ class TensorFlowDatasetConverter:
         ----------
         sed_data : array_like
             Array of SEDs, shape (N, n_wavelengths) or similar
+        simPSF : PSFSimulator
+            PSF simulator used for SED processing.
+        n_bins_lambda : int
+            Number of wavelength bins for SED processing.
 
         Returns
         -------

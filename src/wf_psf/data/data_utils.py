@@ -15,7 +15,7 @@ Jennifer Pollack <jennifer.pollack@cea.fr>
 
 from collections.abc import MutableMapping
 from dataclasses import is_dataclass, fields
-from typing import Any
+from typing import Any, Optional
 import numpy as np
 
 
@@ -171,7 +171,7 @@ class DatasetUtils:
         return False
 
     @staticmethod
-    def to_container(obj) -> DatasetContainer | None:
+    def to_container(obj) -> Optional[DatasetContainer]:
         """Convert an object to a ``DatasetContainer``.
 
         Transforms various dataset representations into a standardized
