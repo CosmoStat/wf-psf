@@ -73,7 +73,7 @@ def mock_converter(mocker):
     """Mock TensorFlowDatasetConverter to pass through NumPy."""
     mock = mocker.Mock()
     mock.convert_dataset.side_effect = (
-        lambda d, simPSF, n_bins: d
+        lambda d, simPSF, n_bins, **params: d
     )  # just return the dict
     return mock
 

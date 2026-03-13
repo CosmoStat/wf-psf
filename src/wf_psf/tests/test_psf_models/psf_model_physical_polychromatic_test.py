@@ -10,10 +10,11 @@ import pytest
 import numpy as np
 import tensorflow as tf
 from unittest.mock import patch
+from wf_psf.data.data_utils import DatasetContainer
 from wf_psf.psf_models.models.psf_model_physical_polychromatic import (
     TFPhysicalPolychromaticField,
 )
-from wf_psf.data.data_config_handler import DataConfigHandler
+from types import SimpleNamespace
 
 
 @pytest.fixture
@@ -29,28 +30,12 @@ def zks_prior():
 
 
 @pytest.fixture
-def mock_data(mocker, zks_prior):
-    mock_instance = mocker.Mock(spec=DataConfigHandler)
-    mock_instance.run_type = "training"
-
-    training_dataset = {
+def mock_data(zks_prior):
+    return {
         "positions": np.array([[1, 2], [3, 4]]),
         "zernike_prior": zks_prior,
-        "noisy_stars": np.zeros((2, 1, 1, 1)),
+        "sources": np.zeros((2, 1, 1, 1)),
     }
-    test_dataset = {
-        "positions": np.array([[5, 6], [7, 8]]),
-        "zernike_prior": zks_prior,
-        "stars": np.zeros((2, 1, 1, 1)),
-    }
-
-    mock_instance.training_data = mocker.Mock()
-    mock_instance.training_data.dataset = training_dataset
-    mock_instance.test_data = mocker.Mock()
-    mock_instance.test_data.dataset = test_dataset
-    mock_instance.batch_size = 16
-
-    return mock_instance
 
 
 @pytest.fixture
