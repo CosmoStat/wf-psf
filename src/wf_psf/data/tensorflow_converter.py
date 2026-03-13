@@ -12,6 +12,7 @@ from wf_psf.psf_models.psf_models import PSFSimulator
 from wf_psf.psf_models.tf_modules.tf_utils import ensure_tensor
 from wf_psf.utils.utils import generate_SED_elems_in_tensorflow
 
+
 class TensorFlowDatasetConverter:
     """Dataset Converter to TensorFlow tensors."""
 
@@ -22,12 +23,12 @@ class TensorFlowDatasetConverter:
         "masks",
     )  # informational
 
-    REQUIRED_KEYS = ("positions", "sources", "SEDs")
+    REQUIRED_KEYS = ("positions", "sources", "seds")
     OPTIONAL_KEYS = ("masks",)
 
     def convert_dataset(
         self,
-        dataset: Union[DatasetContainer,dict],
+        dataset: Union[DatasetContainer, dict],
         simPSF: PSFSimulator,
         n_bins_lambda: int,
         required_keys: Optional[tuple[str, ...]] = None,
