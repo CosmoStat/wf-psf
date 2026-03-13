@@ -375,28 +375,31 @@ def train(
 
     # Join data, if not already complete
     if adapter.structure_state == StructureState.SPLIT:
+        logger.info(f"Joining split datasets...")
         adapter.join_data()
 
     # Instantiate PSF model
     # Certain PSF models require full dataset
+    logger.info(f"Initialising PSF model {training_handler.model_params.model_name}...")
     psf_model = psf_models.get_psf_model(
         training_handler.model_params,
         training_handler.training_hparams,
         adapter.complete_data,
     )
-
+    logger.info(f"PSF Model class: `{training_handler.model_name}` initialized...")
     # Split dataset just before training, idempotent
     if adapter.structure_state == StructureState.COMPLETE:
+        logger.info("Generating split datasets...")
         adapter.split_data()
 
     # Convert to TF for training
     if adapter.representation_state == RepresentationState.NUMPY:
+        logger.info("Converting dataset to tensors...")
         adapter.convert_to_tensorflow(simPSF, n_bins_lambda)
 
     # Wrap in training-specific adapter
     training_adapter = TrainingDataAdapter(adapter, training_handler.training_hparams)
 
-    logger.info(f"PSF Model class: `{training_handler.model_name}` initialized...")
     # Model Training
     # -----------------------------------------------------
     # Save optimisation history in the saving dict
