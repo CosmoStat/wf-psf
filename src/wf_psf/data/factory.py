@@ -283,14 +283,26 @@ class DataAdapterFactory:
         # -------------------------
         # Case 2: Complete configuration
         # -------------------------
-        elif hasattr(data_cfg, "file"):
-            loader = SimulationDataLoader(data_cfg)
-            complete_data = loader.load()
+        elif hasattr(data_cfg, "complete"):
+            
+            complete_loader = SimulationDataLoader(data_cfg.complete)
+            complete_loader.load()
 
             return LoadedDataset(
-                complete=complete_data,
+                complete=complete_loader.dataset,
+            )
+        # -------------------------
+        # Case 3: Shallow configuration
+        # -------------------------
+        elif hasattr(data_cfg, "file"):
+
+            shallow_loader = SimulationDataLoader(data_cfg)
+            shallow_loader.load()
+
+            return LoadedDataset(
+                complete=shallow_loader.dataset,
             )
         else:
             raise ValueError(
                 "Cannot determine dataset source from configuration. Please provide either 'train' and 'test' configs or a 'file' config."
-            )
+            ) 
