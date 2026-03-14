@@ -375,13 +375,7 @@ class DataAdapter:
             self._train_data, self._test_data = self._split(
                 self._complete_data, ratio=ratio, seed=seed
             )
-
-            self._train, self._test = self._split(
-                self._complete_data,
-                ratio=ratio,
-                seed=seed,
-            )
-
+            
         self._structure_state = StructureState.SPLIT
 
     def join_data(self, keys: Optional[List[str]] = None):
@@ -452,29 +446,39 @@ class DataAdapter:
         ratio = ratio or getattr(self._params, "train_fraction", 0.8)
         rng = np.random.default_rng(seed)
 
+        canonical_keys = getattr(self._params, "canonical_keys", [])
+
         n = None
-        # determine number of samples from first array
-        for v in data.values():
-            if isinstance(v, np.ndarray):
-                n = v.shape[0]
+
+        # Determine sample size from canonical keys
+        for key in canonical_keys:
+            if key in data and isinstance(data[key], np.ndarray):
+                n = data[key].shape[0]
                 break
+
         if n is None:
-            raise ValueError("No arrays found in dataset to split.")
+            raise ValueError(
+                f"Could not determine dataset length from canonical keys {canonical_keys}"
+            )
 
         n_train = int(n * ratio)
         indices = rng.permutation(n)
+        
+        train_idx = indices[:n_train]
+        test_idx = indices[n_train:]
 
-        train_data = {
-            k: v[indices[:n_train]]
-            for k, v in data.items()
-            if isinstance(v, np.ndarray)
-        }
-        test_data = {
-            k: v[indices[n_train:]]
-            for k, v in data.items()
-            if isinstance(v, np.ndarray)
-        }
+        train_data = {}
+        test_data = {}
 
+        for k, v in data.items():
+            if isinstance(v, np.ndarray) and v.shape[0] == n:
+                train_data[k] = v[train_idx]
+                test_data[k] = v[test_idx]
+            else:
+                # leave arrays with different leading axis untouched
+                train_data[k] = v
+                test_data[k] = v
+        
         return train_data, test_data
 
     def release_numpy(self):
