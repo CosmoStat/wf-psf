@@ -368,7 +368,7 @@ def configure_optimizer_and_loss(
 
 
 def calculate_sample_weights(
-    outputs: np.ndarray,
+    outputs: tf.Tensor,
     use_sample_weights: bool,
     loss: Union[str, Callable, None],
     apply_sigmoid: bool = False,
@@ -383,8 +383,8 @@ def calculate_sample_weights(
 
     Parameters
     ----------
-    outputs: np.ndarray
-        A 3D array of shape (batch_size, height, width) representing images, where the first dimension is the batch size
+    outputs: tf.Tensor
+        A 3D tensor of shape (batch_size, height, width) representing images, where the first dimension is the batch size
         and the next two dimensions are the image height and width.
     use_sample_weights: bool
         Flag indicating whether to compute sample weights. If True, sample weights will be computed based on the image noise.
@@ -413,6 +413,7 @@ def calculate_sample_weights(
             (isinstance(loss, str) and loss == "masked_mean_squared_error")
             or (hasattr(loss, "name") and loss.name == "masked_mean_squared_error")
         ):
+            
             logger.info("Estimating noise standard deviation for masked images..")
             images = outputs[..., 0]
             masks = np.array(1 - outputs[..., 1], dtype=bool)
