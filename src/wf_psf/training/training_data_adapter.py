@@ -7,7 +7,9 @@ Author(s): Jennifer Pollack <jennifer.pollack@cea.fr>
 
 from wf_psf.data.data_adapter import DataAdapter
 import tensorflow as tf
+import logging
 
+logger = logging.getLogger(__name__)
 
 class TrainingDataAdapter:
     """TrainingDataAdapter.
@@ -55,6 +57,7 @@ class TrainingDataAdapter:
         """
         sources = self.base.train_data.get("sources")
         if self.loss_type == "mask_mse":
+            logger.info("Stacking sources and masks...")
             masks = self.base.train_data.get("masks")
             if masks is None:
                 raise ValueError("mask_mse requires masks for training.")
