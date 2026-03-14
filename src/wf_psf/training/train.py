@@ -386,6 +386,7 @@ def train(
         training_handler.training_hparams,
         adapter.complete_data,
     )
+    
     logger.info(f"PSF Model class: `{training_handler.model_name}` initialized...")
     # Split dataset just before training, idempotent
     if adapter.structure_state == StructureState.COMPLETE:
@@ -398,7 +399,7 @@ def train(
         adapter.convert_to_tensorflow(simPSF, n_bins_lambda)
 
     # Wrap in training-specific adapter
-    training_adapter = TrainingDataAdapter(adapter, training_handler.training_hparams)
+    training_adapter = TrainingDataAdapter(adapter, training_handler.training_hparams.loss)
 
     # Model Training
     # -----------------------------------------------------
