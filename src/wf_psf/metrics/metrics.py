@@ -117,6 +117,9 @@ def compute_poly_metric(
 
         masks = 1 - dataset_dict["masks"]
 
+        if hasattr(masks, "numpy"):
+            masks = masks.numpy()
+
         # Ensure masks as float dtype
         masks = masks.astype(preds.dtype)
 
