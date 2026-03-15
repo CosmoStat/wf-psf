@@ -1,6 +1,23 @@
-"""Factory module for creating data adapters.
+"""
+Factory module for creating and normalizing data adapters.
 
-This module defines the DataAdapterFactory, which creates data adapters for loading and processing datasets. The factory handles the instantiation of the appropriate data adapter based on the dataset type and configuration parameters.
+This module defines the DataAdapterFactory, which constructs DataAdapter
+instances from a variety of dataset formats, including dictionaries,
+dataclasses, LoadedDataset instances, or objects with attributes exposing
+numpy arrays. It also integrates dataset normalization and metadata extraction
+through the DataEnvelope and utility routines in `data_utils`.
+
+The module defines protocols (`SupportsParams`, `SupportsMetadata`) to allow
+external APIs to pass parameter and metadata containers in a generic way,
+supporting dataclasses, custom objects, or dictionaries.
+
+Key features:
+- Automatic detection of dataset structure (train/test/complete) and conversion
+  to LoadedDataset for downstream processing.
+- Normalization and validation of dataset parameters via `normalize_data_envelope`.
+- Integration with TensorFlowDatasetConverter for TF-ready dataset pipelines.
+- Lightweight dataset introspection utilities for numpy arrays and canonical keys.
+- Logging to provide insight into dataset resolution and loading steps.
 
 Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 """
@@ -53,6 +70,7 @@ class SupportsMetadata(Protocol):
     """
 
     metadata: Any
+
 
 # Define a union type for all acceptable data formats that include parameters
 DataWithParams = Union[Dict[str, Any], SupportsParams]
@@ -264,7 +282,7 @@ class DataAdapterFactory:
 
         """
         data_cfg = params
-        
+
         # -------------------------
         # Case 1: Split configuration
         # -------------------------
@@ -284,7 +302,6 @@ class DataAdapterFactory:
         # Case 2: Complete configuration
         # -------------------------
         elif hasattr(data_cfg, "complete"):
-            
             complete_loader = SimulationDataLoader(data_cfg.complete)
             complete_loader.load()
 
@@ -295,7 +312,6 @@ class DataAdapterFactory:
         # Case 3: Shallow configuration
         # -------------------------
         elif hasattr(data_cfg, "file"):
-
             shallow_loader = SimulationDataLoader(data_cfg)
             shallow_loader.load()
 
@@ -305,4 +321,4 @@ class DataAdapterFactory:
         else:
             raise ValueError(
                 "Cannot determine dataset source from configuration. Please provide either 'train' and 'test' configs or a 'file' config."
-            ) 
+            )
