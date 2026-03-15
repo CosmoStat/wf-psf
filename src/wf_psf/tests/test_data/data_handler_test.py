@@ -10,7 +10,7 @@ from wf_psf.utils.read_config import RecursiveNamespace
 
 
 def mock_sed():
-    # Create a fake SED with shape (n_wavelengths,) — match what your real SEDs look like
+    # Create a fake SED with shape (n_wavelengths,)
     return np.linspace(0.1, 1.0, 50)
 
 

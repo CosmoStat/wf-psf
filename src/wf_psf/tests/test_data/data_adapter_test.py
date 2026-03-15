@@ -56,6 +56,7 @@ def numpy_dataset():
         "positions": np.random.rand(10, 2),
         "sources": np.random.rand(10, 32, 32),
         "masks": np.ones((10, 32, 32)),
+        "seds": np.random.randn(10, 3, 2).astype(np.float32),
     }
 
 
@@ -66,6 +67,7 @@ def numpy_train_dataset():
         "positions": np.random.rand(10, 2),
         "noisy_stars": np.random.rand(10, 32, 32),
         "masks": np.ones((10, 32, 32)),
+        "seds": np.random.randn(10, 3, 2).astype(np.float32),
     }
 
 
@@ -76,6 +78,7 @@ def numpy_test_dataset():
         "positions": np.random.rand(10, 2),
         "stars": np.random.rand(10, 32, 32),
         "masks": np.ones((10, 32, 32)),
+        "seds": np.random.randn(10, 3, 2).astype(np.float32),
     }
 
 
@@ -216,7 +219,7 @@ class TestDataAdapterCanonicalization:
             "positions": np.random.rand(5, 2),
             "noisy_stars": np.random.rand(5, 16, 16),
             "masks": np.ones((5, 16, 16)),
-            "SEDs": np.random.randn(5, 3, 2).astype(np.float32),
+            "seds": np.random.randn(5, 3, 2).astype(np.float32),
         }
 
     @pytest.fixture
@@ -264,11 +267,13 @@ class TestDataAdapterCanonicalization:
             "positions": np.random.rand(6, 2),
             "stars": np.random.rand(6, 16, 16),
             "masks": np.ones((6, 16, 16)),
+            "seds": np.random.randn(6, 3, 2).astype(np.float32),
         }
         test = {
             "positions": np.random.rand(4, 2),
             "stars": np.random.rand(4, 16, 16),
             "masks": np.ones((4, 16, 16)),
+            "seds": np.random.randn(4, 3, 2).astype(np.float32),
         }
         return FakeLoadedDataset(train=train, test=test)
 
@@ -416,7 +421,7 @@ class TestDataAdapterSplitData:
         params = RecursiveNamespace(
             train=RecursiveNamespace(target_field="noisy_stars"),
             test=RecursiveNamespace(target_field="stars"),
-            canonical_keys=["sources", "masks", "positions"],
+            canonical_keys=["sources", "masks", "positions", "seds"],
             train_fraction=0.8,
             seed=42,
         )
