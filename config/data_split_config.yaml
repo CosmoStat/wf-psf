@@ -1,22 +1,29 @@
-# Training and test data sets for training and/or metrics evaluation
+# Data configuration parameters for training a PSF model
 params:
   train:
-    # Specify directory path to training dataset
+    # Directory path to training dataset
     data_dir: /path/to/training/dataset
-    # Provide name of training dataset (only .npy are loaded)
+    # Training dataset filename (only .npy are loaded)
     file: train.npy
-    # Provide name of the field in the dataset representing sources (stars)
+    # Field in the dataset representing sources (stars))
     target_field: noisy_stars
   test:
-    # Specify directory path to validation dataset
+    # Directory path to test dataset
     data_dir: /path/to/validation/data
-    # Provide name of test dataset (only .npy are loaded)
+    # Test dataset filename (currently only .npy files supported)
     file: test.npy
-    # Provide name of the field in the dataset representing sources (stars)
+    # Field in the dataset representing sources (stars)
     target_field: stars
-  # Define your own canonical keys used for training (overrides DEFAULT)
+  # Define canonical keys for dataset
+  # Canonical dataset fields determine dataset size and ensure
+  # consistent train/test splitting across arrays.
+  # Overrides DEFAULT_CANONICAL_KEYS.
   canonical_keys:
-      - sources
-      - masks
-      - positions
-      - seds
+    - sources
+    - positions
+    - seds
+
+  # Optional dataset fields
+  # Uncomment if present in your dataset
+  # - masks
+  # - zernike_prior
