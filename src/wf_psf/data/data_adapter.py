@@ -60,6 +60,11 @@ Authors: Jennifer Pollack <jennifer.pollack@cea.fr>
 from enum import Enum, auto
 import numpy as np
 from typing import Any, List, Optional
+from wf_psf.data.constants import (
+    DEFAULT_CANONICAL_KEYS,
+    DEFAULT_SEED,
+    DEFAULT_TRAIN_FRACTION,
+)
 from wf_psf.data.data_utils import DatasetUtils, DatasetContainer
 from wf_psf.data.tensorflow_converter import TensorFlowDatasetConverter
 import logging
@@ -137,8 +142,6 @@ class DataAdapter:
     Instances should be created via `DataAdapterFactory.build()`.
     """
 
-    DEFAULT_CANONICAL_KEYS = ("sources", "positions", "seds", "masks", "zernike_prior")
-
     def __init__(
         self,
         dataset: LoadedDataset,
@@ -170,10 +173,9 @@ class DataAdapter:
         self._params = params
         self._metadata = metadata
         self._converter = converter
-        self._canonical_keys = (
-            getattr(self._params, "canonical_keys", None) or self.DEFAULT_CANONICAL_KEYS
-        )
-
+        self._canonical_keys = getattr(params, "canonical_keys", DEFAULT_CANONICAL_KEYS)
+        self._train_fraction = getattr(params, "train_fraction", DEFAULT_TRAIN_FRACTION)
+        self._seed = getattr(params, "seed", DEFAULT_SEED)
         # Dataset containers for both representations
         # default empty
         self._train_data = None
@@ -375,7 +377,7 @@ class DataAdapter:
             self._train_data, self._test_data = self._split(
                 self._complete_data, ratio=ratio, seed=seed
             )
-            
+
         self._structure_state = StructureState.SPLIT
 
     def join_data(self, keys: Optional[List[str]] = None):
@@ -435,18 +437,22 @@ class DataAdapter:
 
         Parameters
         ----------
-        data : np.ndarray
-            The complete dataset to be split.
+        data : DatasetContainer
+            Container holding the complete dataset to be split. The container
+            behaves like a dictionary and stores arrays for different dataset
+            components (e.g., sources, positions, masks, SEDs), with optional
+            attribute-style access. Only array-like entries whose first dimension
+            corresponds to the number of samples will be split.
         ratio : float, optional
-            The fraction of the dataset to use for training (default is 0.8 or from params).
+            Fraction of the dataset to allocate to the training set.
         seed : int, optional
-            The random seed for reproducibility (default is from params).
+            Random seed used to generate the split for reproducibility.
 
         """
         ratio = ratio or getattr(self._params, "train_fraction", 0.8)
         rng = np.random.default_rng(seed)
 
-        canonical_keys = getattr(self._params, "canonical_keys", [])
+        canonical_keys = self._canonical_keys
 
         n = None
 
@@ -463,7 +469,7 @@ class DataAdapter:
 
         n_train = int(n * ratio)
         indices = rng.permutation(n)
-        
+
         train_idx = indices[:n_train]
         test_idx = indices[n_train:]
 
@@ -478,7 +484,7 @@ class DataAdapter:
                 # leave arrays with different leading axis untouched
                 train_data[k] = v
                 test_data[k] = v
-        
+
         return train_data, test_data
 
     def release_numpy(self):
