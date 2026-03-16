@@ -66,7 +66,7 @@ def mock_inference_config():
                 trained_model_config_path="config/training_config.yaml",
                 data_config_path=None,
             ),
-            model_params=RecursiveNamespace(n_bins_lda=8, output_Q=1, output_dim=64),
+            model_params=RecursiveNamespace(n_bins_lambda=8, output_Q=1, output_dim=64),
         )
     )
     return inference_config
@@ -584,6 +584,6 @@ def test_engine_clear_cache(psf_test_setup):
     inference.engine.clear_cache()
 
     # Check that the internal cache is None
-    assert inference.engine._inferred_psfs is None, (
-        "PSF cache should be cleared to None"
-    )
+    assert (
+        inference.engine._inferred_psfs is None
+    ), "PSF cache should be cleared to None"
