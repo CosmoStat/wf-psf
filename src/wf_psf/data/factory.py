@@ -26,7 +26,7 @@ from dataclasses import dataclass, is_dataclass, fields
 from typing import Any, Dict, Optional, Union
 from wf_psf.data.data_adapter import DataAdapter, LoadedDataset
 from wf_psf.data.data_utils import DatasetUtils
-from wf_psf.data.simulation_data_loader import SimulationDataLoader
+from wf_psf.data.npy_dataset_loader import NpyDatasetLoader
 from wf_psf.data.tensorflow_converter import TensorFlowDatasetConverter
 from typing import Protocol, runtime_checkable
 from wf_psf.utils.read_config import RecursiveNamespace
@@ -287,8 +287,8 @@ class DataAdapterFactory:
         # Case 1: Split configuration
         # -------------------------
         if hasattr(data_cfg, "train") and hasattr(data_cfg, "test"):
-            train_loader = SimulationDataLoader(data_cfg.train)
-            test_loader = SimulationDataLoader(data_cfg.test)
+            train_loader = NpyDatasetLoader(data_cfg.train)
+            test_loader = NpyDatasetLoader(data_cfg.test)
 
             train_loader.load()
             test_loader.load()
@@ -302,7 +302,7 @@ class DataAdapterFactory:
         # Case 2: Complete configuration
         # -------------------------
         elif hasattr(data_cfg, "complete"):
-            complete_loader = SimulationDataLoader(data_cfg.complete)
+            complete_loader = NpyDatasetLoader(data_cfg.complete)
             complete_loader.load()
 
             return LoadedDataset(
@@ -312,7 +312,7 @@ class DataAdapterFactory:
         # Case 3: Shallow configuration
         # -------------------------
         elif hasattr(data_cfg, "file"):
-            shallow_loader = SimulationDataLoader(data_cfg)
+            shallow_loader = NpyDatasetLoader(data_cfg)
             shallow_loader.load()
 
             return LoadedDataset(
