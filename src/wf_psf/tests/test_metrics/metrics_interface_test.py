@@ -1,9 +1,6 @@
 from unittest.mock import patch, MagicMock
-from PIL.ImagePalette import make_gamma_lut
 import pytest
 from wf_psf.metrics.metrics_interface import evaluate_model
-from wf_psf.data.data_handler import DataHandler
-from wf_psf.tests.test_data.tensorflow_converter_test import mock_simPSF
 
 
 @pytest.fixture
@@ -19,44 +16,6 @@ def mock_metrics_params():
 @pytest.fixture
 def mock_trained_model_params():
     return MagicMock(model_params=MagicMock(model_name="mock_model"), id_name="mock_id")
-
-
-@pytest.fixture
-def mock_data():
-    # Create mock instances of the required attributes
-    mock_data_params = MagicMock()
-
-    # Mock the `data_params` dictionary for "train" and "test" data
-    mock_data_params.train = MagicMock()
-    mock_data_params.test = MagicMock()
-
-    # Initialize the DataHandler object with the mocked attributes
-    mock_data_handler = MagicMock(spec=DataHandler)
-    mock_data_handler.data_params = mock_data_params
-    mock_data_handler.simPSF = MagicMock()
-    mock_data_handler.n_bins_lambda = 10  # Example number of bins
-
-    # Mock the `train_data` and `test_data` attributes
-    mock_data_handler.train_data = MagicMock()
-    mock_data_handler.test_data = MagicMock()
-
-    mock_data_handler.train_data.dataset = {
-        "positions": "train_positions",
-        "noisy_stars": "train_noisy_stars",
-        "SEDs": "train_SEDs",
-        "C_poly": "train_C_poly",
-    }
-
-    mock_data_handler.test_data.dataset = {
-        "positions": "test_positions",
-        "noisy_stars": "test_noisy_stars",
-        "SEDs": "test_SEDs",
-        "C_poly": "test_C_poly",
-    }
-    mock_data_handler.sed_data = "mock_sed_data"
-
-    # Return the mocked DataHandler instance
-    return mock_data_handler
 
 
 @pytest.mark.parametrize(
@@ -76,7 +35,6 @@ def test_evaluate_model_flags(
     test_shape_flag,
     expected_calls,
     mock_trained_model_params,
-    mock_data,
     mock_psf_model,
 ):
     metrics_params = MagicMock(
@@ -105,7 +63,7 @@ def test_evaluate_model_flags(
         evaluate_model(
             metrics_params=metrics_params,
             trained_model_params=mock_trained_model_params,
-            data=mock_data,
+            data=MagicMock(),
             simPSF=MagicMock(),
             psf_model=mock_psf_model,
             metrics_output="/mock/output",
@@ -120,7 +78,7 @@ def test_evaluate_model_flags(
 
 
 def test_missing_ground_truth_model_raises(
-    mock_metrics_params, mock_trained_model_params, mock_data, mock_psf_model
+    mock_metrics_params, mock_trained_model_params, mock_psf_model
 ):
     # Set ground_truth_model to None to simulate missing config
     mock_metrics_params.ground_truth_model = None
@@ -133,7 +91,7 @@ def test_missing_ground_truth_model_raises(
         evaluate_model(
             metrics_params=mock_metrics_params,
             trained_model_params=mock_trained_model_params,
-            data=mock_data,
+            data=MagicMock(),
             simPSF=MagicMock(),
             psf_model=mock_psf_model,
             metrics_output="/mock/metrics/output",
@@ -142,7 +100,7 @@ def test_missing_ground_truth_model_raises(
 
 @pytest.mark.parametrize("plotting_config", [None, "mock_plot_config.yaml"])
 def test_plotting_config_passed(
-    plotting_config, mock_trained_model_params, mock_data, mock_psf_model
+    plotting_config, mock_trained_model_params, mock_psf_model
 ):
     metrics_params = MagicMock(
         eval_mono_metric=False,
@@ -167,7 +125,7 @@ def test_plotting_config_passed(
         evaluate_model(
             metrics_params=metrics_params,
             trained_model_params=mock_trained_model_params,
-            data=mock_data,
+            data=MagicMock(),
             simPSF=MagicMock(),
             psf_model=mock_psf_model,
             metrics_output="/mock/output",
@@ -178,9 +136,7 @@ def test_plotting_config_passed(
         mock_np_save.assert_called_once()
 
 
-def test_evaluate_model(
-    mock_metrics_params, mock_trained_model_params, mock_data, mock_psf_model, mocker
-):
+def test_evaluate_model(mock_metrics_params, mock_trained_model_params, mock_psf_model):
     # Mock the metric functions
     with (
         patch(
@@ -201,12 +157,11 @@ def test_evaluate_model(
         ) as mock_evaluate_shape_results_dict,
         patch("numpy.save", new_callable=MagicMock) as mock_np_save,
     ):
-
         # Call evaluate_model
         evaluate_model(
             metrics_params=mock_metrics_params,
             trained_model_params=mock_trained_model_params,
-            data=mock_data,
+            data=MagicMock(),
             psf_model=mock_psf_model,
             simPSF=MagicMock(),
             metrics_output="/mock/metrics/output",

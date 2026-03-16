@@ -16,7 +16,6 @@ from wf_psf.psf_models.tf_modules.tf_layers import (
     TFPhysicalLayer,
 )
 from wf_psf.psf_models.models.psf_model_semiparametric import TFSemiParametricField
-from wf_psf.data.data_handler import get_data_array
 from wf_psf.psf_models import psf_models as psfm
 from wf_psf.psf_models.tf_modules.tf_utils import ensure_tensor
 import logging
@@ -220,9 +219,11 @@ class TFGroundTruthPhysicalField(tf.keras.Model):
         logger.info("Initialising TFGroundTruthPhysicalField class...")
         # Inputs: oversampling used
         self.output_Q = model_params.output_Q
-        
+
         # Inputs: TF_physical_layer
-        self.obs_pos = ensure_tensor(data.complete_data.get("positions"), dtype=tf.float32)
+        self.obs_pos = ensure_tensor(
+            data.complete_data.get("positions"), dtype=tf.float32
+        )
         self.zks_prior = get_ground_truth_zernike(data)
         self.n_zks_prior = tf.shape(self.zks_prior)[1].numpy()
 
