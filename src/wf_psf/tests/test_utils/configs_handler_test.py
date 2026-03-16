@@ -7,11 +7,9 @@ This module contains unit tests for the wf_psf.utils configs_handler module.
 """
 
 import pytest
-from wf_psf.data.data_handler import DataHandler
 from wf_psf.utils import configs_handler
 from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.utils.io import FileIOHandler
-from wf_psf.data.data_config_handler import DataConfigHandler
 from wf_psf.training.training_config_handler import TrainingConfigHandler
 from wf_psf.metrics.metrics_config_handler import MetricsConfigHandler
 from wf_psf.plotting.plotting_config_handler import PlottingConfigHandler
@@ -184,68 +182,6 @@ class TestConfigHandlerABC:
         for handler_class in configs_handler.CONFIG_CLASS.values():
             assert hasattr(handler_class, "run")
             assert callable(handler_class.run)
-
-
-# ============================================================================
-# Test DataConfigHandler (moved from here, should be in test_data_config_handler.py)
-# ============================================================================
-
-
-@pytest.mark.skip(reason="Skipped - deprecated DataHandler pending removal")
-def test_data_config_handler_init(mock_training_conf, mock_data_read_conf, mocker):
-    """
-    Test DataConfigHandler initialization.
-
-    NOTE: This test is skipped because it tests deprecated DataHandler
-    behavior. Once DataHandler is removed, this test should be updated
-    or moved to test_data_config_handler.py with proper mocking.
-    """
-    # Mock read_conf function
-    mock_data_read_conf()
-
-    # Mock SimPSF instance
-    mock_simPSF_instance = mocker.Mock(name="SimPSFToolkit")
-    mocker.patch(
-        "wf_psf.psf_models.psf_models.simPSF", return_value=mock_simPSF_instance
-    )
-
-    # Patch process_sed_data method
-    mocker.patch.object(DataHandler, "process_sed_data")
-
-    # Patch validate_and_process_datasetmethod
-    mocker.patch.object(DataHandler, "validate_and_process_dataset")
-
-    # Patch load_dataset to assign dataset
-    def mock_load_dataset(self):
-        self.dataset = {
-            "SEDs": ["dummy_sed_data"],
-            "positions": ["dummy_positions_data"],
-        }
-
-    mocker.patch.object(DataHandler, "load_dataset", new=mock_load_dataset)
-
-    # Create DataConfigHandler instance
-    data_config_handler = DataConfigHandler(
-        "/path/to/data_config.yaml",
-        mock_training_conf.training.model_params,
-        mock_training_conf.training.training_hparams.batch_size,
-    )
-
-    # Check that attributes are set correctly
-    assert isinstance(data_config_handler.data_conf, RecursiveNamespace)
-    assert isinstance(data_config_handler.simPSF, object)
-    assert (
-        data_config_handler.training_data.n_bins_lambda
-        == mock_training_conf.training.model_params.n_bins_lda
-    )
-    assert (
-        data_config_handler.test_data.n_bins_lambda
-        == mock_training_conf.training.model_params.n_bins_lda
-    )
-    assert (
-        data_config_handler.batch_size
-        == mock_training_conf.training.training_hparams.batch_size
-    )
 
 
 # ============================================================================
