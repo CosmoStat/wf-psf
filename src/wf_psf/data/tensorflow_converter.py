@@ -7,6 +7,10 @@ Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 
 import tensorflow as tf
 from typing import Optional, Union
+from wf_psf.data.constants import (
+    DEFAULT_CANONICAL_KEYS,
+    OPTIONAL_KEYS as CONST_OPTIONAL_KEYS,
+)
 from wf_psf.data.data_utils import DatasetContainer
 from wf_psf.psf_models.psf_models import PSFSimulator
 from wf_psf.psf_models.tf_modules.tf_utils import ensure_tensor
@@ -16,15 +20,8 @@ from wf_psf.utils.utils import generate_SED_elems_in_tensorflow
 class TensorFlowDatasetConverter:
     """Dataset Converter to TensorFlow tensors."""
 
-    TF_CANONICAL_KEYS = (
-        "positions",
-        "sources",
-        "seds",
-        "masks",
-    )  # informational
-
-    REQUIRED_KEYS = ("positions", "sources", "seds")
-    OPTIONAL_KEYS = ("masks",)
+    REQUIRED_KEYS = DEFAULT_CANONICAL_KEYS
+    OPTIONAL_KEYS = set(CONST_OPTIONAL_KEYS)
 
     def convert_dataset(
         self,
@@ -61,13 +58,13 @@ class TensorFlowDatasetConverter:
         ValueError
             If any required key is missing from the dataset.
         """
-        required_keys = self.REQUIRED_KEYS if required_keys is None else required_keys
-        optional_keys = self.OPTIONAL_KEYS if optional_keys is None else optional_keys
+        req_keys = self.REQUIRED_KEYS if required_keys is None else required_keys
+        opt_keys = self.OPTIONAL_KEYS if optional_keys is None else optional_keys
 
         result = dict(dataset)
 
         # Handle required keys
-        for k in required_keys:
+        for k in req_keys:
             v = dataset.get(k, None)
             if v is None:
                 raise ValueError(f"Required dataset field '{k}' is missing.")
@@ -78,7 +75,7 @@ class TensorFlowDatasetConverter:
             )
 
         # Handle optional keys
-        for k in optional_keys:
+        for k in opt_keys:
             v = dataset.get(k, None)
             if v is None:
                 continue

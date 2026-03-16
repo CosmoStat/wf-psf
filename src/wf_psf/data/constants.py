@@ -17,5 +17,6 @@ DEFAULT_CANONICAL_KEYS = [
     "positions",
     "seds",
 ]  # canonical dataset fields
+OPTIONAL_KEYS = ["masks", "zernike_prior"]
 DEFAULT_TRAIN_FRACTION = 0.8  # default train/test split ratio
 DEFAULT_SEED = 42  # default RNG seed for reproducible splits
