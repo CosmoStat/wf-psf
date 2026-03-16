@@ -434,7 +434,7 @@ class PSFInference:
         """
         if self._n_bins_lambda is None:
             self._n_bins_lambda = (
-                self.inference_config.inference.model_params.n_bins_lda
+                self.inference_config.inference.model_params.n_bins_lambda
             )
         return self._n_bins_lambda
 
