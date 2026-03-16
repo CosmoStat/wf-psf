@@ -275,10 +275,10 @@ class TrainingParamsHandler:
         )
 
 
-def get_loss_metrics_monitor_and_outputs(training_handler):
-    """Get Loss Metrics.
+def get_loss_and_metrics(training_handler):
+    """Get Loss and Metrics.
 
-    Factory to return fresh loss, metrics (param & non-param), monitor, and outputs for the current cycle.
+    Factory to return fresh loss and metrics (param & non-param) for the current cycle.
 
     Parameters
     ----------
@@ -375,7 +375,7 @@ def train(
 
     # Join data, if not already complete
     if adapter.structure_state == StructureState.SPLIT:
-        logger.info(f"Joining split datasets...")
+        logger.info("Joining split datasets...")
         adapter.join_data()
 
     # Instantiate PSF model
@@ -386,7 +386,7 @@ def train(
         training_handler.training_hparams,
         adapter.complete_data,
     )
-    
+
     logger.info(f"PSF Model class: `{training_handler.model_name}` initialized...")
     # Split dataset just before training, idempotent
     if adapter.structure_state == StructureState.COMPLETE:
@@ -399,7 +399,9 @@ def train(
         adapter.convert_to_tensorflow(simPSF, n_bins_lambda)
 
     # Wrap in training-specific adapter
-    training_adapter = TrainingDataAdapter(adapter, training_handler.training_hparams.loss)
+    training_adapter = TrainingDataAdapter(
+        adapter, training_handler.training_hparams.loss
+    )
 
     # Model Training
     # -----------------------------------------------------
@@ -411,10 +413,8 @@ def train(
     while training_handler.total_cycles > current_cycle:
         current_cycle += 1
 
-        # Instantiate fresh loss, monitor, and independent metric objects per training phase (param / non-param)
-        loss, param_metrics, non_param_metrics = get_loss_metrics_monitor_and_outputs(
-            training_handler
-        )
+        # Instantiate fresh loss and independent metric objects per training phase (param / non-param)
+        loss, param_metrics, non_param_metrics = get_loss_and_metrics(training_handler)
 
         # If projected learning is enabled project DD_features.
         if hasattr(psf_model, "project_dd_features") and psf_model.project_dd_features:
