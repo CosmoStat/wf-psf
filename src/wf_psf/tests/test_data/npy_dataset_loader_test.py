@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from wf_psf.data.simulation_data_loader import SimulationDataLoader
+from wf_psf.data.npy_dataset_loader import NpyDatasetLoader
 
 
 @pytest.fixture
@@ -45,23 +45,23 @@ def save_dataset(data_dir, dataset, filename="dataset.npy"):
 
 def make_loader(data_params):
     """
-    Create a SimulationDataLoader instance.
+    Create a NpyDatasetLoader instance.
 
     Uses n_bins_lambda=8 to match simPSF fixture from conftest.py
     (training_config.model_params.n_bins_lda=8).
     """
-    return SimulationDataLoader(
+    return NpyDatasetLoader(
         data_params=data_params,
     )
 
 
 # ============================================================================
-# TestSimulationDataLoaderInit
+# TestNpyDatasetLoaderInit
 # ============================================================================
 
 
-class TestSimulationDataLoaderInit:
-    """Tests for SimulationDataLoader initialisation."""
+class TestNpyDatasetLoaderInit:
+    """Tests for NpyDatasetLoader initialisation."""
 
     def test_attributes_set_on_init(self, data_params):
         """Test all attributes are set correctly on initialisation."""
@@ -72,12 +72,12 @@ class TestSimulationDataLoaderInit:
 
 
 # ============================================================================
-# TestSimulationDataLoaderLoad
+# TestNpyDatasetLoaderLoad
 # ============================================================================
 
 
-class TestSimulationDataLoaderLoad:
-    """Tests for SimulationDataLoader.load()."""
+class TestNpyDatasetLoaderLoad:
+    """Tests for NpyDatasetLoader.load()."""
 
     @pytest.mark.parametrize(
         "dataset_type, dataset_fixture",

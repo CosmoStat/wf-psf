@@ -18,7 +18,7 @@ Authors: Jennifer Pollack <jennifer.pollack@cea.fr>, Tobias Liaudat <tobiasliaud
 import numpy as np
 from typing import Optional, Union
 import tensorflow as tf
-from wf_psf.data.simulation_data_loader import SimulationDataLoader
+from wf_psf.data.npy_dataset_loader import NpyDatasetLoader
 from wf_psf.data.tensorflow_converter import TensorFlowDatasetConverter
 from wf_psf.psf_models.tf_modules.tf_utils import ensure_tensor
 import wf_psf.utils.utils as utils
@@ -108,7 +108,7 @@ class DataHandlerFactory:
             )
 
     @staticmethod
-    def create_simulation_loader(dataset_type, data_params, simPSF, n_bins_lambda):
+    def create_simulation_loader(data_params):
         """Create loader for simulation .npy files.
 
         Parameters
@@ -124,10 +124,10 @@ class DataHandlerFactory:
 
         Returns
         -------
-        SimulationDataLoader
+        NpyDataLoader
             Loader configured for the specified dataset type and parameters
         """
-        return SimulationDataLoader(dataset_type, data_params, simPSF, n_bins_lambda)
+        return NpyDatasetLoader(data_params)
 
     @staticmethod
     def create_converter(simPSF, n_bins_lambda):
@@ -277,27 +277,24 @@ class DataHandler:
 
     def _handle_preloaded_dataset(self, dataset, sed_data):
         """Handle pre-loaded dataset (inference use case)."""
-        converter = TensorFlowDatasetConverter(self.simPSF, self.n_bins_lambda)
+        converter = TensorFlowDatasetConverter()
 
         # Process SEDs if provided separately
         if sed_data is not None:
-            self.sed_data = converter.process_seds(sed_data)
-        elif "SEDs" in dataset:
-            self.sed_data = converter.process_seds(dataset["SEDs"])
-            _ = dataset.pop("SEDs")
-        else:
-            self.sed_data = None
+            self.sed_data = converter.process_seds(sed_data, self.simPSF, self.n_bins_lambda)
+            # Add processed SEDs to dataset dict
+            dataset["seds"] = self.sed_data
+            self.dataset = dataset
+        elif "seds" in dataset:
+            # Convert dataset
+            self.dataset = converter.convert_dataset(
+                dataset, simPSF=self.simPSF, n_bins_lambda=self.n_bins_lambda
+            )
 
-        # Convert dataset
-        self.dataset = converter.convert_inference_data(dataset)
-
-        # Add processed SEDs back
-        if self.sed_data is not None:
-            self.dataset["seds"] = self.sed_data
 
     def _handle_simulation_load(self):
         """Handle loading from disk (simulation use case)."""
-        loader = SimulationDataLoader(self.data_params)
+        loader = NpyDatasetLoader(self.data_params)
         loader.load()
         return loader.dataset
 
