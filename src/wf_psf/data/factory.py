@@ -23,7 +23,7 @@ Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 """
 
 from dataclasses import dataclass, is_dataclass, fields
-from typing import Any, Dict, Optional, Union
+from typing import Any, Optional, Union
 from wf_psf.data.data_adapter import DataAdapter, LoadedDataset
 from wf_psf.data.data_utils import DatasetUtils
 from wf_psf.data.npy_dataset_loader import NpyDatasetLoader
@@ -73,8 +73,8 @@ class SupportsMetadata(Protocol):
 
 
 # Define a union type for all acceptable data formats that include parameters
-DataWithParams = Union[Dict[str, Any], SupportsParams]
-ParamsType = Union[Dict[str, Any], RecursiveNamespace]
+DataWithParams = Union[dict[str, Any], SupportsParams]
+ParamsType = Union[dict[str, Any], RecursiveNamespace]
 
 
 @dataclass
@@ -121,19 +121,17 @@ def normalize_data_envelope(
     DataEnvelope
         Object containing separated data, parameters, and metadata.
 
-    Raises
-    ------
-    ValueError
-        If the parameters field is not present.
+    Notes
+    -----
+    The `params` field is optional. If not provided, downstream components
+    (e.g. DataAdapter) will rely on default configuration values.
 
     """
     # -----------------------
     # Dataclass input
     # -----------------------
     if is_dataclass(obj):
-        if not hasattr(obj, field_name):
-            raise ValueError(f"Dataclass does not contain field '{field_name}'.")
-        params = getattr(obj, field_name)
+        params = getattr(obj, field_name, None)
         metadata = getattr(obj, metadata_name, None)
         data_fields = [
             f.name for f in fields(obj) if f.name not in (field_name, metadata_name)
@@ -144,20 +142,22 @@ def normalize_data_envelope(
     # Dictionary input
     # -----------------------
     elif isinstance(obj, dict):
+        obj_copy = dict(obj)
+
         # Extract params
-        params = obj.pop(field_name)
+        params = obj_copy.pop(field_name, None)
 
         # Extract metadata
-        metadata = obj.pop(metadata_name, None)
+        metadata = obj_copy.pop(metadata_name, None)
 
         # Rest is data or None
-        data = obj or None
+        data = obj_copy or None
 
     # -----------------------
     # Generic object with attributes
     # -----------------------
     elif hasattr(obj, field_name):
-        params = getattr(obj, field_name)
+        params = getattr(obj, field_name, None)
         metadata = getattr(obj, metadata_name, None)
         data_attrs = {
             k: v
@@ -165,9 +165,6 @@ def normalize_data_envelope(
             if k not in (field_name, metadata_name)
         }
         data = None if not data_attrs else data_attrs
-
-    else:
-        raise ValueError(f"Object does not contain field '{field_name}'.")
 
     return DataEnvelope(data=data, params=params, metadata=metadata)
 
@@ -259,6 +256,13 @@ class DataAdapterFactory:
 
         # Case B — No in-memory data → use loader
         else:
+            if params is None:
+                # Raise error if params is None
+                raise ValueError(
+                    "Missing dataset parameters; cannot load data from disk."
+                )
+
+            # Proceed to load dataset from disk using provided parameters
             logger.info(
                 "No in-memory data with numpy arrays detected. Attempting to load dataset from files based on provided parameters."
             )
