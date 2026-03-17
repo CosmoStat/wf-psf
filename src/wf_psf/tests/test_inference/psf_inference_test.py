@@ -344,7 +344,7 @@ def test_data_adapter_property_adapter_build(
     mock_build.return_value = mock_data_adapter
 
     # Prevent real PSF simulator creation
-    adapter = inference.data_adapter
+    adapter = inference.inference_data_adapter
 
     assert adapter == mock_data_adapter
     mock_build.assert_called_once()
@@ -363,7 +363,7 @@ def test_data_adapter_property_builds_adapter(
 
     mock_build.return_value = mock_data_adapter
 
-    adapter = inference.data_adapter
+    adapter = inference.inference_data_adapter
 
     assert adapter == mock_data_adapter
     mock_build.assert_called_once()
@@ -376,8 +376,8 @@ def test_data_adapter_cached(_, mock_build, psf_test_setup, mock_data_adapter):
     inference = psf_test_setup["inference"]
     mock_build.return_value = mock_data_adapter
 
-    adapter1 = inference.data_adapter
-    adapter2 = inference.data_adapter
+    adapter1 = inference.inference_data_adapter
+    adapter2 = inference.inference_data_adapter
 
     assert adapter1 is adapter2
     mock_build.assert_called_once()
@@ -393,7 +393,7 @@ def test_data_adapter_no_conversion_if_tensorflow(mock_build, psf_test_setup):
 
     inference = psf_test_setup["inference"]
 
-    inference.data_adapter
+    inference.inference_data_adapter
 
     adapter.convert_to_tensorflow.assert_not_called()
 
@@ -416,7 +416,7 @@ def test_load_inference_model(
     mock_config_handler.model_subdir = "psf_model"
 
     psf_inf._config_handler = mock_config_handler
-    psf_inf._data_adapter = mock_adapter
+    psf_inf._model_data_adapter = mock_adapter
 
     psf_inf.load_inference_model()
 
@@ -447,7 +447,7 @@ def test_run_inference(
     inference = psf_test_setup["inference"]
 
     # Lazy-load inference.data_adapter
-    inference.data_adapter
+    inference.inference_data_adapter
 
     mock_positions = mock_data_adapter.complete_data["positions"]
     mock_seds = mock_data_adapter.complete_data["seds"]
