@@ -201,12 +201,15 @@ class PSFInference:
         # Internal caches for lazy-loading
         self._config_handler = None
         self._simPSF = None
-        self._data_adapter = None
         self._trained_psf_model = None
         self._n_bins_lambda = None
         self._batch_size = None
         self._cycle = None
         self._output_dim = None
+
+        # Initialise Data Adapters
+        self._model_data_adapter = None
+        self._inference_data_adapter = None
 
         # Initialise PSF Inference engine
         self.engine = None
@@ -318,28 +321,48 @@ class PSFInference:
         return dataset
 
     @property
-    def data_adapter(self):
+    def model_data_adapter(self):
         """
-        Create and return a DataAdapter for inference using the factory.
+        Create and return a Model DataAdapter for loading trained PSF model using the factory.
+
+        Returns
+        -------
+        DataAdapter
+            A fully prepared model data adapter with LoadedDataset.
+        """
+        if self._model_data_adapter is None:
+            dataset_params = self.data_config
+
+            # Use the factory — it will normalize, convert dicts/dataclasses, and produce LoadedDataset
+            adapter = DataAdapterFactory.build(dataset_params)
+
+            self._model_data_adapter = adapter
+
+        return self._model_data_adapter
+
+    @property
+    def inference_data_adapter(self):
+        """
+        Create and return a DataAdapter for inference data using the factory.
 
         Returns
         -------
         DataAdapter
             A fully prepared data adapter with LoadedDataset ready for inference.
         """
-        if self._data_adapter is None:
-            dataset_dict = self._prepare_dataset_for_inference()
+        if self._inference_data_adapter is None:
+            dataset = self._prepare_dataset_for_inference()
 
             # Use the factory — it will normalize, convert dicts/dataclasses, and produce LoadedDataset
-            adapter = DataAdapterFactory.build(dataset_dict)
+            adapter = DataAdapterFactory.build(dataset)
 
             # Convert to TensorFlow if needed
             if adapter.representation_state == RepresentationState.NUMPY:
                 adapter.convert_to_tensorflow(self.simPSF, self.n_bins_lambda)
 
-            self._data_adapter = adapter
+            self._inference_data_adapter = adapter
 
-        return self._data_adapter
+        return self._inference_data_adapter
 
     @property
     def trained_psf_model(self):
@@ -419,7 +442,7 @@ class PSFInference:
         # Load the trained PSF model
         return load_trained_psf_model(
             self.training_config,
-            self.data_adapter.complete_data,
+            self.model_data_adapter.complete_data,
             weights_path_pattern,
         )
 
@@ -496,8 +519,8 @@ class PSFInference:
         self.prepare_configs()
 
         # Get positions and SEDs
-        positions = self.data_adapter.complete_data["positions"]
-        sed_data = self.data_adapter.complete_data["seds"]
+        positions = self.inference_data_adapter.complete_data["positions"]
+        sed_data = self.inference_data_adapter.complete_data["seds"]
 
         self.engine = PSFInferenceEngine(
             trained_model=self.trained_psf_model,
