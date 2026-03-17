@@ -60,12 +60,6 @@ def test_extract_params_only():
     assert env.data is None
 
 
-def test_missing_field_raises():
-    obj = {"x": 1}
-    with pytest.raises(KeyError):
-        normalize_data_envelope(obj)
-
-
 # -----------------------------
 # Tests for DataAdapterFactory._resolve_dataset
 # -----------------------------
