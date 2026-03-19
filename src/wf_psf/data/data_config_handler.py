@@ -41,7 +41,7 @@ class DataConfigHandler(ConfigHandler):
 
     def __init__(self, data_conf):
         try:
-            self.params = read_conf(data_conf)
+            self.params = read_conf(data_conf).params
         except (FileNotFoundError, TypeError) as e:
             logger.exception(e)
             exit()
