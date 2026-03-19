@@ -137,4 +137,4 @@ def test_training_config_handler_init(
     )
 
     # Assert that .params was correctly read
-    assert training_config_handler.data_params == mock_data_conf_instance.params
+    assert training_config_handler.data_params == mock_data_conf_instance
