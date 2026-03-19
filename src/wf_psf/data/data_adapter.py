@@ -372,8 +372,11 @@ class DataAdapter:
             ratio = (
                 ratio if ratio is not None else getattr(self._params, "train_fraction")
             )
-
+            logger.info(f"Setting train_fraction to {ratio}...")
+ 
             seed = seed if seed is not None else getattr(self._params, "seed", None)
+            logger.info(f"Setting random seed for train-test split to {seed}....")
+
             self._train_data, self._test_data = self._split(
                 self._complete_data, ratio=ratio, seed=seed
             )

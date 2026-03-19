@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 import numpy as np
 from wf_psf.data.data_adapter import RepresentationState
+from wf_psf.data.data_config_handler import DataConfigHandler
 from wf_psf.data.factory import DataAdapterFactory
 from wf_psf.utils.read_config import read_conf
 from wf_psf.psf_models import psf_models
@@ -79,7 +80,7 @@ class InferenceConfigHandler:
 
         if self.data_config_path is not None:
             # Load the data configuration
-            self.data_config = read_conf(self.data_config_path)
+            self.data_config = DataConfigHandler(self.data_config_path).params
 
     def set_config_paths(self):
         """
@@ -99,7 +100,7 @@ class InferenceConfigHandler:
         self.trained_model_config_path = (
             self.trained_model_path / config_paths.trained_model_config_path
         )
-        self.data_config_path = config_paths.data_config_path
+        self.data_config_path = self.trained_model_path / config_paths.data_config_path
 
     @staticmethod
     def overwrite_model_params(training_config=None, inference_config=None):

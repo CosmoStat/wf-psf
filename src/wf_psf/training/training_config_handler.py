@@ -46,7 +46,7 @@ class TrainingConfigHandler(ConfigHandler):
             os.path.join(
                 file_handler.config_path, self.training_conf.training.data_config
             ),
-        ).params
+        )
         self.n_bins_lambda = self.training_conf.training.model_params.n_bins_lambda
         self.simPSF = psf_models.simPSF(self.training_conf.training.model_params)
         self.file_handler.copy_conffile_to_output_dir(
