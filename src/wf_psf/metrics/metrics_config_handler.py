@@ -233,7 +233,7 @@ class MetricsConfigHandler(ConfigHandler):
                     self._file_handler.config_path,
                     self.training_conf.training.data_config,
                 ),
-            ).params
+            )
             adapter = DataAdapterFactory.build(data_params)
 
             # Join data, if not already complete
