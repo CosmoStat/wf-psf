@@ -57,7 +57,7 @@ class SupportsParams(Protocol):
 class SupportsMetadata(Protocol):
     """Protocol for dataset objects exposing metadata.
 
-    Objects satisfying this protocol must expose a ``params`` attribute
+    Objects satisfying this protocol must expose a ``metadata`` attribute
     containing a structured namespace of parameters.
 
     This allows external APIs to pass parameter containers without
