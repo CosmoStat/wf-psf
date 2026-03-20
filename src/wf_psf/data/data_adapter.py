@@ -369,12 +369,10 @@ class DataAdapter:
 
         # No need to split if initial loaded data was already split (idempotent)
         if self._train_data is None or self._test_data is None:
-            ratio = (
-                ratio if ratio is not None else getattr(self._params, "train_fraction")
-            )
+            ratio = ratio if ratio is not None else self._train_fraction
             logger.info(f"Setting train_fraction to {ratio}...")
- 
-            seed = seed if seed is not None else getattr(self._params, "seed", None)
+
+            seed = seed if seed is not None else self._seed
             logger.info(f"Setting random seed for train-test split to {seed}....")
 
             self._train_data, self._test_data = self._split(
