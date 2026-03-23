@@ -65,7 +65,7 @@ from wf_psf.data.constants import (
     DEFAULT_SEED,
     DEFAULT_TRAIN_FRACTION,
 )
-from wf_psf.data.data_utils import DatasetUtils, DatasetContainer
+from wf_psf.data.data_utils import DatasetContainer, to_container
 from wf_psf.data.tensorflow_converter import TensorFlowDatasetConverter
 import logging
 
@@ -207,11 +207,11 @@ class DataAdapter:
     def _initialize_structure(self, dataset):
         """Convert to container."""
         if self._structure_state == StructureState.COMPLETE:
-            self._complete_data = DatasetUtils.to_container(dataset.complete.copy())
+            self._complete_data = to_container(dataset.complete.copy())
             return
 
-        self._train_data = DatasetUtils.to_container(dataset.train.copy())
-        self._test_data = DatasetUtils.to_container(dataset.test.copy())
+        self._train_data = to_container(dataset.train.copy())
+        self._test_data = to_container(dataset.test.copy())
 
     def _resolve_target_field(self, split=None):
         """Resolve target field.

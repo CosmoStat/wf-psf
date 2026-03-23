@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Optional
 from wf_psf.data.data_adapter import DataAdapter, LoadedDataset
 from wf_psf.data.factory import normalize_data_envelope, DataAdapterFactory
+from wf_psf.utils.read_config import RecursiveNamespace
 
 
 # -----------------------------
@@ -88,7 +89,42 @@ class TestDataAdapterFactory:
         assert params == {"lr": 0.01}
         assert metadata == {"object_id": [1, 2]}
 
-    def test_resolve_dataset_params_only_loads(self, monkeypatch, data_params):
+    def test_resolve_dataset_with_in_memory_shallow(self):
+        class Data:
+            positions = np.array([1, 2, 3])
+            params = {"lr": 0.1}
+
+        dataset, params, metadata = DataAdapterFactory._resolve_dataset(Data)
+        assert isinstance(dataset, LoadedDataset)
+        assert params == {"lr": 0.1}
+        assert metadata is None
+
+    def test_resolve_dataset_split_params_only_loads(self, monkeypatch, data_params):
+        # Patch _load_dataset to return a mock
+        monkeypatch.setattr(
+            DataAdapterFactory,
+            "_load_dataset",
+            lambda p: LoadedDataset(complete="loaded"),
+        )
+
+        dataset, params, metadata = DataAdapterFactory._resolve_dataset(data_params)
+        assert isinstance(dataset, LoadedDataset)
+        assert dataset.complete == "loaded"
+        assert params == data_params.params
+        assert metadata is None
+
+    def test_resolve_dataset_complete_params_only_loads(self, monkeypatch):
+        # Create complete data params
+        data_params = RecursiveNamespace(
+            params=RecursiveNamespace(
+                complete=RecursiveNamespace(
+                    data_dir="data",
+                    file="coherent_euclid_dataset/train_Euclid_res_200_TrainStars_id_001.npy",
+                    target_field="noisy_stars",
+                ),
+                canonical_keys=["sources", "masks", "positions"],
+            )
+        )
         # Patch _load_dataset to return a mock
         monkeypatch.setattr(
             DataAdapterFactory,
@@ -109,6 +145,29 @@ class TestDataAdapterFactory:
 
         with pytest.raises(ValueError):
             DataAdapterFactory._resolve_dataset(Wrapper())
+
+    def test_resolve_dataset_shallow_params_only_loads(self, monkeypatch):
+        # Create complete data params
+        data_params = RecursiveNamespace(
+            params=RecursiveNamespace(
+                data_dir="data",
+                file="coherent_euclid_dataset/train_Euclid_res_200_TrainStars_id_001.npy",
+                target_field="noisy_stars",
+                canonical_keys=["sources", "masks", "positions"],
+            )
+        )
+        # Patch _load_dataset to return a mock
+        monkeypatch.setattr(
+            DataAdapterFactory,
+            "_load_dataset",
+            lambda p: LoadedDataset(complete="loaded"),
+        )
+
+        dataset, params, metadata = DataAdapterFactory._resolve_dataset(data_params)
+        assert isinstance(dataset, LoadedDataset)
+        assert dataset.complete == "loaded"
+        assert params == data_params.params
+        assert metadata is None
 
     # -----------------------------
     # Optional: test DataAdapterFactory.build (mocked)
