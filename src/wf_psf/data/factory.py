@@ -16,7 +16,7 @@ Key features:
   to LoadedDataset for downstream processing.
 - Normalization and validation of dataset parameters via `normalize_data_envelope`.
 - Integration with TensorFlowDatasetConverter for TF-ready dataset pipelines.
-- Lightweight dataset introspection utilities for numpy arrays and canonical keys.
+- Lightweight dataset introspection utilities for in-memory datasets and canonical keys.
 - Logging to provide insight into dataset resolution and loading steps.
 
 Author: Jennifer Pollack <jennifer.pollack@cea.fr>
@@ -352,18 +352,14 @@ def _is_in_memory(params: Optional[ParamsType]) -> bool:
         d = (
             obj
             if isinstance(obj, dict)
-            else vars(obj)
-            if hasattr(obj, "__dict__")
-            else {}
+            else vars(obj) if hasattr(obj, "__dict__") else {}
         )
         return "file" in d or "data_dir" in d
 
     top = (
         params
         if isinstance(params, dict)
-        else vars(params)
-        if hasattr(params, "__dict__")
-        else {}
+        else vars(params) if hasattr(params, "__dict__") else {}
     )
 
     # Shallow config: file/data_dir at the top level
