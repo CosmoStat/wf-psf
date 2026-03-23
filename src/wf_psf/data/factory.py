@@ -25,7 +25,6 @@ Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 from dataclasses import dataclass, is_dataclass, fields
 from typing import Any, Optional, Union
 from wf_psf.data.data_adapter import DataAdapter, LoadedDataset
-from wf_psf.data.data_utils import DatasetUtils
 from wf_psf.data.npy_dataset_loader import NpyDatasetLoader
 from wf_psf.data.tensorflow_converter import TensorFlowDatasetConverter
 from typing import Protocol, runtime_checkable
@@ -203,7 +202,15 @@ class DataAdapterFactory:
     ) -> tuple[LoadedDataset, ParamsType, Optional[Any]]:
         """Resolve dataset.
 
-        Determine whether to use in-memory data or load from files.
+        Determine whether data is available in memory or needs to be loaded from files.
+
+        The input ``data`` is first normalised via ``normalize_data_envelope``, which
+        separates it into a dataset, configuration parameters, and metadata. The
+        parameters are then passed to ``_is_in_memory``, which inspects them for the
+        presence of file loading keys (``file``, ``data_dir``) to determine the
+        appropriate resolution path: either wrapping the in-memory dataset directly
+        into a ``LoadedDataset``, or loading one from disk using the file location
+        specified in ``params``.
 
         Parameters
         ----------
@@ -228,45 +235,29 @@ class DataAdapterFactory:
         if dataset is None and params is None:
             raise ValueError("No data or configuration parameters provided.")
 
-        # Case A - Check if in-memory data provided with numpy arrays
-        if DatasetUtils._contains_numpy(dataset):
-            logger.info(
-                "In-memory data with numpy arrays detected. Constructing LoadedDataset directly."
-            )
-            # Construct a LoadedDataset from in-memory dataset
-            # Handle different structures: complete, split
-            if "complete" in dataset:
-                return (
-                    LoadedDataset(complete=dataset["complete"]),
-                    params,
-                    metadata,
-                )
-            elif "train" in dataset and "test" in dataset:
-                return (
-                    LoadedDataset(train=dataset["train"], test=dataset["test"]),
-                    params,
-                    metadata,
-                )
-            else:
-                # fallback for shallow data
-                logger.warning(
-                    "Data contains numpy arrays but does not have 'complete' or 'train/test' attributes. Attempting to treat entire data as 'complete'."
-                )
-                return (LoadedDataset(complete=dataset), params, metadata)
+        # Determine intent from params structure, not by inspecting data arrays.
 
-        # Case B — No in-memory data → use loader
-        else:
-            if params is None:
-                # Raise error if params is None
+        # Params drive the decision; data presence is validated against that intent.
+        in_memory = _is_in_memory(params)
+
+        # Case A — In-memory data
+        if in_memory:
+            if dataset is None:
                 raise ValueError(
-                    "Missing dataset parameters; cannot load data from disk."
+                    "Parameters indicate in-memory data (no 'file'/'data_dir' found), "
+                    "but no dataset was provided."
                 )
+            return (_build_loaded_dataset(dataset), params, metadata)
 
-            # Proceed to load dataset from disk using provided parameters
-            logger.info(
-                "No in-memory data with numpy arrays detected. Attempting to load dataset from files based on provided parameters."
-            )
-            return (DataAdapterFactory._load_dataset(params), params, metadata)
+        # Case B — Load from disk
+        if params is None:
+            raise ValueError("Missing dataset parameters; cannot load data from disk.")
+
+        logger.info(
+            "No in-memory data detected. Attempting to load dataset from files "
+            "based on provided parameters."
+        )
+        return (DataAdapterFactory._load_dataset(params), params, metadata)
 
     @staticmethod
     def _load_dataset(params) -> LoadedDataset:
@@ -326,3 +317,125 @@ class DataAdapterFactory:
             raise ValueError(
                 "Cannot determine dataset source from configuration. Please provide either 'train' and 'test' configs or a 'file' config."
             )
+
+
+def _is_in_memory(params: Optional[ParamsType]) -> bool:
+    """Determine whether the dataset is already held in memory.
+
+        Inspects ``params`` for the presence of ``file`` and ``data_dir`` keys across
+    all three supported config shapes: shallow (keys at the top level), complete
+    (keys nested under a ``complete`` block), and split (keys nested under
+    ``train`` and ``test`` blocks).
+
+    Parameters
+    ----------
+    params : Optional[ParamsType]
+        Dataset configuration parameters, either as a plain ``dict`` or a
+        dataclass. May be ``None`` if the caller supplied raw in-memory data
+        with no associated configuration. The function inspects both the
+        top-level structure and any nested ``complete`` block for ``file``
+        and ``data_dir`` keys.
+
+    Returns
+    -------
+    bool
+        ``True`` if the dataset is in memory and no file loading is required,
+        ``False`` if ``params`` contains a ``file`` or ``data_dir`` pointer
+        indicating that data must be loaded from disk.
+
+    """
+    if params is None:
+        return True
+
+    def has_file_pointer(obj) -> bool:
+        """Return True if obj contains 'file' or 'data_dir'."""
+        d = (
+            obj
+            if isinstance(obj, dict)
+            else vars(obj)
+            if hasattr(obj, "__dict__")
+            else {}
+        )
+        return "file" in d or "data_dir" in d
+
+    top = (
+        params
+        if isinstance(params, dict)
+        else vars(params)
+        if hasattr(params, "__dict__")
+        else {}
+    )
+
+    # Shallow config: file/data_dir at the top level
+    if has_file_pointer(top):
+        return False
+
+    # Complete (non-split) config: file/data_dir nested under 'complete'
+    if "complete" in top and has_file_pointer(top["complete"]):
+        return False
+
+    # Split config: file/data_dir nested under 'train' and 'test'
+    if "train" in top and has_file_pointer(top["train"]):
+        return False
+    if "test" in top and has_file_pointer(top["test"]):
+        return False
+
+    return True
+
+
+def _build_loaded_dataset(dataset: Any) -> LoadedDataset:
+    """Construct a LoadedDataset from an in-memory dataset.
+
+    Inspects the structure of ``dataset`` to determine whether it represents
+    a split (train/test) or complete (non-split) dataset, and wraps it in the
+    appropriate ``LoadedDataset`` form. If the structure cannot be determined,
+    the entire object is treated as the complete dataset and a warning is logged.
+
+    Parameters
+    ----------
+    dataset : Any
+        An in-memory dataset containing numpy arrays, provided as a plain
+        ``dict``, a dataclass with named fields, or an opaque object. Expected
+        to hold arrays under recognised keys (``'train'``, ``'test'``, or
+        ``'complete'``), though unrecognised structures are handled with a
+        fallback.
+
+    Returns
+    -------
+    LoadedDataset
+        A structured dataset container populated according to the detected shape of
+        ``dataset``:
+
+        - ``LoadedDataset(train=..., test=...)`` if both ``'train'`` and
+          ``'test'`` keys are present.
+        - ``LoadedDataset(complete=...)`` if a ``'complete'`` key is present.
+        - ``LoadedDataset(complete=dataset)`` as a fallback for flat or
+          unrecognised structures, with a logged warning.
+    """
+    # Normalise to a plain dict so the rest of the logic is uniform,
+    # regardless of whether the caller passed a dict or a dataclass.
+    if isinstance(dataset, dict):
+        d = dataset
+    elif hasattr(dataset, "__dict__"):
+        d = vars(dataset)
+    else:
+        # Opaque object — treat the whole thing as the complete array.
+        logger.warning(
+            "Cannot inspect dataset structure; treating entire object as 'complete'."
+        )
+        return LoadedDataset(complete=dataset)
+
+    if "train" in d and "test" in d:
+        logger.info("In-memory split dataset detected (train/test).")
+        return LoadedDataset(train=d["train"], test=d["test"])
+
+    if "complete" in d:
+        logger.info("In-memory complete dataset detected.")
+        return LoadedDataset(complete=d["complete"])
+
+    # Fallback: shallow / flat structure with no recognised keys.
+    logger.warning(
+        "In-memory dataset has no 'complete' or 'train'/'test' keys; "
+        "treating entire dataset as 'complete'."
+    )
+    return LoadedDataset(complete=dataset)

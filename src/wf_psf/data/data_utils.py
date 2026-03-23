@@ -16,7 +16,6 @@ Jennifer Pollack <jennifer.pollack@cea.fr>
 from collections.abc import MutableMapping
 from dataclasses import is_dataclass, fields
 from typing import Any, Optional
-import numpy as np
 
 
 class DatasetContainer(MutableMapping):
@@ -82,132 +81,43 @@ class DatasetContainer(MutableMapping):
         return self._data
 
 
-class DatasetUtils:
-    """Utility functions for dataset introspection and structure detection.
+def to_container(obj) -> Optional[DatasetContainer]:
+    """Convert an object to a ``DatasetContainer``.
 
-    Provides helpers for detecting NumPy arrays and extracting information from
-    heterogeneous data structures (e.g., dictionaries, dataclasses, objects with
-    ``__dict__``, lists, and tuples).
+    Transforms various dataset representations into a standardized
+    :class:`DatasetContainer` used by downstream processing.
 
-    These utilities support dataset normalization and loading
-    logic used by the data adapter factory.
+    Supported input types include dictionaries, dataclasses,
+    objects with attributes, and existing ``DatasetContainer`` instances.
 
-    Attributes
+    Parameters
     ----------
-    MAX_RECURSION_DEPTH : int
-        Maximum recursion depth used when traversing nested data structures to
-        prevent infinite loops.
+    obj : Any
+        Object representing dataset data.
+
+    Returns
+    -------
+    DatasetContainer or None
+        Structured container wrapping the dataset data.
+
+    Raises
+    ------
+    TypeError
+        If the input type is not supported.
     """
+    if obj is None:
+        return None
 
-    MAX_RECURSION_DEPTH = 5
+    if isinstance(obj, DatasetContainer):
+        return obj
 
-    @staticmethod
-    def _contains_numpy(obj: Any) -> bool:
-        """
-        Check whether an object contains at least one NumPy array.
+    if isinstance(obj, dict):
+        return DatasetContainer(obj)
 
-        The check is performed recursively and supports
-        nested dictionaries, dataclasses, object with
-        ``__dict__``, lists, and tuples.
+    if is_dataclass(obj):
+        return DatasetContainer({f.name: getattr(obj, f.name) for f in fields(obj)})
 
-        Parameters
-        ----------
-        obj : Any
-            Object to inspect.
+    if hasattr(obj, "__dict__"):
+        return DatasetContainer(vars(obj))
 
-        Returns
-        -------
-        bool
-            True if at least one NumPy array is found within the object
-            structure, False otherwise.
-        """
-        return DatasetUtils._contains_numpy_helper(
-            obj, current_depth=0, max_depth=DatasetUtils.MAX_RECURSION_DEPTH
-        )
-
-    @staticmethod
-    def _contains_numpy_helper(obj: Any, current_depth: int, max_depth: int) -> bool:
-        """Check recursively if object contains NumPy array."""
-        if current_depth > max_depth:
-            return False  # Prevent infinite recursion
-
-        if isinstance(obj, np.ndarray):
-            return True
-
-        if is_dataclass(obj):
-            return any(
-                DatasetUtils._contains_numpy_helper(
-                    getattr(obj, f.name),
-                    current_depth=current_depth + 1,
-                    max_depth=max_depth,
-                )
-                for f in fields(obj)
-            )
-
-        if isinstance(obj, dict):
-            return any(
-                DatasetUtils._contains_numpy_helper(
-                    v, current_depth=current_depth + 1, max_depth=max_depth
-                )
-                for v in obj.values()
-            )
-
-        if hasattr(obj, "__dict__"):
-            return any(
-                DatasetUtils._contains_numpy_helper(
-                    v, current_depth=current_depth + 1, max_depth=max_depth
-                )
-                for v in vars(obj).values()
-            )
-
-        if isinstance(obj, (list, tuple)):
-            return any(
-                DatasetUtils._contains_numpy_helper(
-                    v, current_depth=current_depth + 1, max_depth=max_depth
-                )
-                for v in obj
-            )
-
-        return False
-
-    @staticmethod
-    def to_container(obj) -> Optional[DatasetContainer]:
-        """Convert an object to a ``DatasetContainer``.
-
-        Transforms various dataset representations into a standardized
-        :class:`DatasetContainer` used by downstream processing.
-
-        Supported input types include dictionaries, dataclasses,
-        objects with attributes, and existing ``DatasetContainer`` instances.
-
-        Parameters
-        ----------
-        obj : Any
-            Object representing dataset data.
-
-        Returns
-        -------
-        DatasetContainer or None
-            Structured container wrapping the dataset data.
-
-        Raises
-        ------
-        TypeError
-            If the input type is not supported.
-        """
-        if obj is None:
-            return None
-
-        if isinstance(obj, DatasetContainer):
-            return obj
-
-        if isinstance(obj, dict):
-            return DatasetContainer(obj)
-
-        if is_dataclass(obj):
-            return DatasetContainer({f.name: getattr(obj, f.name) for f in fields(obj)})
-
-        if hasattr(obj, "__dict__"):
-            return DatasetContainer(vars(obj))
-
-        raise TypeError(f"Unsupported dataset type: {type(obj)}")
+    raise TypeError(f"Unsupported dataset type: {type(obj)}")
