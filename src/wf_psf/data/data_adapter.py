@@ -59,7 +59,7 @@ Authors: Jennifer Pollack <jennifer.pollack@cea.fr>
 
 from enum import Enum, auto
 import numpy as np
-from typing import Any, List, Optional
+from typing import Any, Optional
 from wf_psf.data.constants import (
     DEFAULT_CANONICAL_KEYS,
     DEFAULT_SEED,
@@ -367,8 +367,14 @@ class DataAdapter:
         if self._structure_state != StructureState.COMPLETE:
             raise RuntimeError("Split only allowed from COMPLETE state.")
 
-        # No need to split if initial loaded data was already split (idempotent)
-        if self._train_data is None or self._test_data is None:
+        # -------------------------------
+        # Consistency enforcement
+        # -------------------------------
+        if (self._train_data is None) != (self._test_data is None):
+            raise RuntimeError("Inconsistent split state: train/test mismatch.")
+
+        # Idempotent behaviour
+        if self._train_data is None and self._test_data is None:
             ratio = ratio if ratio is not None else self._train_fraction
             logger.info(f"Setting train_fraction to {ratio}...")
 
@@ -378,10 +384,13 @@ class DataAdapter:
             self._train_data, self._test_data = self._split(
                 self._complete_data, ratio=ratio, seed=seed
             )
-
+        else:
+            logger.info(
+                "Split data already exists; reusing existing train/test split (idempotent call)."
+            )
         self._structure_state = StructureState.SPLIT
 
-    def join_data(self, keys: Optional[List[str]] = None):
+    def join_data(self, keys: Optional[list[str]] = None):
         """Join train/test dictionaries into complete dataset."""
         if self._structure_state != StructureState.SPLIT:
             raise RuntimeError("Join only allowed from SPLIT state.")
