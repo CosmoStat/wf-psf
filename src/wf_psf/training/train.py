@@ -333,12 +333,12 @@ def train(
         - multi-cycle definitions and callbacks
     training_adapter : TrainingDataAdapter
         A training-ready data adapter containing the split, tensor-converted dataset.
-    When a masked loss is used, target images and masks are packed together
-    within the adapter.
+        When a masked loss is used, target images and masks are packed together
+        within the adapter.
     psf_model : tf.keras.Model
         An initialised PSF model ready for training. Certain model types
-    require the complete dataset for initialisation; this is handled
-    upstream in ``prepare_training_inputs``
+        require the complete dataset for initialisation; this is handled
+        upstream in ``prepare_training_inputs``
     checkpoint_dir : str
         Directory where model checkpoints will be saved during training.
     optimizer_dir : str
