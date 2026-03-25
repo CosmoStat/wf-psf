@@ -8,7 +8,7 @@ A module which provides a class to manage the parameters of the training config 
 
 import os
 import tensorflow as tf
-from wf_psf.data.data_adapter import StructureState, RepresentationState
+from wf_psf.data.data_adapter import StructureState, RepresentationState, DataAdapter
 from wf_psf.data.data_config_handler import DataConfigHandler
 from wf_psf.data.factory import DataAdapterFactory
 from wf_psf.metrics.metrics_config_handler import MetricsConfigHandler
@@ -156,8 +156,29 @@ def prepare_training_inputs(
         logger.info("Generating split datasets...")
         adapter.split_data()
 
+    # -------------------------------
+    # REPRESENTATION STATE MACHINE
+    # -------------------------------
     if adapter.representation_state == RepresentationState.NUMPY:
         logger.info("Converting dataset to tensors...")
         adapter.convert_to_tensorflow(simPSF, n_bins_lambda)
 
+    # -------------------------------
+    # DATA_PREPARED BOUNDARY
+    # -------------------------------
+    logger.info("Validating data preparation state...")
+    _assert_data_prepared(adapter)
+
+    logger.info("Data preparation complete. Freezing dataset snapshot...")
+
     return TrainingDataAdapter(adapter, loss), psf_model
+
+
+def _assert_data_prepared(adapter: DataAdapter):
+    if adapter.structure_state != StructureState.SPLIT:
+        raise RuntimeError(f"Expected SPLIT data, got {adapter.structure_state}")
+
+    if adapter.representation_state != RepresentationState.TENSORFLOW:
+        raise RuntimeError(
+            f"Expected TensorFlow data, got {adapter.representation_state}"
+        )
