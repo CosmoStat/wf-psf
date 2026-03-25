@@ -92,15 +92,18 @@ def test_validation_targets_mask_mse(base_adapter):
     np.testing.assert_array_equal(targets[..., 1], base_adapter.test_data["masks"])
 
 
-def test_mask_mse_raises_if_masks_missing(base_adapter):
-    # remove masks from train/test
+def test_mask_mse_raises_if_train_masks_missing(base_adapter):
     base_adapter.train_data.pop("masks")
+    # keep validation masks
+    with pytest.raises(ValueError, match="mask_mse requires masks for train"):
+        TrainingDataAdapter(base_adapter, loss_type="mask_mse")
+
+
+def test_mask_mse_raises_if_validation_masks_missing(base_adapter):
     base_adapter.test_data.pop("masks")
-    tda = TrainingDataAdapter(base_adapter, loss_type="mask_mse")
-    with pytest.raises(ValueError, match="mask_mse requires masks for training"):
-        _ = tda.train_targets
+    # keep train masks
     with pytest.raises(ValueError, match="mask_mse requires masks for validation"):
-        _ = tda.validation_targets
+        TrainingDataAdapter(base_adapter, loss_type="mask_mse")
 
 
 def test_inputs_without_seds(base_adapter):
