@@ -12,11 +12,7 @@ import numpy as np
 import time
 import tensorflow as tf
 import logging
-from wf_psf.data.factory import DataAdapterFactory
-from wf_psf.data.data_adapter import StructureState, RepresentationState
-from wf_psf.psf_models import psf_models
 import wf_psf.training.train_utils as train_utils
-from wf_psf.training.training_data_adapter import TrainingDataAdapter
 from wf_psf.utils.optimizer import get_optimizer
 
 logger = logging.getLogger(__name__)
@@ -313,9 +309,8 @@ def get_loss_and_metrics(training_handler):
 
 def train(
     training_params,
-    data_params,
-    simPSF,
-    n_bins_lambda,
+    training_adapter,
+    psf_model,
     checkpoint_dir,
     optimizer_dir,
     psf_model_dir,
@@ -336,22 +331,18 @@ def train(
         - number of epochs per component per cycle
         - model type and training behavior flags
         - multi-cycle definitions and callbacks
-
-    data_params : RecursiveNamespace or dataclass
-        Data configuration parameters to load training data or a dataclass instance containing pre-loaded data.
-
-    simPSF : PSFSimulator
-        An instance of the PSFSimulator class used to encode SEDs into a TensorFlow-compatible format.
-
-    n_bins_lambda : int
-        Number of wavelength bins for discretizing SEDs, used by the TensorFlowDatasetConverter.
-
+    training_adapter : TrainingDataAdapter
+        A training-ready data adapter containing the split, tensor-converted dataset.
+    When a masked loss is used, target images and masks are packed together
+    within the adapter.
+    psf_model : tf.keras.Model
+        An initialised PSF model ready for training. Certain model types
+    require the complete dataset for initialisation; this is handled
+    upstream in ``prepare_training_inputs``
     checkpoint_dir : str
         Directory where model checkpoints will be saved during training.
-
     optimizer_dir : str
         Directory where the optimizer history (as a NumPy .npy file) will be stored.
-
     psf_model_dir : str
         Directory where the final trained PSF model weights will be saved per cycle.
 
@@ -369,39 +360,6 @@ def train(
     starting_time = time.time()
 
     training_handler = TrainingParamsHandler(training_params)
-
-    # Create adapter
-    adapter = DataAdapterFactory.build(data_params)
-
-    # Join data, if not already complete
-    if adapter.structure_state == StructureState.SPLIT:
-        logger.info("Joining split datasets...")
-        adapter.join_data()
-
-    # Instantiate PSF model
-    # Certain PSF models require full dataset
-    logger.info(f"Initialising PSF model {training_handler.model_params.model_name}...")
-    psf_model = psf_models.get_psf_model(
-        training_handler.model_params,
-        training_handler.training_hparams,
-        adapter.complete_data,
-    )
-
-    logger.info(f"PSF Model class: `{training_handler.model_name}` initialized...")
-    # Split dataset just before training, idempotent
-    if adapter.structure_state == StructureState.COMPLETE:
-        logger.info("Generating split datasets...")
-        adapter.split_data()
-
-    # Convert to TF for training
-    if adapter.representation_state == RepresentationState.NUMPY:
-        logger.info("Converting dataset to tensors...")
-        adapter.convert_to_tensorflow(simPSF, n_bins_lambda)
-
-    # Wrap in training-specific adapter
-    training_adapter = TrainingDataAdapter(
-        adapter, training_handler.training_hparams.loss
-    )
 
     # Model Training
     # -----------------------------------------------------

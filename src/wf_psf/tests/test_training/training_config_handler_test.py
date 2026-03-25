@@ -1,7 +1,6 @@
 """Unit tests for the TrainingConfigHandler class in training_config_handler.py"""
 
 import pytest
-from wf_psf.data.data_config_handler import DataConfigHandler
 from wf_psf.utils.configs_handler import ConfigHandler
 from wf_psf.training.training_config_handler import TrainingConfigHandler
 from wf_psf.utils.read_config import RecursiveNamespace
@@ -27,7 +26,7 @@ def mock_training_conf(mocker):
                     d_max_nonparam=5,
                 ),
             ),
-            training_hparams=RecursiveNamespace(batch_size=32),
+            training_hparams=RecursiveNamespace(batch_size=32, loss="mask_mse"),
         ),
     )
 
@@ -114,7 +113,7 @@ def test_training_config_handler_init(
 
     # Assertions
     mock_file_handler.copy_conffile_to_output_dir.assert_called_once_with(
-        training_config_handler.training_conf.training.data_config
+        training_config_handler.training_conf.data_config
     )
     mock_file_handler.get_checkpoint_dir.assert_called_once_with(
         mock_file_handler._run_output_dir
@@ -125,14 +124,14 @@ def test_training_config_handler_init(
     mock_file_handler.get_psf_model_dir.assert_called_once_with(
         mock_file_handler._run_output_dir
     )
-    assert training_config_handler.training_conf == mock_training_conf
+    assert training_config_handler.training_conf == mock_training_conf.training
     assert training_config_handler.file_handler == mock_file_handler
 
     # Assert that DataConfigHandler was instantiated with the correct path
     data_config_handler_patch.assert_called_once_with(
         os.path.join(
             mock_file_handler.config_path,
-            training_config_handler.training_conf.training.data_config,
+            training_config_handler.training_conf.data_config,
         )
     )
 

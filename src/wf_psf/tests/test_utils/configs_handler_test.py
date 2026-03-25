@@ -61,7 +61,7 @@ def mock_training_conf(mocker):
                     d_max_nonparam=5,
                 ),
             ),
-            training_hparams=RecursiveNamespace(batch_size=32),
+            training_hparams=RecursiveNamespace(batch_size=32, loss="mask_mse"),
         ),
     )
 
@@ -209,8 +209,16 @@ class TestTrainingConfigHandler:
         )
         mock_th = TrainingConfigHandler(None, None)
 
+        # Patch prepare_training_inputs method
+        mock_ta = mocker.Mock()
+        mock_psfm = mocker.Mock()
+        mocker.patch(
+            "wf_psf.training.training_config_handler.prepare_training_inputs",
+            return_value=(mock_ta, mock_psfm),
+        )
+
         # Set attributes of the mock_th
-        mock_th.training_conf = mock_training_conf
+        mock_th.training_conf = mock_training_conf.training
         mock_th.data_params = mock_data_conf
         mock_th.simPSF = mock_simPSF_instance
         mock_th.n_bins_lambda = 10
@@ -232,10 +240,9 @@ class TestTrainingConfigHandler:
 
         # Assert that train.train() is called with the correct arguments
         mock_train_function.assert_called_once_with(
-            mock_th.training_conf.training,
-            mock_th.data_params,
-            mock_th.simPSF,
-            mock_th.n_bins_lambda,
+            mock_th.training_conf,
+            mock_ta,
+            mock_psfm,
             mock_th.checkpoint_dir,
             mock_th.optimizer_dir,
             mock_th.psf_model_dir,
