@@ -37,8 +37,8 @@ def load_trained_psf_model(training_conf, data_conf, weights_path_pattern):
         If loading the model weights fails for any reason.
     """
     model = get_psf_model(
-        training_conf.training.model_params,
-        training_conf.training.training_hparams,
+        training_conf.model_params,
+        training_conf.training_hparams,
         data_conf,
     )
 
