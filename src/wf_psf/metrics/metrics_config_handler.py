@@ -54,8 +54,8 @@ class MetricsConfigHandler(ConfigHandler):
         self._file_handler = file_handler
         self.training_conf = training_conf
         self.data_adapter = self._load_data_conf()
-        self.simPSF = psf_models.simPSF(self.training_conf.training.model_params)
-        self.n_bins_lambda = self.training_conf.training.model_params.n_bins_lambda
+        self.simPSF = psf_models.simPSF(self.training_conf.model_params)
+        self.n_bins_lambda = self.training_conf.model_params.n_bins_lambda
         self.metrics_dir = self._file_handler.get_metrics_dir(
             self._file_handler._run_output_dir
         )
@@ -93,13 +93,12 @@ class MetricsConfigHandler(ConfigHandler):
                 logger.info(
                     f"Loading training config from inferred path: {training_conf_path}"
                 )
-                self._training_conf = read_conf(training_conf_path)
+                self._training_conf = read_conf(training_conf_path).training
             except Exception as e:
                 logger.error(f"Failed to load training config: {e}")
                 raise
         else:
             self._training_conf = training_conf
-
 
     @property
     def plotting_conf(self):
@@ -122,8 +121,8 @@ class MetricsConfigHandler(ConfigHandler):
         except AttributeError as e:
             raise KeyError("Missing required model config fields.") from e
 
-        model_name = self.training_conf.training.model_params.model_name
-        id_name = self.training_conf.training.id_name
+        model_name = self.training_conf.model_params.model_name
+        id_name = self.training_conf.id_name
 
         weights_path_pattern = os.path.join(
             trained_model_path,
@@ -231,14 +230,14 @@ class MetricsConfigHandler(ConfigHandler):
             data_params = DataConfigHandler(
                 os.path.join(
                     self._file_handler.config_path,
-                    self.training_conf.training.data_config,
+                    self.training_conf.data_config,
                 ),
             )
             adapter = DataAdapterFactory.build(data_params)
 
             # Join data, if not already complete
             if adapter.structure_state == StructureState.SPLIT:
-                logger.info(f"Joining split datasets...")
+                logger.info("Joining split datasets...")
                 adapter.join_data()
             return adapter
         except TypeError as e:
@@ -277,8 +276,8 @@ class MetricsConfigHandler(ConfigHandler):
         # Update metric results dict with latest result
         plots_config_handler.list_of_metrics_dict[self._file_handler.workdir] = [
             {
-                self.training_conf.training.model_params.model_name
-                + self.training_conf.training.id_name: [model_metrics]
+                self.training_conf.model_params.model_name
+                + self.training_conf.id_name: [model_metrics]
             }
         ]
 
@@ -295,11 +294,11 @@ class MetricsConfigHandler(ConfigHandler):
         # Split dataset just before training, idempotent
         if self.data_adapter.structure_state == StructureState.COMPLETE:
             self.data_adapter.split_data()
-    
+
         # Convert to TF for training
         if self.data_adapter.representation_state == RepresentationState.NUMPY:
             self.data_adapter.convert_to_tensorflow(self.simPSF, self.n_bins_lambda)
-       
+
         model_metrics = evaluate_model(
             self.metrics_conf.metrics,
             self.training_conf.training,
