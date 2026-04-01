@@ -31,7 +31,7 @@ def compute_ccd_misalignment(model_params, positions: np.ndarray) -> np.ndarray:
     obs_positions = positions
 
     ccd_misalignment_calculator = CCDMisalignmentCalculator(
-        tiles_path=model_params.ccd_misalignments_input_path,
+        tiles_path=model_params.ccd_misalignments_aux_path,
         x_lims=model_params.x_lims,
         y_lims=model_params.y_lims,
         tel_focal_length=model_params.tel_focal_length,

@@ -48,8 +48,8 @@ training:
     # Flag to perform CCD misalignment error correction
     add_ccd_misalignments: False
 
-    # CCD misalignments input file path
-    ccd_misalignments_input_path: /path/to/ccd_misalignments_file.txt
+    # CCD misalignments input path (can be saved in AUX/ dir)
+    ccd_misalignments_aux_path: /path/to/ccd_misalignments_file.npy
 
     # Boolean to use sample weights based on the noise standard deviation estimation
     use_sample_weights: True
