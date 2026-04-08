@@ -1,10 +1,10 @@
 import pytest
 import numpy as np
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 import tensorflow as tf
+from wf_psf.data.data_utils import DatasetContainer
 from wf_psf.data.data_zernike_utils import (
-    ZernikeInputsFactory,
-    get_np_zernike_prior,
+    ZernikeDataset,
     pad_contribution_to_order,
     combine_zernike_contributions,
     assemble_zernike_contributions,
@@ -34,129 +34,51 @@ def dummy_centroid_dataset():
     return {"training": "dummy_train", "test": "dummy_test"}
 
 
-def test_training_without_prior(mock_model_params, mock_data):
-    mock_model_params.use_prior = False
+class TestZernikeDataset:
+    """Tests for ZernikeDataset."""
 
-    # Clear priors to simulate no prior being used
-    mock_data.training_data.dataset.pop("zernike_prior", None)
-    mock_data.test_data.dataset.pop("zernike_prior", None)
+    def test_sources_property(self):
+        sources = np.ones((5, 10, 10))
+        container = DatasetContainer({"sources": sources})
+        dataset = ZernikeDataset(container=container)
 
-    zinputs = ZernikeInputsFactory.build(
-        data=mock_data, run_type="training", model_params=mock_model_params
-    )
+        assert np.array_equal(dataset.sources, sources)
 
-    mock_data_stamps = np.concatenate(
-        [
-            mock_data.training_data.dataset["noisy_stars"],
-            mock_data.test_data.dataset["stars"],
-        ]
-    )
-    mock_data_masks = np.concatenate(
-        [
-            mock_data.training_data.dataset["masks"],
-            mock_data.test_data.dataset["masks"],
-        ]
-    )
+    def test_centroid_inputs_none_when_no_sources(self):
+        container = DatasetContainer({})
+        dataset = ZernikeDataset(container)
 
-    assert np.allclose(
-        zinputs.centroid_dataset["stamps"], mock_data_stamps, rtol=1e-6, atol=1e-8
-    )
+        assert dataset.centroid_inputs is None
 
-    assert np.allclose(
-        zinputs.centroid_dataset["masks"], mock_data_masks, rtol=1e-6, atol=1e-8
-    )
+    def test_centroid_inputs_without_masks(self):
+        sources = np.ones((3, 8, 8))
+        container = DatasetContainer({"sources": sources})
+        dataset = ZernikeDataset(container)
 
-    assert zinputs.zernike_prior is None
+        result = dataset.centroid_inputs
 
-    expected_positions = np.concatenate(
-        [
-            mock_data.training_data.dataset["positions"],
-            mock_data.test_data.dataset["positions"],
-        ]
-    )
-    np.testing.assert_array_equal(zinputs.misalignment_positions, expected_positions)
+        assert "stamps" in result
+        assert "masks" not in result
+        assert np.array_equal(result["stamps"], sources)
 
+    def test_centroid_inputs_with_masks(self):
+        sources = np.ones((3, 8, 8))
+        masks = np.zeros((3, 8, 8))
 
-def test_training_with_dataset_prior(mock_model_params, mock_data):
-    mock_model_params.use_prior = True
-
-    zinputs = ZernikeInputsFactory.build(
-        data=mock_data, run_type="training", model_params=mock_model_params
-    )
-
-    expected_priors = np.concatenate(
-        (
-            mock_data.training_data.dataset["zernike_prior"],
-            mock_data.test_data.dataset["zernike_prior"],
-        ),
-        axis=0,
-    )
-    np.testing.assert_array_equal(zinputs.zernike_prior, expected_priors)
-
-
-def test_training_with_explicit_prior(mock_model_params, caplog):
-    mock_model_params.use_prior = True
-    data = MagicMock()
-    data.training_dataset = {"positions": np.ones((1, 2))}
-    data.test_dataset = {"positions": np.zeros((1, 2))}
-
-    explicit_prior = np.array([9.0, 9.0, 9.0])
-
-    with caplog.at_level("WARNING"):
-        zinputs = ZernikeInputsFactory.build(
-            data, "training", mock_model_params, prior=explicit_prior
+        container = DatasetContainer(
+            {
+                "sources": sources,
+                "masks": masks,
+            }
         )
 
-    assert "Explicit prior provided; ignoring dataset-based prior." in caplog.text
-    assert (zinputs.zernike_prior == explicit_prior).all()
+        dataset = ZernikeDataset(container)
+        result = dataset.centroid_inputs
 
-
-def test_inference_with_dict_and_prior(mock_model_params):
-    mock_model_params.use_prior = True
-    data = RecursiveNamespace(
-        dataset={
-            "positions": tf.ones((5, 2)),
-            "zernike_prior": tf.constant([42.0, 0.0]),
-        }
-    )
-
-    zinputs = ZernikeInputsFactory.build(data, "inference", mock_model_params)
-
-    for key in ["stamps", "masks"]:
-        assert zinputs.centroid_dataset[key] is None
-
-    # NumPy array comparison
-    np.testing.assert_array_equal(
-        zinputs.misalignment_positions, data.dataset["positions"].numpy()
-    )
-
-    # TensorFlow tensor comparison
-    tf.debugging.assert_equal(zinputs.zernike_prior, data.dataset["zernike_prior"])
-
-
-def test_invalid_run_type(mock_model_params):
-    data = {"positions": np.ones((2, 2))}
-    with pytest.raises(ValueError, match="Unsupported run_type"):
-        ZernikeInputsFactory.build(data, "invalid_mode", mock_model_params)
-
-
-def test_get_np_zernike_prior():
-    # Mock training and test data
-    training_prior = np.array([[1, 2, 3], [4, 5, 6]])
-    test_prior = np.array([[7, 8, 9]])
-
-    # Construct fake DataConfigHandler structure using RecursiveNamespace
-    data = RecursiveNamespace(
-        training_data=RecursiveNamespace(dataset={"zernike_prior": training_prior}),
-        test_data=RecursiveNamespace(dataset={"zernike_prior": test_prior}),
-    )
-
-    expected_prior = np.concatenate((training_prior, test_prior), axis=0)
-
-    result = get_np_zernike_prior(data)
-
-    # Assert shape and values match expected
-    np.testing.assert_array_equal(result, expected_prior)
+        assert "stamps" in result
+        assert "masks" in result
+        assert np.array_equal(result["stamps"], sources)
+        assert np.array_equal(result["masks"], masks)
 
 
 def test_pad_contribution_to_order():
@@ -275,7 +197,11 @@ def test_zero_order_contributions():
 @patch("wf_psf.data.data_zernike_utils.compute_centroid_correction")
 @patch("wf_psf.data.data_zernike_utils.compute_ccd_misalignment")
 def test_full_contribution_combination(
-    mock_ccd, mock_centroid, mock_model_params, dummy_prior, dummy_centroid_dataset
+    mock_ccd,
+    mock_centroid,
+    mock_model_params: RecursiveNamespace,
+    dummy_prior,
+    dummy_centroid_dataset: dict[str, str],
 ):
     mock_centroid.return_value = np.full((4, 6), 2.0)
     mock_ccd.return_value = np.full((4, 6), 3.0)
@@ -292,7 +218,7 @@ def test_full_contribution_combination(
     np.testing.assert_allclose(result.numpy(), expected)
 
 
-def test_prior_only(mock_model_params, dummy_prior):
+def test_prior_only(mock_model_params: RecursiveNamespace, dummy_prior):
     mock_model_params.correct_centroids = False
     mock_model_params.add_ccd_misalignments = False
 
@@ -321,7 +247,7 @@ def test_no_contributions_returns_zeros():
     np.testing.assert_array_equal(result.numpy(), np.zeros((1, 8)))
 
 
-def test_prior_as_tensor(mock_model_params):
+def test_prior_as_tensor(mock_model_params: RecursiveNamespace):
     tensor_prior = tf.ones((4, 6), dtype=tf.float32)
 
     mock_model_params.correct_centroids = False
@@ -337,7 +263,10 @@ def test_prior_as_tensor(mock_model_params):
 
 @patch("wf_psf.data.data_zernike_utils.compute_centroid_correction")
 def test_inconsistent_shapes_raises_error(
-    mock_centroid, mock_model_params, dummy_prior, dummy_centroid_dataset
+    mock_centroid,
+    mock_model_params: RecursiveNamespace,
+    dummy_prior,
+    dummy_centroid_dataset: dict[str, str],
 ):
     mock_model_params.add_ccd_misalignments = False
     mock_centroid.return_value = np.ones((5, 6))  # 5 samples instead of 4
@@ -415,7 +344,11 @@ def test_pad_zernikes_param_greater_than_prior():
     assert padded_zk_prior.shape == (1, 4, 1, 1)
 
 
-def test_compute_zernike_tip_tilt_single_batch(mocker, simple_image, identity_mask):
+def test_compute_zernike_tip_tilt_single_batch(
+    mocker,
+    simple_image,
+    identity_mask,
+):
     """Test compute_zernike_tip_tilt handling with single batch input and mocks."""
     # Mock the CentroidEstimator class
     mock_centroid_calc = mocker.patch(
@@ -473,7 +406,10 @@ def test_compute_zernike_tip_tilt_single_batch(mocker, simple_image, identity_ma
     )  # Zk2
 
 
-def test_compute_zernike_tip_tilt_batch(mocker, multiple_images):
+def test_compute_zernike_tip_tilt_batch(
+    mocker,
+    multiple_images,
+):
     """Test compute_zernike_tip_tilt batch handling of multiple inputs."""
     # Mock the CentroidEstimator class
     mock_centroid_calc = mocker.patch(
@@ -504,9 +440,9 @@ def test_compute_zernike_tip_tilt_batch(mocker, multiple_images):
     )
 
     # Check if the mock function was called once with the full batch
-    assert (
-        len(mock_shift_fn.call_args_list) == 1
-    ), f"Expected 1 call, but got {len(mock_shift_fn.call_args_list)}"
+    assert len(mock_shift_fn.call_args_list) == 1, (
+        f"Expected 1 call, but got {len(mock_shift_fn.call_args_list)}"
+    )
 
     # Get the arguments passed to the mock function for the batch of images
     args, _ = mock_shift_fn.call_args_list[0]

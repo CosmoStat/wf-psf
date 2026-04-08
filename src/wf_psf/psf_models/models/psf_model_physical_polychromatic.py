@@ -10,9 +10,8 @@ to manage the parameters of the psf physical polychromatic model.
 from typing import Optional
 import tensorflow as tf
 from tensorflow.python.keras.engine import data_adapter
-from wf_psf.data.data_handler import get_data_array
 from wf_psf.data.data_zernike_utils import (
-    ZernikeInputsFactory,
+    ZernikeDataset,
     assemble_zernike_contributions,
     pad_tf_zernikes,
 )
@@ -115,8 +114,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         self.model_params = model_params
         self.training_params = training_params
         self.data = data
-        self.run_type = self._get_run_type(data)
-        self.obs_pos = self.get_obs_pos()
+        self.positions = ensure_tensor(self.data.get("positions"), tf.float32)
 
         # Initialize the model parameters
         self.output_Q = model_params.output_Q
@@ -162,30 +160,14 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         _ = self.tf_poly_Z_field
         _ = self.tf_np_poly_opd
 
-    def _get_run_type(self, data):
-        if hasattr(data, "run_type"):
-            run_type = data.run_type
-        elif isinstance(data, dict) and "run_type" in data:
-            run_type = data["run_type"]
-        else:
-            raise ValueError("data must have a 'run_type' attribute or key")
-
-        if run_type not in {"training", "simulation", "metrics", "inference"}:
-            raise ValueError(f"Unknown run_type: {run_type}")
-        return run_type
-
     def _assemble_zernike_contributions(self):
-        zks_inputs = ZernikeInputsFactory.build(
-            data=self.data,
-            run_type=self.run_type,
-            model_params=self.model_params,
-            prior=self._external_prior if hasattr(self, "_external_prior") else None,
-        )
+        zernike_data = ZernikeDataset(self.data)
+
         return assemble_zernike_contributions(
             model_params=self.model_params,
-            zernike_prior=zks_inputs.zernike_prior,
-            centroid_dataset=zks_inputs.centroid_dataset,
-            positions=zks_inputs.misalignment_positions,
+            zernike_prior=zernike_data.zernike_prior,
+            centroid_dataset=zernike_data.centroid_inputs,
+            positions=zernike_data.positions,
             batch_size=self.training_params.batch_size,
         )
 
@@ -203,25 +185,10 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
             self.model_params.nonparam_hparams, "save_optim_history_nonparam", False
         )
 
-    def get_obs_pos(self):
-        assert self.run_type in {
-            "training",
-            "simulation",
-            "metrics",
-            "inference",
-        }, f"Unknown run_type: {self.run_type}"
-
-        raw_pos = get_data_array(
-            data=self.data, run_type=self.run_type, key="positions"
-        )
-
-        obs_pos = ensure_tensor(raw_pos, dtype=tf.float32)
-
-        return obs_pos
-
     # === Lazy properties ===.
     @property
     def zks_total_contribution(self):
+        """Return total Zernike contribution tensor."""
         return self._zks_total_contribution
 
     @property
@@ -235,11 +202,13 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         return self._zernike_maps
 
     @property
-    def opd_dim(self):
+    def opd_dim(self) -> Optional[int]:
+        """Get Optical Path Difference Dimension."""
         return self._opd_dim
 
     @property
     def obscurations(self):
+        """Get telescope obscurations."""
         return self._obscurations
 
     @property
@@ -264,7 +233,7 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
         """Lazy loading of the physical layer of the PSF model."""
         if not hasattr(self, "_tf_physical_layer"):
             self._tf_physical_layer = TFPhysicalLayer(
-                self.obs_pos,
+                self.positions,
                 self.zks_total_contribution,
                 interpolation_type=self.model_params.interpolation_type,
                 interpolation_args=self.model_params.interpolation_args,

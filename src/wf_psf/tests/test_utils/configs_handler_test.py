@@ -7,11 +7,9 @@ This module contains unit tests for the wf_psf.utils configs_handler module.
 """
 
 import pytest
-from wf_psf.data.data_handler import DataHandler
 from wf_psf.utils import configs_handler
 from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.utils.io import FileIOHandler
-from wf_psf.data.data_config_handler import DataConfigHandler
 from wf_psf.training.training_config_handler import TrainingConfigHandler
 from wf_psf.metrics.metrics_config_handler import MetricsConfigHandler
 from wf_psf.plotting.plotting_config_handler import PlottingConfigHandler
@@ -28,19 +26,19 @@ def mock_data_read_conf(mocker):
     return mocker.patch(
         "wf_psf.data.data_config_handler.read_conf",
         return_value=RecursiveNamespace(
-            data=RecursiveNamespace(
-                data_type="simulation",
-                training=RecursiveNamespace(
-                    data_dir="/path/to/train_data",
-                    file="train_data.npy",
+            params=RecursiveNamespace(
+                train=RecursiveNamespace(
+                    data_dir="data",
+                    file="coherent_euclid_dataset/train_Euclid_res_200_TrainStars_id_001.npy",
                     target_field="noisy_stars",
                 ),
                 test=RecursiveNamespace(
-                    data_dir="/path/to/test_data",
-                    file="test_data.npy",
+                    data_dir="data",
+                    file="coherent_euclid_dataset/test_Euclid_res_id_001.npy",
                     target_field="stars",
                 ),
-            ),
+                canonical_keys=["sources", "masks", "positions"],
+            )
         ),
     )
 
@@ -63,7 +61,7 @@ def mock_training_conf(mocker):
                     d_max_nonparam=5,
                 ),
             ),
-            training_hparams=RecursiveNamespace(batch_size=32),
+            training_hparams=RecursiveNamespace(batch_size=32, loss="mask_mse"),
         ),
     )
 
@@ -72,8 +70,6 @@ def mock_training_conf(mocker):
 def mock_data_conf(mocker):
     """Mock DataConfigHandler instance."""
     data_conf = mocker.Mock()
-    data_conf.training_data = mocker.Mock()
-    data_conf.test_data = mocker.Mock()
     return data_conf
 
 
@@ -189,68 +185,6 @@ class TestConfigHandlerABC:
 
 
 # ============================================================================
-# Test DataConfigHandler (moved from here, should be in test_data_config_handler.py)
-# ============================================================================
-
-
-@pytest.mark.skip(reason="Skipped - deprecated DataHandler pending removal")
-def test_data_config_handler_init(mock_training_conf, mock_data_read_conf, mocker):
-    """
-    Test DataConfigHandler initialization.
-
-    NOTE: This test is skipped because it tests deprecated DataHandler
-    behavior. Once DataHandler is removed, this test should be updated
-    or moved to test_data_config_handler.py with proper mocking.
-    """
-    # Mock read_conf function
-    mock_data_read_conf()
-
-    # Mock SimPSF instance
-    mock_simPSF_instance = mocker.Mock(name="SimPSFToolkit")
-    mocker.patch(
-        "wf_psf.psf_models.psf_models.simPSF", return_value=mock_simPSF_instance
-    )
-
-    # Patch process_sed_data method
-    mocker.patch.object(DataHandler, "process_sed_data")
-
-    # Patch validate_and_process_datasetmethod
-    mocker.patch.object(DataHandler, "validate_and_process_dataset")
-
-    # Patch load_dataset to assign dataset
-    def mock_load_dataset(self):
-        self.dataset = {
-            "SEDs": ["dummy_sed_data"],
-            "positions": ["dummy_positions_data"],
-        }
-
-    mocker.patch.object(DataHandler, "load_dataset", new=mock_load_dataset)
-
-    # Create DataConfigHandler instance
-    data_config_handler = DataConfigHandler(
-        "/path/to/data_config.yaml",
-        mock_training_conf.training.model_params,
-        mock_training_conf.training.training_hparams.batch_size,
-    )
-
-    # Check that attributes are set correctly
-    assert isinstance(data_config_handler.data_conf, RecursiveNamespace)
-    assert isinstance(data_config_handler.simPSF, object)
-    assert (
-        data_config_handler.training_data.n_bins_lambda
-        == mock_training_conf.training.model_params.n_bins_lda
-    )
-    assert (
-        data_config_handler.test_data.n_bins_lambda
-        == mock_training_conf.training.model_params.n_bins_lda
-    )
-    assert (
-        data_config_handler.batch_size
-        == mock_training_conf.training.training_hparams.batch_size
-    )
-
-
-# ============================================================================
 # Test TrainingConfigHandler (should be in test_training_config_handler.py)
 # ============================================================================
 
@@ -262,6 +196,12 @@ class TestTrainingConfigHandler:
         self, mocker, mock_training_conf, mock_data_conf
     ):
         """Test that run() calls train.train() with correct arguments."""
+        # Mock SimPSF instance
+        mock_simPSF_instance = mocker.Mock(name="SimPSFToolkit")
+        mocker.patch(
+            "wf_psf.psf_models.psf_models.simPSF", return_value=mock_simPSF_instance
+        )
+
         # Patch the TrainingConfigHandler.__init__() method
         mocker.patch(
             "wf_psf.training.training_config_handler.TrainingConfigHandler.__init__",
@@ -269,11 +209,19 @@ class TestTrainingConfigHandler:
         )
         mock_th = TrainingConfigHandler(None, None)
 
+        # Patch prepare_training_inputs method
+        mock_ta = mocker.Mock()
+        mock_psfm = mocker.Mock()
+        mocker.patch(
+            "wf_psf.training.training_config_handler.prepare_training_inputs",
+            return_value=(mock_ta, mock_psfm),
+        )
+
         # Set attributes of the mock_th
-        mock_th.training_conf = mock_training_conf
-        mock_th.data_conf = mock_data_conf
-        mock_th.data_conf.training_data = mock_data_conf.training_data
-        mock_th.data_conf.test_data = mock_data_conf.test_data
+        mock_th.training_conf = mock_training_conf.training
+        mock_th.data_params = mock_data_conf
+        mock_th.simPSF = mock_simPSF_instance
+        mock_th.n_bins_lambda = 10
         mock_th.checkpoint_dir = "/mock/checkpoint/dir"
         mock_th.optimizer_dir = "/mock/optimizer/dir"
         mock_th.psf_model_dir = "/mock/psf/model/dir"
@@ -292,8 +240,9 @@ class TestTrainingConfigHandler:
 
         # Assert that train.train() is called with the correct arguments
         mock_train_function.assert_called_once_with(
-            mock_th.training_conf.training,
-            mock_th.data_conf,
+            mock_th.training_conf,
+            mock_ta,
+            mock_psfm,
             mock_th.checkpoint_dir,
             mock_th.optimizer_dir,
             mock_th.psf_model_dir,

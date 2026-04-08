@@ -1,0 +1,26 @@
+# Data configuration parameters for training a PSF model
+params:
+  # Directory path to full (un-split) dataset
+  data_dir: /path/to/data
+  # Dataset filename (currently only .npy files supported)
+  file: data.npy
+  # Field in the dataset representing sources (stars)
+  target_field: stars
+
+  # Trainin split parameters
+  train_fraction: 0.8   # Fraction of data used for training
+  seed: 18343829        # Random seed for reproducibility
+
+  # Define canonical keys for dataset
+  # Canonical dataset fields determine dataset size and ensure
+  # consistent train/test splitting across arrays.
+  # Overrides DEFAULT_CANONICAL_KEYS.
+  canonical_keys:
+    - sources
+    - positions
+    - seds
+
+  # Optional dataset fields
+  # Uncomment if present in your dataset
+  # - masks
+  # - zernike_prior

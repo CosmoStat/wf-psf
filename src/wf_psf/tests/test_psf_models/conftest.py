@@ -12,7 +12,6 @@ import pytest
 from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.training.train import TrainingParamsHandler
 from wf_psf.psf_models import psf_models
-from wf_psf.data.data_handler import DataHandler
 
 training_config = RecursiveNamespace(
     id_name="_sample_w_bis1_2k",
@@ -134,31 +133,6 @@ data_conf = RecursiveNamespace(
 @pytest.fixture(scope="module", params=[training_config])
 def training_params():
     return TrainingParamsHandler(training_config)
-
-
-@pytest.fixture(scope="module")
-def training_data():
-    return DataHandler(
-        "training",
-        data_conf.data,
-        psf_models.simPSF(training_config.model_params),
-        training_config.model_params.n_bins_lda,
-    )
-
-
-@pytest.fixture(scope="module")
-def test_data():
-    return DataHandler(
-        "test",
-        data_conf.data,
-        psf_models.simPSF(training_config.model_params),
-        training_config.model_params.n_bins_lda,
-    )
-
-
-@pytest.fixture(scope="module")
-def test_dataset(test_data):
-    return test_data.dataset
 
 
 @pytest.fixture(scope="module")

@@ -18,7 +18,7 @@ def mock_training_conf(mocker):
             metrics_config=None,
             model_params=RecursiveNamespace(
                 model_name="poly",
-                n_bins_lda=10,
+                n_bins_lambda=10,
                 param_hparams=RecursiveNamespace(
                     random_seed=3877572,
                 ),
@@ -26,21 +26,17 @@ def mock_training_conf(mocker):
                     d_max_nonparam=5,
                 ),
             ),
-            training_hparams=RecursiveNamespace(batch_size=32),
+            training_hparams=RecursiveNamespace(batch_size=32, loss="mask_mse"),
         ),
     )
 
 
 @pytest.fixture
-def mock_data_conf(mocker):
+def mock_data_params(mocker):
     # Create a mock object
-    data_conf = mocker.Mock()
+    data_params = mocker.Mock()
 
-    # Set attributes on the mock object
-    data_conf.training_data = "value1"
-    data_conf.test_data = "value2"
-
-    return data_conf
+    return data_params
 
 
 @pytest.fixture
@@ -87,20 +83,25 @@ def test_model_params_renamed(mock_training_conf):
     assert not hasattr(mock_training_conf.training, "training_model_params")
 
 
-def test_training_config_handler_init(mocker, mock_training_conf, mock_file_handler):
+def test_training_config_handler_init(
+    mocker, mock_training_conf, mock_file_handler, mock_data_params
+):
     # Mock read_conf function
     mocker.patch(
         "wf_psf.training.training_config_handler.read_conf",
         return_value=mock_training_conf,
     )
 
-    # Mock data_conf instance
-    mock_data_conf = mocker.patch(
-        "wf_psf.training.training_config_handler.DataConfigHandler"
+    # Patch DataConfigHandler to return an object with .params
+    mock_data_conf_instance = mocker.Mock()
+    mock_data_conf_instance.params = mock_data_params
+    data_config_handler_patch = mocker.patch(
+        "wf_psf.training.training_config_handler.DataConfigHandler",
+        return_value=mock_data_conf_instance,
     )
 
     # Mock SimPSF instance
-    mock_simPSF_instance = mocker.Mock(name="SimPSFToolkit")
+    mock_simPSF_instance = mocker.Mock(name="SimPSFToolkist")
     mocker.patch(
         "wf_psf.psf_models.psf_models.simPSF", return_value=mock_simPSF_instance
     )
@@ -112,7 +113,7 @@ def test_training_config_handler_init(mocker, mock_training_conf, mock_file_hand
 
     # Assertions
     mock_file_handler.copy_conffile_to_output_dir.assert_called_once_with(
-        training_config_handler.training_conf.training.data_config
+        training_config_handler.training_conf.data_config
     )
     mock_file_handler.get_checkpoint_dir.assert_called_once_with(
         mock_file_handler._run_output_dir
@@ -123,16 +124,16 @@ def test_training_config_handler_init(mocker, mock_training_conf, mock_file_hand
     mock_file_handler.get_psf_model_dir.assert_called_once_with(
         mock_file_handler._run_output_dir
     )
-    assert training_config_handler.training_conf == mock_training_conf
+    assert training_config_handler.training_conf == mock_training_conf.training
     assert training_config_handler.file_handler == mock_file_handler
 
-    mock_data_conf.assert_called_once_with(
+    # Assert that DataConfigHandler was instantiated with the correct path
+    data_config_handler_patch.assert_called_once_with(
         os.path.join(
             mock_file_handler.config_path,
-            training_config_handler.training_conf.training.data_config,
-        ),
-        training_config_handler.training_conf.training.model_params,
-        training_config_handler.training_conf.training.training_hparams.batch_size,
-        training_config_handler.training_conf.training.load_data_on_init,
+            training_config_handler.training_conf.data_config,
+        )
     )
-    assert training_config_handler.data_conf == mock_data_conf.return_value
+
+    # Assert that .params was correctly read
+    assert training_config_handler.data_params == mock_data_conf_instance

@@ -11,9 +11,7 @@ various wf_psf packages.
 import pytest
 from wf_psf.utils.read_config import RecursiveNamespace
 from wf_psf.training.train import TrainingParamsHandler
-from wf_psf.data.data_config_handler import DataConfigHandler
 from wf_psf.psf_models import psf_models
-from wf_psf.data.data_handler import DataHandler
 
 training_config = RecursiveNamespace(
     id_name="-coherent_euclid_200stars",
@@ -82,9 +80,9 @@ training_config = RecursiveNamespace(
     ),
 )
 
-data_conf_object = RecursiveNamespace(
-    data=RecursiveNamespace(
-        training=RecursiveNamespace(
+data_conf_params = RecursiveNamespace(
+    params=RecursiveNamespace(
+        train=RecursiveNamespace(
             data_dir="data",
             file="coherent_euclid_dataset/train_Euclid_res_200_TrainStars_id_001.npy",
             target_field="noisy_stars",
@@ -94,52 +92,19 @@ data_conf_object = RecursiveNamespace(
             file="coherent_euclid_dataset/test_Euclid_res_id_001.npy",
             target_field="stars",
         ),
-    ),
+        canonical_keys=["sources", "masks", "positions"],
+    )
 )
+
+
+@pytest.fixture(scope="module")
+def mock_data_params():
+    return data_conf_params
 
 
 @pytest.fixture(scope="module", params=[training_config])
 def training_params():
     return TrainingParamsHandler(training_config)
-
-
-@pytest.fixture(scope="module")
-def training_data():
-    return DataHandler(
-        "training",
-        data_conf_object.data,
-        psf_models.simPSF(training_config.model_params),
-        training_config.model_params.n_bins_lda,
-    )
-
-
-@pytest.fixture(scope="module")
-def test_data():
-    return DataHandler(
-        "test",
-        data_conf_object.data,
-        psf_models.simPSF(training_config.model_params),
-        training_config.model_params.n_bins_lda,
-    )
-
-
-@pytest.fixture(scope="module")
-def test_dataset(test_data):
-    return test_data.dataset
-
-
-@pytest.fixture(scope="function")
-def data_conf(mocker, training_data, test_data):
-    # Patch the DataConfigHandler.__init__() method
-    mocker.patch(
-        "wf_psf.utils.configs_handler.DataConfigHandler.__init__", return_value=None
-    )
-    mock_data_conf = DataConfigHandler(None, None)
-    mock_data_conf = mocker.Mock()
-    mock_data_conf.training_data = training_data
-    mock_data_conf.test_data = test_data
-
-    return mock_data_conf
 
 
 @pytest.fixture(scope="module")

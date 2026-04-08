@@ -16,7 +16,6 @@ from wf_psf.psf_models.tf_modules.tf_layers import (
     TFPhysicalLayer,
 )
 from wf_psf.psf_models.models.psf_model_semiparametric import TFSemiParametricField
-from wf_psf.data.data_handler import get_data_array
 from wf_psf.psf_models import psf_models as psfm
 from wf_psf.psf_models.tf_modules.tf_utils import ensure_tensor
 import logging
@@ -186,8 +185,8 @@ def get_ground_truth_zernike(data):
     """
     zernike_ground_truth = np.concatenate(
         (
-            data.training_data.dataset["zernike_GT"],
-            data.test_data.dataset["zernike_GT"],
+            data.train_data["zernike_GT"],
+            data.test_data["zernike_GT"],
         ),
         axis=0,
     )
@@ -223,7 +222,7 @@ class TFGroundTruthPhysicalField(tf.keras.Model):
 
         # Inputs: TF_physical_layer
         self.obs_pos = ensure_tensor(
-            get_data_array(data, data.run_type, key="positions"), dtype=tf.float32
+            data.complete_data.get("positions"), dtype=tf.float32
         )
         self.zks_prior = get_ground_truth_zernike(data)
         self.n_zks_prior = tf.shape(self.zks_prior)[1].numpy()

@@ -5,31 +5,86 @@ This module provides the TensorFlowDatasetConverter class, which handles the con
 Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 """
 
-import numpy as np
 import tensorflow as tf
+from typing import Optional, Union
+from wf_psf.data.constants import (
+    DEFAULT_CANONICAL_KEYS,
+    OPTIONAL_KEYS as CONST_OPTIONAL_KEYS,
+)
+from wf_psf.data.data_utils import DatasetContainer
+from wf_psf.psf_models.psf_models import PSFSimulator
 from wf_psf.psf_models.tf_modules.tf_utils import ensure_tensor
 from wf_psf.utils.utils import generate_SED_elems_in_tensorflow
 
 
 class TensorFlowDatasetConverter:
-    """
-    Converts datasets to TensorFlow tensors and processes SEDs.
+    """Dataset Converter to TensorFlow tensors."""
 
-    Use this for converting PSF datasets (SHEPSFDataset, dict) to TensorFlow format.
+    REQUIRED_KEYS = DEFAULT_CANONICAL_KEYS
+    OPTIONAL_KEYS = set(CONST_OPTIONAL_KEYS)
 
-    Parameters
-    ----------
-    simPSF : PSFSimulator
-        SED encoder for processing spectral energy distributions
-    n_bins_lambda : int
-        Number of wavelength bins for SED discretization
-    """
+    def convert_dataset(
+        self,
+        dataset: Union[DatasetContainer, dict],
+        simPSF: PSFSimulator,
+        n_bins_lambda: int,
+        required_keys: Optional[tuple[str, ...]] = None,
+        optional_keys: Optional[tuple[str, ...]] = None,
+    ):
+        """Convert dataset container or dict to TensorFlow tensors.
 
-    def __init__(self, simPSF, n_bins_lambda):
-        self.simPSF = simPSF
-        self.n_bins_lambda = n_bins_lambda
+        Required keys must be present. Optional keys are converted if available.
 
-    def process_seds(self, sed_data):
+        Parameters
+        ----------
+        dataset : DatasetContainer or dict
+            Source dataset.
+        simPSF : PSFSimulator
+            PSF simulator used for SED processing.
+        n_bins_lambda : int
+            Number of wavelength bins for SED conversion.
+        required_keys : tuple[str]
+            Fields that must be present in the dataset.
+        optional_keys : tuple[str]
+            Fields to convert if they exist.
+
+        Returns
+        -------
+        dict
+            Dictionary with TensorFlow tensors keyed by canonical field names.
+
+        Raises
+        ------
+        ValueError
+            If any required key is missing from the dataset.
+        """
+        req_keys = self.REQUIRED_KEYS if required_keys is None else required_keys
+        opt_keys = self.OPTIONAL_KEYS if optional_keys is None else optional_keys
+
+        result = dict(dataset)
+
+        # Handle required keys
+        for k in req_keys:
+            v = dataset.get(k, None)
+            if v is None:
+                raise ValueError(f"Required dataset field '{k}' is missing.")
+            result[k] = (
+                self.process_seds(v, simPSF, n_bins_lambda)
+                if k == "seds"
+                else ensure_tensor(v, dtype=tf.float32)
+            )
+
+        # Handle optional keys
+        for k in opt_keys:
+            v = dataset.get(k, None)
+            if v is None:
+                continue
+            result[k] = ensure_tensor(v, dtype=tf.float32)
+
+        return result
+
+    @staticmethod
+    def process_seds(sed_data, simPSF, n_bins_lambda):
         """
         Process SEDs using simPSF and convert to TensorFlow tensors.
 
@@ -41,6 +96,10 @@ class TensorFlowDatasetConverter:
         ----------
         sed_data : array_like
             Array of SEDs, shape (N, n_wavelengths) or similar
+        simPSF : PSFSimulator
+            PSF simulator used for SED processing.
+        n_bins_lambda : int
+            Number of wavelength bins for SED processing.
 
         Returns
         -------
@@ -58,106 +117,12 @@ class TensorFlowDatasetConverter:
         - Returns tf.float32 for training efficiency
         - Transposes to shape (N, n_bins_lambda, n_components)
         """
-        if sed_data is None:
-            raise ValueError("SED data must be provided.")
-
         processed = [
             generate_SED_elems_in_tensorflow(
-                sed, self.simPSF, n_bins=self.n_bins_lambda, tf_dtype=tf.float64
+                sed, simPSF, n_bins=n_bins_lambda, tf_dtype=tf.float64
             )
             for sed in sed_data
         ]
         sed_tensor = ensure_tensor(processed, dtype=tf.float32)
 
         return tf.transpose(sed_tensor, perm=[0, 2, 1])
-
-    def convert_psf_dataset(self, dataset, target_field="images"):
-        """
-        Convert PSF dataset (dataclass) to TensorFlow dict.
-
-        Parameters
-        ----------
-        dataset : PSFDataset (dataclass)
-            Any PSF dataset with attributes: positions, seds, images, masks
-            Examples: SHEPSFDataset, RomanPSFDataset, VRAPSFDataset
-        target_field : str
-            Which field to use as targets ('images' for real data)
-
-        Returns
-        -------
-        dict
-            Dictionary with TensorFlow tensors:
-            - 'positions': tf.Tensor (N, 2)
-            - 'stars': tf.Tensor (N, H, W) - targets
-            - 'masks': tf.Tensor (N, H, W) - if available
-            - 'seds': tf.Tensor (N, n_bins_lambda, n_components)
-        """
-        result = {
-            "positions": ensure_tensor(dataset.positions, dtype=tf.float32),
-            "stars": ensure_tensor(getattr(dataset, target_field), dtype=tf.float32),
-            "seds": self.process_seds(dataset.seds),
-        }
-
-        # Add optional fields
-        if hasattr(dataset, "masks") and dataset.masks is not None:
-            result["masks"] = ensure_tensor(dataset.masks, dtype=tf.float32)
-
-        if hasattr(dataset, "icov") and dataset.icov is not None:
-            result["icov"] = ensure_tensor(dataset.icov, dtype=tf.float32)
-
-        return result
-
-    def convert_psf_dict(self, dataset_dict, source_field):
-        """
-        Convert dict-based dataset to TensorFlow.
-
-        Handles both simulation dicts and inference dicts.
-
-        Parameters
-        ----------
-        dataset_dict : dict
-            Dict with 'positions', and optionally 'SEDs', 'noisy_stars', etc.
-        source_field : str
-             'noisy_stars', 'stars', or other
-
-        Returns
-        -------
-        dict
-            TensorFlow-converted dataset
-        """
-        # Positions
-        dataset_dict["positions"] = ensure_tensor(
-            dataset_dict["positions"], dtype=tf.float32
-        )
-
-        # Stars
-        dataset_dict[source_field] = ensure_tensor(
-            dataset_dict[source_field], dtype=tf.float32
-        )
-
-        # Add masks if present
-        if "masks" in dataset_dict:
-            dataset_dict["masks"] = ensure_tensor(
-                dataset_dict["masks"], dtype=tf.float32
-            )
-
-        return dataset_dict
-
-    def convert_inference_data(self, dataset):
-        """
-        Convert inference data to TensorFlow format.
-
-        Parameters
-        ----------
-        dataset_dict : dict
-            Dict with 'positions', 'sources', and optionally 'masks'.
-
-        Returns
-        -------
-        dict
-            TensorFlow tensors ready for inference
-        """
-        for k, v in dataset.items():
-            dataset[k] = ensure_tensor(v, dtype=tf.float32)
-
-        return dataset

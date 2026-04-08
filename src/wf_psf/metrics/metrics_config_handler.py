@@ -13,9 +13,12 @@ from wf_psf.utils.configs_handler import (
     register_configclass,
     ConfigParameterError,
 )
+from wf_psf.data.factory import DataAdapterFactory
+from wf_psf.data.data_adapter import StructureState, RepresentationState
 from wf_psf.data.data_config_handler import DataConfigHandler
 from wf_psf.utils.read_config import read_conf
 from wf_psf.metrics.metrics_interface import evaluate_model
+from wf_psf.psf_models import psf_models
 from wf_psf.psf_models.psf_model_loader import load_trained_psf_model
 from wf_psf.plotting.plotting_config_handler import PlottingConfigHandler
 import logging
@@ -50,8 +53,9 @@ class MetricsConfigHandler(ConfigHandler):
         self._metrics_conf = read_conf(metrics_conf)
         self._file_handler = file_handler
         self.training_conf = training_conf
-        self.data_conf = self._load_data_conf()
-        self.data_conf.run_type = "metrics"
+        self.data_adapter = self._load_data_conf()
+        self.simPSF = psf_models.simPSF(self.training_conf.model_params)
+        self.n_bins_lambda = self.training_conf.model_params.n_bins_lambda
         self.metrics_dir = self._file_handler.get_metrics_dir(
             self._file_handler._run_output_dir
         )
@@ -89,7 +93,7 @@ class MetricsConfigHandler(ConfigHandler):
                 logger.info(
                     f"Loading training config from inferred path: {training_conf_path}"
                 )
-                self._training_conf = read_conf(training_conf_path)
+                self._training_conf = read_conf(training_conf_path).training
             except Exception as e:
                 logger.error(f"Failed to load training config: {e}")
                 raise
@@ -117,8 +121,8 @@ class MetricsConfigHandler(ConfigHandler):
         except AttributeError as e:
             raise KeyError("Missing required model config fields.") from e
 
-        model_name = self.training_conf.training.model_params.model_name
-        id_name = self.training_conf.training.id_name
+        model_name = self.training_conf.model_params.model_name
+        id_name = self.training_conf.id_name
 
         weights_path_pattern = os.path.join(
             trained_model_path,
@@ -127,7 +131,7 @@ class MetricsConfigHandler(ConfigHandler):
         )
         return load_trained_psf_model(
             self.training_conf,
-            self.data_conf,
+            self.data_adapter.complete_data,
             weights_path_pattern,
         )
 
@@ -223,13 +227,19 @@ class MetricsConfigHandler(ConfigHandler):
         An instance of the DataConfigHandler class.
         """
         try:
-            return DataConfigHandler(
+            data_params = DataConfigHandler(
                 os.path.join(
                     self._file_handler.config_path,
-                    self.training_conf.training.data_config,
+                    self.training_conf.data_config,
                 ),
-                self.training_conf.training.model_params,
             )
+            adapter = DataAdapterFactory.build(data_params)
+
+            # Join data, if not already complete
+            if adapter.structure_state == StructureState.SPLIT:
+                logger.info("Joining split datasets...")
+                adapter.join_data()
+            return adapter
         except TypeError as e:
             logger.exception(e)
             raise ConfigParameterError("Data configuration loading error.")
@@ -266,8 +276,8 @@ class MetricsConfigHandler(ConfigHandler):
         # Update metric results dict with latest result
         plots_config_handler.list_of_metrics_dict[self._file_handler.workdir] = [
             {
-                self.training_conf.training.model_params.model_name
-                + self.training_conf.training.id_name: [model_metrics]
+                self.training_conf.model_params.model_name
+                + self.training_conf.id_name: [model_metrics]
             }
         ]
 
@@ -281,11 +291,19 @@ class MetricsConfigHandler(ConfigHandler):
 
         """
         logger.info("Running metrics evaluation on trained PSF model...")
+        # Split dataset just before training, idempotent
+        if self.data_adapter.structure_state == StructureState.COMPLETE:
+            self.data_adapter.split_data()
+
+        # Convert to TF for training
+        if self.data_adapter.representation_state == RepresentationState.NUMPY:
+            self.data_adapter.convert_to_tensorflow(self.simPSF, self.n_bins_lambda)
 
         model_metrics = evaluate_model(
             self.metrics_conf.metrics,
             self.training_conf.training,
-            self.data_conf,
+            self.data_adapter,
+            self.simPSF,
             self.trained_psf_model,
             self.metrics_dir,
         )

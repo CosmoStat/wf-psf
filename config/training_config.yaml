@@ -14,7 +14,7 @@ training:
     model_name: physical_poly
 
     # Num of wavelength bins to reconstruct polychromatic objects.
-    n_bins_lda: 8
+    n_bins_lambda: 8
 
     # Downsampling rate to match the oversampled model to the specified telescope's sampling.
     output_Q: 3
@@ -48,8 +48,8 @@ training:
     # Flag to perform CCD misalignment error correction
     add_ccd_misalignments: False
 
-    # CCD misalignments input file path
-    ccd_misalignments_input_path: /path/to/ccd_misalignments_file.txt
+    # CCD misalignments input path (can be saved in AUX/ dir)
+    ccd_misalignments_aux_path: /path/to/ccd_misalignments_file.npy
 
     # Boolean to use sample weights based on the noise standard deviation estimation
     use_sample_weights: True
@@ -151,11 +151,14 @@ training:
     # Loss function used during training.
     # Options: 'mask_mse' (Masked Mean Squared Error) and 'mse' (Mean Squared Error).
     # Default: 'mask_mse'. Choose 'mse' if the dataset does not include a mask.
-    loss: 'mask_mse'
+    loss: mask_mse
+
+    # Monitor function used during training for checkpoint saving, e.g. options: loss,
+    monitor: loss
 
     # Optimizer to use during training. Options are: 'adam' or 'rectified_adam'.
     optimizer:
-      name: 'rectified_adam'
+      name: rectified_adam
 
     multi_cycle_params:
 
