@@ -301,7 +301,7 @@ class MetricsConfigHandler(ConfigHandler):
 
         model_metrics = evaluate_model(
             self.metrics_conf.metrics,
-            self.training_conf.training,
+            self.training_conf,
             self.data_adapter,
             self.simPSF,
             self.trained_psf_model,
