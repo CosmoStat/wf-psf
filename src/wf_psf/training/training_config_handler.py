@@ -152,6 +152,7 @@ def prepare_training_inputs(
         model_params, training_hparams, adapter.complete_data
     )
 
+    # Update StructureState to SPLIT
     if adapter.structure_state == StructureState.COMPLETE:
         logger.info("Generating split datasets...")
         adapter.split_data()
