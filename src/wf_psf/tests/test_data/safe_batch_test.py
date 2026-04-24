@@ -156,6 +156,15 @@ def test_safe_batch_filters_list_metadata(mock_NaN_dataset):
     assert filtered["object_ids"] == expected_ids
 
 
+def test_safe_batch_rejects_object_array():
+    anchor = np.array([[1, 2], [3, 4]])
+
+    bad = np.array([[1, 2], [3]], dtype=object)
+
+    with pytest.raises(TypeError):
+        safe_batch_builder(anchor, bad=bad)
+
+
 def test_log_filtered_objects_all_removed():
     mask = np.array([False, False, False])
     obj_ids = np.array([10, 11, 12])

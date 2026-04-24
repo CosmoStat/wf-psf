@@ -100,8 +100,15 @@ def safe_batch_builder(
         # --- Array-like objects ---
         if hasattr(arr, "__array__"):
             arr = np.asarray(arr)
+
             if len(arr) != n:
                 raise ValueError(...)
+
+            if arr.dtype == object:
+                raise TypeError(
+                    f"Array '{key}' has dtype=object, which is not supported."
+                )
+
             filtered[key] = arr[mask]
 
         # --- Sequences (lists, tuples, etc.) ---
