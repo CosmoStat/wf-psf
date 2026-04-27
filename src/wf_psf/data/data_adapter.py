@@ -3,44 +3,32 @@ Data Adapter.
 
 This module manages dataset lifecycle transitions for the WF-PSF pipeline.
 
+Overview
+--------
 Two orthogonal state machines are maintained:
 
-Structure state
----------------
+**1. Structure state**
 
-    COMPLETE
-        │
-        │ split_data()
-        ▼
-    SPLIT
-        │
-        │ join_data()
-        ▼
-    COMPLETE
+- ``COMPLETE`` → ``SPLIT`` via :meth:`split_data`
+- ``SPLIT`` → ``COMPLETE`` via :meth:`join_data`
 
+**2. Representation state**
 
-Representation state
---------------------
-
-    NUMPY
-        │
-        │ convert_to_tensorflow()
-        ▼
-    TENSORFLOW
+- ``NUMPY`` → ``TENSORFLOW`` via :meth:`convert_to_tensorflow`
 
 
 Glossary
 --------
-COMPLETE
+**COMPLETE**
     Dataset stored as a single container.
 
-SPLIT
+**SPLIT**
     Dataset stored as train/test subsets.
 
-NUMPY
+**NUMPY**
     Data stored as NumPy arrays.
 
-TENSORFLOW
+**TENSORFLOW**
     Data stored as TensorFlow tensors.
 
 
@@ -51,8 +39,10 @@ Design principles
 - No training or model logic lives in this module.
 - Dataset field names are canonicalized for downstream models.
 
-The `DataAdapter` class manages these transitions while providing a
-consistent interface for accessing dataset contents.
+Notes
+-----
+The :class:`DataAdapter` class manages these transitions while providing
+a consistent interface for accessing dataset contents.
 
 Authors: Jennifer Pollack <jennifer.pollack@cea.fr>
 """
@@ -205,7 +195,11 @@ class DataAdapter:
         self._complete_tf = None
 
     def _initialize_structure(self, dataset):
-        """Convert to container."""
+        """Initialize internal data containers based on structure state.
+
+        Copies input dataset into internal container representation,
+        handling either COMPLETE or SPLIT structure modes.
+        """
         if self._structure_state == StructureState.COMPLETE:
             self._complete_data = to_container(dataset.complete.copy())
             return
@@ -214,9 +208,18 @@ class DataAdapter:
         self._test_data = to_container(dataset.test.copy())
 
     def _resolve_target_field(self, split=None):
-        """Resolve target field.
+        """Resolve the target field name from adapter parameters.
 
-        Extract target field from `self._params`.
+        Resolution order:
+        1. Split-specific field (if `split` provided)
+        2. Global `target_field`
+        3. `complete.target_field`
+        4. Default to "sources"
+
+        Returns
+        -------
+        str
+            Name of the field to use as the source/target data.
         """
         p = self._params
 
@@ -235,6 +238,11 @@ class DataAdapter:
         return "sources"
 
     def _canonicalize_initial_data(self):
+        """Canonicalize all available dataset splits.
+
+        Applies field normalization to train, test, and complete containers
+        using the resolved target field for each split.
+        """
         for split, container in {
             "train": self._train_data,
             "test": self._test_data,
@@ -246,11 +254,15 @@ class DataAdapter:
                 )
 
     def _canonicalize_container(self, container, target_field):
-        """Canonicalize dataset fields.
+        """Canonicalize dataset fields in-place.
 
-        Map dataset-specific keys to canonical keys for downstream models.
+        Maps dataset-specific keys to canonical keys expected by downstream models.
+        Ensures required fields exist and normalizes the target field to "sources".
 
-        Note: Positions and masks are considered standard and are not remapped. SEDs are processed separately by the converter if needed.
+        Notes
+        -----
+        - Positions and masks are assumed to be standard and are not remapped.
+        - Missing canonical fields are set to None with a warning.
         """
         # Lowercase canonical keys if they exist
         for key in self._canonical_keys:
@@ -323,28 +335,28 @@ class DataAdapter:
     # Convenient access to canonical fields for downstream models
     @property
     def sources(self):
-        """Get sources."""
+        """Get sources for the complete dataset."""
         if self._complete_data is None:
             return None
         return self._complete_data.get("sources", None)
 
     @property
     def positions(self):
-        """Get positions."""
+        """Get positions for the complete dataset."""
         if self._complete_data is None:
             return None
         return self._complete_data.get("positions", None)
 
     @property
     def masks(self):
-        """Get masks."""
+        """Get masks for the complete dataset."""
         if self._complete_data is None:
             return None
         return self._complete_data.get("masks", None)
 
     @property
     def zernike_prior(self):
-        """Get Zernike prior."""
+        """Get Zernike prior for the complete dataset."""
         if self._complete_data is None:
             return None
         return self._complete_data.get("zernike_prior", None)
@@ -363,6 +375,11 @@ class DataAdapter:
         ------
         RuntimeError
             If the dataset is not in COMPLETE state when attempting to split.
+
+        Notes
+        -----
+        - Splitting is idempotent: if the dataset is already in SPLIT state,
+          this method does not modify the data or re-split the dataset.
         """
         if self._structure_state != StructureState.COMPLETE:
             raise RuntimeError("Split only allowed from COMPLETE state.")
@@ -391,7 +408,25 @@ class DataAdapter:
         self._structure_state = StructureState.SPLIT
 
     def join_data(self, keys: Optional[list[str]] = None):
-        """Join train/test dictionaries into complete dataset."""
+        """Join train and test splits into a single complete dataset.
+
+        Concatenates corresponding arrays from the train and test containers
+        along the first axis (sample dimension) for the specified keys.
+
+        Parameters
+        ----------
+        keys : list of str, optional
+            Dataset fields to join. If None, uses the canonical dataset keys.
+
+        Raises
+        ------
+        RuntimeError
+            If the adapter is not in SPLIT state or if train/test data is missing.
+
+        Notes
+        -----
+        Only keys present in both train and test datasets are joined.
+        """
         if self._structure_state != StructureState.SPLIT:
             raise RuntimeError("Join only allowed from SPLIT state.")
 
@@ -410,15 +445,36 @@ class DataAdapter:
         self._structure_state = StructureState.COMPLETE
 
     def convert_to_tensorflow(self, simPSF, n_bins_lambda):
-        """Convert to TensorFlow.
+        """Convert dataset containers from NumPy to TensorFlow representation.
+
+        Applies the configured converter to transform dataset fields associated
+        with canonical keys into TensorFlow-compatible formats.
+
+        Conversion is performed on the active structure:
+
+        - SPLIT: converts train and test datasets separately
+        - COMPLETE: converts the full dataset
 
         Parameters
         ----------
         simPSF : PSFSimulator
-            An instance of the PSFSimulator used to access the SED interpolator based on instrument specifications.
-
+            Simulator instance passed to the converter.
         n_bins_lambda : int
-            Number of bins in wavelength for interpolation
+            Number of wavelength bins used during conversion.
+
+        Raises
+        ------
+        RuntimeError
+            If no converter is configured.
+
+        Notes
+        -----
+        - Conversion is idempotent: if the data is already in TensorFlow
+        representation, this method does nothing.
+
+        - Converted datasets are stored in internal attributes
+        (``_train_tf``, ``_test_tf``, ``_complete_tf``) and do not overwrite
+        the original NumPy data.
         """
         if self._representation_state == RepresentationState.TENSORFLOW:
             return
@@ -443,21 +499,40 @@ class DataAdapter:
         self._representation_state = RepresentationState.TENSORFLOW
 
     def _split(self, data, ratio: Optional[float] = None, seed: Optional[int] = None):
-        """Split the data into train and test sets based on the specified ratio and seed.
+        """Split a dataset container into train and test subsets.
+
+        The split is performed along the first dimension (sample axis) using a
+        random permutation. Only array entries whose leading dimension matches
+        the number of samples are split; all other entries are copied unchanged.
 
         Parameters
         ----------
         data : DatasetContainer
-            Container holding the complete dataset to be split. The container
-            behaves like a dictionary and stores arrays for different dataset
-            components (e.g., sources, positions, masks, SEDs), with optional
-            attribute-style access. Only array-like entries whose first dimension
-            corresponds to the number of samples will be split.
+            Container holding the complete dataset. Expected to store array-like
+            values (e.g. sources, positions, masks, SEDs) indexed by field name.
         ratio : float, optional
-            Fraction of the dataset to allocate to the training set.
+            Fraction of samples assigned to the training set. If not provided,
+            defaults to ``self._params.train_fraction`` or 0.8.
         seed : int, optional
-            Random seed used to generate the split for reproducibility.
+            Random seed used to generate the split.
 
+        Returns
+        -------
+        train_data : dict
+            Dictionary containing the training subset.
+        test_data : dict
+            Dictionary containing the test subset.
+
+        Raises
+        ------
+        ValueError
+            If the dataset size cannot be inferred from canonical keys.
+
+        Notes
+        -----
+        - The dataset size is inferred from the first available canonical key.
+        - Arrays whose leading dimension does not match the inferred size are
+        not split and are copied as-is into both outputs.
         """
         ratio = ratio or getattr(self._params, "train_fraction", 0.8)
         rng = np.random.default_rng(seed)

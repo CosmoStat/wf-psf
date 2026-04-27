@@ -1,14 +1,18 @@
 """Utilities for Zernike Data Handling.
 
-This module provides utility functions for working with Zernike coefficients, including:
+This module provides utilities for converting between physical optical
+misalignments (centroid shifts, defocus, CCD alignment effects) and
+Zernike coefficients used in wavefront modelling.
 
-- Prior generation
-- Data loading
-- Conversions between physical displacements (e.g., defocus, centroid shifts) and modal Zernike coefficients
+It supports assembling Zernike contributions from multiple sources,
+including centroid corrections, CCD misalignment terms, and optional
+priors, for use in PSF modelling pipelines.
 
-Useful in contexts where Zernike representations are used to model optical aberrations or link physical misalignments to wavefront modes.
+This module does not handle data loading or model execution; it only
+provides deterministic transformations between physical parameters and
+Zernike representations.
 
-:Author: Tobias Liaudat <tobias.liaudat@cea.fr>
+:Authors: Tobias Liaudat <tobias.liaudat@cea.fr> and Jennifer Pollack <jennifer.pollack@cea.fr>
 
 """
 
@@ -272,7 +276,7 @@ def pad_tf_zernikes(zk_param: tf.Tensor, zk_prior: tf.Tensor, n_zks_total: int):
 
 
 def shift_x_y_to_zk1_2_wavediff(dxy, tel_focal_length=24.5, tel_diameter=1.2):
-    """Compute Zernike 1(2) for a given shifts in x(y) in WaveDifff conventions.
+    """Compute Zernike 1(2) for a given shifts in x(y) in WaveDiff conventions.
 
     All inputs should be in [m].
     A displacement of, for example, 0.5 pixels should be scaled with the corresponding pixel scale,
@@ -415,7 +419,7 @@ def defocus_to_zk4_zemax(dz, tel_focal_length=24.5, tel_diameter=1.2):
 
 
 def defocus_to_zk4_wavediff(dz, tel_focal_length=24.5, tel_diameter=1.2):
-    """Compute Zernike 4 value for a given defocus in WaveDifff conventions.
+    """Compute Zernike 4 value for a given defocus in WaveDiff conventions.
 
     All inputs should be in [m].
 
