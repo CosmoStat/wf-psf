@@ -1,21 +1,23 @@
 """
 Factory module for creating and normalizing data adapters.
 
-This module defines the DataAdapterFactory, which constructs DataAdapter
+This module defines the ``DataAdapterFactory``, which constructs ``DataAdapter``
 instances from a variety of dataset formats, including dictionaries,
-dataclasses, LoadedDataset instances, or objects with attributes exposing
-numpy arrays. It also integrates dataset normalization and metadata extraction
-through the DataEnvelope and utility routines in `data_utils`.
+dataclasses, ``LoadedDataset`` instances, or objects with attributes exposing
+numpy arrays. It also integrates dataset normalization through the ``DataEnvelope``
+and utility routines in ``data_utils``.
 
-The module defines protocols (`SupportsParams`, `SupportsMetadata`) to allow
-external APIs to pass parameter and metadata containers in a generic way,
+The module defines a protocol (``SupportsParams``) to allow
+external APIs to pass parameter containers in a generic way,
 supporting dataclasses, custom objects, or dictionaries.
 
 Key features:
+
 - Automatic detection of dataset structure (train/test/complete) and conversion
-  to LoadedDataset for downstream processing.
-- Normalization and validation of dataset parameters via `normalize_data_envelope`.
-- Integration with TensorFlowDatasetConverter for TF-ready dataset pipelines.
+  to ``LoadedDataset`` for downstream processing.
+- Normalization and validation of dataset parameters via ``normalize_data_envelope``.
+- Optional metadata extraction when available in input objects.
+- Integration with ``TensorFlowDatasetConverter`` for TF-ready dataset pipelines.
 - Lightweight dataset introspection utilities for in-memory datasets and canonical keys.
 - Logging to provide insight into dataset resolution and loading steps.
 
@@ -52,27 +54,8 @@ class SupportsParams(Protocol):
     params: Any
 
 
-@runtime_checkable
-class SupportsMetadata(Protocol):
-    """Protocol for dataset objects exposing metadata.
-
-    Objects satisfying this protocol must expose a ``metadata`` attribute
-    containing a structured namespace of parameters.
-
-    This allows external APIs to pass parameter containers without
-    requiring a specific implementation type.
-
-    Attributes
-    ----------
-    metadata : Any
-        An object (e.g., dict, structured namespace, etc) containing dataset-specific metadata.
-    """
-
-    metadata: Any
-
-
 # Define a union type for all acceptable data formats that include parameters
-DataWithParams = Union[dict[str, Any], SupportsParams]
+DataInput = Union[dict[str, Any], SupportsParams]
 ParamsType = Union[dict[str, Any], RecursiveNamespace]
 
 
@@ -84,9 +67,9 @@ class DataEnvelope:
     Attributes
     ----------
     data : Optional[Any]
-        The actual dataset (e.g., LoadedDataset, dict, dataclass). Can be None if input is just params.
+        The actual dataset (e.g., ``LoadedDataset``, ``dict``, ``dataclass``). Can be ``None`` if input is just params.
     params : ParamsType
-        Configuration parameters.
+        Configuration parameters used to resolve and load the dataset. Required for adapter construction.
     metadata : Optional[dict] = None
         Ancillary information about the dataset (IDs, units, provenance, etc.).
         Defaults to None if not present in input.
@@ -102,7 +85,7 @@ def normalize_data_envelope(
 ) -> DataEnvelope:
     """Normalize data envelope.
 
-    Normalize an input object into a DataEnvelope by extracting named
+    Normalize an input object into a ``DataEnvelope`` by extracting named
     parametric fields and metadata. Supports dataclasses, dictionaries,
     and generic objects with attributes.
 
@@ -122,8 +105,8 @@ def normalize_data_envelope(
 
     Notes
     -----
-    The `params` field is optional. If not provided, downstream components
-    (e.g. DataAdapter) will rely on default configuration values.
+    - The ``params`` field is optional, but may be required by downstream components (e.g. the factory) to resolve how the dataset should be constructed (in-memory vs. file-based loading).
+    - The ``metadata`` field is optional and ignored if not present.
 
     """
     # -----------------------
@@ -165,6 +148,9 @@ def normalize_data_envelope(
         }
         data = None if not data_attrs else data_attrs
 
+    else:
+        raise TypeError(f"Unsupported input type for data normalization: {type(obj)}")
+
     return DataEnvelope(data=data, params=params, metadata=metadata)
 
 
@@ -180,11 +166,12 @@ class DataAdapterFactory:
         ----------
         data : object
             The dataset to be adapted. Can be:
-            - A LoadedDataset instance
-            - A dataclass with numpy arrays (e.g., train/test containers, parameters or shallow complete)
-            - A dict containing 'train', 'test', or 'complete' keys with numpy arrays
-            - An object with attributes that are numpy arrays (like your train/test containers)
-            The factory will automatically detect the structure and convert it into a LoadedDataset.
+
+            - A ``LoadedDataset`` instance
+            - A ``dataclass`` with numpy arrays (e.g., train/test containers, parameters or shallow complete)
+            - A ``dict`` containing 'train', 'test', or 'complete' keys with numpy arrays
+            - An ``object`` with attributes that are numpy arrays (like your train/test containers)
+            The factory will automatically detect the structure and convert it into a ``LoadedDataset``.
 
         Returns
         -------
@@ -198,7 +185,7 @@ class DataAdapterFactory:
 
     @staticmethod
     def _resolve_dataset(
-        data: DataWithParams,
+        data: DataInput,
     ) -> tuple[LoadedDataset, ParamsType, Optional[Any]]:
         """Resolve dataset.
 
@@ -214,13 +201,21 @@ class DataAdapterFactory:
 
         Parameters
         ----------
-        data : DataWithParams
-            Union type of data in various formats containing associated parameters or metadata.
+        data : DataInput
+            Union type of data in various formats containing associated parameters.
 
         Returns
         -------
         tuple
-            A tuple containing the loaded dataset, data parameters, and metadata.
+            A tuple containing the loaded dataset, data parameters, and metadata (optional).
+
+        Notes
+        -----
+        - Dataset resolution is driven by ``params``. If file-based configuration
+        (e.g. ``file`` or ``data_dir``) is detected, parameters must be provided
+        to load the dataset from disk.
+        - If no such configuration is present, the dataset is assumed to be
+        provided in memory.
 
         """
         # Normalise data
@@ -235,9 +230,8 @@ class DataAdapterFactory:
         if dataset is None and params is None:
             raise ValueError("No data or configuration parameters provided.")
 
-        # Determine intent from params structure, not by inspecting data arrays.
-
-        # Params drive the decision; data presence is validated against that intent.
+        # Determine dataset source (in-memory vs. file-based) from params.
+        # Data presence is validated against that inferred intent.
         in_memory = _is_in_memory(params)
 
         # Case A — In-memory data
@@ -273,7 +267,7 @@ class DataAdapterFactory:
         Returns
         -------
         LoadedDataset
-            Dataset contain
+            Dataset container populated from the provided configuration.
 
         """
         data_cfg = params
@@ -322,7 +316,7 @@ class DataAdapterFactory:
 def _is_in_memory(params: Optional[ParamsType]) -> bool:
     """Determine whether the dataset is already held in memory.
 
-        Inspects ``params`` for the presence of ``file`` and ``data_dir`` keys across
+    Inspects ``params`` for the presence of ``file`` and ``data_dir`` keys across
     all three supported config shapes: shallow (keys at the top level), complete
     (keys nested under a ``complete`` block), and split (keys nested under
     ``train`` and ``test`` blocks).

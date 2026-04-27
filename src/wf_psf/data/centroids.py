@@ -1,9 +1,21 @@
-"""Centroids.
+"""Centroid estimation and Zernike-based correction utilities.
 
-A module with utils to handle PSF centroids.
+This module provides functionality to estimate centroids from batches of
+PSF images (with optional masks) and to compute corresponding centroid
+corrections expressed in Zernike tip-tilt coefficients.
+
+Core functionality includes:
+
+- Iterative centroid estimation using an elliptical Gaussian weighting scheme.
+- Vectorized computation of intra-pixel shifts for batches of star images.
+- Conversion of centroid shifts into Zernike (Z1, Z2) tip-tilt coefficients
+  following the WaveDiff convention.
+- Generation of image shifting kernels (e.g. Lanczos) for sub-pixel alignment.
+
+These utilities are primarily used in PSF modeling pipelines to align
+observed star centroids with model predictions.
 
 :Author: Tobias Liaudat <tobias.liaudat@cea.fr> and Jennifer Pollack <jennifer.pollack@cea.fr>
-
 """
 
 import numpy as np

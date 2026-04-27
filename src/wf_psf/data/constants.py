@@ -6,7 +6,7 @@ including canonical dataset field names and default parameters for
 dataset processing operations such as train/test splitting.
 
 These constants provide a single source of truth for components such as
-DataAdapter and DataConfigHandler, ensuring consistent dataset handling
+``DataAdapter`` and ``DataConfigHandler``, ensuring consistent dataset handling
 throughout the library.
 
 Author(s): Jennifer Pollack <jennifer.pollack@cea.fr>
