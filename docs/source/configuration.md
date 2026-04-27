@@ -58,36 +58,145 @@ Each of the configuration files is described in detail below.
 ## Data Configuration
 
 ### 1. Purpose
-Specifies the training and test datasets used by the training CLI task.
+Defines how datasets are resolved and standardized for use in the pipeline.
+
+The system supports multiple input formats, allowing users to:
+- load datasets from disk (split or complete), or
+- pass datasets directly in memory.
+
+Dataset structure and field names are then normalized to a canonical format
+for downstream processing.
+
+### 2. Configuration Modes
+
+The dataset is resolved automatically based on the structure of the `params` block.
+
+#### **A. Split dataset (train/test)**
+
+Provide separate training and test datasets.
+
+```yaml
+params:
+  train:
+    data_dir: /path/to/train
+    file: train.npy
+    target_field: noisy_stars
+
+  test:
+    data_dir: /path/to/test
+    file: test.npy
+    target_field: stars
+```
+
+#### **B. Complete dataset (explicit)**
+Provide a full dataset that will be split at runtime.
+
+```yaml
+params:
+  complete:
+    data_dir: /path/to/data
+    file: data.npy
+    target_field: stars
+
+  train_fraction: 0.8
+  seed: 42
+```
+
+#### **C. Shallow complete dataset (implicit)**
+Same as above, but without the `complete` wrapper.
+
+```yaml
+params:
+  data_dir: /path/to/data
+  file: data.npy
+  target_field: stars
+
+  train_fraction: 0.8
+  seed: 42
+```
+
+#### **D. In-memory dataset**
+No file paths are provided. The dataset is passed directly via the API.
+
+```yaml
+params:
+  target_field: stars
+  train_fraction: 0.8
+  seed: 42
+```
+⚠️ This mode is only supported when using the Python API (not CLI).
 
 
-### 2. Key Fields
+### 3. Required vs. Optional Fields
 
-Both `data.training` and `data.test` share the same structure:
 
 | Field | Required | Description |
 |-----------|--------------|--------------|
-| `data_dir` | Yes | Path to the directory containing the dataset. |
-| `file` | Yes     | Filename of the dataset (`.npy`). |
+| `target_field` | Yes | Name of the dataset field representing sources  |
+| `data_dir` | Required for disk datasets | Directory containing `.npy` files |
+| `file` | Required for disk datasets    | Dataset filename |
+| `train_fraction` | Optional     | used when splitting complete datasets |
+| `seed` | Optional | Random seed for reproducibility |
+| `canonical_keys` | Optional | Fields used to determine dataset alignment |
 
+### 4. Resolution Rules
 
-### 3. Notes
+The dataset type is inferred automatically:
+
+- If `train` and `test` are present → **split dataset**
+- If `complete` is present → **complete dataset**
+- If `data_dir` and `file` are present at top level → **shallow complete dataset**
+- If none of the above → **in-memory dataset**
+
+### 5. Notes
 
 - The default dataset bundled with WaveDiff can be used by pointing `data_dir` to its installation directory.
 - The `metrics` and `plotting` tasks retrieve dataset paths automatically from the trained model's configuration file and do not require this file.
-- This file is optional for the `inference` API; see [inference_config.yaml](inference_config) if you need to supply prior information for inference.
+- In-memory datasets are primarily intended for integration with external pipelines.
 
-### 4. Example
+### 6. Canonical Keys
+
+Canonical keys define which dataset fields are considered **aligned**
+(i.e. share the same number of samples) and are used to determine dataset size.
+
 
 ```yaml
-data:
-  training:
-    data_dir: path/to/training/data
-    file: train.npy
-  test:
-    data_dir: path/to/test/data
-    file: test.npy
+canonical_keys:
+  - sources
+  - positions
+  - seds
 ```
+Optional fields:
+
+- `masks`
+- `zernike_prior`
+
+**Requirements**
+
+- All canonical fields must be **array-like** and share the same leading dimension (N,).
+- These arrays are assumed to represent **per-source data** and are split or filtered together.
+- If your dataset uses different field names, you must update `canonical_keys` accordingly.
+
+
+**Data format expectations**
+
+- The pipeline assumes datasets are provided as **NumPy arrays** (or array-like objects convertible via `np.asarray`).
+- Typical shapes:
+  - `sources`: `(N, H, W)`
+  - `positions`: `(N, 2)`
+  - `seds`: `(N, N_lambda, 2)`
+
+For `seds`, the last dimension is expected to contain:
+- wavelength
+- value (e.g. flux)
+
+**Custom datasets**
+
+If your dataset does not match these conventions, you have two options:
+1. **Update** `canonical_keys` to match your field names
+2. **Preprocess your dataset** to conform to the expected structure
+
+Failure to provide aligned arrays will result in errors during dataset validation or batching.
 
 (training_config)=
 ## Training Configuration
@@ -121,9 +230,6 @@ training:
   # Path to data configuration file
   data_config: data_config.yaml
 
-  # Load dataset on initialization (True) or manually later (False)
-  load_data_on_init: True
-
   # Optional: path to metrics configuration to run after training
   metrics_config:
 ```
@@ -139,7 +245,7 @@ model_params:
   model_name: physical_poly
 
   # Number of wavelength bins for polychromatic reconstruction
-  n_bins_lda: 8
+  n_bins_lambda: 8
 
   # Downsampling rate to match telescope pixel sampling
   output_Q: 3
@@ -166,7 +272,7 @@ model_params:
   obscuration_rotation_angle: 0    # Rotation in degrees (multiples of 90); counterclockwise
 
   # CCD misalignments input file path
-  ccd_misalignments_input_path: /path/to/ccd_misalignments_file.txt
+  ccd_misalignments_aux_path: /path/to/ccd_misalignments_file.txt
 
   # Sample weighting based on noise standard deviation
   use_sample_weights: True
@@ -226,13 +332,14 @@ nonparam_hparams:
 
 ### 7. Training Hyperparameters
 
-Controls batch size, loss function, optimizer selection, and multi-cycle learning.
+Controls batch size, loss function, monitor, optimizer selection, and multi-cycle learning.
 
 `training.training_hparams`
 ```yaml
 training_hparams:
   batch_size: 32           # Number of samples per training batch
   loss: 'mask_mse'         # Loss function. Options: 'mask_mse', 'mse'
+  monitor: 'loss'          # Monitor function used during training for checkpoint saving, e.g. options: loss (training loss), val_loss, etc.
   optimizer:
     name: 'rectified_adam' # Options: 'adam', 'rectified_adam'
 
@@ -247,6 +354,13 @@ training_hparams:
     n_epochs_params: [20, 20]                   # Per-cycle epochs for parametric model
     n_epochs_non_params: [100, 120]             # Per-cycle epochs for non-parametric model
 ```
+
+**Monitor Notes**
+- The `monitor` field determines which metric is used to select and save model checkpoints.
+- `loss` refers to the training loss defined by the `loss` parameter (e.g. `mask_mse`, `mse`).
+- `val_loss` refers to the same loss computed on the validation dataset.
+- Although validation data is available, `loss` may be preferred for reproducibility and consistency across configurations (e.g. when comparing masked and unmasked training setups).
+- If model generalization is the priority, `val_loss` is typically recommended.
 
 **Optimizer Notes:**
 - `rectified_adam` requires tensorflow-addons to be installed manually.
@@ -537,7 +651,7 @@ These fields are optional. Any field left blank inherits its value from the trai
 
 | Field | Required | Description |
 |---------------|--------------|---------|
-| `n_bins_lda` | inherited | Number of wavelength bins used to reconstruct polychromatic PSFs.|
+| `n_bins_lambda` | inherited | Number of wavelength bins used to reconstruct polychromatic PSFs.|
 | `output_Q` | inherited | Downsampling rate to match the oversampled model to the telescope's <br> native sampling. |
 | `output_dim` | inherited | Pixel dimension of the output PSF postage stamp. |
 | `correct_centroids` | False | If `True`, applies centroid error correction within the PSF model during inference.. |
@@ -555,7 +669,7 @@ inference:
     trained_model_config_path: config/training_config.yaml
     data_config_path:
   model_params:
-    n_bins_lda: 8
+    n_bins_lambda: 8
     output_Q: 1
     output_dim: 64
   correct_centroids: False
