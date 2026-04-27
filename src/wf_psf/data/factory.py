@@ -189,20 +189,20 @@ class DataAdapterFactory:
     ) -> tuple[LoadedDataset, ParamsType, Optional[Any]]:
         """Resolve dataset.
 
-        Determine whether data is available in memory or needs to be loaded from files.
+        Resolution proceeds in two stages:
 
-        The input ``data`` is first normalised via ``normalize_data_envelope``, which
-        separates it into a dataset, configuration parameters, and metadata. The
-        parameters are then passed to ``_is_in_memory``, which inspects them for the
-        presence of file loading keys (``file``, ``data_dir``) to determine the
-        appropriate resolution path: either wrapping the in-memory dataset directly
-        into a ``LoadedDataset``, or loading one from disk using the file location
-        specified in ``params``.
+        1. Determine whether the dataset should be loaded from disk or treated as
+        in-memory, based solely on the structure of `params`.
+
+        2. Validate consistency between `params` and the provided dataset, then
+        construct a `LoadedDataset` accordingly.
 
         Parameters
         ----------
         data : DataInput
-            Union type of data in various formats containing associated parameters.
+            Input dataset in any supported format (dict, dataclass, or object with
+            attributes), optionally containing associated parameters.
+
 
         Returns
         -------
@@ -211,11 +211,9 @@ class DataAdapterFactory:
 
         Notes
         -----
-        - Dataset resolution is driven by ``params``. If file-based configuration
-        (e.g. ``file`` or ``data_dir``) is detected, parameters must be provided
-        to load the dataset from disk.
-        - If no such configuration is present, the dataset is assumed to be
-        provided in memory.
+        - Dataset resolution is driven by ``params``.
+        - If file-based configuration (e.g. ``file`` or ``data_dir``) is detected, the dataset is loaded from disk.
+        - Otherwise, the dataset is assumed to be provided in memory.
 
         """
         # Normalise data
@@ -346,14 +344,18 @@ def _is_in_memory(params: Optional[ParamsType]) -> bool:
         d = (
             obj
             if isinstance(obj, dict)
-            else vars(obj) if hasattr(obj, "__dict__") else {}
+            else vars(obj)
+            if hasattr(obj, "__dict__")
+            else {}
         )
         return "file" in d or "data_dir" in d
 
     top = (
         params
         if isinstance(params, dict)
-        else vars(params) if hasattr(params, "__dict__") else {}
+        else vars(params)
+        if hasattr(params, "__dict__")
+        else {}
     )
 
     # Shallow config: file/data_dir at the top level
