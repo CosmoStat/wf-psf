@@ -49,7 +49,6 @@ def mock_training_conf(mocker):
         training=RecursiveNamespace(
             id_name="_test_",
             data_config="data_config.yaml",
-            load_data_on_init=True,
             metrics_config=None,
             model_params=RecursiveNamespace(
                 model_name="poly",
