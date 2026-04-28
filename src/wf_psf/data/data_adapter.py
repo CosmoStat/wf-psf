@@ -469,7 +469,9 @@ class DataAdapter:
         # Determine sample size from canonical keys
         for key in canonical_keys:
             if key in data and isinstance(data[key], np.ndarray):
+                logger.info(f"Using Key:={key} to determine sample size.")
                 n = data[key].shape[0]
+                logger.info(f"Sample size n:={n}")
                 break
 
         if n is None:
@@ -496,6 +498,7 @@ class DataAdapter:
                 test_data[k] = v
 
         return train_data, test_data
+    
 
     def release_numpy(self):
         """Release NumPy datasets."""
@@ -513,3 +516,5 @@ class DataAdapter:
         self._test_tf = None
 
         self._representation_state = RepresentationState.NUMPY
+
+    
