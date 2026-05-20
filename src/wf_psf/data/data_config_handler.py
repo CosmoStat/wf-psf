@@ -7,7 +7,7 @@ A module which provides a class to manage the parameters of the data config file
 """
 
 from wf_psf.data.constants import (
-    DEFAULT_CANONICAL_KEYS,
+    CANONICAL_DATASET_KEYS,
     DEFAULT_TRAIN_FRACTION,
     DEFAULT_SEED,
 )
@@ -36,7 +36,7 @@ class DataConfigHandler(ConfigHandler):
     DEFAULTS = {
         "train_fraction": DEFAULT_TRAIN_FRACTION,
         "seed": DEFAULT_SEED,
-        "canonical_keys": DEFAULT_CANONICAL_KEYS,
+        "canonical_keys": CANONICAL_DATASET_KEYS,
     }
 
     def __init__(self, data_conf):
