@@ -220,10 +220,11 @@ def get_psf_model_weights_filepath(weights_filepath):
     try:
         return glob.glob(weights_filepath)[0].split(".")[0]
     except IndexError:
+        msg=f"{weights_filepath} is incorrect."
         logger.exception(
             "PSF weights file not found. Check that you've specified the correct weights file in the your config file."
         )
-        raise PSFModelError("PSF model weights error.")
+        raise PSFModelError(msg)
 
 
 def generate_zernike_maps_3d(n_zernikes, pupil_diam):
