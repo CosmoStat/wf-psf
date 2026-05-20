@@ -2,8 +2,18 @@
 inference:
   # Inference batch size
   batch_size: 16
+
   # Cycle to use for inference. Can be: 1, 2, ...
   cycle: 2
+
+  # Dataset schema used to interpret input fields and control downstream conversion.
+  # This does NOT modify dataset content; it only controls how fields are interpreted during conversion.
+  # This affects required fields and available conversion handlers.
+  #
+  # Choices:
+  # - INFERENCE: standard inference mode (requires positions and seds)
+  # - EVALUATION: evaluation mode (may include additional fields such as sources or masks)
+  schema_mode: INFERENCE
 
   # Paths to the configuration files and trained model directory
   configs:
