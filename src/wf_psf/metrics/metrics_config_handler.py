@@ -16,6 +16,7 @@ from wf_psf.utils.configs_handler import (
 from wf_psf.data.factory import DataAdapterFactory
 from wf_psf.data.data_adapter import StructureState, RepresentationState
 from wf_psf.data.data_config_handler import DataConfigHandler
+from wf_psf.data.schemas import DatasetMode
 from wf_psf.utils.read_config import read_conf
 from wf_psf.metrics.metrics_interface import evaluate_model
 from wf_psf.psf_models import psf_models
@@ -291,13 +292,13 @@ class MetricsConfigHandler(ConfigHandler):
 
         """
         logger.info("Running metrics evaluation on trained PSF model...")
-        # Split dataset just before training, idempotent
+        # Split dataset for metrics evaluation, idempotent
         if self.data_adapter.structure_state == StructureState.COMPLETE:
             self.data_adapter.split_data()
 
-        # Convert to TF for training
+        # Convert to TF required for PSF model generation
         if self.data_adapter.representation_state == RepresentationState.NUMPY:
-            self.data_adapter.convert_to_tensorflow(self.simPSF, self.n_bins_lambda)
+            self.data_adapter.convert_to_tensorflow(self.simPSF, self.n_bins_lambda, mode=DatasetMode.EVALUATION)
 
         model_metrics = evaluate_model(
             self.metrics_conf.metrics,

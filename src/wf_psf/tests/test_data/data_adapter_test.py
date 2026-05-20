@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 from wf_psf.data.data_adapter import DataAdapter, StructureState, RepresentationState
 from wf_psf.data.data_utils import DatasetContainer
+from wf_psf.data.schemas import DatasetMode
 from wf_psf.utils.read_config import RecursiveNamespace
 
 
@@ -101,7 +102,7 @@ def mock_converter(mocker):
     """Mock TensorFlowDatasetConverter."""
     mock = mocker.Mock()
     mock.convert_dataset.side_effect = (
-        lambda dataset, simPSF, n_bins_lambda, **kwargs: dataset
+        lambda dataset, simPSF, n_bins_lambda, mode, **kwargs: dataset
     )
     return mock
 
@@ -306,7 +307,7 @@ class TestDataAdapterCanonicalization:
         )
         assert "stars" not in adapter_split_custom.test_data
 
-    def test_missing_target_field_raises(self, mock_converter):
+    def test_missing_target_field_warning(self, mock_converter, caplog):
         dataset = FakeLoadedDataset(
             complete={
                 "positions": np.random.rand(5, 2),
@@ -317,15 +318,19 @@ class TestDataAdapterCanonicalization:
         class BadParams:
             target_field = "noisy_stars"
 
-        with pytest.raises(KeyError) as exc_info:
-            _ = DataAdapter(
-                dataset=dataset,
-                converter=mock_converter,
-                params=BadParams(),
-            )
+        caplog.set_level("WARNING")
 
-        assert f"Target field '{BadParams.target_field}' not found." in str(
-            exc_info.value
+        _ = DataAdapter(
+            dataset=dataset,
+            converter=mock_converter,
+            params=BadParams(),
+        )
+
+        assert "Target field 'noisy_stars' not found." in caplog.text
+
+        assert any(
+            record.levelname == "WARNING"
+            for record in caplog.records
         )
 
 
@@ -502,7 +507,7 @@ class TestDataAdapterConvertTensorFlow:
     def test_convert_to_tensorflow_complete(self, loaded_complete, mock_converter):
         """Convert complete dataset to TensorFlow representation."""
         adapter = DataAdapter(dataset=loaded_complete, converter=mock_converter)
-        adapter.convert_to_tensorflow(simPSF=None, n_bins_lambda=10)
+        adapter.convert_to_tensorflow(simPSF=None, n_bins_lambda=10, mode=DatasetMode.TRAIN)
         assert adapter.representation_state == RepresentationState.TENSORFLOW
         # Train/test remain None
         assert adapter._train_tf is None
@@ -513,7 +518,7 @@ class TestDataAdapterConvertTensorFlow:
         adapter = DataAdapter(
             dataset=loaded_split, converter=mock_converter, params=split_params()
         )
-        adapter.convert_to_tensorflow(simPSF=None, n_bins_lambda=10)
+        adapter.convert_to_tensorflow(simPSF=None, n_bins_lambda=10, mode=DatasetMode.TRAIN)
         assert adapter.representation_state == RepresentationState.TENSORFLOW
         assert adapter._complete_tf is None
         assert adapter._train_tf is not None
@@ -532,4 +537,4 @@ class TestDataAdapterConvertTensorFlow:
         adapter._converter = None
 
         with pytest.raises(RuntimeError, match="No converter provided"):
-            adapter.convert_to_tensorflow(simPSF=None, n_bins_lambda=10)
+            adapter.convert_to_tensorflow(simPSF=None, n_bins_lambda=10, mode=DatasetMode.TRAIN)
