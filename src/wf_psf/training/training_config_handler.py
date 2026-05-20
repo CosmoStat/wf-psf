@@ -11,6 +11,7 @@ import tensorflow as tf
 from wf_psf.data.data_adapter import StructureState, RepresentationState, DataAdapter
 from wf_psf.data.data_config_handler import DataConfigHandler
 from wf_psf.data.factory import DataAdapterFactory
+from wf_psf.data.schemas import DatasetMode
 from wf_psf.metrics.metrics_config_handler import MetricsConfigHandler
 from wf_psf.psf_models import psf_models
 from wf_psf.utils.configs_handler import ConfigHandler, register_configclass
@@ -162,7 +163,7 @@ def prepare_training_inputs(
     # -------------------------------
     if adapter.representation_state == RepresentationState.NUMPY:
         logger.info("Converting dataset to tensors...")
-        adapter.convert_to_tensorflow(simPSF, n_bins_lambda)
+        adapter.convert_to_tensorflow(simPSF, n_bins_lambda, mode=DatasetMode.TRAIN)
 
     # -------------------------------
     # DATA_PREPARED BOUNDARY

@@ -48,12 +48,14 @@ Authors: Jennifer Pollack <jennifer.pollack@cea.fr>
 """
 
 from enum import Enum, auto
+from re import S
 import numpy as np
 from typing import Any, Optional
 from wf_psf.data.constants import (
-    DEFAULT_CANONICAL_KEYS,
+    CANONICAL_DATASET_KEYS,
     DEFAULT_SEED,
     DEFAULT_TRAIN_FRACTION,
+    DATASET_INDEX_KEY,
 )
 from wf_psf.data.data_utils import DatasetContainer, to_container
 from wf_psf.data.tensorflow_converter import TensorFlowDatasetConverter
@@ -163,7 +165,7 @@ class DataAdapter:
         self._params = params
         self._metadata = metadata
         self._converter = converter
-        self._canonical_keys = getattr(params, "canonical_keys", DEFAULT_CANONICAL_KEYS)
+        self._canonical_keys = getattr(params, "canonical_keys", CANONICAL_DATASET_KEYS)
         self._train_fraction = getattr(params, "train_fraction", DEFAULT_TRAIN_FRACTION)
         self._seed = getattr(params, "seed", DEFAULT_SEED)
         # Dataset containers for both representations
@@ -256,15 +258,14 @@ class DataAdapter:
     def _canonicalize_container(self, container, target_field):
         """Canonicalize dataset fields in-place.
 
-        Maps dataset-specific keys to canonical keys expected by downstream models.
-        Ensures required fields exist and normalizes the target field to "sources".
+        Maps dataset-specific keys to canonical naming convention.
 
         Notes
         -----
         - Positions and masks are assumed to be standard and are not remapped.
         - Missing canonical fields are set to None with a warning.
         """
-        # Lowercase canonical keys if they exist
+        # Rename keys (case-insensitive mapping)
         for key in self._canonical_keys:
             if key in container:
                 continue  # already canonical
@@ -273,20 +274,14 @@ class DataAdapter:
                     container[key] = container.pop(legacy_key)
                     break
 
+        # Map target_field to sources
         if target_field in container:
-            # Set "sources" and drop "noisy_stars"
             container["sources"] = container.pop(target_field)
         else:
-            raise KeyError(
+            logger.warning(
                 f"Target field '{target_field}' not found. "
                 f"Available fields: {list(container.keys())}"
             )
-
-        # Check if other canonical keys exist (positions, masks, seds)
-        for key in self._canonical_keys:
-            if key not in container:
-                container[key] = None
-                logger.warning(f"{key} not found in dataset.")
 
         return container
 
@@ -444,7 +439,7 @@ class DataAdapter:
 
         self._structure_state = StructureState.COMPLETE
 
-    def convert_to_tensorflow(self, simPSF, n_bins_lambda):
+    def convert_to_tensorflow(self, simPSF, n_bins_lambda, mode):
         """Convert dataset containers from NumPy to TensorFlow representation.
 
         Applies the configured converter to transform dataset fields associated
@@ -461,6 +456,8 @@ class DataAdapter:
             Simulator instance passed to the converter.
         n_bins_lambda : int
             Number of wavelength bins used during conversion.
+        mode : DatasetMode
+            Dataset operation mode used to select the appropriate dataset schema for a given pipeline process (e.g. training, validation, inference) 
 
         Raises
         ------
@@ -482,21 +479,42 @@ class DataAdapter:
         if self._converter is None:
             raise RuntimeError("No converter provided.")
 
-        required_keys = tuple(self._canonical_keys)
-
         if self._structure_state == StructureState.SPLIT:
-            self._train_tf = self._converter.convert_dataset(
-                self._train_data, simPSF, n_bins_lambda, required_keys=required_keys
+
+            n_train = len(self._train_data[DATASET_INDEX_KEY])
+            n_test = len(self._test_data[DATASET_INDEX_KEY])
+    
+            logger.info(
+                f"Converting training dataset to TensorFlow "
+                f"(mode={mode.name.lower()}, samples={n_train})..."
             )
+
+            self._train_tf = self._converter.convert_dataset(
+                self._train_data, simPSF, n_bins_lambda, mode=mode
+            )
+
+            logger.info(
+                f"Converting test dataset to TensorFlow "
+                f"(mode={mode.name.lower()}, samples={n_test})..."
+            )
+
             self._test_tf = self._converter.convert_dataset(
-                self._test_data, simPSF, n_bins_lambda, required_keys=required_keys
+                self._test_data, simPSF, n_bins_lambda, mode=mode
             )
         else:
+            n_complete = len(self._complete_data[DATASET_INDEX_KEY])
+            
+            logger.info(
+                f"Converting complete dataset to TensorFlow "
+                f"(mode={mode.name.lower()}, samples={n_complete})..."
+            )
+
             self._complete_tf = self._converter.convert_dataset(
-                self._complete_data, simPSF, n_bins_lambda, required_keys=required_keys
+                self._complete_data, simPSF, n_bins_lambda, mode=mode
             )
 
         self._representation_state = RepresentationState.TENSORFLOW
+        logger.info("Dataset representation state updated to TensorFlow.")
 
     def _split(self, data, ratio: Optional[float] = None, seed: Optional[int] = None):
         """Split a dataset container into train and test subsets.
@@ -541,13 +559,8 @@ class DataAdapter:
 
         n = None
 
-        # Determine sample size from canonical keys
-        for key in canonical_keys:
-            if key in data and isinstance(data[key], np.ndarray):
-                logger.info(f"Using Key:={key} to determine sample size.")
-                n = data[key].shape[0]
-                logger.info(f"Sample size n:={n}")
-                break
+        # Determine sample size from index dataset key
+        n = data[DATASET_INDEX_KEY].shape[0]
 
         if n is None:
             raise ValueError(
