@@ -32,7 +32,7 @@ class TrainingDataAdapter:
         val_data = base_adapter.test_data
 
         # --- Materialize everything ---
-        logger.info("Materializing training data snapshot...")
+        logger.debug("Materializing training data snapshot...")
 
         self._train_inputs = self._prepare_inputs(train_data, split="train")
         self._validation_inputs = self._prepare_inputs(val_data, split="validation")
@@ -40,7 +40,7 @@ class TrainingDataAdapter:
         self._train_targets = self._prepare_targets(train_data, split="train")
         self._validation_targets = self._prepare_targets(val_data, split="validation")
 
-        logger.info("Training data snapshot ready.")
+        logger.debug("Training data snapshot ready.")
 
     # ---- Helpers ----
     def _prepare_inputs(self, data, split: str) -> list[tf.Tensor]:

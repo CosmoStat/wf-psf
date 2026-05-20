@@ -337,6 +337,7 @@ def _is_in_memory(params: Optional[ParamsType]) -> bool:
 
     """
     if params is None:
+        logger.warning("Params field is None, assuming data is in memory.")
         return True
 
     def has_file_pointer(obj) -> bool:
@@ -360,16 +361,20 @@ def _is_in_memory(params: Optional[ParamsType]) -> bool:
 
     # Shallow config: file/data_dir at the top level
     if has_file_pointer(top):
+        logger.info("Detected file and data_dir fields, assuming data is not in memory.")
         return False
 
     # Complete (non-split) config: file/data_dir nested under 'complete'
     if "complete" in top and has_file_pointer(top["complete"]):
+        logger.info("Detected file and data_dir fields for complete dataset configuration, assuming data is not in memory.")
         return False
 
     # Split config: file/data_dir nested under 'train' and 'test'
     if "train" in top and has_file_pointer(top["train"]):
+        logger.info("Detected file and data_dir fields for split dataset configuration, assuming data is not in memory.")
         return False
     if "test" in top and has_file_pointer(top["test"]):
+        logger.info("Detected file and data_dir fields for split dataset configuration, assuming data is not in memory.")
         return False
 
     return True
