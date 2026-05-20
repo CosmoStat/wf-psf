@@ -11,14 +11,19 @@ perform inference on a dataset of SEDs and positions, and generate polychromatic
 import os
 from pathlib import Path
 import numpy as np
-from wf_psf.data.data_adapter import RepresentationState
+from typing import Optional
+from wf_psf.data.data_adapter import StructureState, RepresentationState
 from wf_psf.data.data_config_handler import DataConfigHandler
+from wf_psf.data.data_adapter import DataAdapter
 from wf_psf.data.factory import DataAdapterFactory
+from wf_psf.data.schemas import DatasetMode
 from wf_psf.utils.read_config import read_conf
 from wf_psf.psf_models import psf_models
 from wf_psf.psf_models.psf_model_loader import load_trained_psf_model
 import tensorflow as tf
+import logging
 
+logger = logging.getLogger(__name__)
 
 class InferenceConfigHandler:
     """
@@ -74,13 +79,13 @@ class InferenceConfigHandler:
         - training_config
         - data_config (if data_config_path is specified)
         """
-        self.inference_config = read_conf(self.inference_config_path)
+        self.inference_config = read_conf(self.inference_config_path).inference
         self.set_config_paths()
-        self.training_config = read_conf(self.trained_model_config_path)
+        self.training_config = read_conf(self.trained_model_config_path).training
 
         if self.data_config_path is not None:
             # Load the data configuration
-            self.data_config = DataConfigHandler(self.data_config_path).params
+            self.data_config = DataConfigHandler(self.data_config_path)
 
     def set_config_paths(self):
         """
@@ -93,7 +98,7 @@ class InferenceConfigHandler:
         - data_config_path
         """
         # Set config paths
-        config_paths = self.inference_config.inference.configs
+        config_paths = self.inference_config.configs
 
         self.trained_model_path = Path(config_paths.trained_model_path)
         self.model_subdir = config_paths.model_subdir
@@ -101,6 +106,14 @@ class InferenceConfigHandler:
             self.trained_model_path / config_paths.trained_model_config_path
         )
         self.data_config_path = self.trained_model_path / config_paths.data_config_path
+
+    @property
+    def schema_mode(self) -> DatasetMode:
+        raw = self.inference_config.schema_mode.upper()
+        try:
+            return DatasetMode[raw]
+        except KeyError:
+            raise ValueError(...)
 
     @staticmethod
     def overwrite_model_params(training_config=None, inference_config=None):
@@ -116,10 +129,10 @@ class InferenceConfigHandler:
 
         Notes
         -----
-        Updates are applied in-place to training_config.training.model_params.
+        Updates are applied in-place to training_config.model_params.
         """
-        model_params = training_config.training.model_params
-        inf_model_params = inference_config.inference.model_params
+        model_params = training_config.model_params
+        inf_model_params = inference_config.model_params
 
         if model_params and inf_model_params:
             for key, value in inf_model_params.__dict__.items():
@@ -209,8 +222,8 @@ class PSFInference:
         self._output_dim = None
 
         # Initialise Data Adapters
-        self._model_data_adapter = None
-        self._inference_data_adapter = None
+        self._model_data_adapter: Optional[DataAdapter] = None
+        self._inference_data_adapter: Optional[DataAdapter] = None
 
         # Initialise PSF Inference engine
         self.engine = None
@@ -238,7 +251,7 @@ class PSFInference:
         """
         # Overwrite model parameters with inference config
         self.config_handler.overwrite_model_params(
-            self.training_config, self.inference_config
+            self.training_config, self.inference_config,
         )
 
     @property
@@ -288,7 +301,7 @@ class PSFInference:
             The PSF simulator instance.
         """
         if self._simPSF is None:
-            self._simPSF = psf_models.simPSF(self.training_config.training.model_params)
+            self._simPSF = psf_models.simPSF(self.training_config.model_params)
         return self._simPSF
 
     def _prepare_dataset_for_inference(self):
@@ -330,12 +343,18 @@ class PSFInference:
         -------
         DataAdapter
             A fully prepared model data adapter with LoadedDataset.
-        """
+        """     
         if self._model_data_adapter is None:
+            logger.info("Generating the model data adapter...")
             dataset_params = self.data_config
 
             # Use the factory — it will normalize, convert dicts/dataclasses, and produce LoadedDataset
             adapter = DataAdapterFactory.build(dataset_params)
+
+            # Join data, if not already complete
+            if adapter.structure_state == StructureState.SPLIT:
+                logger.info("Joining split datasets...")
+                adapter.join_data()
 
             self._model_data_adapter = adapter
 
@@ -352,14 +371,15 @@ class PSFInference:
             A fully prepared data adapter with LoadedDataset ready for inference.
         """
         if self._inference_data_adapter is None:
+            logger.info("Generating the inference data adapter...")
             dataset = self._prepare_dataset_for_inference()
 
             # Use the factory — it will normalize, convert dicts/dataclasses, and produce LoadedDataset
             adapter = DataAdapterFactory.build(dataset)
 
-            # Convert to TensorFlow if needed
+            # Convert to TensorFlow according to dataset schema mode
             if adapter.representation_state == RepresentationState.NUMPY:
-                adapter.convert_to_tensorflow(self.simPSF, self.n_bins_lambda)
+                adapter.convert_to_tensorflow(self.simPSF, self.n_bins_lambda, mode=self.config_handler.schema_mode)
 
             self._inference_data_adapter = adapter
 
@@ -431,15 +451,15 @@ class PSFInference:
         """
         model_path = self.config_handler.trained_model_path
         model_dir = self.config_handler.model_subdir
-        model_name = self.training_config.training.model_params.model_name
-        id_name = self.training_config.training.id_name
+        model_name = self.training_config.model_params.model_name
+        id_name = self.training_config.id_name
 
         weights_path_pattern = os.path.join(
             model_path,
             model_dir,
             f"{model_dir}*_{model_name}*{id_name}_cycle{self.cycle}*",
         )
-
+     
         # Load the trained PSF model
         return load_trained_psf_model(
             self.training_config,
@@ -458,7 +478,7 @@ class PSFInference:
         """
         if self._n_bins_lambda is None:
             self._n_bins_lambda = (
-                self.inference_config.inference.model_params.n_bins_lambda
+                self.inference_config.model_params.n_bins_lambda
             )
         return self._n_bins_lambda
 
@@ -473,7 +493,7 @@ class PSFInference:
             The batch size for processing during inference.
         """
         if self._batch_size is None:
-            self._batch_size = self.inference_config.inference.batch_size
+            self._batch_size = self.inference_config.batch_size
             assert self._batch_size > 0, "Batch size must be greater than 0."
         return self._batch_size
 
@@ -487,7 +507,7 @@ class PSFInference:
             The cycle number used for loading the trained model.
         """
         if self._cycle is None:
-            self._cycle = self.inference_config.inference.cycle
+            self._cycle = self.inference_config.cycle
         return self._cycle
 
     @property
@@ -500,7 +520,7 @@ class PSFInference:
             The output dimension (height and width) of the inferred PSFs.
         """
         if self._output_dim is None:
-            self._output_dim = self.inference_config.inference.model_params.output_dim
+            self._output_dim = self.inference_config.model_params.output_dim
         return self._output_dim
 
     def run_inference(self):
