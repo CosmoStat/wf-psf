@@ -17,7 +17,7 @@ params:
   # Define canonical keys for dataset
   # Canonical dataset fields determine dataset size and ensure
   # consistent train/test splitting across arrays.
-  # Overrides DEFAULT_CANONICAL_KEYS.
+  # Overrides CANONICAL_DATASET_KEYS.
   canonical_keys:
     - sources
     - positions
