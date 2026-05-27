@@ -11,7 +11,7 @@ inference:
   # This affects required fields and available conversion handlers.
   #
   # Choices:
-  # - INFERENCE: standard inference mode (requires positions and seds)
+  # - INFERENCE: standard inference mode (expects positions and seds)
   # - EVALUATION: evaluation mode (may include additional fields such as sources or masks)
   schema_mode: INFERENCE
 
