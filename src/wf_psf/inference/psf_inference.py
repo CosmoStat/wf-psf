@@ -1,6 +1,6 @@
 """Inference.
 
-A module which provides a PSFInference class to perform inference
+A module which provides a `PSFInference` class to perform inference
 with trained PSF models. It is able to load a trained model,
 perform inference on a dataset of SEDs and positions, and generate polychromatic PSFs.
 
@@ -24,6 +24,7 @@ import tensorflow as tf
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 class InferenceConfigHandler:
     """
@@ -75,9 +76,9 @@ class InferenceConfigHandler:
         Notes
         -----
         Updates the following attributes in-place:
-        - inference_config
-        - training_config
-        - data_config (if data_config_path is specified)
+          - `inference_config`
+          - `training_config`
+          - `data_config` (if `data_config_path` is specified)
         """
         self.inference_config = read_conf(self.inference_config_path).inference
         self.set_config_paths()
@@ -92,10 +93,10 @@ class InferenceConfigHandler:
         Extract and set the configuration paths from the inference config.
 
         Sets the following attributes:
-        - trained_model_path
-        - model_subdir
-        - trained_model_config_path
-        - data_config_path
+          - trained_model_path
+          - model_subdir
+          - trained_model_config_path
+          - data_config_path
         """
         # Set config paths
         config_paths = self.inference_config.configs
@@ -129,7 +130,7 @@ class InferenceConfigHandler:
 
         Notes
         -----
-        Updates are applied in-place to training_config.model_params.
+        Updates are applied in-place to ``training_config.model_params``.
         """
         model_params = training_config.model_params
         inf_model_params = inference_config.model_params
@@ -251,7 +252,8 @@ class PSFInference:
         """
         # Overwrite model parameters with inference config
         self.config_handler.overwrite_model_params(
-            self.training_config, self.inference_config,
+            self.training_config,
+            self.inference_config,
         )
 
     @property
@@ -343,7 +345,7 @@ class PSFInference:
         -------
         DataAdapter
             A fully prepared model data adapter with LoadedDataset.
-        """     
+        """
         if self._model_data_adapter is None:
             logger.info("Generating the model data adapter...")
             dataset_params = self.data_config
@@ -379,7 +381,11 @@ class PSFInference:
 
             # Convert to TensorFlow according to dataset schema mode
             if adapter.representation_state == RepresentationState.NUMPY:
-                adapter.convert_to_tensorflow(self.simPSF, self.n_bins_lambda, mode=self.config_handler.schema_mode)
+                adapter.convert_to_tensorflow(
+                    self.simPSF,
+                    self.n_bins_lambda,
+                    mode=self.config_handler.schema_mode,
+                )
 
             self._inference_data_adapter = adapter
 
@@ -459,7 +465,7 @@ class PSFInference:
             model_dir,
             f"{model_dir}*_{model_name}*{id_name}_cycle{self.cycle}*",
         )
-     
+
         # Load the trained PSF model
         return load_trained_psf_model(
             self.training_config,
@@ -477,9 +483,7 @@ class PSFInference:
             The number of wavelength bins used during inference.
         """
         if self._n_bins_lambda is None:
-            self._n_bins_lambda = (
-                self.inference_config.model_params.n_bins_lambda
-            )
+            self._n_bins_lambda = self.inference_config.model_params.n_bins_lambda
         return self._n_bins_lambda
 
     @property
