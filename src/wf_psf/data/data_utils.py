@@ -35,8 +35,6 @@ from collections.abc import MutableMapping
 from dataclasses import dataclass, is_dataclass, fields
 from typing import Any, Optional
 
-from dataclasses import dataclass
-from typing import Any
 
 from wf_psf.sims.psf_simulator import PSFSimulator
 
