@@ -1,6 +1,6 @@
 """TensorFlow dataset converter for PSF datasets.
 
-This module provides the TensorFlowDatasetConverter class, which handles the conversion of PSF datasets (both dataclass-based and dict-based) into TensorFlow tensors suitable for training, evaluation, and inference. It includes methods for processing SEDs using a PSF simulator and converting various dataset formats into a consistent TensorFlow format.
+This module provides the `TensorFlowDatasetConverter` class, which handles the conversion of PSF datasets (both dataclass-based and dict-based) into TensorFlow tensors suitable for training, evaluation, and inference. It includes methods for processing SEDs using a PSF simulator and converting various dataset formats into a consistent TensorFlow format.
 
 Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 """
@@ -8,17 +8,14 @@ Author: Jennifer Pollack <jennifer.pollack@cea.fr>
 import tensorflow as tf
 from typing import Union
 from wf_psf.data.schemas import DatasetMode, SCHEMAS
-from wf_psf.data.data_utils import (
-    DatasetContainer, 
-    ConversionContext,
-    SEDContext
-)
+from wf_psf.data.data_utils import DatasetContainer, ConversionContext, SEDContext
 from wf_psf.psf_models.psf_models import PSFSimulator
 from wf_psf.psf_models.tf_modules.tf_utils import ensure_tensor
 from wf_psf.utils.utils import generate_SED_elems_in_tensorflow
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 class TensorFlowDatasetConverter:
     """
@@ -86,7 +83,7 @@ class TensorFlowDatasetConverter:
         ------
         ValueError
             Raised if:
-            
+
             - A required field is missing while schema strictness is enabled.
             - A handler requires a domain-specific context that is absent.
 
@@ -104,27 +101,23 @@ class TensorFlowDatasetConverter:
         if v is MISSING:
             if required and schema.strict:
                 raise ValueError(
-                    f"Dataset field '{key}' required for "
-                    f"{schema.id} is missing."
+                    f"Dataset field '{key}' required for " f"{schema.id} is missing."
                 )
 
             if required:
                 logger.warning(
-                    f"Dataset field '{key}' required for "
-                    f"{schema.id} is missing."
+                    f"Dataset field '{key}' required for " f"{schema.id} is missing."
                 )
 
             return
 
         handler = schema.handlers.get(key)
-        
+
         if handler is not None:
             domain_ctx = getattr(context, key, None)
 
             if domain_ctx is None:
-                raise ValueError(
-                    f"Missing context for domain '{key}'"
-                )
+                raise ValueError(f"Missing context for domain '{key}'")
 
             result[key] = handler(self, v, domain_ctx)
 
@@ -136,7 +129,7 @@ class TensorFlowDatasetConverter:
         dataset: Union[DatasetContainer, dict],
         simPSF: PSFSimulator,
         n_bins_lambda: int,
-        mode : DatasetMode = DatasetMode.TRAIN
+        mode: DatasetMode = DatasetMode.TRAIN,
     ):
         """
         Convert a dataset into TensorFlow-compatible tensors.
@@ -173,7 +166,7 @@ class TensorFlowDatasetConverter:
         ------
         ValueError
             Raised if:
-            
+
             - A required dataset field is missing under strict schema
               validation.
             - A required domain-specific context is unavailable for a
@@ -187,10 +180,9 @@ class TensorFlowDatasetConverter:
         - Specialized preprocessing (e.g. SED conversion) is delegated
           to registered schema handlers.
         """
-        
         schema = SCHEMAS[mode]
         req_keys = schema.required_keys
-        opt_keys = schema.optional_keys 
+        opt_keys = schema.optional_keys
 
         logger.info(
             f"Using dataset schema '{schema.id}' "
@@ -214,7 +206,7 @@ class TensorFlowDatasetConverter:
                 context=context,
                 required=True,
             )
-            
+
         # Handle optional keys
         for k in opt_keys:
             self._process_field(
@@ -225,7 +217,7 @@ class TensorFlowDatasetConverter:
                 context=context,
                 required=False,
             )
-                    
+
         return result
 
     @staticmethod
