@@ -27,7 +27,6 @@ from wf_psf.psf_models.tf_modules.tf_layers import (
 from wf_psf.psf_models.tf_modules.tf_utils import ensure_tensor
 import logging
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -83,10 +82,10 @@ class TFPhysicalPolychromaticField(tf.keras.Model):
     It incorporates parametric and non-parametric modeling approaches to accurately reconstruct the point spread function (PSF) across multiple wavelengths.
 
     The model provides functionalities for:
-    - Initializing model parameters and defining the physical PSF layer.
-    - Performing forward passes and computing wavefront transformations.
-    - Handling Zernike parameterization and coefficient matrices.
-    - Evaluating model performance and saving optimization history.
+      - Initializing model parameters and defining the physical PSF layer.
+      - Performing forward passes and computing wavefront transformations.
+      - Handling Zernike parameterization and coefficient matrices.
+      - Evaluating model performance and saving optimization history.
 
     See individual method docstrings for more details.
     """
