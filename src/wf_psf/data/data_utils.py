@@ -60,6 +60,7 @@ class SEDContext:
         Number of wavelength bins used for discretizing the SED during
         conversion.
     """
+
     simPSF: PSFSimulator
     n_bins_lambda: int
 
