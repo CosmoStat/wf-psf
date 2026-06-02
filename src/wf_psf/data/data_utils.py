@@ -31,10 +31,10 @@ Authors
 Jennifer Pollack <jennifer.pollack@cea.fr>
 """
 
+from __future__ import annotations
 from collections.abc import MutableMapping
 from dataclasses import dataclass, is_dataclass, fields
-from typing import Any, Optional
-
+from typing import Any, Optional 
 
 from wf_psf.sims.psf_simulator import PSFSimulator
 
