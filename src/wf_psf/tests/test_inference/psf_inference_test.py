@@ -574,6 +574,6 @@ def test_engine_clear_cache(psf_test_setup):
     inference.engine.clear_cache()
 
     # Check that the internal cache is None
-    assert (
-        inference.engine._inferred_psfs is None
-    ), "PSF cache should be cleared to None"
+    assert inference.engine._inferred_psfs is None, (
+        "PSF cache should be cleared to None"
+    )
