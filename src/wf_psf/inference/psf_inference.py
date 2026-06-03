@@ -379,17 +379,18 @@ class PSFInference:
             # Use the factory — it will normalize, convert dicts/dataclasses, and produce LoadedDataset
             adapter = DataAdapterFactory.build(dataset)
 
-            # Convert to TensorFlow according to dataset schema mode
-            if adapter.representation_state == RepresentationState.NUMPY:
-                adapter.convert_to_tensorflow(
-                    self.simPSF,
-                    self.n_bins_lambda,
-                    mode=self.config_handler.schema_mode,
-                )
-
             self._inference_data_adapter = adapter
 
         return self._inference_data_adapter
+
+    def _convert_inference_data_to_tensorflow(self):
+        # Convert to TensorFlow according to dataset schema mode
+        if self._inference_data_adapter.representation_state == RepresentationState.NUMPY:
+            self._inference_data_adapter.convert_to_tensorflow(
+                self.simPSF,
+                self.n_bins_lambda,
+                mode=self.config_handler.schema_mode,
+            )
 
     @property
     def trained_psf_model(self):
@@ -469,7 +470,7 @@ class PSFInference:
         # Load the trained PSF model
         return load_trained_psf_model(
             self.training_config,
-            self.model_data_adapter.complete_data,
+            self.inference_data_adapter.complete_data,
             weights_path_pattern,
         )
 
@@ -543,15 +544,18 @@ class PSFInference:
         # Prepare the configuration for inference
         self.prepare_configs()
 
-        # Get positions and SEDs
-        positions = self.inference_data_adapter.complete_data["positions"]
-        sed_data = self.inference_data_adapter.complete_data["seds"]
-
         self.engine = PSFInferenceEngine(
             trained_model=self.trained_psf_model,
             batch_size=self.batch_size,
             output_dim=self.output_dim,
         )
+
+        # Convert inference data to tensorflow type
+        self._convert_inference_data_to_tensorflow()
+
+        # Get positions and SEDs
+        positions = self.inference_data_adapter.complete_data["positions"]
+        sed_data = self.inference_data_adapter.complete_data["seds"]
 
         return self.engine.compute_psfs(positions, sed_data)
 
