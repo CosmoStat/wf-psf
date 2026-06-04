@@ -67,7 +67,13 @@ def mock_inference_config():
                 trained_model_config_path="config/training_config.yaml",
                 data_config_path=None,
             ),
-            model_params=RecursiveNamespace(n_bins_lambda=8, output_Q=1, output_dim=64, correct_centroids=False, add_ccd_misalignments=True),
+            model_params=RecursiveNamespace(
+                n_bins_lambda=8,
+                output_Q=1,
+                output_dim=64,
+                correct_centroids=False,
+                add_ccd_misalignments=True,
+            ),
         )
     )
     return inference_config
@@ -318,7 +324,7 @@ def test_batch_size_positive():
     inference = PSFInference("dummy_path.yaml")
     inference._config_handler = MagicMock()
     inference._config_handler.inference_config = SimpleNamespace(
-            batch_size=4, model_params=SimpleNamespace(output_dim=32)
+        batch_size=4, model_params=SimpleNamespace(output_dim=32)
     )
     assert inference.batch_size == 4
 
@@ -347,11 +353,6 @@ def test_data_adapter_property_adapter_build(
 
     assert adapter == mock_data_adapter
     mock_build.assert_called_once()
-    mock_data_adapter.convert_to_tensorflow.assert_called_once_with(
-        inference.simPSF,
-        inference.n_bins_lambda,
-        mode=inference.config_handler.schema_mode,
-    )
 
 
 @patch("wf_psf.inference.psf_inference.DataAdapterFactory.build")
@@ -391,7 +392,7 @@ def test_load_inference_model(
     mock_adapter = MagicMock()
     mock_adapter.complete_data = {"positions": np.zeros((2, 2))}
 
-    psf_inf = PSFInference("dummy_path.yaml")
+    psf_inf = PSFInference("dummy_path.yaml", x_field=2, y_field=2)
 
     mock_config_handler = MagicMock(spec=InferenceConfigHandler)
     mock_config_handler.trained_model_path = "mock/path/to/model"
@@ -445,6 +446,11 @@ def test_run_inference(
     assert psfs.shape == expected_psfs.shape
     mock_prepare_configs.assert_called_once()
     mock_compute_psfs.assert_called_once_with(mock_positions, mock_seds)
+    mock_data_adapter.convert_to_tensorflow.assert_called_once_with(
+        inference.simPSF,
+        inference.n_bins_lambda,
+        mode=inference.config_handler.schema_mode,
+    )
 
 
 @patch("wf_psf.inference.psf_inference.psf_models.simPSF")
