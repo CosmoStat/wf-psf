@@ -640,10 +640,18 @@ Configures the WaveDiff inference API for generating polychromatic PSFs from a t
 
 | Field | Required | Description |
 |---------------|--------------|---------|
-| `trained_model_path` | Yes | Absolute path to the directory containing the trained <br> model. |
-| `model_subdir` | Yes | Subdirectory name within `trained_model_path` <br> containing the model weights (e.g. model). |
-|`trained_model_config_path` | Yes | Path to the training configuration file used to train the <br> model, relative to `trained_model_path`. |
-| `data_config_path` | No. | Path to a data configuration file supplying prior <br> information (e.g. a Phase Diversity calibration prior)<br> relevant to the inference context. This may differ <br> from the data configuration used during training. Leave <br> blank if no external prior is required.
+| `trained_model_path` | Yes | Absolute path to the directory containing the trained model. |
+| `model_subdir` | Yes | Subdirectory name within `trained_model_path` containing the model weights <br> (e.g. model). |
+|`trained_model_config_path` | Yes | Path to the training configuration file used to train the model, relative to <br>`trained_model_path`. |
+| `data_config_path` | No. | Path to a data configuration file supplying prior information (e.g. a Phase <br> Diversity calibration prior) relevant to the inference context. This may differ <br> from the data configuration used during training. Leave blank if no external <br>prior is required. |
+|`schema_mode` | Yes | Dataset schema used to interpret input fields and controls which dataset <br>contract is used during conversion. |
+
+---
+
+**Note on `schema_mode`:**
+
+- `INFERENCE`: standard inference mode (expects `positions` and `seds`)
+- `EVALUATION`: evaluation mode (may include additional fields such as `sources` or `masks`)
 
 `inference.model_params`
 

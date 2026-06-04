@@ -1,11 +1,12 @@
 import pytest
+from dataclasses import dataclass
 import numpy as np
 import tensorflow as tf
 from wf_psf.data.data_adapter import DataAdapter, RepresentationState
 from wf_psf.data.factory import DataAdapterFactory
 from wf_psf.training.training_data_adapter import TrainingDataAdapter
 from wf_psf.data.data_adapter import LoadedDataset
-from dataclasses import dataclass
+from wf_psf.data.schemas import DatasetMode
 
 
 @pytest.fixture
@@ -73,14 +74,14 @@ def mock_converter(mocker):
     """Mock TensorFlowDatasetConverter to pass through NumPy."""
     mock = mocker.Mock()
     mock.convert_dataset.side_effect = (
-        lambda d, simPSF, n_bins, **params: d
+        lambda d, simPSF, n_bins, mode, **params: d
     )  # just return the dict
     return mock
 
 
 @pytest.fixture
 def fake_simpsf():
-    """Mock PSF simulator; just a placeholder object."""
+    """Mock PSF simulator."""
 
     class FakeSimPSF:
         pass
@@ -176,7 +177,7 @@ def test_training_data_adapter_integration_complete(
 
     # Convert to TensorFlow representation
     if adapter.representation_state == RepresentationState.NUMPY:
-        adapter.convert_to_tensorflow(fake_simpsf, n_bins_lambda)
+        adapter.convert_to_tensorflow(fake_simpsf, n_bins_lambda, mode=DatasetMode.TRAIN)
 
     tda = TrainingDataAdapter(adapter, loss_type="mask_mse")
 
@@ -239,7 +240,7 @@ def test_training_data_adapter_integration_dataclass(
 
     # Convert to TensorFlow representation
     if adapter.representation_state == RepresentationState.NUMPY:
-        adapter.convert_to_tensorflow(fake_simpsf, n_bins_lambda)
+        adapter.convert_to_tensorflow(fake_simpsf, n_bins_lambda, mode=DatasetMode.TRAIN)
 
     tda = TrainingDataAdapter(adapter)
 

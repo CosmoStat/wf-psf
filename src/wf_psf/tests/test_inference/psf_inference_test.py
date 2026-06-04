@@ -60,13 +60,14 @@ def mock_inference_config():
         inference=RecursiveNamespace(
             batch_size=16,
             cycle=2,
+            schema_mode="INFERENCE",
             configs=RecursiveNamespace(
                 trained_model_path="/path/to/trained/model",
                 model_subdir="psf_model",
                 trained_model_config_path="config/training_config.yaml",
                 data_config_path=None,
             ),
-            model_params=RecursiveNamespace(n_bins_lambda=8, output_Q=1, output_dim=64),
+            model_params=RecursiveNamespace(n_bins_lambda=8, output_Q=1, output_dim=64, correct_centroids=False, add_ccd_misalignments=True),
         )
     )
     return inference_config
@@ -138,7 +139,7 @@ def psf_test_setup(mock_dataset, mock_inference_config):
         seds=mock_dataset["seds_multi_tf"].numpy(),
     )
     inference._config_handler = MagicMock()
-    inference._config_handler.inference_config = mock_inference_config
+    inference._config_handler.inference_config = mock_inference_config.inference
     inference._trained_psf_model = MagicMock()
 
     return {
@@ -161,7 +162,7 @@ def psf_single_star_setup(mock_dataset, mock_inference_config):
         seds=mock_dataset["seds_single_tf"].numpy()[0],  # shape (num_bins, 2)
     )
     inference._config_handler = MagicMock()
-    inference._config_handler.inference_config = mock_inference_config
+    inference._config_handler.inference_config = mock_inference_config.inference
     inference._trained_psf_model = MagicMock()
 
     return {
@@ -210,7 +211,7 @@ def psf_setup(mock_dataset, mock_inference_config, request):
         seds=seds_input,
     )
     inference._config_handler = MagicMock()
-    inference._config_handler.inference_config = mock_inference_config
+    inference._config_handler.inference_config = mock_inference_config.inference
     inference._trained_psf_model = MagicMock()
 
     return {
@@ -270,8 +271,8 @@ def test_prepare_configs(mock_training_config, mock_inference_config):
 
     # Mock the config handler attribute with a mock InferenceConfigHandler
     mock_config_handler = MagicMock(spec=InferenceConfigHandler)
-    mock_config_handler.training_config = training_config
-    mock_config_handler.inference_config = inference_config
+    mock_config_handler.training_config = training_config.training
+    mock_config_handler.inference_config = inference_config.inference
 
     # Patch the overwrite_model_params to use the real static method
     mock_config_handler.overwrite_model_params.side_effect = (
@@ -317,9 +318,7 @@ def test_batch_size_positive():
     inference = PSFInference("dummy_path.yaml")
     inference._config_handler = MagicMock()
     inference._config_handler.inference_config = SimpleNamespace(
-        inference=SimpleNamespace(
             batch_size=4, model_params=SimpleNamespace(output_dim=32)
-        )
     )
     assert inference.batch_size == 4
 
@@ -351,23 +350,8 @@ def test_data_adapter_property_adapter_build(
     mock_data_adapter.convert_to_tensorflow.assert_called_once_with(
         inference.simPSF,
         inference.n_bins_lambda,
+        mode=inference.config_handler.schema_mode,
     )
-
-
-@patch("wf_psf.inference.psf_inference.DataAdapterFactory.build")
-@patch("wf_psf.inference.psf_inference.psf_models.simPSF")
-def test_data_adapter_property_builds_adapter(
-    _, mock_build, psf_test_setup, mock_data_adapter
-):
-    inference = psf_test_setup["inference"]
-
-    mock_build.return_value = mock_data_adapter
-
-    adapter = inference.inference_data_adapter
-
-    assert adapter == mock_data_adapter
-    mock_build.assert_called_once()
-    mock_data_adapter.convert_to_tensorflow.assert_called_once()
 
 
 @patch("wf_psf.inference.psf_inference.DataAdapterFactory.build")
@@ -411,8 +395,8 @@ def test_load_inference_model(
 
     mock_config_handler = MagicMock(spec=InferenceConfigHandler)
     mock_config_handler.trained_model_path = "mock/path/to/model"
-    mock_config_handler.training_config = mock_training_config
-    mock_config_handler.inference_config = mock_inference_config
+    mock_config_handler.training_config = mock_training_config.training
+    mock_config_handler.inference_config = mock_inference_config.inference
     mock_config_handler.model_subdir = "psf_model"
 
     psf_inf._config_handler = mock_config_handler
@@ -468,12 +452,12 @@ def test_simpsf_uses_updated_model_params(
     mock_simpsf, mock_training_config, mock_inference_config
 ):
     """Test that simPSF uses the updated model parameters."""
-    training_config = mock_training_config
-    inference_config = mock_inference_config
+    training_config = mock_training_config.training
+    inference_config = mock_inference_config.inference
 
     # Set the expected output_Q
-    expected_output_Q = inference_config.inference.model_params.output_Q
-    training_config.training.model_params.output_Q = expected_output_Q
+    expected_output_Q = inference_config.model_params.output_Q
+    training_config.model_params.output_Q = expected_output_Q
 
     # Create fake psf instance
     fake_psf_instance = MagicMock()
