@@ -99,245 +99,93 @@
   <h1>Source code for wf_psf.data.data_zernike_utils</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Utilities for Zernike Data Handling.</span>
 
-<span class="sd">This module provides utility functions for working with Zernike coefficients, including:</span>
+<span class="sd">This module provides utilities for converting between physical optical</span>
+<span class="sd">misalignments (centroid shifts, defocus, CCD alignment effects) and</span>
+<span class="sd">Zernike coefficients used in wavefront modelling.</span>
 
-<span class="sd">- Prior generation</span>
-<span class="sd">- Data loading</span>
-<span class="sd">- Conversions between physical displacements (e.g., defocus, centroid shifts) and modal Zernike coefficients</span>
+<span class="sd">It supports assembling Zernike contributions from multiple sources,</span>
+<span class="sd">including centroid corrections, CCD misalignment terms, and optional</span>
+<span class="sd">priors, for use in PSF modelling pipelines.</span>
 
-<span class="sd">Useful in contexts where Zernike representations are used to model optical aberrations or link physical misalignments to wavefront modes.</span>
+<span class="sd">This module does not handle data loading or model execution; it only</span>
+<span class="sd">provides deterministic transformations between physical parameters and</span>
+<span class="sd">Zernike representations.</span>
 
-<span class="sd">:Author: Tobias Liaudat &lt;tobias.liaudat@cea.fr&gt;</span>
+<span class="sd">:Authors: Tobias Liaudat &lt;tobias.liaudat@cea.fr&gt; and Jennifer Pollack &lt;jennifer.pollack@cea.fr&gt;</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.data.data_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatasetContainer</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.data.centroids</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_centroid_correction</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.data.data_handler</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_data_array</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.instrument.ccd_misalignments</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_ccd_misalignment</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.utils.read_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">RecursiveNamespace</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="ZernikeInputs">
-<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_zernike_utils.html#wf_psf.data.data_zernike_utils.ZernikeInputs">[docs]</a>
+<div class="viewcode-block" id="ZernikeDataset">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_zernike_utils.html#wf_psf.data.data_zernike_utils.ZernikeDataset">[docs]</a>
 <span class="nd">@dataclass</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">ZernikeInputs</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Zernike-related inputs for PSF modeling, including priors and datasets for corrections.</span>
-
-<span class="sd">    All fields are optional to allow flexibility across different run types (training, simulation, inference) and configurations.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    zernike_prior : Optional[np.ndarray]</span>
-<span class="sd">        The true Zernike prior, if provided (e.g., from PDC). Can be None if not used or not available.</span>
-<span class="sd">    centroid_dataset : Optional[Union[dict, &quot;RecursiveNamespace&quot;]]</span>
-<span class="sd">        Dataset used for computing centroid corrections. Should contain both training and test sets if</span>
-<span class="sd">        used. Can be None if centroid correction is not enabled or no dataset is available.</span>
-<span class="sd">    misalignment_positions : Optional[np.ndarray]</span>
-<span class="sd">        Positions used for computing CCD misalignment corrections. Should be available in inference mode if misalignment correction is enabled. Can be None if not used or not available.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">zernike_prior</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>  <span class="c1"># true prior, if provided (e.g. from PDC)</span>
-    <span class="n">centroid_dataset</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
-        <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="s2">&quot;RecursiveNamespace&quot;</span><span class="p">]</span>
-    <span class="p">]</span>  <span class="c1"># only used in training/simulation</span>
-    <span class="n">misalignment_positions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>  <span class="c1"># needed for CCD corrections</span></div>
-
-
-
-<div class="viewcode-block" id="ZernikeInputsFactory">
-<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_zernike_utils.html#wf_psf.data.data_zernike_utils.ZernikeInputsFactory">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">ZernikeInputsFactory</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Factory class to build ZernikeInputs based on run type and dataset configuration.</span>
-
-<span class="sd">    This class abstracts the logic of extracting the relevant Zernike-related inputs from the dataset based on the specified run type (training, simulation, inference) and model parameters. It handles the conditional logic for which inputs are needed and how to extract them, providing a clean interface for constructing the ZernikeInputs dataclass instance.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="ZernikeInputsFactory.build">
-<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_zernike_utils.html#wf_psf.data.data_zernike_utils.ZernikeInputsFactory.build">[docs]</a>
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">build</span><span class="p">(</span>
-        <span class="n">data</span><span class="p">,</span> <span class="n">run_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model_params</span><span class="p">,</span> <span class="n">prior</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ZernikeInputs</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build a ZernikeInputs dataclass instance based on run type and data.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        data : Union[dict, DataConfigHandler]</span>
-<span class="sd">            Dataset object containing star positions, priors, and optionally pixel data.</span>
-<span class="sd">        run_type : str</span>
-<span class="sd">            One of &#39;training&#39;, &#39;simulation&#39;, or &#39;inference&#39;.</span>
-<span class="sd">        model_params : RecursiveNamespace</span>
-<span class="sd">            Model parameters, including flags for prior/corrections.</span>
-<span class="sd">        prior : Optional[np.ndarray]</span>
-<span class="sd">            An explicitly passed prior (overrides any inferred one if provided).</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        ZernikeInputs</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">centroid_dataset</span><span class="p">,</span> <span class="n">positions</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
-
-        <span class="k">if</span> <span class="n">run_type</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;training&quot;</span><span class="p">,</span> <span class="s2">&quot;simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;metrics&quot;</span><span class="p">}:</span>
-            <span class="n">stamps</span> <span class="o">=</span> <span class="n">get_data_array</span><span class="p">(</span>
-                <span class="n">data</span><span class="p">,</span> <span class="n">run_type</span><span class="p">,</span> <span class="n">train_key</span><span class="o">=</span><span class="s2">&quot;noisy_stars&quot;</span><span class="p">,</span> <span class="n">test_key</span><span class="o">=</span><span class="s2">&quot;stars&quot;</span>
-            <span class="p">)</span>
-            <span class="n">masks</span> <span class="o">=</span> <span class="n">get_data_array</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">run_type</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;masks&quot;</span><span class="p">,</span> <span class="n">allow_missing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">centroid_dataset</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;stamps&quot;</span><span class="p">:</span> <span class="n">stamps</span><span class="p">,</span> <span class="s2">&quot;masks&quot;</span><span class="p">:</span> <span class="n">masks</span><span class="p">}</span>
-
-            <span class="n">positions</span> <span class="o">=</span> <span class="n">get_data_array</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">run_type</span><span class="o">=</span><span class="n">run_type</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;positions&quot;</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="n">model_params</span><span class="o">.</span><span class="n">use_prior</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">prior</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                        <span class="s2">&quot;Explicit prior provided; ignoring dataset-based prior.&quot;</span>
-                    <span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">prior</span> <span class="o">=</span> <span class="n">get_np_zernike_prior</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-
-        <span class="k">elif</span> <span class="n">run_type</span> <span class="o">==</span> <span class="s2">&quot;inference&quot;</span><span class="p">:</span>
-            <span class="n">stamps</span> <span class="o">=</span> <span class="n">get_data_array</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">run_type</span><span class="o">=</span><span class="n">run_type</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;sources&quot;</span><span class="p">)</span>
-            <span class="n">masks</span> <span class="o">=</span> <span class="n">get_data_array</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">run_type</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;masks&quot;</span><span class="p">,</span> <span class="n">allow_missing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">centroid_dataset</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;stamps&quot;</span><span class="p">:</span> <span class="n">stamps</span><span class="p">,</span> <span class="s2">&quot;masks&quot;</span><span class="p">:</span> <span class="n">masks</span><span class="p">}</span>
-
-            <span class="n">positions</span> <span class="o">=</span> <span class="n">get_data_array</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">run_type</span><span class="o">=</span><span class="n">run_type</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;positions&quot;</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="n">model_params</span><span class="o">.</span><span class="n">use_prior</span><span class="p">:</span>
-                <span class="c1"># Try to extract prior from `data`, if present</span>
-                <span class="n">prior</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="nb">getattr</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span> <span class="s2">&quot;zernike_prior&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
-                    <span class="k">else</span> <span class="n">data</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;zernike_prior&quot;</span><span class="p">)</span>
-                <span class="p">)</span>
-
-                <span class="k">if</span> <span class="n">prior</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                        <span class="s2">&quot;model_params.use_prior=True but no prior found in inference data. Proceeding with None.&quot;</span>
-                    <span class="p">)</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported run_type: </span><span class="si">{</span><span class="n">run_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">ZernikeInputs</span><span class="p">(</span>
-            <span class="n">zernike_prior</span><span class="o">=</span><span class="n">prior</span><span class="p">,</span>
-            <span class="n">centroid_dataset</span><span class="o">=</span><span class="n">centroid_dataset</span><span class="p">,</span>
-            <span class="n">misalignment_positions</span><span class="o">=</span><span class="n">positions</span><span class="p">,</span>
-        <span class="p">)</span></div>
-</div>
-
-
-
-<div class="viewcode-block" id="get_np_zernike_prior">
-<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_zernike_utils.html#wf_psf.data.data_zernike_utils.get_np_zernike_prior">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_np_zernike_prior</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the zernike prior from the provided dataset.</span>
-
-<span class="sd">    This method concatenates the stars from both the training</span>
-<span class="sd">    and test datasets to obtain the full prior.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    data : DataConfigHandler</span>
-<span class="sd">        Object containing training and test datasets.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    zernike_prior : np.ndarray</span>
-<span class="sd">        Numpy array containing the full prior.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">zernike_prior</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
-        <span class="p">(</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">training_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;zernike_prior&quot;</span><span class="p">],</span>
-            <span class="n">data</span><span class="o">.</span><span class="n">test_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;zernike_prior&quot;</span><span class="p">],</span>
-        <span class="p">),</span>
-        <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">zernike_prior</span></div>
-
-
-
-<div class="viewcode-block" id="pad_contribution_to_order">
-<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_zernike_utils.html#wf_psf.data.data_zernike_utils.pad_contribution_to_order">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">pad_contribution_to_order</span><span class="p">(</span><span class="n">contribution</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">max_order</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pad a Zernike contribution array to the max Zernike order.&quot;&quot;&quot;</span>
-    <span class="n">current_order</span> <span class="o">=</span> <span class="n">contribution</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">pad_width</span> <span class="o">=</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_order</span> <span class="o">-</span> <span class="n">current_order</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">contribution</span><span class="p">,</span> <span class="n">pad_width</span><span class="o">=</span><span class="n">pad_width</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span> <span class="n">constant_values</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
-
-
-
-<div class="viewcode-block" id="combine_zernike_contributions">
-<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_zernike_utils.html#wf_psf.data.data_zernike_utils.combine_zernike_contributions">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">combine_zernike_contributions</span><span class="p">(</span><span class="n">contributions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Combine multiple Zernike contributions, padding each to the max order before summing.&quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">contributions</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No contributions provided.&quot;</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">contributions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">contributions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-    <span class="n">max_order</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">contrib</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">contrib</span> <span class="ow">in</span> <span class="n">contributions</span><span class="p">)</span>
-    <span class="n">n_samples</span> <span class="o">=</span> <span class="n">contributions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">n_samples</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">contributions</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;All contributions must have the same number of samples.&quot;</span><span class="p">)</span>
-
-    <span class="n">combined</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">max_order</span><span class="p">))</span>
-    <span class="c1"># Pad each contribution to the max order and sum them</span>
-    <span class="k">for</span> <span class="n">contrib</span> <span class="ow">in</span> <span class="n">contributions</span><span class="p">:</span>
-        <span class="n">padded</span> <span class="o">=</span> <span class="n">pad_contribution_to_order</span><span class="p">(</span><span class="n">contrib</span><span class="p">,</span> <span class="n">max_order</span><span class="p">)</span>
-        <span class="n">combined</span> <span class="o">+=</span> <span class="n">padded</span>
-
-    <span class="k">return</span> <span class="n">combined</span></div>
-
-
-
-<div class="viewcode-block" id="pad_tf_zernikes">
-<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_zernike_utils.html#wf_psf.data.data_zernike_utils.pad_tf_zernikes">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">pad_tf_zernikes</span><span class="p">(</span><span class="n">zk_param</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">zk_prior</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">n_zks_total</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ZernikeDataset</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Pad the Zernike coefficient tensors to match the specified total number of Zernikes.</span>
+<span class="sd">    Domain-specific canonical view over a DatasetContainer PSF modelling with Zernike input layers.</span>
 
-<span class="sd">    Parameters</span>
+<span class="sd">    Provides access to Zernike-related inputs, priors, and datasets for</span>
+<span class="sd">    centroid and misalignment corrections</span>
+
+<span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
-<span class="sd">    zk_param : tf.Tensor</span>
-<span class="sd">        Zernike coefficients for the parametric part. Shape [batch, n_zks_param, 1, 1].</span>
-<span class="sd">    zk_prior : tf.Tensor</span>
-<span class="sd">        Zernike coefficients for the prior part. Shape [batch, n_zks_prior, 1, 1].</span>
-<span class="sd">    n_zks_total : int</span>
-<span class="sd">        Total number of Zernikes to pad to.</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    padded_zk_param : tf.Tensor</span>
-<span class="sd">        Padded Zernike coefficients for the parametric part. Shape [batch, n_zks_total, 1, 1].</span>
-<span class="sd">    padded_zk_prior : tf.Tensor</span>
-<span class="sd">        Padded Zernike coefficients for the prior part. Shape [batch, n_zks_total, 1, 1].</span>
+<span class="sd">    container : DatasetContainer</span>
+<span class="sd">        Container storing the underlying datasets.</span>
+<span class="sd">    zernike_prior : Optional[np.ndarray]</span>
+<span class="sd">        True Zernike prior (e.g., from PDC). May be None.</span>
+<span class="sd">    sources : Optional[np.ndarray]</span>
+<span class="sd">        2D image stamps of sources for centroid correction. May be None.</span>
+<span class="sd">    masks : Optional[np.ndarray]</span>
+<span class="sd">        Masks corresponding to the sources. May be None.</span>
+<span class="sd">    positions : Optional[np.ndarray]</span>
+<span class="sd">        Positions for CCD misalignment corrections. May be None.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">pad_num_param</span> <span class="o">=</span> <span class="n">n_zks_total</span> <span class="o">-</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">zk_param</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-    <span class="n">pad_num_prior</span> <span class="o">=</span> <span class="n">n_zks_total</span> <span class="o">-</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">zk_prior</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
 
-    <span class="n">padded_zk_param</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span>
-        <span class="n">tf</span><span class="o">.</span><span class="n">not_equal</span><span class="p">(</span><span class="n">pad_num_param</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-        <span class="k">lambda</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">zk_param</span><span class="p">,</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad_num_param</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]),</span>
-        <span class="k">lambda</span><span class="p">:</span> <span class="n">zk_param</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="n">container</span><span class="p">:</span> <span class="n">DatasetContainer</span>
 
-    <span class="n">padded_zk_prior</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span>
-        <span class="n">tf</span><span class="o">.</span><span class="n">not_equal</span><span class="p">(</span><span class="n">pad_num_prior</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
-        <span class="k">lambda</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">zk_prior</span><span class="p">,</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad_num_prior</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]),</span>
-        <span class="k">lambda</span><span class="p">:</span> <span class="n">zk_prior</span><span class="p">,</span>
-    <span class="p">)</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sources</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return 2D source images (stamps).&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">container</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sources&quot;</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">padded_zk_param</span><span class="p">,</span> <span class="n">padded_zk_prior</span></div>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">masks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return masks corresponding to source images.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">container</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;masks&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">positions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return positions for CCD misalignment correction.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">container</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;positions&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">zernike_prior</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return Zernike prior.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">container</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;zernike_prior&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">centroid_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a dictionary suitable for centroid correction.</span>
+
+<span class="sd">        Includes &#39;stamps&#39; (sources) and optionally &#39;masks&#39; if available.</span>
+<span class="sd">        Returns None if sources are not available.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sources</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;stamps&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">masks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">[</span><span class="s2">&quot;masks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">masks</span>
+        <span class="k">return</span> <span class="n">data</span></div>
 
 
 
@@ -362,7 +210,7 @@
 <span class="sd">        The precomputed Zernike prior. Can be either a NumPy array or a TensorFlow tensor.</span>
 <span class="sd">        If a Tensor, will be converted to NumPy in eager mode.</span>
 <span class="sd">    centroid_dataset : Optional[object]</span>
-<span class="sd">        Dataset used to compute centroid correction. Must have both training and test sets.</span>
+<span class="sd">        Dataset used to compute centroid correction. Must have both training and validation sets.</span>
 <span class="sd">    positions : Optional[np.ndarray or tf.Tensor]</span>
 <span class="sd">        Positions used for computing CCD misalignment. Must be available in inference mode.</span>
 <span class="sd">    batch_size : int</span>
@@ -429,10 +277,122 @@
 
 
 
+<div class="viewcode-block" id="pad_contribution_to_order">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_zernike_utils.html#wf_psf.data.data_zernike_utils.pad_contribution_to_order">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">pad_contribution_to_order</span><span class="p">(</span><span class="n">contribution</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">max_order</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pad a Zernike contribution array to the max Zernike order.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    contribution : np.ndarray</span>
+<span class="sd">        Array of shape (n_samples, n_orders) representing Zernike contributions.</span>
+<span class="sd">    max_order : int</span>
+<span class="sd">        Target number of Zernike order; determines the number of columns after padding</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        Padded array of shape (n_samples, max_order) with zeros appended to the right if `max_order` &gt; current number of orders.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">current_order</span> <span class="o">=</span> <span class="n">contribution</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">pad_width</span> <span class="o">=</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_order</span> <span class="o">-</span> <span class="n">current_order</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">contribution</span><span class="p">,</span> <span class="n">pad_width</span><span class="o">=</span><span class="n">pad_width</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;constant&quot;</span><span class="p">,</span> <span class="n">constant_values</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="combine_zernike_contributions">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_zernike_utils.html#wf_psf.data.data_zernike_utils.combine_zernike_contributions">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">combine_zernike_contributions</span><span class="p">(</span><span class="n">contributions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Combine multiple Zernike contribution arrays into a single array.</span>
+
+<span class="sd">    Each contribution is zero-padded along the second dimension (Zernike order) to</span>
+<span class="sd">    match the maximum order across inputs, then summed element-wise.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    contributions: list[np.ndarray]</span>
+<span class="sd">        List of arrays of shape (n_samples, n_orders_i), where all arrays must share</span>
+<span class="sd">        the same number of samples (first dimension) but may differ in Zernike order</span>
+<span class="sd">        (second dimension).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        Array of shape (n_samples, max_order) containing the summed contributions after</span>
+<span class="sd">        zero-padding</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If the list is empty or contributions have inconsistent number of samples.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">contributions</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No contributions provided.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">contributions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">contributions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">max_order</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">contrib</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">contrib</span> <span class="ow">in</span> <span class="n">contributions</span><span class="p">)</span>
+    <span class="n">n_samples</span> <span class="o">=</span> <span class="n">contributions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">n_samples</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">contributions</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;All contributions must have the same number of samples.&quot;</span><span class="p">)</span>
+
+    <span class="n">combined</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">max_order</span><span class="p">))</span>
+    <span class="c1"># Pad each contribution to the max order and sum them</span>
+    <span class="k">for</span> <span class="n">contrib</span> <span class="ow">in</span> <span class="n">contributions</span><span class="p">:</span>
+        <span class="n">padded</span> <span class="o">=</span> <span class="n">pad_contribution_to_order</span><span class="p">(</span><span class="n">contrib</span><span class="p">,</span> <span class="n">max_order</span><span class="p">)</span>
+        <span class="n">combined</span> <span class="o">+=</span> <span class="n">padded</span>
+
+    <span class="k">return</span> <span class="n">combined</span></div>
+
+
+
+<div class="viewcode-block" id="pad_tf_zernikes">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_zernike_utils.html#wf_psf.data.data_zernike_utils.pad_tf_zernikes">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">pad_tf_zernikes</span><span class="p">(</span><span class="n">zk_param</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">zk_prior</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">n_zks_total</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pad the Zernike coefficient tensors to match the specified total number of Zernikes.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    zk_param : tf.Tensor</span>
+<span class="sd">        Zernike coefficients for the parametric part. Shape [batch, n_zks_param, 1, 1].</span>
+<span class="sd">    zk_prior : tf.Tensor</span>
+<span class="sd">        Zernike coefficients for the prior part. Shape [batch, n_zks_prior, 1, 1].</span>
+<span class="sd">    n_zks_total : int</span>
+<span class="sd">        Total number of Zernikes to pad to.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    padded_zk_param : tf.Tensor</span>
+<span class="sd">        Padded Zernike coefficients for the parametric part. Shape [batch, n_zks_total, 1, 1].</span>
+<span class="sd">    padded_zk_prior : tf.Tensor</span>
+<span class="sd">        Padded Zernike coefficients for the prior part. Shape [batch, n_zks_total, 1, 1].</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pad_num_param</span> <span class="o">=</span> <span class="n">n_zks_total</span> <span class="o">-</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">zk_param</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">pad_num_prior</span> <span class="o">=</span> <span class="n">n_zks_total</span> <span class="o">-</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">zk_prior</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">padded_zk_param</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">not_equal</span><span class="p">(</span><span class="n">pad_num_param</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="k">lambda</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">zk_param</span><span class="p">,</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad_num_param</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]),</span>
+        <span class="k">lambda</span><span class="p">:</span> <span class="n">zk_param</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">padded_zk_prior</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cond</span><span class="p">(</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">not_equal</span><span class="p">(</span><span class="n">pad_num_prior</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="k">lambda</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">zk_prior</span><span class="p">,</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad_num_prior</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]),</span>
+        <span class="k">lambda</span><span class="p">:</span> <span class="n">zk_prior</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">padded_zk_param</span><span class="p">,</span> <span class="n">padded_zk_prior</span></div>
+
+
+
 <div class="viewcode-block" id="shift_x_y_to_zk1_2_wavediff">
 <a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_zernike_utils.html#wf_psf.data.data_zernike_utils.shift_x_y_to_zk1_2_wavediff">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">shift_x_y_to_zk1_2_wavediff</span><span class="p">(</span><span class="n">dxy</span><span class="p">,</span> <span class="n">tel_focal_length</span><span class="o">=</span><span class="mf">24.5</span><span class="p">,</span> <span class="n">tel_diameter</span><span class="o">=</span><span class="mf">1.2</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute Zernike 1(2) for a given shifts in x(y) in WaveDifff conventions.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute Zernike 1(2) for a given shifts in x(y) in WaveDiff conventions.</span>
 
 <span class="sd">    All inputs should be in [m].</span>
 <span class="sd">    A displacement of, for example, 0.5 pixels should be scaled with the corresponding pixel scale,</span>
@@ -534,7 +494,7 @@
     <span class="n">reference_shifts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">reference_shifts</span><span class="p">,</span> <span class="n">shifts</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 
     <span class="c1"># Compute displacements</span>
-    <span class="n">displacements</span> <span class="o">=</span> <span class="n">reference_shifts</span> <span class="o">-</span> <span class="n">shifts</span>  <span class="c1">#</span>
+    <span class="n">displacements</span> <span class="o">=</span> <span class="n">reference_shifts</span> <span class="o">-</span> <span class="n">shifts</span>
 
     <span class="c1"># Ensure the correct axis order for displacements (x-axis, then y-axis)</span>
     <span class="n">displacements_swapped</span> <span class="o">=</span> <span class="n">displacements</span><span class="p">[:,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>  <span class="c1"># Adjust axis order if necessary</span>
@@ -584,7 +544,7 @@
 <div class="viewcode-block" id="defocus_to_zk4_wavediff">
 <a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_zernike_utils.html#wf_psf.data.data_zernike_utils.defocus_to_zk4_wavediff">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">defocus_to_zk4_wavediff</span><span class="p">(</span><span class="n">dz</span><span class="p">,</span> <span class="n">tel_focal_length</span><span class="o">=</span><span class="mf">24.5</span><span class="p">,</span> <span class="n">tel_diameter</span><span class="o">=</span><span class="mf">1.2</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute Zernike 4 value for a given defocus in WaveDifff conventions.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute Zernike 4 value for a given defocus in WaveDiff conventions.</span>
 
 <span class="sd">    All inputs should be in [m].</span>
 

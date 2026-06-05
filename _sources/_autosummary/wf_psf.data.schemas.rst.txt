@@ -1,0 +1,22 @@
+wf\_psf.data.schemas
+====================
+
+.. automodule:: wf_psf.data.schemas
+
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      TRAIN_SCHEMA
+      EVALUATION_SCHEMA
+      INFERENCE_SCHEMA
+      SCHEMAS
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DatasetMode
+      DatasetSchema
+   

@@ -180,20 +180,14 @@
 <span class="sd">        Standard deviation of relative RMSEs. Values in %.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Generate SED data list for the model</span>
-    <span class="n">packed_SED_data</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">utils</span><span class="o">.</span><span class="n">generate_packed_elems</span><span class="p">(</span><span class="n">_sed</span><span class="p">,</span> <span class="n">simPSF_np</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="n">n_bins_lda</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">_sed</span> <span class="ow">in</span> <span class="n">tf_SEDs</span>
-    <span class="p">]</span>
-    <span class="n">tf_packed_SED_data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">packed_SED_data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-    <span class="n">tf_packed_SED_data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">tf_packed_SED_data</span><span class="p">,</span> <span class="n">perm</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-    <span class="n">pred_inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">tf_pos</span><span class="p">,</span> <span class="n">tf_packed_SED_data</span><span class="p">]</span>
+    <span class="c1"># Set up inputs for the model</span>
+    <span class="n">pred_inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">tf_pos</span><span class="p">,</span> <span class="n">tf_SEDs</span><span class="p">]</span>
 
     <span class="c1"># Model prediction</span>
     <span class="n">preds</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">pred_inputs</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
 
-    <span class="c1"># Ground truth data preparation</span>
-    <span class="k">if</span> <span class="n">dataset_dict</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="s2">&quot;stars&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset_dict</span><span class="p">:</span>
+    <span class="c1"># Ground truth data preparation: Check if Ground Truth Dataset is in dataset dict else re-generarate</span>
+    <span class="k">if</span> <span class="n">dataset_dict</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="p">(</span><span class="s2">&quot;stars&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset_dict</span> <span class="ow">and</span> <span class="s2">&quot;sources&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dataset_dict</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
             <span class="s2">&quot;No precomputed ground truth stars found. Regenerating from the ground truth model using configured interpolation settings.&quot;</span>
         <span class="p">)</span>
@@ -214,7 +208,7 @@
 
     <span class="k">else</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Using precomputed ground truth stars from dataset_dict[&#39;stars&#39;].&quot;</span><span class="p">)</span>
-        <span class="n">gt_preds</span> <span class="o">=</span> <span class="n">dataset_dict</span><span class="p">[</span><span class="s2">&quot;stars&quot;</span><span class="p">]</span>
+        <span class="n">gt_preds</span> <span class="o">=</span> <span class="n">dataset_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;stars&quot;</span><span class="p">,</span> <span class="n">dataset_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sources&quot;</span><span class="p">))</span>
 
     <span class="c1"># If the data is masked, mask the predictions</span>
     <span class="k">if</span> <span class="n">mask</span><span class="p">:</span>
@@ -223,6 +217,9 @@
         <span class="p">)</span>
 
         <span class="n">masks</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">dataset_dict</span><span class="p">[</span><span class="s2">&quot;masks&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">masks</span><span class="p">,</span> <span class="s2">&quot;numpy&quot;</span><span class="p">):</span>
+            <span class="n">masks</span> <span class="o">=</span> <span class="n">masks</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
 
         <span class="c1"># Ensure masks as float dtype</span>
         <span class="n">masks</span> <span class="o">=</span> <span class="n">masks</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">preds</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
@@ -482,7 +479,7 @@
     <span class="n">tf_semiparam_field</span><span class="p">,</span>
     <span class="n">gt_tf_semiparam_field</span><span class="p">,</span>
     <span class="n">simPSF_np</span><span class="p">,</span>
-    <span class="n">SEDs</span><span class="p">,</span>
+    <span class="n">tf_SEDs</span><span class="p">,</span>
     <span class="n">tf_pos</span><span class="p">,</span>
     <span class="n">n_bins_lda</span><span class="p">,</span>
     <span class="n">n_bins_gt</span><span class="p">,</span>
@@ -506,8 +503,8 @@
 <span class="sd">        Ground truth model to produce gt observations at any position</span>
 <span class="sd">        and wavelength.</span>
 <span class="sd">    simPSF_np:</span>
-<span class="sd">    SEDs: numpy.ndarray [batch x SED_samples x 2]</span>
-<span class="sd">        SED samples for the corresponding positions.</span>
+<span class="sd">    tf_SEDs: tf.float [batch x SED_samples x 2]</span>
+<span class="sd">        SED samples for the corresponding positions of type tf.float.</span>
 <span class="sd">    tf_pos: Tensor [batch x 2]</span>
 <span class="sd">        Positions at where to predict the PSFs.</span>
 <span class="sd">    n_bins_lda: int</span>
@@ -564,15 +561,8 @@
         <span class="n">gt_tf_semiparam_field</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer_settings</span>
     <span class="p">)</span>
 
-    <span class="c1"># Generate SED data list</span>
-    <span class="n">packed_SED_data</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">utils</span><span class="o">.</span><span class="n">generate_packed_elems</span><span class="p">(</span><span class="n">_sed</span><span class="p">,</span> <span class="n">simPSF_np</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="n">n_bins_lda</span><span class="p">)</span> <span class="k">for</span> <span class="n">_sed</span> <span class="ow">in</span> <span class="n">SEDs</span>
-    <span class="p">]</span>
-
-    <span class="c1"># Prepare inputs</span>
-    <span class="n">tf_packed_SED_data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">packed_SED_data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-    <span class="n">tf_packed_SED_data</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">tf_packed_SED_data</span><span class="p">,</span> <span class="n">perm</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
-    <span class="n">pred_inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">tf_pos</span><span class="p">,</span> <span class="n">tf_packed_SED_data</span><span class="p">]</span>
+    <span class="c1"># Compile inputs: positions and SEDs for model inference</span>
+    <span class="n">pred_inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">tf_pos</span><span class="p">,</span> <span class="n">tf_SEDs</span><span class="p">]</span>
 
     <span class="c1"># PSF model</span>
     <span class="n">predictions</span> <span class="o">=</span> <span class="n">tf_semiparam_field</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">pred_inputs</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>

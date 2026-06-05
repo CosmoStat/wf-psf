@@ -97,12 +97,24 @@
            <div itemprop="articleBody">
              
   <h1>Source code for wf_psf.data.centroids</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Centroids.</span>
+<span></span><span class="sd">&quot;&quot;&quot;Centroid estimation and Zernike-based correction utilities.</span>
 
-<span class="sd">A module with utils to handle PSF centroids.</span>
+<span class="sd">This module provides functionality to estimate centroids from batches of</span>
+<span class="sd">PSF images (with optional masks) and to compute corresponding centroid</span>
+<span class="sd">corrections expressed in Zernike tip-tilt coefficients.</span>
+
+<span class="sd">Core functionality includes:</span>
+
+<span class="sd">- Iterative centroid estimation using an elliptical Gaussian weighting scheme.</span>
+<span class="sd">- Vectorized computation of intra-pixel shifts for batches of star images.</span>
+<span class="sd">- Conversion of centroid shifts into Zernike (Z1, Z2) tip-tilt coefficients</span>
+<span class="sd">  following the WaveDiff convention.</span>
+<span class="sd">- Generation of image shifting kernels (e.g. Lanczos) for sub-pixel alignment.</span>
+
+<span class="sd">These utilities are primarily used in PSF modeling pipelines to align</span>
+<span class="sd">observed star centroids with model predictions.</span>
 
 <span class="sd">:Author: Tobias Liaudat &lt;tobias.liaudat@cea.fr&gt; and Jennifer Pollack &lt;jennifer.pollack@cea.fr&gt;</span>
-
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>

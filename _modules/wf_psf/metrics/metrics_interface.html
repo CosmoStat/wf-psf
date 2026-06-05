@@ -198,9 +198,9 @@
             <span class="p">),</span>
             <span class="n">simPSF_np</span><span class="o">=</span><span class="n">simPSF</span><span class="p">,</span>
             <span class="n">tf_pos</span><span class="o">=</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">],</span>
-            <span class="n">tf_SEDs</span><span class="o">=</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;SEDs&quot;</span><span class="p">],</span>
-            <span class="n">n_bins_lda</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trained_model</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">n_bins_lda</span><span class="p">,</span>
-            <span class="n">n_bins_gt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="o">.</span><span class="n">ground_truth_model</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">n_bins_lda</span><span class="p">,</span>
+            <span class="n">tf_SEDs</span><span class="o">=</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;seds&quot;</span><span class="p">],</span>
+            <span class="n">n_bins_lda</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trained_model</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">n_bins_lambda</span><span class="p">,</span>
+            <span class="n">n_bins_gt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="o">.</span><span class="n">ground_truth_model</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">n_bins_lambda</span><span class="p">,</span>
             <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="o">.</span><span class="n">metrics_hparams</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
             <span class="n">dataset_dict</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
             <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span>
@@ -404,10 +404,10 @@
                 <span class="n">dataset</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;C_poly&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
             <span class="p">),</span>
             <span class="n">simPSF_np</span><span class="o">=</span><span class="n">simPSF</span><span class="p">,</span>
-            <span class="n">SEDs</span><span class="o">=</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;SEDs&quot;</span><span class="p">],</span>
+            <span class="n">tf_SEDs</span><span class="o">=</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;seds&quot;</span><span class="p">],</span>
             <span class="n">tf_pos</span><span class="o">=</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">],</span>
-            <span class="n">n_bins_lda</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trained_model</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">n_bins_lda</span><span class="p">,</span>
-            <span class="n">n_bins_gt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="o">.</span><span class="n">ground_truth_model</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">n_bins_lda</span><span class="p">,</span>
+            <span class="n">n_bins_lda</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trained_model</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">n_bins_lambda</span><span class="p">,</span>
+            <span class="n">n_bins_gt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="o">.</span><span class="n">ground_truth_model</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">n_bins_lambda</span><span class="p">,</span>
             <span class="n">output_Q</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="o">.</span><span class="n">metrics_hparams</span><span class="o">.</span><span class="n">output_Q</span><span class="p">,</span>
             <span class="n">output_dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="o">.</span><span class="n">metrics_hparams</span><span class="o">.</span><span class="n">output_dim</span><span class="p">,</span>
             <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">metrics_params</span><span class="o">.</span><span class="n">metrics_hparams</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
@@ -426,6 +426,7 @@
     <span class="n">metrics_params</span><span class="p">,</span>
     <span class="n">trained_model_params</span><span class="p">,</span>
     <span class="n">data</span><span class="p">,</span>
+    <span class="n">simPSF</span><span class="p">,</span>
     <span class="n">psf_model</span><span class="p">,</span>
     <span class="n">metrics_output</span><span class="p">,</span>
 <span class="p">):</span>
@@ -437,13 +438,15 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    metrics_params: Recursive Namespace object</span>
-<span class="sd">        Recursive Namespace object containing metrics input parameters</span>
+<span class="sd">        Recursive Namespace object containing metrics input parameters.</span>
 <span class="sd">    trained_model_params: Recursive Namespace object</span>
-<span class="sd">        Recursive Namespace object containing trained model input parameters</span>
-<span class="sd">    data: DataHandler object</span>
-<span class="sd">        DataHandler object containing training and test data</span>
+<span class="sd">        Recursive Namespace object containing trained model input parameters.</span>
+<span class="sd">    data: DataAdapter</span>
+<span class="sd">        An instance of the DataAdapter class containing datasets used to evaluate a trained PSF model.</span>
+<span class="sd">    simPSF: PSFSimulator</span>
+<span class="sd">        An instance of the PSFSimulator class used to encode SEDs into a TensorFlow-compatible format.</span>
 <span class="sd">    psf_model: object</span>
-<span class="sd">        PSF model object</span>
+<span class="sd">        Instance of a trained PSF model with loaded weights. The concrete class depends on the model specified in the training configuration.</span>
 <span class="sd">    metrics_output: str</span>
 <span class="sd">        Directory location of metrics output</span>
 
@@ -460,12 +463,11 @@
         <span class="c1"># Initialize metrics_handler</span>
         <span class="n">metrics_handler</span> <span class="o">=</span> <span class="n">MetricsParamsHandler</span><span class="p">(</span><span class="n">metrics_params</span><span class="p">,</span> <span class="n">trained_model_params</span><span class="p">)</span>
 
-        <span class="c1">## Prepare models</span>
         <span class="c1"># Prepare np input</span>
-        <span class="n">simPSF_np</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">training_data</span><span class="o">.</span><span class="n">simPSF</span>
-
+        <span class="n">simPSF_np</span> <span class="o">=</span> <span class="n">simPSF</span>
+        
         <span class="c1"># Define datasets</span>
-        <span class="n">datasets</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">test_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">training_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">}</span>
+        <span class="n">datasets</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">test_data</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">train_data</span><span class="p">}</span>
 
         <span class="c1"># Initialise dictionary to store metrics</span>
         <span class="n">all_metrics</span> <span class="o">=</span> <span class="p">{}</span>

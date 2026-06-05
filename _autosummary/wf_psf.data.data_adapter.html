@@ -1,0 +1,563 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.data.data_adapter &mdash; wf-psf 3.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../_static/twemoji.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="wf_psf.data.data_config_handler" href="wf_psf.data.data_config_handler.html" />
+    <link rel="prev" title="wf_psf.data.constants" href="wf_psf.data.constants.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="wf_psf.data.html">wf_psf.data</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.centroids.html">wf_psf.data.centroids</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.constants.html">wf_psf.data.constants</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">wf_psf.data.data_adapter</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#glossary">Glossary</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#design-principles">Design principles</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.data_adapter.DataAdapter"><code class="docutils literal notranslate"><span class="pre">DataAdapter</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.data_adapter.LoadedDataset"><code class="docutils literal notranslate"><span class="pre">LoadedDataset</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.data_adapter.RepresentationState"><code class="docutils literal notranslate"><span class="pre">RepresentationState</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.data_adapter.StructureState"><code class="docutils literal notranslate"><span class="pre">StructureState</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.data_config_handler.html">wf_psf.data.data_config_handler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.data_utils.html">wf_psf.data.data_utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.data_zernike_utils.html">wf_psf.data.data_zernike_utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.factory.html">wf_psf.data.factory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.handlers.html">wf_psf.data.handlers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.npy_dataset_loader.html">wf_psf.data.npy_dataset_loader</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.safe_batch.html">wf_psf.data.safe_batch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.schemas.html">wf_psf.data.schemas</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.tensorflow_converter.html">wf_psf.data.tensorflow_converter</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.inference.html">wf_psf.inference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.instrument.html">wf_psf.instrument</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.metrics.html">wf_psf.metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.plotting.html">wf_psf.plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.html">wf_psf.psf_models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.run.html">wf_psf.run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.sims.html">wf_psf.sims</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.training.html">wf_psf.training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.utils.html">wf_psf.utils</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="wf_psf.data.html">wf_psf.data</a></li>
+      <li class="breadcrumb-item active">wf_psf.data.data_adapter</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/wf_psf.data.data_adapter.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-wf_psf.data.data_adapter">
+<span id="wf-psf-data-data-adapter"></span><h1>wf_psf.data.data_adapter<a class="headerlink" href="#module-wf_psf.data.data_adapter" title="Link to this heading"></a></h1>
+<p>Data Adapter.</p>
+<p>This module manages dataset lifecycle transitions for the WF-PSF pipeline.</p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>Two orthogonal state machines are maintained:</p>
+<p><strong>1. Structure state</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">COMPLETE</span></code> → <code class="docutils literal notranslate"><span class="pre">SPLIT</span></code> via <code class="xref py py-meth docutils literal notranslate"><span class="pre">split_data()</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SPLIT</span></code> → <code class="docutils literal notranslate"><span class="pre">COMPLETE</span></code> via <code class="xref py py-meth docutils literal notranslate"><span class="pre">join_data()</span></code></p></li>
+</ul>
+<p><strong>2. Representation state</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">NUMPY</span></code> → <code class="docutils literal notranslate"><span class="pre">TENSORFLOW</span></code> via <code class="xref py py-meth docutils literal notranslate"><span class="pre">convert_to_tensorflow()</span></code></p></li>
+</ul>
+</section>
+<section id="glossary">
+<h2>Glossary<a class="headerlink" href="#glossary" title="Link to this heading"></a></h2>
+<dl class="simple">
+<dt><strong>COMPLETE</strong></dt><dd><p>Dataset stored as a single container.</p>
+</dd>
+<dt><strong>SPLIT</strong></dt><dd><p>Dataset stored as train/test subsets.</p>
+</dd>
+<dt><strong>NUMPY</strong></dt><dd><p>Data stored as NumPy arrays.</p>
+</dd>
+<dt><strong>TENSORFLOW</strong></dt><dd><p>Data stored as TensorFlow tensors.</p>
+</dd>
+</dl>
+</section>
+<section id="design-principles">
+<h2>Design principles<a class="headerlink" href="#design-principles" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Structure and representation are orthogonal.</p></li>
+<li><p>All transitions are explicit and idempotent where possible.</p></li>
+<li><p>No training or model logic lives in this module.</p></li>
+<li><p>Dataset field names are canonicalized for downstream models.</p></li>
+</ul>
+<p class="rubric">Notes</p>
+<p>The <a class="reference internal" href="#wf_psf.data.data_adapter.DataAdapter" title="wf_psf.data.data_adapter.DataAdapter"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataAdapter</span></code></a> class manages these transitions while providing
+a consistent interface for accessing dataset contents.</p>
+<p>Authors: Jennifer Pollack &lt;<a class="reference external" href="mailto:jennifer&#46;pollack&#37;&#52;&#48;cea&#46;fr">jennifer<span>&#46;</span>pollack<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;</p>
+</section>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.data_adapter.DataAdapter" title="wf_psf.data.data_adapter.DataAdapter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataAdapter</span></code></a>(dataset, converter[, params, ...])</p></td>
+<td><p>Adapter for managing dataset structure and backend representation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.data.data_adapter.LoadedDataset" title="wf_psf.data.data_adapter.LoadedDataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LoadedDataset</span></code></a>([complete, train, test])</p></td>
+<td><p>Structured container for loaded dataset.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.data_adapter.RepresentationState" title="wf_psf.data.data_adapter.RepresentationState"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RepresentationState</span></code></a>(value)</p></td>
+<td><p>Representation state of the dataset.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.data.data_adapter.StructureState" title="wf_psf.data.data_adapter.StructureState"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StructureState</span></code></a>(value)</p></td>
+<td><p>Structural state of the dataset.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.DataAdapter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.data.data_adapter.</span></span><span class="sig-name descname"><span class="pre">DataAdapter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#wf_psf.data.data_adapter.LoadedDataset" title="wf_psf.data.data_adapter.LoadedDataset"><span class="pre">LoadedDataset</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">converter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="wf_psf.data.tensorflow_converter.html#wf_psf.data.tensorflow_converter.TensorFlowDatasetConverter" title="wf_psf.data.tensorflow_converter.TensorFlowDatasetConverter"><span class="pre">TensorFlowDatasetConverter</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/data_adapter.html#DataAdapter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_adapter.DataAdapter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Adapter for managing dataset structure and backend representation.</p>
+<p>The adapter provides a consistent interface to datasets regardless of
+whether they are stored as a complete dataset or as train/test splits,
+and whether the underlying representation is NumPy or TensorFlow.</p>
+<p>It also canonicalizes dataset fields to the names expected by
+downstream models.</p>
+<p class="rubric">Notes</p>
+<p>Instances should be created via <cite>DataAdapterFactory.build()</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><a class="reference internal" href="#wf_psf.data.data_adapter.DataAdapter.complete_data" title="wf_psf.data.data_adapter.DataAdapter.complete_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">complete_data</span></code></a></dt><dd><p>Return the complete dataset in the current representation.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.data.data_adapter.DataAdapter.masks" title="wf_psf.data.data_adapter.DataAdapter.masks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">masks</span></code></a></dt><dd><p>Get masks for the complete dataset.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.data.data_adapter.DataAdapter.metadata" title="wf_psf.data.data_adapter.DataAdapter.metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">metadata</span></code></a></dt><dd><p>Get dataset metadata.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.data.data_adapter.DataAdapter.params" title="wf_psf.data.data_adapter.DataAdapter.params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">params</span></code></a></dt><dd><p>Get dataset params.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.data.data_adapter.DataAdapter.positions" title="wf_psf.data.data_adapter.DataAdapter.positions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">positions</span></code></a></dt><dd><p>Get positions for the complete dataset.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.data.data_adapter.DataAdapter.representation_state" title="wf_psf.data.data_adapter.DataAdapter.representation_state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">representation_state</span></code></a></dt><dd><p>Return the current representation state of the dataset.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.data.data_adapter.DataAdapter.sources" title="wf_psf.data.data_adapter.DataAdapter.sources"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sources</span></code></a></dt><dd><p>Get sources for the complete dataset.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.data.data_adapter.DataAdapter.structure_state" title="wf_psf.data.data_adapter.DataAdapter.structure_state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">structure_state</span></code></a></dt><dd><p>Return the current structural state of the dataset.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.data.data_adapter.DataAdapter.test_data" title="wf_psf.data.data_adapter.DataAdapter.test_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">test_data</span></code></a></dt><dd><p>Return the test set in the current representation.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.data.data_adapter.DataAdapter.train_data" title="wf_psf.data.data_adapter.DataAdapter.train_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">train_data</span></code></a></dt><dd><p>Return the training set in the current representation.</p>
+</dd>
+<dt><a class="reference internal" href="#wf_psf.data.data_adapter.DataAdapter.zernike_prior" title="wf_psf.data.data_adapter.DataAdapter.zernike_prior"><code class="xref py py-obj docutils literal notranslate"><span class="pre">zernike_prior</span></code></a></dt><dd><p>Get Zernike prior for the complete dataset.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.data_adapter.DataAdapter.convert_to_tensorflow" title="wf_psf.data.data_adapter.DataAdapter.convert_to_tensorflow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert_to_tensorflow</span></code></a>(simPSF, n_bins_lambda, ...)</p></td>
+<td><p>Convert dataset containers from NumPy to TensorFlow representation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.data.data_adapter.DataAdapter.join_data" title="wf_psf.data.data_adapter.DataAdapter.join_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">join_data</span></code></a>([keys])</p></td>
+<td><p>Join train and test splits into a single complete dataset.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.data_adapter.DataAdapter.release_numpy" title="wf_psf.data.data_adapter.DataAdapter.release_numpy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">release_numpy</span></code></a>()</p></td>
+<td><p>Release NumPy datasets.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.data.data_adapter.DataAdapter.release_tensorflow" title="wf_psf.data.data_adapter.DataAdapter.release_tensorflow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">release_tensorflow</span></code></a>()</p></td>
+<td><p>Release tensorflow datasets.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.data_adapter.DataAdapter.split_data" title="wf_psf.data.data_adapter.DataAdapter.split_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">split_data</span></code></a>([ratio, seed])</p></td>
+<td><p>Split the complete dataset into train and test sets if not already split.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.DataAdapter.complete_data">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">complete_data</span></span><a class="headerlink" href="#wf_psf.data.data_adapter.DataAdapter.complete_data" title="Link to this definition"></a></dt>
+<dd><p>Return the complete dataset in the current representation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.DataAdapter.convert_to_tensorflow">
+<span class="sig-name descname"><span class="pre">convert_to_tensorflow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">simPSF</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins_lambda</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/data_adapter.html#DataAdapter.convert_to_tensorflow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_adapter.DataAdapter.convert_to_tensorflow" title="Link to this definition"></a></dt>
+<dd><p>Convert dataset containers from NumPy to TensorFlow representation.</p>
+<p>Applies the configured converter to transform dataset fields associated
+with canonical keys into TensorFlow-compatible formats.</p>
+<p>Conversion is performed on the active structure:</p>
+<ul class="simple">
+<li><p>SPLIT: converts train and test datasets separately</p></li>
+<li><p>COMPLETE: converts the full dataset</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>simPSF</strong> (<a class="reference internal" href="wf_psf.sims.psf_simulator.html#wf_psf.sims.psf_simulator.PSFSimulator" title="wf_psf.sims.psf_simulator.PSFSimulator"><em>PSFSimulator</em></a>) – Simulator instance passed to the converter.</p></li>
+<li><p><strong>n_bins_lambda</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of wavelength bins used during conversion.</p></li>
+<li><p><strong>mode</strong> (<a class="reference internal" href="wf_psf.data.schemas.html#wf_psf.data.schemas.DatasetMode" title="wf_psf.data.schemas.DatasetMode"><em>DatasetMode</em></a>) – Dataset operation mode used to select the appropriate dataset schema for a given pipeline process (e.g. training, validation, inference)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.14)"><strong>RuntimeError</strong></a> – If no converter is configured.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Conversion is idempotent: if the data is already in TensorFlow</p></li>
+</ul>
+<p>representation, this method does nothing.</p>
+<ul class="simple">
+<li><p>Converted datasets are stored in internal attributes</p></li>
+</ul>
+<p>(<code class="docutils literal notranslate"><span class="pre">_train_tf</span></code>, <code class="docutils literal notranslate"><span class="pre">_test_tf</span></code>, <code class="docutils literal notranslate"><span class="pre">_complete_tf</span></code>) and do not overwrite
+the original NumPy data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.DataAdapter.join_data">
+<span class="sig-name descname"><span class="pre">join_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/data_adapter.html#DataAdapter.join_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_adapter.DataAdapter.join_data" title="Link to this definition"></a></dt>
+<dd><p>Join train and test splits into a single complete dataset.</p>
+<p>Concatenates corresponding arrays from the train and test containers
+along the first axis (sample dimension) for the specified keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>keys</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>optional</em>) – Dataset fields to join. If None, uses the canonical dataset keys.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.14)"><strong>RuntimeError</strong></a> – If the adapter is not in SPLIT state or if train/test data is missing.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Only keys present in both train and test datasets are joined.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.DataAdapter.masks">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">masks</span></span><a class="headerlink" href="#wf_psf.data.data_adapter.DataAdapter.masks" title="Link to this definition"></a></dt>
+<dd><p>Get masks for the complete dataset.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.DataAdapter.metadata">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">metadata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></em><a class="headerlink" href="#wf_psf.data.data_adapter.DataAdapter.metadata" title="Link to this definition"></a></dt>
+<dd><p>Get dataset metadata.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.DataAdapter.params">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">params</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></em><a class="headerlink" href="#wf_psf.data.data_adapter.DataAdapter.params" title="Link to this definition"></a></dt>
+<dd><p>Get dataset params.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.DataAdapter.positions">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">positions</span></span><a class="headerlink" href="#wf_psf.data.data_adapter.DataAdapter.positions" title="Link to this definition"></a></dt>
+<dd><p>Get positions for the complete dataset.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.DataAdapter.release_numpy">
+<span class="sig-name descname"><span class="pre">release_numpy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/data_adapter.html#DataAdapter.release_numpy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_adapter.DataAdapter.release_numpy" title="Link to this definition"></a></dt>
+<dd><p>Release NumPy datasets.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.DataAdapter.release_tensorflow">
+<span class="sig-name descname"><span class="pre">release_tensorflow</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/data_adapter.html#DataAdapter.release_tensorflow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_adapter.DataAdapter.release_tensorflow" title="Link to this definition"></a></dt>
+<dd><p>Release tensorflow datasets.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.DataAdapter.representation_state">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">representation_state</span></span><a class="headerlink" href="#wf_psf.data.data_adapter.DataAdapter.representation_state" title="Link to this definition"></a></dt>
+<dd><p>Return the current representation state of the dataset.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.DataAdapter.sources">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sources</span></span><a class="headerlink" href="#wf_psf.data.data_adapter.DataAdapter.sources" title="Link to this definition"></a></dt>
+<dd><p>Get sources for the complete dataset.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.DataAdapter.split_data">
+<span class="sig-name descname"><span class="pre">split_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/data_adapter.html#DataAdapter.split_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_adapter.DataAdapter.split_data" title="Link to this definition"></a></dt>
+<dd><p>Split the complete dataset into train and test sets if not already split.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ratio</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a><em>, </em><em>optional</em>) – The fraction of the dataset to use for training (default is 0.8 or from params).</p></li>
+<li><p><strong>seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a><em>, </em><em>optional</em>) – The random seed for reproducibility (default is from params).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeError" title="(in Python v3.14)"><strong>RuntimeError</strong></a> – If the dataset is not in COMPLETE state when attempting to split.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Splitting is idempotent: if the dataset is already in SPLIT state,
+this method does not modify the data or re-split the dataset.</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.DataAdapter.structure_state">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">structure_state</span></span><a class="headerlink" href="#wf_psf.data.data_adapter.DataAdapter.structure_state" title="Link to this definition"></a></dt>
+<dd><p>Return the current structural state of the dataset.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.DataAdapter.test_data">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">test_data</span></span><a class="headerlink" href="#wf_psf.data.data_adapter.DataAdapter.test_data" title="Link to this definition"></a></dt>
+<dd><p>Return the test set in the current representation.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.DataAdapter.train_data">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">train_data</span></span><a class="headerlink" href="#wf_psf.data.data_adapter.DataAdapter.train_data" title="Link to this definition"></a></dt>
+<dd><p>Return the training set in the current representation.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.DataAdapter.zernike_prior">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">zernike_prior</span></span><a class="headerlink" href="#wf_psf.data.data_adapter.DataAdapter.zernike_prior" title="Link to this definition"></a></dt>
+<dd><p>Get Zernike prior for the complete dataset.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.LoadedDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.data.data_adapter.</span></span><span class="sig-name descname"><span class="pre">LoadedDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">complete</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/data_adapter.html#LoadedDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_adapter.LoadedDataset" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Structured container for loaded dataset.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.LoadedDataset.complete">
+<span class="sig-name descname"><span class="pre">complete</span></span><a class="headerlink" href="#wf_psf.data.data_adapter.LoadedDataset.complete" title="Link to this definition"></a></dt>
+<dd><p>The complete dataset (if in COMPLETE state).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.LoadedDataset.train">
+<span class="sig-name descname"><span class="pre">train</span></span><a class="headerlink" href="#wf_psf.data.data_adapter.LoadedDataset.train" title="Link to this definition"></a></dt>
+<dd><p>The training dataset (if in SPLIT state).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.LoadedDataset.test">
+<span class="sig-name descname"><span class="pre">test</span></span><a class="headerlink" href="#wf_psf.data.data_adapter.LoadedDataset.test" title="Link to this definition"></a></dt>
+<dd><p>The test dataset (if in SPLIT state).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.data_adapter.LoadedDataset.is_complete" title="wf_psf.data.data_adapter.LoadedDataset.is_complete"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_complete</span></code></a>()</p></td>
+<td><p>Check if the dataset is in COMPLETE state.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.data.data_adapter.LoadedDataset.is_split" title="wf_psf.data.data_adapter.LoadedDataset.is_split"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_split</span></code></a>()</p></td>
+<td><p>Check if the dataset is in SPLIT state.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.LoadedDataset.is_complete">
+<span class="sig-name descname"><span class="pre">is_complete</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/data/data_adapter.html#LoadedDataset.is_complete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_adapter.LoadedDataset.is_complete" title="Link to this definition"></a></dt>
+<dd><p>Check if the dataset is in COMPLETE state.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.LoadedDataset.is_split">
+<span class="sig-name descname"><span class="pre">is_split</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/data/data_adapter.html#LoadedDataset.is_split"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_adapter.LoadedDataset.is_split" title="Link to this definition"></a></dt>
+<dd><p>Check if the dataset is in SPLIT state.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.RepresentationState">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.data.data_adapter.</span></span><span class="sig-name descname"><span class="pre">RepresentationState</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/data_adapter.html#RepresentationState"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_adapter.RepresentationState" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<p>Representation state of the dataset.</p>
+<ul class="simple">
+<li><p>NUMPY: the dataset is represented as a NumPy array.</p></li>
+<li><p>TENSORFLOW: the dataset is represented as a TensorFlow tensor.</p></li>
+</ul>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.RepresentationState.NUMPY">
+<span class="sig-name descname"><span class="pre">NUMPY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#wf_psf.data.data_adapter.RepresentationState.NUMPY" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.RepresentationState.TENSORFLOW">
+<span class="sig-name descname"><span class="pre">TENSORFLOW</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#wf_psf.data.data_adapter.RepresentationState.TENSORFLOW" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.StructureState">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.data.data_adapter.</span></span><span class="sig-name descname"><span class="pre">StructureState</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/data_adapter.html#StructureState"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_adapter.StructureState" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<p>Structural state of the dataset.</p>
+<ul class="simple">
+<li><p>COMPLETE: the dataset is complete and not split into train/test.</p></li>
+<li><p>SPLIT: the dataset is split into train and test sets.</p></li>
+</ul>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.StructureState.COMPLETE">
+<span class="sig-name descname"><span class="pre">COMPLETE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#wf_psf.data.data_adapter.StructureState.COMPLETE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.data_adapter.StructureState.SPLIT">
+<span class="sig-name descname"><span class="pre">SPLIT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#wf_psf.data.data_adapter.StructureState.SPLIT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="wf_psf.data.constants.html" class="btn btn-neutral float-left" title="wf_psf.data.constants" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wf_psf.data.data_config_handler.html" class="btn btn-neutral float-right" title="wf_psf.data.data_config_handler" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

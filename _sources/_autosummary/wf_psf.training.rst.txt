@@ -12,3 +12,5 @@
 
    train
    train_utils
+   training_config_handler
+   training_data_adapter

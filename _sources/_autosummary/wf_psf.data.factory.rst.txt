@@ -1,0 +1,20 @@
+wf\_psf.data.factory
+====================
+
+.. automodule:: wf_psf.data.factory
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      normalize_data_envelope
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DataAdapterFactory
+      DataEnvelope
+      SupportsParams
+   

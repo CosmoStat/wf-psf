@@ -502,7 +502,7 @@
 <div class="viewcode-block" id="calculate_sample_weights">
 <a class="viewcode-back" href="../../../_autosummary/wf_psf.training.train_utils.html#wf_psf.training.train_utils.calculate_sample_weights">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">calculate_sample_weights</span><span class="p">(</span>
-    <span class="n">outputs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">outputs</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">use_sample_weights</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="n">loss</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
     <span class="n">apply_sigmoid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
@@ -517,8 +517,8 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    outputs: np.ndarray</span>
-<span class="sd">        A 3D array of shape (batch_size, height, width) representing images, where the first dimension is the batch size</span>
+<span class="sd">    outputs: tf.Tensor</span>
+<span class="sd">        A 3D tensor of shape (batch_size, height, width) representing images, where the first dimension is the batch size</span>
 <span class="sd">        and the next two dimensions are the image height and width.</span>
 <span class="sd">    use_sample_weights: bool</span>
 <span class="sd">        Flag indicating whether to compute sample weights. If True, sample weights will be computed based on the image noise.</span>
@@ -547,6 +547,7 @@
             <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">loss</span> <span class="o">==</span> <span class="s2">&quot;masked_mean_squared_error&quot;</span><span class="p">)</span>
             <span class="ow">or</span> <span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="s2">&quot;name&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">loss</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;masked_mean_squared_error&quot;</span><span class="p">)</span>
         <span class="p">):</span>
+            
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Estimating noise standard deviation for masked images..&quot;</span><span class="p">)</span>
             <span class="n">images</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
             <span class="n">masks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">outputs</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>

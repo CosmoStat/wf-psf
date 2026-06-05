@@ -16,10 +16,7 @@ wf\_psf.utils.configs\_handler
 
    .. autosummary::
    
-      DataConfigHandler
-      MetricsConfigHandler
-      PlottingConfigHandler
-      TrainingConfigHandler
+      ConfigHandler
    
    .. rubric:: Exceptions
 

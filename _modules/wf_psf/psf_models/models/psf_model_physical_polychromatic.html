@@ -109,9 +109,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tensorflow.python.keras.engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">data_adapter</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.data.data_handler</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_data_array</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.data.data_zernike_utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
-    <span class="n">ZernikeInputsFactory</span><span class="p">,</span>
+    <span class="n">ZernikeDataset</span><span class="p">,</span>
     <span class="n">assemble_zernike_contributions</span><span class="p">,</span>
     <span class="n">pad_tf_zernikes</span><span class="p">,</span>
 <span class="p">)</span>
@@ -126,7 +125,6 @@
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.psf_models.tf_modules.tf_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">ensure_tensor</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -191,10 +189,10 @@
 <span class="sd">    It incorporates parametric and non-parametric modeling approaches to accurately reconstruct the point spread function (PSF) across multiple wavelengths.</span>
 
 <span class="sd">    The model provides functionalities for:</span>
-<span class="sd">    - Initializing model parameters and defining the physical PSF layer.</span>
-<span class="sd">    - Performing forward passes and computing wavefront transformations.</span>
-<span class="sd">    - Handling Zernike parameterization and coefficient matrices.</span>
-<span class="sd">    - Evaluating model performance and saving optimization history.</span>
+<span class="sd">      - Initializing model parameters and defining the physical PSF layer.</span>
+<span class="sd">      - Performing forward passes and computing wavefront transformations.</span>
+<span class="sd">      - Handling Zernike parameterization and coefficient matrices.</span>
+<span class="sd">      - Evaluating model performance and saving optimization history.</span>
 
 <span class="sd">    See individual method docstrings for more details.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -222,8 +220,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">model_params</span> <span class="o">=</span> <span class="n">model_params</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">training_params</span> <span class="o">=</span> <span class="n">training_params</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">run_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_run_type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">obs_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_obs_pos</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">positions</span> <span class="o">=</span> <span class="n">ensure_tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;positions&quot;</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 
         <span class="c1"># Initialize the model parameters</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">output_Q</span> <span class="o">=</span> <span class="n">model_params</span><span class="o">.</span><span class="n">output_Q</span>
@@ -269,30 +266,14 @@
         <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_poly_Z_field</span>
         <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_np_poly_opd</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_get_run_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;run_type&quot;</span><span class="p">):</span>
-            <span class="n">run_type</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">run_type</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;run_type&quot;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
-            <span class="n">run_type</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;run_type&quot;</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;data must have a &#39;run_type&#39; attribute or key&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">run_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;training&quot;</span><span class="p">,</span> <span class="s2">&quot;simulation&quot;</span><span class="p">,</span> <span class="s2">&quot;metrics&quot;</span><span class="p">,</span> <span class="s2">&quot;inference&quot;</span><span class="p">}:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown run_type: </span><span class="si">{</span><span class="n">run_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">run_type</span>
-
     <span class="k">def</span><span class="w"> </span><span class="nf">_assemble_zernike_contributions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">zks_inputs</span> <span class="o">=</span> <span class="n">ZernikeInputsFactory</span><span class="o">.</span><span class="n">build</span><span class="p">(</span>
-            <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
-            <span class="n">run_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">run_type</span><span class="p">,</span>
-            <span class="n">model_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_params</span><span class="p">,</span>
-            <span class="n">prior</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_external_prior</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_external_prior&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="n">zernike_data</span> <span class="o">=</span> <span class="n">ZernikeDataset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">assemble_zernike_contributions</span><span class="p">(</span>
             <span class="n">model_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_params</span><span class="p">,</span>
-            <span class="n">zernike_prior</span><span class="o">=</span><span class="n">zks_inputs</span><span class="o">.</span><span class="n">zernike_prior</span><span class="p">,</span>
-            <span class="n">centroid_dataset</span><span class="o">=</span><span class="n">zks_inputs</span><span class="o">.</span><span class="n">centroid_dataset</span><span class="p">,</span>
-            <span class="n">positions</span><span class="o">=</span><span class="n">zks_inputs</span><span class="o">.</span><span class="n">misalignment_positions</span><span class="p">,</span>
+            <span class="n">zernike_prior</span><span class="o">=</span><span class="n">zernike_data</span><span class="o">.</span><span class="n">zernike_prior</span><span class="p">,</span>
+            <span class="n">centroid_dataset</span><span class="o">=</span><span class="n">zernike_data</span><span class="o">.</span><span class="n">centroid_inputs</span><span class="p">,</span>
+            <span class="n">positions</span><span class="o">=</span><span class="n">zernike_data</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span>
             <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">training_params</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -310,28 +291,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">nonparam_hparams</span><span class="p">,</span> <span class="s2">&quot;save_optim_history_nonparam&quot;</span><span class="p">,</span> <span class="kc">False</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="TFPhysicalPolychromaticField.get_obs_pos">
-<a class="viewcode-back" href="../../../../_autosummary/wf_psf.psf_models.models.psf_model_physical_polychromatic.html#wf_psf.psf_models.models.psf_model_physical_polychromatic.TFPhysicalPolychromaticField.get_obs_pos">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_obs_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_type</span> <span class="ow">in</span> <span class="p">{</span>
-            <span class="s2">&quot;training&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;simulation&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;metrics&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;inference&quot;</span><span class="p">,</span>
-        <span class="p">},</span> <span class="sa">f</span><span class="s2">&quot;Unknown run_type: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">run_type</span><span class="si">}</span><span class="s2">&quot;</span>
-
-        <span class="n">raw_pos</span> <span class="o">=</span> <span class="n">get_data_array</span><span class="p">(</span>
-            <span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">run_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">run_type</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;positions&quot;</span>
-        <span class="p">)</span>
-
-        <span class="n">obs_pos</span> <span class="o">=</span> <span class="n">ensure_tensor</span><span class="p">(</span><span class="n">raw_pos</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">obs_pos</span></div>
-
-
     <span class="c1"># === Lazy properties ===.</span>
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">zks_total_contribution</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return total Zernike contribution tensor.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zks_total_contribution</span>
 
     <span class="nd">@property</span>
@@ -345,11 +308,13 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_zernike_maps</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">opd_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">opd_dim</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get Optical Path Difference Dimension.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_opd_dim</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">obscurations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get telescope obscurations.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_obscurations</span>
 
     <span class="nd">@property</span>
@@ -374,7 +339,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Lazy loading of the physical layer of the PSF model.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_tf_physical_layer&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_tf_physical_layer</span> <span class="o">=</span> <span class="n">TFPhysicalLayer</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">obs_pos</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">zks_total_contribution</span><span class="p">,</span>
                 <span class="n">interpolation_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">interpolation_type</span><span class="p">,</span>
                 <span class="n">interpolation_args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">interpolation_args</span><span class="p">,</span>

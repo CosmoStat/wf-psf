@@ -1,0 +1,379 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.data.factory &mdash; wf-psf 3.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../_static/twemoji.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="wf_psf.data.handlers" href="wf_psf.data.handlers.html" />
+    <link rel="prev" title="wf_psf.data.data_zernike_utils" href="wf_psf.data.data_zernike_utils.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="wf_psf.data.html">wf_psf.data</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.centroids.html">wf_psf.data.centroids</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.constants.html">wf_psf.data.constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.data_adapter.html">wf_psf.data.data_adapter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.data_config_handler.html">wf_psf.data.data_config_handler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.data_utils.html">wf_psf.data.data_utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.data_zernike_utils.html">wf_psf.data.data_zernike_utils</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">wf_psf.data.factory</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.factory.DataAdapterFactory"><code class="docutils literal notranslate"><span class="pre">DataAdapterFactory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.factory.DataEnvelope"><code class="docutils literal notranslate"><span class="pre">DataEnvelope</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.factory.SupportsParams"><code class="docutils literal notranslate"><span class="pre">SupportsParams</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.factory.normalize_data_envelope"><code class="docutils literal notranslate"><span class="pre">normalize_data_envelope()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.handlers.html">wf_psf.data.handlers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.npy_dataset_loader.html">wf_psf.data.npy_dataset_loader</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.safe_batch.html">wf_psf.data.safe_batch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.schemas.html">wf_psf.data.schemas</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.tensorflow_converter.html">wf_psf.data.tensorflow_converter</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.inference.html">wf_psf.inference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.instrument.html">wf_psf.instrument</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.metrics.html">wf_psf.metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.plotting.html">wf_psf.plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.html">wf_psf.psf_models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.run.html">wf_psf.run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.sims.html">wf_psf.sims</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.training.html">wf_psf.training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.utils.html">wf_psf.utils</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="wf_psf.data.html">wf_psf.data</a></li>
+      <li class="breadcrumb-item active">wf_psf.data.factory</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/wf_psf.data.factory.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-wf_psf.data.factory">
+<span id="wf-psf-data-factory"></span><h1>wf_psf.data.factory<a class="headerlink" href="#module-wf_psf.data.factory" title="Link to this heading"></a></h1>
+<p>Factory module for creating and normalizing data adapters.</p>
+<p>This module defines the <code class="docutils literal notranslate"><span class="pre">DataAdapterFactory</span></code>, which constructs <code class="docutils literal notranslate"><span class="pre">DataAdapter</span></code>
+instances from a variety of dataset formats, including dictionaries,
+dataclasses, <code class="docutils literal notranslate"><span class="pre">LoadedDataset</span></code> instances, or objects with attributes exposing
+numpy arrays. It also integrates dataset normalization through the <code class="docutils literal notranslate"><span class="pre">DataEnvelope</span></code>
+and utility routines in <code class="docutils literal notranslate"><span class="pre">data_utils</span></code>.</p>
+<p>The module defines a protocol (<code class="docutils literal notranslate"><span class="pre">SupportsParams</span></code>) to allow
+external APIs to pass parameter containers in a generic way,
+supporting dataclasses, custom objects, or dictionaries.</p>
+<p>Key features:</p>
+<ul class="simple">
+<li><p>Automatic detection of dataset structure (train/test/complete) and conversion
+to <code class="docutils literal notranslate"><span class="pre">LoadedDataset</span></code> for downstream processing.</p></li>
+<li><p>Normalization and validation of dataset parameters via <code class="docutils literal notranslate"><span class="pre">normalize_data_envelope</span></code>.</p></li>
+<li><p>Optional metadata extraction when available in input objects.</p></li>
+<li><p>Integration with <code class="docutils literal notranslate"><span class="pre">TensorFlowDatasetConverter</span></code> for TF-ready dataset pipelines.</p></li>
+<li><p>Lightweight dataset introspection utilities for in-memory datasets and canonical keys.</p></li>
+<li><p>Logging to provide insight into dataset resolution and loading steps.</p></li>
+</ul>
+<p>Author: Jennifer Pollack &lt;<a class="reference external" href="mailto:jennifer&#46;pollack&#37;&#52;&#48;cea&#46;fr">jennifer<span>&#46;</span>pollack<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;</p>
+<p class="rubric">Functions</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.factory.normalize_data_envelope" title="wf_psf.data.factory.normalize_data_envelope"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_data_envelope</span></code></a>(obj[, field_name, ...])</p></td>
+<td><p>Normalize data envelope.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.factory.DataAdapterFactory" title="wf_psf.data.factory.DataAdapterFactory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataAdapterFactory</span></code></a>()</p></td>
+<td><p>Factory for creating DataAdapters from various dataset formats.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.data.factory.DataEnvelope" title="wf_psf.data.factory.DataEnvelope"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataEnvelope</span></code></a>(data, params[, metadata])</p></td>
+<td><p>Encapsulates separated dataset, parameters and metadata.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.factory.SupportsParams" title="wf_psf.data.factory.SupportsParams"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SupportsParams</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Protocol for dataset objects containing parameters.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.data.factory.DataAdapterFactory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.data.factory.</span></span><span class="sig-name descname"><span class="pre">DataAdapterFactory</span></span><a class="reference internal" href="../_modules/wf_psf/data/factory.html#DataAdapterFactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.factory.DataAdapterFactory" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Factory for creating DataAdapters from various dataset formats.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.factory.DataAdapterFactory.build" title="wf_psf.data.factory.DataAdapterFactory.build"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build</span></code></a>(data)</p></td>
+<td><p>Create a DataAdapter.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.data.factory.DataAdapterFactory.build">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/factory.html#DataAdapterFactory.build"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.factory.DataAdapterFactory.build" title="Link to this definition"></a></dt>
+<dd><p>Create a DataAdapter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><em>object</em></a>) – <p>The dataset to be adapted. Can be:</p>
+<ul class="simple">
+<li><p>A <code class="docutils literal notranslate"><span class="pre">LoadedDataset</span></code> instance</p></li>
+<li><p>A <code class="docutils literal notranslate"><span class="pre">dataclass</span></code> with numpy arrays (e.g., train/test containers, parameters or shallow complete)</p></li>
+<li><p>A <code class="docutils literal notranslate"><span class="pre">dict</span></code> containing ‘train’, ‘test’, or ‘complete’ keys with numpy arrays</p></li>
+<li><p>An <code class="docutils literal notranslate"><span class="pre">object</span></code> with attributes that are numpy arrays (like your train/test containers)</p></li>
+</ul>
+<p>The factory will automatically detect the structure and convert it into a <code class="docutils literal notranslate"><span class="pre">LoadedDataset</span></code>.</p>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="wf_psf.data.data_adapter.html#wf_psf.data.data_adapter.DataAdapter" title="wf_psf.data.data_adapter.DataAdapter">DataAdapter</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.data.factory.DataEnvelope">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.data.factory.</span></span><span class="sig-name descname"><span class="pre">DataEnvelope</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/factory.html#DataEnvelope"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.factory.DataEnvelope" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Encapsulates separated dataset, parameters and metadata.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.factory.DataEnvelope.data">
+<span class="sig-name descname"><span class="pre">data</span></span><a class="headerlink" href="#wf_psf.data.factory.DataEnvelope.data" title="Link to this definition"></a></dt>
+<dd><p>The actual dataset (e.g., <code class="docutils literal notranslate"><span class="pre">LoadedDataset</span></code>, <code class="docutils literal notranslate"><span class="pre">dict</span></code>, <code class="docutils literal notranslate"><span class="pre">dataclass</span></code>). Can be <code class="docutils literal notranslate"><span class="pre">None</span></code> if input is just params.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.factory.DataEnvelope.params">
+<span class="sig-name descname"><span class="pre">params</span></span><a class="headerlink" href="#wf_psf.data.factory.DataEnvelope.params" title="Link to this definition"></a></dt>
+<dd><p>Configuration parameters used to resolve and load the dataset. Required for adapter construction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ParamsType</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.factory.DataEnvelope.metadata">
+<span class="sig-name descname"><span class="pre">metadata</span></span><a class="headerlink" href="#wf_psf.data.factory.DataEnvelope.metadata" title="Link to this definition"></a></dt>
+<dd><p>Ancillary information about the dataset (IDs, units, provenance, etc.).
+Defaults to None if not present in input.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>] = None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>metadata</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></em><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">metadata</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">params</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></em><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.data.factory.SupportsParams">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.data.factory.</span></span><span class="sig-name descname"><span class="pre">SupportsParams</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/factory.html#SupportsParams"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.factory.SupportsParams" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Protocol" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></a></p>
+<p>Protocol for dataset objects containing parameters.</p>
+<p>This protocol represents objects that expose a <code class="docutils literal notranslate"><span class="pre">params</span></code> attribute
+containing dataset parameters. This allows dataclasses, custom objects, and other parameter containers
+to be accepted by the data adapter API.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.factory.SupportsParams.params">
+<span class="sig-name descname"><span class="pre">params</span></span><a class="headerlink" href="#wf_psf.data.factory.SupportsParams.params" title="Link to this definition"></a></dt>
+<dd><p>An object (e.g., dict, structured namespace, etc) containing dataset-specific parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">params</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></em><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.data.factory.normalize_data_envelope">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.data.factory.</span></span><span class="sig-name descname"><span class="pre">normalize_data_envelope</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">field_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'params'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'metadata'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#wf_psf.data.factory.DataEnvelope" title="wf_psf.data.factory.DataEnvelope"><span class="pre">DataEnvelope</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/data/factory.html#normalize_data_envelope"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.factory.normalize_data_envelope" title="Link to this definition"></a></dt>
+<dd><p>Normalize data envelope.</p>
+<p>Normalize an input object into a <code class="docutils literal notranslate"><span class="pre">DataEnvelope</span></code> by extracting named
+parametric fields and metadata. Supports dataclasses, dictionaries,
+and generic objects with attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj</strong> (<em>Any</em>) – Input object containing dataset, parameters, and optionally metadata.</p></li>
+<li><p><strong>field_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>default &quot;params&quot;</em>) – Name of the field to extract as parameters.</p></li>
+<li><p><strong>metadata_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>default &quot;metadata&quot;</em>) – Name of the field to extract as metadata, if present.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Object containing separated data, parameters, and metadata.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#wf_psf.data.factory.DataEnvelope" title="wf_psf.data.factory.DataEnvelope">DataEnvelope</a></p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>The <code class="docutils literal notranslate"><span class="pre">params</span></code> field is optional, but may be required by downstream components (e.g. the factory) to resolve how the dataset should be constructed (in-memory vs. file-based loading).</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">metadata</span></code> field is optional and ignored if not present.</p></li>
+</ul>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="wf_psf.data.data_zernike_utils.html" class="btn btn-neutral float-left" title="wf_psf.data.data_zernike_utils" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wf_psf.data.handlers.html" class="btn btn-neutral float-right" title="wf_psf.data.handlers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

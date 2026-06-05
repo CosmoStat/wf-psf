@@ -11,3 +11,4 @@
    :recursive:
 
    plots_interface
+   plotting_config_handler

@@ -1,0 +1,20 @@
+wf\_psf.data.data\_utils
+========================
+
+.. automodule:: wf_psf.data.data_utils
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      to_container
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      ConversionContext
+      DatasetContainer
+      SEDContext
+   

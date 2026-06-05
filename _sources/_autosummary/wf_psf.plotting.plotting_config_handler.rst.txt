@@ -1,0 +1,12 @@
+wf\_psf.plotting.plotting\_config\_handler
+==========================================
+
+.. automodule:: wf_psf.plotting.plotting_config_handler
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      PlottingConfigHandler
+   

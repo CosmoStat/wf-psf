@@ -1,0 +1,13 @@
+wf\_psf.data.safe\_batch
+========================
+
+.. automodule:: wf_psf.data.safe_batch
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      log_filtered_objects
+      safe_batch_builder
+   

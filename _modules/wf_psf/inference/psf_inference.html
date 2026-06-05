@@ -99,7 +99,7 @@
   <h1>Source code for wf_psf.inference.psf_inference</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Inference.</span>
 
-<span class="sd">A module which provides a PSFInference class to perform inference</span>
+<span class="sd">A module which provides a `PSFInference` class to perform inference</span>
 <span class="sd">with trained PSF models. It is able to load a trained model,</span>
 <span class="sd">perform inference on a dataset of SEDs and positions, and generate polychromatic PSFs.</span>
 
@@ -110,12 +110,19 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.data.data_handler</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataHandler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.data.data_adapter</span><span class="w"> </span><span class="kn">import</span> <span class="n">StructureState</span><span class="p">,</span> <span class="n">RepresentationState</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.data.data_config_handler</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataConfigHandler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.data.data_adapter</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataAdapter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.data.factory</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataAdapterFactory</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.data.schemas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatasetMode</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.utils.read_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_conf</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.utils.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">ensure_batch</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.psf_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">psf_models</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.psf_models.psf_model_loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_trained_psf_model</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="InferenceConfigHandler">
@@ -172,18 +179,17 @@
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
 <span class="sd">        Updates the following attributes in-place:</span>
-<span class="sd">        - inference_config</span>
-<span class="sd">        - training_config</span>
-<span class="sd">        - data_config (if data_config_path is specified)</span>
+<span class="sd">          - `inference_config`</span>
+<span class="sd">          - `training_config`</span>
+<span class="sd">          - `data_config` (if `data_config_path` is specified)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">inference_config</span> <span class="o">=</span> <span class="n">read_conf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inference_config_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inference_config</span> <span class="o">=</span> <span class="n">read_conf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inference_config_path</span><span class="p">)</span><span class="o">.</span><span class="n">inference</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_config_paths</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">training_config</span> <span class="o">=</span> <span class="n">read_conf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trained_model_config_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">training_config</span> <span class="o">=</span> <span class="n">read_conf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trained_model_config_path</span><span class="p">)</span><span class="o">.</span><span class="n">training</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_config_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Load the data configuration</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data_config</span> <span class="o">=</span> <span class="n">read_conf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_config_path</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_config</span> <span class="o">=</span> <span class="n">DataConfigHandler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_config_path</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="InferenceConfigHandler.set_config_paths">
@@ -193,21 +199,29 @@
 <span class="sd">        Extract and set the configuration paths from the inference config.</span>
 
 <span class="sd">        Sets the following attributes:</span>
-<span class="sd">        - trained_model_path</span>
-<span class="sd">        - model_subdir</span>
-<span class="sd">        - trained_model_config_path</span>
-<span class="sd">        - data_config_path</span>
+<span class="sd">          - trained_model_path</span>
+<span class="sd">          - model_subdir</span>
+<span class="sd">          - trained_model_config_path</span>
+<span class="sd">          - data_config_path</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Set config paths</span>
-        <span class="n">config_paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_config</span><span class="o">.</span><span class="n">inference</span><span class="o">.</span><span class="n">configs</span>
+        <span class="n">config_paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_config</span><span class="o">.</span><span class="n">configs</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">trained_model_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">config_paths</span><span class="o">.</span><span class="n">trained_model_path</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model_subdir</span> <span class="o">=</span> <span class="n">config_paths</span><span class="o">.</span><span class="n">model_subdir</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">trained_model_config_path</span> <span class="o">=</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trained_model_path</span> <span class="o">/</span> <span class="n">config_paths</span><span class="o">.</span><span class="n">trained_model_config_path</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data_config_path</span> <span class="o">=</span> <span class="n">config_paths</span><span class="o">.</span><span class="n">data_config_path</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_config_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trained_model_path</span> <span class="o">/</span> <span class="n">config_paths</span><span class="o">.</span><span class="n">data_config_path</span></div>
 
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">schema_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DatasetMode</span><span class="p">:</span>
+        <span class="n">raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_config</span><span class="o">.</span><span class="n">schema_mode</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">DatasetMode</span><span class="p">[</span><span class="n">raw</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 
 <div class="viewcode-block" id="InferenceConfigHandler.overwrite_model_params">
 <a class="viewcode-back" href="../../../_autosummary/wf_psf.inference.psf_inference.html#wf_psf.inference.psf_inference.InferenceConfigHandler.overwrite_model_params">[docs]</a>
@@ -225,10 +239,10 @@
 
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
-<span class="sd">        Updates are applied in-place to training_config.training.model_params.</span>
+<span class="sd">        Updates are applied in-place to ``training_config.model_params``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">model_params</span> <span class="o">=</span> <span class="n">training_config</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">model_params</span>
-        <span class="n">inf_model_params</span> <span class="o">=</span> <span class="n">inference_config</span><span class="o">.</span><span class="n">inference</span><span class="o">.</span><span class="n">model_params</span>
+        <span class="n">model_params</span> <span class="o">=</span> <span class="n">training_config</span><span class="o">.</span><span class="n">model_params</span>
+        <span class="n">inf_model_params</span> <span class="o">=</span> <span class="n">inference_config</span><span class="o">.</span><span class="n">model_params</span>
 
         <span class="k">if</span> <span class="n">model_params</span> <span class="ow">and</span> <span class="n">inf_model_params</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">inf_model_params</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -288,10 +302,7 @@
 <span class="sd">    .. code-block:: python</span>
 
 <span class="sd">        psf_inf = PSFInference(</span>
-<span class="sd">            inference_config_path=&quot;config.yaml&quot;,</span>
-<span class="sd">            x_field=[100.5, 200.3],</span>
-<span class="sd">            y_field=[150.2, 250.8],</span>
-<span class="sd">            seds=sed_array</span>
+<span class="sd">            inference_config_path=&quot;config.yaml&quot;, x_field=[100.5, 200.3], y_field=[150.2, 250.8], seds=sed_array</span>
 <span class="sd">        )</span>
 <span class="sd">        psf_inf.run_inference()</span>
 <span class="sd">        psf = psf_inf.get_psf(0)</span>
@@ -306,7 +317,6 @@
         <span class="n">sources</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">masks</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">inference_config_path</span> <span class="o">=</span> <span class="n">inference_config_path</span>
 
         <span class="c1"># Inputs for the model</span>
@@ -319,12 +329,15 @@
         <span class="c1"># Internal caches for lazy-loading</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_config_handler</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_simPSF</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data_handler</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_trained_psf_model</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_bins_lambda</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_batch_size</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cycle</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_output_dim</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Initialise Data Adapters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model_data_adapter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DataAdapter</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_inference_data_adapter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DataAdapter</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># Initialise PSF Inference engine</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="kc">None</span>
@@ -354,7 +367,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Overwrite model parameters with inference config</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">config_handler</span><span class="o">.</span><span class="n">overwrite_model_params</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">training_config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_config</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">training_config</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inference_config</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
@@ -405,46 +419,94 @@
 <span class="sd">            The PSF simulator instance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simPSF</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_simPSF</span> <span class="o">=</span> <span class="n">psf_models</span><span class="o">.</span><span class="n">simPSF</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training_config</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">model_params</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_simPSF</span> <span class="o">=</span> <span class="n">psf_models</span><span class="o">.</span><span class="n">simPSF</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training_config</span><span class="o">.</span><span class="n">model_params</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simPSF</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_prepare_dataset_for_inference</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Prepare dataset dictionary for inference.</span>
+<span class="sd">        Prepare the input dataset dictionary for inference.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        dict or None</span>
-<span class="sd">            Dictionary containing positions, sources, and masks, or None if positions are invalid.</span>
+<span class="sd">        dict</span>
+<span class="sd">            Dictionary containing canonical fields for inference:</span>
+<span class="sd">            - positions</span>
+<span class="sd">            - sources</span>
+<span class="sd">            - masks (optional)</span>
+<span class="sd">            - seds (optional)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">positions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_positions</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">positions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;positions&quot;</span><span class="p">:</span> <span class="n">positions</span><span class="p">,</span> <span class="s2">&quot;sources&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sources</span><span class="p">,</span> <span class="s2">&quot;masks&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">masks</span><span class="p">}</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;x_field and y_field must be provided for inference positions.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Only include fields that are not None</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;positions&quot;</span><span class="p">:</span> <span class="n">positions</span><span class="p">}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sources</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;sources&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sources</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">masks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;masks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">masks</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">seds</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;seds&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">seds</span>
+
+        <span class="k">return</span> <span class="n">dataset</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">data_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">model_data_adapter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get or create the data handler.</span>
+<span class="sd">        Create and return a Model DataAdapter for loading trained PSF model using the factory.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        DataHandler</span>
-<span class="sd">            The data handler instance configured for inference.</span>
+<span class="sd">        DataAdapter</span>
+<span class="sd">            A fully prepared model data adapter with LoadedDataset.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_handler</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># Instantiate the data handler</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_data_handler</span> <span class="o">=</span> <span class="n">DataHandler</span><span class="p">(</span>
-                <span class="n">dataset_type</span><span class="o">=</span><span class="s2">&quot;inference&quot;</span><span class="p">,</span>
-                <span class="n">data_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data_config</span><span class="p">,</span>
-                <span class="n">simPSF</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">simPSF</span><span class="p">,</span>
-                <span class="n">n_bins_lambda</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bins_lambda</span><span class="p">,</span>
-                <span class="n">load_data</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                <span class="n">dataset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_prepare_dataset_for_inference</span><span class="p">(),</span>
-                <span class="n">sed_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">seds</span><span class="p">,</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_data_adapter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Generating the model data adapter...&quot;</span><span class="p">)</span>
+            <span class="n">dataset_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_config</span>
+
+            <span class="c1"># Use the factory — it will normalize, convert dicts/dataclasses, and produce LoadedDataset</span>
+            <span class="n">adapter</span> <span class="o">=</span> <span class="n">DataAdapterFactory</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">dataset_params</span><span class="p">)</span>
+
+            <span class="c1"># Join data, if not already complete</span>
+            <span class="k">if</span> <span class="n">adapter</span><span class="o">.</span><span class="n">structure_state</span> <span class="o">==</span> <span class="n">StructureState</span><span class="o">.</span><span class="n">SPLIT</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Joining split datasets...&quot;</span><span class="p">)</span>
+                <span class="n">adapter</span><span class="o">.</span><span class="n">join_data</span><span class="p">()</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_model_data_adapter</span> <span class="o">=</span> <span class="n">adapter</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model_data_adapter</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">inference_data_adapter</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create and return a DataAdapter for inference data using the factory.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        DataAdapter</span>
+<span class="sd">            A fully prepared data adapter with LoadedDataset ready for inference.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inference_data_adapter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Generating the inference data adapter...&quot;</span><span class="p">)</span>
+            <span class="n">dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_dataset_for_inference</span><span class="p">()</span>
+
+            <span class="c1"># Use the factory — it will normalize, convert dicts/dataclasses, and produce LoadedDataset</span>
+            <span class="n">adapter</span> <span class="o">=</span> <span class="n">DataAdapterFactory</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_inference_data_adapter</span> <span class="o">=</span> <span class="n">adapter</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inference_data_adapter</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_convert_inference_data_to_tensorflow</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Convert to TensorFlow according to dataset schema mode</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_inference_data_adapter</span><span class="o">.</span><span class="n">representation_state</span> <span class="o">==</span> <span class="n">RepresentationState</span><span class="o">.</span><span class="n">NUMPY</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_inference_data_adapter</span><span class="o">.</span><span class="n">convert_to_tensorflow</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">simPSF</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_bins_lambda</span><span class="p">,</span>
+                <span class="n">mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">config_handler</span><span class="o">.</span><span class="n">schema_mode</span><span class="p">,</span>
             <span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_data_handler</span><span class="o">.</span><span class="n">run_type</span> <span class="o">=</span> <span class="s2">&quot;inference&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_handler</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">trained_psf_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -517,8 +579,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">model_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_handler</span><span class="o">.</span><span class="n">trained_model_path</span>
         <span class="n">model_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_handler</span><span class="o">.</span><span class="n">model_subdir</span>
-        <span class="n">model_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_config</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">model_name</span>
-        <span class="n">id_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_config</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">id_name</span>
+        <span class="n">model_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_config</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">model_name</span>
+        <span class="n">id_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_config</span><span class="o">.</span><span class="n">id_name</span>
 
         <span class="n">weights_path_pattern</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="n">model_path</span><span class="p">,</span>
@@ -529,7 +591,7 @@
         <span class="c1"># Load the trained PSF model</span>
         <span class="k">return</span> <span class="n">load_trained_psf_model</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">training_config</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data_handler</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">inference_data_adapter</span><span class="o">.</span><span class="n">complete_data</span><span class="p">,</span>
             <span class="n">weights_path_pattern</span><span class="p">,</span>
         <span class="p">)</span></div>
 
@@ -541,11 +603,10 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        int</span>
-<span class="sd">            The number of wavelength bins used during inference.&quot;&quot;&quot;</span>
+<span class="sd">            The number of wavelength bins used during inference.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_bins_lambda</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_n_bins_lambda</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">inference_config</span><span class="o">.</span><span class="n">inference</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">n_bins_lda</span>
-            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_n_bins_lambda</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_config</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">n_bins_lambda</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_bins_lambda</span>
 
     <span class="nd">@property</span>
@@ -559,7 +620,7 @@
 <span class="sd">            The batch size for processing during inference.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_batch_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_batch_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_config</span><span class="o">.</span><span class="n">inference</span><span class="o">.</span><span class="n">batch_size</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_batch_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_config</span><span class="o">.</span><span class="n">batch_size</span>
             <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_batch_size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Batch size must be greater than 0.&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_batch_size</span>
 
@@ -573,7 +634,7 @@
 <span class="sd">            The cycle number used for loading the trained model.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cycle</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_cycle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_config</span><span class="o">.</span><span class="n">inference</span><span class="o">.</span><span class="n">cycle</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cycle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_config</span><span class="o">.</span><span class="n">cycle</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cycle</span>
 
     <span class="nd">@property</span>
@@ -586,49 +647,8 @@
 <span class="sd">            The output dimension (height and width) of the inferred PSFs.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_dim</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_output_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_config</span><span class="o">.</span><span class="n">inference</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">output_dim</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_output_dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_config</span><span class="o">.</span><span class="n">model_params</span><span class="o">.</span><span class="n">output_dim</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_dim</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_prepare_positions_and_seds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Preprocess and return tensors for positions and SEDs with consistent shapes.</span>
-
-<span class="sd">        Handles single-star, multi-star, and even scalar inputs, ensuring:</span>
-<span class="sd">        - positions: shape (n_samples, 2)</span>
-<span class="sd">        - sed_data: shape (n_samples, n_bins, 2)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Ensure x_field and y_field are at least 1D</span>
-        <span class="n">x_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_field</span><span class="p">)</span>
-        <span class="n">y_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y_field</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">x_arr</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">y_arr</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;x_field and y_field must have the same length. &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;Got </span><span class="si">{</span><span class="n">x_arr</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">y_arr</span><span class="o">.</span><span class="n">size</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
-
-        <span class="c1"># Combine into positions array (n_samples, 2)</span>
-        <span class="n">positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">((</span><span class="n">x_arr</span><span class="p">,</span> <span class="n">y_arr</span><span class="p">))</span>
-        <span class="n">positions</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-
-        <span class="c1"># Ensure SEDs have shape (n_samples, n_bins, 2)</span>
-        <span class="n">sed_data</span> <span class="o">=</span> <span class="n">ensure_batch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seds</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">sed_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;SEDs batch size </span><span class="si">{</span><span class="n">sed_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> does not match number of positions </span><span class="si">{</span><span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">sed_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;SEDs last dimension must be 2 (flux, wavelength). Got </span><span class="si">{</span><span class="n">sed_data</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
-
-        <span class="c1"># Process SEDs through the data handler</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data_handler</span><span class="o">.</span><span class="n">process_sed_data</span><span class="p">(</span><span class="n">sed_data</span><span class="p">)</span>
-        <span class="n">sed_data_tensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_handler</span><span class="o">.</span><span class="n">sed_data</span>
-
-        <span class="k">return</span> <span class="n">positions</span><span class="p">,</span> <span class="n">sed_data_tensor</span>
 
 <div class="viewcode-block" id="PSFInference.run_inference">
 <a class="viewcode-back" href="../../../_autosummary/wf_psf.inference.psf_inference.html#wf_psf.inference.psf_inference.PSFInference.run_inference">[docs]</a>
@@ -648,14 +668,19 @@
         <span class="c1"># Prepare the configuration for inference</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">prepare_configs</span><span class="p">()</span>
 
-        <span class="c1"># Prepare positions and SEDs for inference</span>
-        <span class="n">positions</span><span class="p">,</span> <span class="n">sed_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_positions_and_seds</span><span class="p">()</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">engine</span> <span class="o">=</span> <span class="n">PSFInferenceEngine</span><span class="p">(</span>
             <span class="n">trained_model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trained_psf_model</span><span class="p">,</span>
             <span class="n">batch_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
             <span class="n">output_dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span><span class="p">,</span>
         <span class="p">)</span>
+
+        <span class="c1"># Convert inference data to tensorflow type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_convert_inference_data_to_tensorflow</span><span class="p">()</span>
+
+        <span class="c1"># Get positions and SEDs</span>
+        <span class="n">positions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_data_adapter</span><span class="o">.</span><span class="n">complete_data</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">]</span>
+        <span class="n">sed_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_data_adapter</span><span class="o">.</span><span class="n">complete_data</span><span class="p">[</span><span class="s2">&quot;seds&quot;</span><span class="p">]</span>
+
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">compute_psfs</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">sed_data</span><span class="p">)</span></div>
 
 
@@ -708,7 +733,6 @@
 <span class="sd">        and bounds checking is relaxed.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_psf_inference_completed</span><span class="p">()</span>
-
         <span class="n">inferred_psfs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">engine</span><span class="o">.</span><span class="n">get_psfs</span><span class="p">()</span>
 
         <span class="c1"># If a single-star batch, ignore index bounds</span>
@@ -735,7 +759,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_config_handler</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_simPSF</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data_handler</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_adapter</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_trained_psf_model</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_bins_lambda</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_batch_size</span> <span class="o">=</span> <span class="kc">None</span>
@@ -776,9 +800,9 @@
 <span class="sd">    --------</span>
 <span class="sd">    .. code-block:: python</span>
 
-<span class="sd">        &gt;&gt;&gt; engine = PSFInferenceEngine(model, batch_size=32, output_dim=64)</span>
-<span class="sd">        &gt;&gt;&gt; psfs = engine.compute_psfs(positions, seds)</span>
-<span class="sd">        &gt;&gt;&gt; single_psf = engine.get_psf(0)</span>
+<span class="sd">        engine = PSFInferenceEngine(model, batch_size=32, output_dim=64)</span>
+<span class="sd">        psfs = engine.compute_psfs(positions, seds)</span>
+<span class="sd">        single_psf = engine.get_psf(0)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trained_model</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">output_dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
@@ -821,6 +845,7 @@
 <span class="sd">        Results are cached internally for subsequent access via get_psfs() or get_psf().</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">n_samples</span> <span class="o">=</span> <span class="n">positions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_inferred_psfs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
             <span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_dim</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span>
         <span class="p">)</span>

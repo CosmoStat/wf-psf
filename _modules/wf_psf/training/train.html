@@ -111,7 +111,6 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.psf_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">psf_models</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">wf_psf.training.train_utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">train_utils</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.utils.optimizer</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_optimizer</span>
 
@@ -379,22 +378,21 @@
             <span class="n">save_weights_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;min&quot;</span><span class="p">,</span>
             <span class="n">save_freq</span><span class="o">=</span><span class="s2">&quot;epoch&quot;</span><span class="p">,</span>
-            <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
 
-<div class="viewcode-block" id="get_loss_metrics_monitor_and_outputs">
-<a class="viewcode-back" href="../../../_autosummary/wf_psf.training.train.html#wf_psf.training.train.get_loss_metrics_monitor_and_outputs">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_loss_metrics_monitor_and_outputs</span><span class="p">(</span><span class="n">training_handler</span><span class="p">,</span> <span class="n">data_conf</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Factory to return fresh loss, metrics (param &amp; non-param), monitor, and outputs for the current cycle.</span>
+<div class="viewcode-block" id="get_loss_and_metrics">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.training.train.html#wf_psf.training.train.get_loss_and_metrics">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_loss_and_metrics</span><span class="p">(</span><span class="n">training_handler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get Loss and Metrics.</span>
+
+<span class="sd">    Factory to return fresh loss and metrics (param &amp; non-param) for the current cycle.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    training_handler: TrainingParamsHandler</span>
+<span class="sd">    training_handler : TrainingParamsHandler</span>
 <span class="sd">        TrainingParamsHandler object containing training parameters</span>
-<span class="sd">    data_conf: object</span>
-<span class="sd">        Data configuration object containing training and test data</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -404,42 +402,22 @@
 <span class="sd">        List of metrics for the parametric model</span>
 <span class="sd">    non_param_metrics: list</span>
 <span class="sd">        List of metrics for the non-parametric model</span>
-<span class="sd">    monitor: str</span>
-<span class="sd">        Metric to monitor for saving the model</span>
-<span class="sd">    outputs: tf.Tensor</span>
-<span class="sd">        Tensor containing the outputs for training</span>
-<span class="sd">    output_val: tf.Tensor</span>
-<span class="sd">        Tensor containing the outputs for validation</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">training_handler</span><span class="o">.</span><span class="n">training_hparams</span><span class="o">.</span><span class="n">loss</span> <span class="o">==</span> <span class="s2">&quot;mask_mse&quot;</span><span class="p">:</span>
+    <span class="n">loss_type</span> <span class="o">=</span> <span class="n">training_handler</span><span class="o">.</span><span class="n">training_hparams</span><span class="o">.</span><span class="n">loss</span>
+
+    <span class="k">if</span> <span class="n">loss_type</span> <span class="o">==</span> <span class="s2">&quot;mask_mse&quot;</span><span class="p">:</span>
         <span class="n">loss</span> <span class="o">=</span> <span class="n">train_utils</span><span class="o">.</span><span class="n">MaskedMeanSquaredError</span><span class="p">()</span>
-        <span class="n">monitor</span> <span class="o">=</span> <span class="s2">&quot;loss&quot;</span>
         <span class="n">param_metrics</span> <span class="o">=</span> <span class="p">[</span><span class="n">train_utils</span><span class="o">.</span><span class="n">MaskedMeanSquaredErrorMetric</span><span class="p">()]</span>
         <span class="n">non_param_metrics</span> <span class="o">=</span> <span class="p">[</span><span class="n">train_utils</span><span class="o">.</span><span class="n">MaskedMeanSquaredErrorMetric</span><span class="p">()]</span>
-        <span class="n">outputs</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
-            <span class="p">[</span>
-                <span class="n">data_conf</span><span class="o">.</span><span class="n">training_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;noisy_stars&quot;</span><span class="p">],</span>
-                <span class="n">data_conf</span><span class="o">.</span><span class="n">training_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;masks&quot;</span><span class="p">],</span>
-            <span class="p">],</span>
-            <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">output_val</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
-            <span class="p">[</span>
-                <span class="n">data_conf</span><span class="o">.</span><span class="n">test_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;stars&quot;</span><span class="p">],</span>
-                <span class="n">data_conf</span><span class="o">.</span><span class="n">test_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;masks&quot;</span><span class="p">],</span>
-            <span class="p">],</span>
-            <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
-        <span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">loss_type</span> <span class="o">==</span> <span class="s2">&quot;mse&quot;</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">MeanSquaredError</span><span class="p">()</span>
-        <span class="n">monitor</span> <span class="o">=</span> <span class="s2">&quot;mean_squared_error&quot;</span>
         <span class="n">param_metrics</span> <span class="o">=</span> <span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">MeanSquaredError</span><span class="p">()]</span>
         <span class="n">non_param_metrics</span> <span class="o">=</span> <span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">MeanSquaredError</span><span class="p">()]</span>
-        <span class="n">outputs</span> <span class="o">=</span> <span class="n">data_conf</span><span class="o">.</span><span class="n">training_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;noisy_stars&quot;</span><span class="p">]</span>
-        <span class="n">output_val</span> <span class="o">=</span> <span class="n">data_conf</span><span class="o">.</span><span class="n">test_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;stars&quot;</span><span class="p">]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Loss function set to standard MeanSquaredError&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown loss type: </span><span class="si">{</span><span class="n">loss_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">param_metrics</span><span class="p">,</span> <span class="n">non_param_metrics</span><span class="p">,</span> <span class="n">monitor</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">output_val</span></div>
+    <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">param_metrics</span><span class="p">,</span> <span class="n">non_param_metrics</span></div>
 
 
 
@@ -447,7 +425,8 @@
 <a class="viewcode-back" href="../../../_autosummary/wf_psf.training.train.html#wf_psf.training.train.train">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">train</span><span class="p">(</span>
     <span class="n">training_params</span><span class="p">,</span>
-    <span class="n">data_conf</span><span class="p">,</span>
+    <span class="n">training_adapter</span><span class="p">,</span>
+    <span class="n">psf_model</span><span class="p">,</span>
     <span class="n">checkpoint_dir</span><span class="p">,</span>
     <span class="n">optimizer_dir</span><span class="p">,</span>
     <span class="n">psf_model_dir</span><span class="p">,</span>
@@ -468,18 +447,18 @@
 <span class="sd">        - number of epochs per component per cycle</span>
 <span class="sd">        - model type and training behavior flags</span>
 <span class="sd">        - multi-cycle definitions and callbacks</span>
-
-<span class="sd">    data_conf : object</span>
-<span class="sd">        Contains training and validation datasets via attributes:</span>
-<span class="sd">        - data_conf.training_data: TrainingDataHandler instance with SEDs and positions</span>
-<span class="sd">        - data_conf.test_data: TestDataHandler instance with validation SEDs and positions</span>
-
+<span class="sd">    training_adapter : TrainingDataAdapter</span>
+<span class="sd">        A training-ready data adapter containing the split, tensor-converted dataset.</span>
+<span class="sd">        When a masked loss is used, target images and masks are packed together</span>
+<span class="sd">        within the adapter.</span>
+<span class="sd">    psf_model : tf.keras.Model</span>
+<span class="sd">        An initialised PSF model ready for training. Certain model types</span>
+<span class="sd">        require the complete dataset for initialisation; this is handled</span>
+<span class="sd">        upstream in ``prepare_training_inputs``</span>
 <span class="sd">    checkpoint_dir : str</span>
 <span class="sd">        Directory where model checkpoints will be saved during training.</span>
-
 <span class="sd">    optimizer_dir : str</span>
 <span class="sd">        Directory where the optimizer history (as a NumPy .npy file) will be stored.</span>
-
 <span class="sd">    psf_model_dir : str</span>
 <span class="sd">        Directory where the final trained PSF model weights will be saved per cycle.</span>
 
@@ -498,13 +477,6 @@
 
     <span class="n">training_handler</span> <span class="o">=</span> <span class="n">TrainingParamsHandler</span><span class="p">(</span><span class="n">training_params</span><span class="p">)</span>
 
-    <span class="n">psf_model</span> <span class="o">=</span> <span class="n">psf_models</span><span class="o">.</span><span class="n">get_psf_model</span><span class="p">(</span>
-        <span class="n">training_handler</span><span class="o">.</span><span class="n">model_params</span><span class="p">,</span>
-        <span class="n">training_handler</span><span class="o">.</span><span class="n">training_hparams</span><span class="p">,</span>
-        <span class="n">data_conf</span><span class="p">,</span>
-    <span class="p">)</span>
-
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PSF Model class: `</span><span class="si">{</span><span class="n">training_handler</span><span class="o">.</span><span class="n">model_name</span><span class="si">}</span><span class="s2">` initialized...&quot;</span><span class="p">)</span>
     <span class="c1"># Model Training</span>
     <span class="c1"># -----------------------------------------------------</span>
     <span class="c1"># Save optimisation history in the saving dict</span>
@@ -515,10 +487,8 @@
     <span class="k">while</span> <span class="n">training_handler</span><span class="o">.</span><span class="n">total_cycles</span> <span class="o">&gt;</span> <span class="n">current_cycle</span><span class="p">:</span>
         <span class="n">current_cycle</span> <span class="o">+=</span> <span class="mi">1</span>
 
-        <span class="c1"># Instantiate fresh loss, monitor, and independent metric objects per training phase (param / non-param)</span>
-        <span class="n">loss</span><span class="p">,</span> <span class="n">param_metrics</span><span class="p">,</span> <span class="n">non_param_metrics</span><span class="p">,</span> <span class="n">monitor</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">output_val</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">get_loss_metrics_monitor_and_outputs</span><span class="p">(</span><span class="n">training_handler</span><span class="p">,</span> <span class="n">data_conf</span><span class="p">)</span>
-        <span class="p">)</span>
+        <span class="c1"># Instantiate fresh loss and independent metric objects per training phase (param / non-param)</span>
+        <span class="n">loss</span><span class="p">,</span> <span class="n">param_metrics</span><span class="p">,</span> <span class="n">non_param_metrics</span> <span class="o">=</span> <span class="n">get_loss_and_metrics</span><span class="p">(</span><span class="n">training_handler</span><span class="p">)</span>
 
         <span class="c1"># If projected learning is enabled project DD_features.</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">psf_model</span><span class="p">,</span> <span class="s2">&quot;project_dd_features&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">psf_model</span><span class="o">.</span><span class="n">project_dd_features</span><span class="p">:</span>
@@ -538,7 +508,9 @@
         <span class="c1"># Prepare to save the model as a callback</span>
         <span class="c1"># -----------------------------------------------------</span>
         <span class="n">model_chkp_callback</span> <span class="o">=</span> <span class="n">training_handler</span><span class="o">.</span><span class="n">_prepare_callbacks</span><span class="p">(</span>
-            <span class="n">checkpoint_dir</span><span class="p">,</span> <span class="n">current_cycle</span><span class="p">,</span> <span class="n">monitor</span><span class="o">=</span><span class="n">monitor</span>
+            <span class="n">checkpoint_dir</span><span class="p">,</span>
+            <span class="n">current_cycle</span><span class="p">,</span>
+            <span class="n">monitor</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">training_hparams</span><span class="o">.</span><span class="n">monitor</span><span class="p">,</span>
         <span class="p">)</span>
 
         <span class="c1"># Prepare the optimizers</span>
@@ -548,7 +520,7 @@
         <span class="p">)</span>
         <span class="n">non_param_optim</span> <span class="o">=</span> <span class="n">get_optimizer</span><span class="p">(</span>
             <span class="n">optimizer_config</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">training_hparams</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span>
-            <span class="n">learning_rate</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">learning_rate_non_params</span><span class="p">[</span><span class="n">current_cycle</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">learning_rate</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">learning_rate_non_params</span><span class="p">[</span><span class="n">current_cycle</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span>
         <span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting cycle </span><span class="si">{</span><span class="n">current_cycle</span><span class="si">}</span><span class="s2">..&quot;</span><span class="p">)</span>
 
@@ -561,17 +533,11 @@
             <span class="n">hist_non_param</span><span class="p">,</span>
         <span class="p">)</span> <span class="o">=</span> <span class="n">train_utils</span><span class="o">.</span><span class="n">general_train_cycle</span><span class="p">(</span>
             <span class="n">psf_model</span><span class="p">,</span>
-            <span class="n">inputs</span><span class="o">=</span><span class="p">[</span>
-                <span class="n">data_conf</span><span class="o">.</span><span class="n">training_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">],</span>
-                <span class="n">data_conf</span><span class="o">.</span><span class="n">training_data</span><span class="o">.</span><span class="n">sed_data</span><span class="p">,</span>
-            <span class="p">],</span>
-            <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span>
+            <span class="n">inputs</span><span class="o">=</span><span class="n">training_adapter</span><span class="o">.</span><span class="n">train_inputs</span><span class="p">,</span>
+            <span class="n">outputs</span><span class="o">=</span><span class="n">training_adapter</span><span class="o">.</span><span class="n">train_targets</span><span class="p">,</span>
             <span class="n">validation_data</span><span class="o">=</span><span class="p">(</span>
-                <span class="p">[</span>
-                    <span class="n">data_conf</span><span class="o">.</span><span class="n">test_data</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">],</span>
-                    <span class="n">data_conf</span><span class="o">.</span><span class="n">test_data</span><span class="o">.</span><span class="n">sed_data</span><span class="p">,</span>
-                <span class="p">],</span>
-                <span class="n">output_val</span><span class="p">,</span>
+                <span class="n">training_adapter</span><span class="o">.</span><span class="n">validation_inputs</span><span class="p">,</span>
+                <span class="n">training_adapter</span><span class="o">.</span><span class="n">validation_targets</span><span class="p">,</span>
             <span class="p">),</span>
             <span class="n">batch_size</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">training_hparams</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
             <span class="n">learning_rate_param</span><span class="o">=</span><span class="n">training_handler</span><span class="o">.</span><span class="n">learning_rate_params</span><span class="p">[</span>

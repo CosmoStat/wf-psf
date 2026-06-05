@@ -1,0 +1,12 @@
+wf\_psf.training.training\_data\_adapter
+========================================
+
+.. automodule:: wf_psf.training.training_data_adapter
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      TrainingDataAdapter
+   

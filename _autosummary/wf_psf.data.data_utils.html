@@ -1,0 +1,387 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.data.data_utils &mdash; wf-psf 3.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../_static/twemoji.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="wf_psf.data.data_zernike_utils" href="wf_psf.data.data_zernike_utils.html" />
+    <link rel="prev" title="wf_psf.data.data_config_handler" href="wf_psf.data.data_config_handler.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="wf_psf.data.html">wf_psf.data</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.centroids.html">wf_psf.data.centroids</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.constants.html">wf_psf.data.constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.data_adapter.html">wf_psf.data.data_adapter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.data_config_handler.html">wf_psf.data.data_config_handler</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">wf_psf.data.data_utils</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#authors">Authors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.data_utils.ConversionContext"><code class="docutils literal notranslate"><span class="pre">ConversionContext</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.data_utils.DatasetContainer"><code class="docutils literal notranslate"><span class="pre">DatasetContainer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.data_utils.SEDContext"><code class="docutils literal notranslate"><span class="pre">SEDContext</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.data_utils.to_container"><code class="docutils literal notranslate"><span class="pre">to_container()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.data_zernike_utils.html">wf_psf.data.data_zernike_utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.factory.html">wf_psf.data.factory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.handlers.html">wf_psf.data.handlers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.npy_dataset_loader.html">wf_psf.data.npy_dataset_loader</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.safe_batch.html">wf_psf.data.safe_batch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.schemas.html">wf_psf.data.schemas</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.tensorflow_converter.html">wf_psf.data.tensorflow_converter</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.inference.html">wf_psf.inference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.instrument.html">wf_psf.instrument</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.metrics.html">wf_psf.metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.plotting.html">wf_psf.plotting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.psf_models.html">wf_psf.psf_models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.run.html">wf_psf.run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.sims.html">wf_psf.sims</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.training.html">wf_psf.training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wf_psf.utils.html">wf_psf.utils</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="wf_psf.data.html">wf_psf.data</a></li>
+      <li class="breadcrumb-item active">wf_psf.data.data_utils</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/wf_psf.data.data_utils.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-wf_psf.data.data_utils">
+<span id="wf-psf-data-data-utils"></span><h1>wf_psf.data.data_utils<a class="headerlink" href="#module-wf_psf.data.data_utils" title="Link to this heading"></a></h1>
+<p>Data utilities and lightweight runtime data structures.</p>
+<p>Provides lightweight dataset containers, runtime conversion contexts,
+and helper utilities used throughout the dataset normalization and
+preprocessing pipeline.</p>
+<p>This module includes:</p>
+<ul class="simple">
+<li><p>Dictionary-like dataset container abstractions</p></li>
+<li><p>Dataset inspection and normalization helpers</p></li>
+<li><p>Runtime conversion context objects used during field-level processing</p></li>
+<li><p>Domain-specific preprocessing contexts (e.g. SED processing)</p></li>
+</ul>
+<p>These utilities support schema-driven dataset conversion workflows used
+by training, validation, and inference pipelines.</p>
+<p class="rubric">Notes</p>
+<p>The conversion context system is intentionally extensible to support
+additional scientific domains and instrument pipelines beyond the
+current Euclid-specific workflows. Future extensions
+may include dedicated contexts for:</p>
+<ul class="simple">
+<li><p>PSF modeling</p></li>
+<li><p>Instrument calibration</p></li>
+<li><p>Detector noise simulation</p></li>
+</ul>
+<section id="authors">
+<h2>Authors<a class="headerlink" href="#authors" title="Link to this heading"></a></h2>
+<p>Jennifer Pollack &lt;<a class="reference external" href="mailto:jennifer&#46;pollack&#37;&#52;&#48;cea&#46;fr">jennifer<span>&#46;</span>pollack<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;</p>
+</section>
+<p class="rubric">Functions</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.data_utils.to_container" title="wf_psf.data.data_utils.to_container"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_container</span></code></a>(obj)</p></td>
+<td><p>Convert an object to a <code class="docutils literal notranslate"><span class="pre">DatasetContainer</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Classes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.data_utils.ConversionContext" title="wf_psf.data.data_utils.ConversionContext"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ConversionContext</span></code></a>([seds])</p></td>
+<td><p>Global runtime context for dataset conversion operations.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.data.data_utils.DatasetContainer" title="wf_psf.data.data_utils.DatasetContainer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DatasetContainer</span></code></a>(data)</p></td>
+<td><p>Lightweight container for structured dataset data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.data_utils.SEDContext" title="wf_psf.data.data_utils.SEDContext"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SEDContext</span></code></a>(simPSF, n_bins_lambda)</p></td>
+<td><p>Context object containing parameters required for SED processing.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.data.data_utils.ConversionContext">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.data.data_utils.</span></span><span class="sig-name descname"><span class="pre">ConversionContext</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#wf_psf.data.data_utils.SEDContext" title="wf_psf.data.data_utils.SEDContext"><span class="pre">SEDContext</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/data_utils.html#ConversionContext"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_utils.ConversionContext" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Global runtime context for dataset conversion operations.</p>
+<p>This object aggregates optional domain-specific contexts required
+during dataset preprocessing and conversion. It is passed through
+the conversion pipeline and accessed by field-specific handlers.</p>
+<p>Currently, it contains an optional SED context used for spectral
+energy distribution processing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>seds</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.data_utils.ConversionContext.seds">
+<span class="sig-name descname"><span class="pre">seds</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#wf_psf.data.data_utils.SEDContext" title="wf_psf.data.data_utils.SEDContext"><span class="pre">SEDContext</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#wf_psf.data.data_utils.ConversionContext.seds" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.data.data_utils.DatasetContainer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.data.data_utils.</span></span><span class="sig-name descname"><span class="pre">DatasetContainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/data_utils.html#DatasetContainer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_utils.DatasetContainer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.MutableMapping" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">MutableMapping</span></code></a></p>
+<p>Lightweight container for structured dataset data.</p>
+<p>Stores data internally as a dictionary, while providing
+dictionary-style and attribute-style access for convenience.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – Dictionary containing dataset tensors and metadata.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.data_utils.DatasetContainer._data">
+<span class="sig-name descname"><span class="pre">_data</span></span><a class="headerlink" href="#wf_psf.data.data_utils.DatasetContainer._data" title="Link to this definition"></a></dt>
+<dd><p>Internal storage for dataset contents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">container</span> <span class="o">=</span> <span class="n">DatasetContainer</span><span class="p">({</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">])})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">container</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">]</span>
+<span class="go">array([1, 2, 3])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">container</span><span class="o">.</span><span class="n">x</span>
+<span class="go">array([1, 2, 3])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">container</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+<span class="go">{&#39;x&#39;: array([1, 2, 3]), &#39;y&#39;: array([4, 5, 6])}</span>
+</pre></div>
+</div>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get</span></code>(key[, default])</p></td>
+<td><p>Retrieve the corresponding layout by the string key.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">items</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">keys</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pop</span></code>(k[,d])</p></td>
+<td><p>If key is not found, d is returned if given, otherwise KeyError is raised.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">popitem</span></code>()</p></td>
+<td><p>as a 2-tuple; but raise KeyError if D is empty.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setdefault</span></code>(k[,d])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.data.data_utils.DatasetContainer.to_dict" title="wf_psf.data.data_utils.DatasetContainer.to_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_dict</span></code></a>()</p></td>
+<td><p>Return data as dict.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">update</span></code>([E, ]**F)</p></td>
+<td><p>If E present and has a .keys() method, does:     for k in E: D[k] = E[k] If E present and lacks .keys() method, does:     for (k, v) in E: D[k] = v In either case, this is followed by: for k, v in F.items(): D[k] = v</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">values</span></code>()</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="wf_psf.data.data_utils.DatasetContainer.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/wf_psf/data/data_utils.html#DatasetContainer.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_utils.DatasetContainer.to_dict" title="Link to this definition"></a></dt>
+<dd><p>Return data as dict.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="wf_psf.data.data_utils.SEDContext">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.data.data_utils.</span></span><span class="sig-name descname"><span class="pre">SEDContext</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">simPSF</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="wf_psf.sims.psf_simulator.html#wf_psf.sims.psf_simulator.PSFSimulator" title="wf_psf.sims.psf_simulator.PSFSimulator"><span class="pre">PSFSimulator</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins_lambda</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/data_utils.html#SEDContext"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_utils.SEDContext" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Context object containing parameters required for SED processing.</p>
+<p>This context encapsulates all runtime dependencies needed for
+spectral energy distribution (SED) transformations within the
+dataset conversion pipeline.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>simPSF</strong> (<em>Any</em>) – PSF simulator instance used during SED processing. This object
+is responsible for modelling instrument response effects applied
+to spectral data.</p></li>
+<li><p><strong>n_bins_lambda</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of wavelength bins used for discretizing the SED during
+conversion.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.data_utils.SEDContext.n_bins_lambda">
+<span class="sig-name descname"><span class="pre">n_bins_lambda</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></em><a class="headerlink" href="#wf_psf.data.data_utils.SEDContext.n_bins_lambda" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.data_utils.SEDContext.simPSF">
+<span class="sig-name descname"><span class="pre">simPSF</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.sims.psf_simulator.html#wf_psf.sims.psf_simulator.PSFSimulator" title="wf_psf.sims.psf_simulator.PSFSimulator"><span class="pre">PSFSimulator</span></a></em><a class="headerlink" href="#wf_psf.data.data_utils.SEDContext.simPSF" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wf_psf.data.data_utils.to_container">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.data.data_utils.</span></span><span class="sig-name descname"><span class="pre">to_container</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#wf_psf.data.data_utils.DatasetContainer" title="wf_psf.data.data_utils.DatasetContainer"><span class="pre">DatasetContainer</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/data/data_utils.html#to_container"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_utils.to_container" title="Link to this definition"></a></dt>
+<dd><p>Convert an object to a <code class="docutils literal notranslate"><span class="pre">DatasetContainer</span></code>.</p>
+<p>Transforms various dataset representations into a standardized
+<a class="reference internal" href="#wf_psf.data.data_utils.DatasetContainer" title="wf_psf.data.data_utils.DatasetContainer"><code class="xref py py-class docutils literal notranslate"><span class="pre">DatasetContainer</span></code></a> used by downstream processing.</p>
+<p>Supported input types include dictionaries, dataclasses,
+objects with attributes, and existing <code class="docutils literal notranslate"><span class="pre">DatasetContainer</span></code> instances.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>obj</strong> (<em>Any</em>) – Object representing dataset data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Structured container wrapping the dataset data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#wf_psf.data.data_utils.DatasetContainer" title="wf_psf.data.data_utils.DatasetContainer">DatasetContainer</a> or None</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.14)"><strong>TypeError</strong></a> – If the input type is not supported.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="wf_psf.data.data_config_handler.html" class="btn btn-neutral float-left" title="wf_psf.data.data_config_handler" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wf_psf.data.data_zernike_utils.html" class="btn btn-neutral float-right" title="wf_psf.data.data_zernike_utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

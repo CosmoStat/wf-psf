@@ -1,0 +1,781 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.data.data_adapter &mdash; wf-psf 3.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../../../_static/twemoji.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../../../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">wf_psf.data.data_adapter</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for wf_psf.data.data_adapter</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Data Adapter.</span>
+
+<span class="sd">This module manages dataset lifecycle transitions for the WF-PSF pipeline.</span>
+
+<span class="sd">Overview</span>
+<span class="sd">--------</span>
+<span class="sd">Two orthogonal state machines are maintained:</span>
+
+<span class="sd">**1. Structure state**</span>
+
+<span class="sd">- ``COMPLETE`` → ``SPLIT`` via :meth:`split_data`</span>
+<span class="sd">- ``SPLIT`` → ``COMPLETE`` via :meth:`join_data`</span>
+
+<span class="sd">**2. Representation state**</span>
+
+<span class="sd">- ``NUMPY`` → ``TENSORFLOW`` via :meth:`convert_to_tensorflow`</span>
+
+
+<span class="sd">Glossary</span>
+<span class="sd">--------</span>
+<span class="sd">**COMPLETE**</span>
+<span class="sd">    Dataset stored as a single container.</span>
+
+<span class="sd">**SPLIT**</span>
+<span class="sd">    Dataset stored as train/test subsets.</span>
+
+<span class="sd">**NUMPY**</span>
+<span class="sd">    Data stored as NumPy arrays.</span>
+
+<span class="sd">**TENSORFLOW**</span>
+<span class="sd">    Data stored as TensorFlow tensors.</span>
+
+
+<span class="sd">Design principles</span>
+<span class="sd">-----------------</span>
+<span class="sd">- Structure and representation are orthogonal.</span>
+<span class="sd">- All transitions are explicit and idempotent where possible.</span>
+<span class="sd">- No training or model logic lives in this module.</span>
+<span class="sd">- Dataset field names are canonicalized for downstream models.</span>
+
+<span class="sd">Notes</span>
+<span class="sd">-----</span>
+<span class="sd">The :class:`DataAdapter` class manages these transitions while providing</span>
+<span class="sd">a consistent interface for accessing dataset contents.</span>
+
+<span class="sd">Authors: Jennifer Pollack &lt;jennifer.pollack@cea.fr&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span><span class="p">,</span> <span class="n">auto</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">re</span><span class="w"> </span><span class="kn">import</span> <span class="n">S</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.data.constants</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">CANONICAL_DATASET_KEYS</span><span class="p">,</span>
+    <span class="n">DEFAULT_SEED</span><span class="p">,</span>
+    <span class="n">DEFAULT_TRAIN_FRACTION</span><span class="p">,</span>
+    <span class="n">DATASET_INDEX_KEY</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.data.data_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatasetContainer</span><span class="p">,</span> <span class="n">to_container</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.data.tensorflow_converter</span><span class="w"> </span><span class="kn">import</span> <span class="n">TensorFlowDatasetConverter</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="StructureState">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_adapter.html#wf_psf.data.data_adapter.StructureState">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">StructureState</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Structural state of the dataset.</span>
+
+<span class="sd">    - COMPLETE: the dataset is complete and not split into train/test.</span>
+<span class="sd">    - SPLIT: the dataset is split into train and test sets.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">COMPLETE</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">SPLIT</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="RepresentationState">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_adapter.html#wf_psf.data.data_adapter.RepresentationState">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RepresentationState</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Representation state of the dataset.</span>
+
+<span class="sd">    - NUMPY: the dataset is represented as a NumPy array.</span>
+<span class="sd">    - TENSORFLOW: the dataset is represented as a TensorFlow tensor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">NUMPY</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span>
+    <span class="n">TENSORFLOW</span> <span class="o">=</span> <span class="n">auto</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="LoadedDataset">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_adapter.html#wf_psf.data.data_adapter.LoadedDataset">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LoadedDataset</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Structured container for loaded dataset.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    complete : dict, optional</span>
+<span class="sd">        The complete dataset (if in COMPLETE state).</span>
+<span class="sd">    train : dict, optional</span>
+<span class="sd">        The training dataset (if in SPLIT state).</span>
+<span class="sd">    test : dict, optional</span>
+<span class="sd">        The test dataset (if in SPLIT state).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">complete</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">train</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">test</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the LoadedDataset with either complete or split data.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">complete</span> <span class="o">=</span> <span class="n">complete</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">train</span> <span class="o">=</span> <span class="n">train</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test</span> <span class="o">=</span> <span class="n">test</span>
+
+<div class="viewcode-block" id="LoadedDataset.is_complete">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_adapter.html#wf_psf.data.data_adapter.LoadedDataset.is_complete">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the dataset is in COMPLETE state.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">complete</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="LoadedDataset.is_split">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_adapter.html#wf_psf.data.data_adapter.LoadedDataset.is_split">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_split</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the dataset is in SPLIT state.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">train</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">test</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="DataAdapter">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_adapter.html#wf_psf.data.data_adapter.DataAdapter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DataAdapter</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Adapter for managing dataset structure and backend representation.</span>
+
+<span class="sd">    The adapter provides a consistent interface to datasets regardless of</span>
+<span class="sd">    whether they are stored as a complete dataset or as train/test splits,</span>
+<span class="sd">    and whether the underlying representation is NumPy or TensorFlow.</span>
+
+<span class="sd">    It also canonicalizes dataset fields to the names expected by</span>
+<span class="sd">    downstream models.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Instances should be created via `DataAdapterFactory.build()`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">dataset</span><span class="p">:</span> <span class="n">LoadedDataset</span><span class="p">,</span>
+        <span class="n">converter</span><span class="p">:</span> <span class="n">TensorFlowDatasetConverter</span><span class="p">,</span>
+        <span class="n">params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the DataAdapter with a loaded dataset and optional converter and parameters.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dataset : LoadedDataset</span>
+<span class="sd">            The loaded dataset containing either complete or data split into train and test (validation) datasets.</span>
+<span class="sd">        converter : TensorFlowDatasetConverter</span>
+<span class="sd">            A TensorFlowDatasetConverter object for transforming from NumPy to TensorFlow representations.</span>
+<span class="sd">        params : optional</span>
+<span class="sd">            Additional parameters for dataset management.</span>
+<span class="sd">        metadata : optional</span>
+<span class="sd">            Additional ancillary information for dataset management.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the loaded dataset is empty or malformed (neither complete nor split).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dataset</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;LoadedDataset cannot be None.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_params</span> <span class="o">=</span> <span class="n">params</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span> <span class="o">=</span> <span class="n">metadata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_converter</span> <span class="o">=</span> <span class="n">converter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_canonical_keys</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="s2">&quot;canonical_keys&quot;</span><span class="p">,</span> <span class="n">CANONICAL_DATASET_KEYS</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_train_fraction</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="s2">&quot;train_fraction&quot;</span><span class="p">,</span> <span class="n">DEFAULT_TRAIN_FRACTION</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_seed</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="s2">&quot;seed&quot;</span><span class="p">,</span> <span class="n">DEFAULT_SEED</span><span class="p">)</span>
+        <span class="c1"># Dataset containers for both representations</span>
+        <span class="c1"># default empty</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_train_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_test_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_complete_data</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Determine Structure state</span>
+        <span class="k">if</span> <span class="n">dataset</span><span class="o">.</span><span class="n">is_complete</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_structure_state</span> <span class="o">=</span> <span class="n">StructureState</span><span class="o">.</span><span class="n">COMPLETE</span>
+        <span class="k">elif</span> <span class="n">dataset</span><span class="o">.</span><span class="n">is_split</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_structure_state</span> <span class="o">=</span> <span class="n">StructureState</span><span class="o">.</span><span class="n">SPLIT</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Loaded dataset is empty or malformed&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Convert to containers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_structure</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+
+        <span class="c1"># Map user-provided keys to canonical keys</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_canonicalize_initial_data</span><span class="p">()</span>
+
+        <span class="c1"># Representation state always starts as NUMPY</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_representation_state</span> <span class="o">=</span> <span class="n">RepresentationState</span><span class="o">.</span><span class="n">NUMPY</span>
+
+        <span class="c1"># Placeholders for TensorFlow datasets</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_train_tf</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_test_tf</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_complete_tf</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_initialize_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize internal data containers based on structure state.</span>
+
+<span class="sd">        Copies input dataset into internal container representation,</span>
+<span class="sd">        handling either COMPLETE or SPLIT structure modes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_structure_state</span> <span class="o">==</span> <span class="n">StructureState</span><span class="o">.</span><span class="n">COMPLETE</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_complete_data</span> <span class="o">=</span> <span class="n">to_container</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">complete</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_train_data</span> <span class="o">=</span> <span class="n">to_container</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_test_data</span> <span class="o">=</span> <span class="n">to_container</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_target_field</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve the target field name from adapter parameters.</span>
+
+<span class="sd">        Resolution order:</span>
+<span class="sd">        1. Split-specific field (if `split` provided)</span>
+<span class="sd">        2. Global `target_field`</span>
+<span class="sd">        3. `complete.target_field`</span>
+<span class="sd">        4. Default to &quot;sources&quot;</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            Name of the field to use as the source/target data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params</span>
+
+        <span class="k">if</span> <span class="n">p</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># params is shallow</span>
+            <span class="k">return</span> <span class="s2">&quot;sources&quot;</span>
+
+        <span class="k">if</span> <span class="n">split</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">split</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">split</span><span class="p">),</span> <span class="s2">&quot;target_field&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">&quot;target_field&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">p</span><span class="o">.</span><span class="n">target_field</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">&quot;complete&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">complete</span><span class="p">,</span> <span class="s2">&quot;target_field&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="s2">&quot;sources&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_canonicalize_initial_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Canonicalize all available dataset splits.</span>
+
+<span class="sd">        Applies field normalization to train, test, and complete containers</span>
+<span class="sd">        using the resolved target field for each split.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">split</span><span class="p">,</span> <span class="n">container</span> <span class="ow">in</span> <span class="p">{</span>
+            <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_data</span><span class="p">,</span>
+            <span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_data</span><span class="p">,</span>
+            <span class="kc">None</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complete_data</span><span class="p">,</span>
+        <span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">container</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_canonicalize_container</span><span class="p">(</span>
+                    <span class="n">container</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_resolve_target_field</span><span class="p">(</span><span class="n">split</span><span class="p">)</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_canonicalize_container</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">container</span><span class="p">,</span> <span class="n">target_field</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Canonicalize dataset fields in-place.</span>
+
+<span class="sd">        Maps dataset-specific keys to canonical naming convention.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        - Positions and masks are assumed to be standard and are not remapped.</span>
+<span class="sd">        - Missing canonical fields are set to None with a warning.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Rename keys (case-insensitive mapping)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_canonical_keys</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">container</span><span class="p">:</span>
+                <span class="k">continue</span>  <span class="c1"># already canonical</span>
+            <span class="k">for</span> <span class="n">legacy_key</span> <span class="ow">in</span> <span class="n">container</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">legacy_key</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">key</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                    <span class="n">container</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">container</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">legacy_key</span><span class="p">)</span>
+                    <span class="k">break</span>
+
+        <span class="c1"># Map target_field to sources</span>
+        <span class="k">if</span> <span class="n">target_field</span> <span class="ow">in</span> <span class="n">container</span><span class="p">:</span>
+            <span class="n">container</span><span class="p">[</span><span class="s2">&quot;sources&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">container</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">target_field</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Target field &#39;</span><span class="si">{</span><span class="n">target_field</span><span class="si">}</span><span class="s2">&#39; not found. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Available fields: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">container</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">container</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">structure_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the current structural state of the dataset.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_structure_state</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">representation_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the current representation state of the dataset.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_representation_state</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">complete_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the complete dataset in the current representation.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_representation_state</span> <span class="o">==</span> <span class="n">RepresentationState</span><span class="o">.</span><span class="n">TENSORFLOW</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complete_tf</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complete_data</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complete_data</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">train_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the training set in the current representation.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_representation_state</span> <span class="o">==</span> <span class="n">RepresentationState</span><span class="o">.</span><span class="n">TENSORFLOW</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_tf</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_data</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_data</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the test set in the current representation.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_representation_state</span> <span class="o">==</span> <span class="n">RepresentationState</span><span class="o">.</span><span class="n">TENSORFLOW</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_tf</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_data</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_data</span>
+
+    <span class="c1"># Read access to data params and metadata</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get dataset params.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_params</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get dataset metadata.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span>
+
+    <span class="c1"># Convenient access to canonical fields for downstream models</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get sources for the complete dataset.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complete_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complete_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;sources&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">positions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get positions for the complete dataset.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complete_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complete_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;positions&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">masks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get masks for the complete dataset.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complete_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complete_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;masks&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">zernike_prior</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get Zernike prior for the complete dataset.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complete_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_complete_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;zernike_prior&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DataAdapter.split_data">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_adapter.html#wf_psf.data.data_adapter.DataAdapter.split_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">split_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ratio</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Split the complete dataset into train and test sets if not already split.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ratio : float, optional</span>
+<span class="sd">            The fraction of the dataset to use for training (default is 0.8 or from params).</span>
+<span class="sd">        seed : int, optional</span>
+<span class="sd">            The random seed for reproducibility (default is from params).</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            If the dataset is not in COMPLETE state when attempting to split.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        - Splitting is idempotent: if the dataset is already in SPLIT state,</span>
+<span class="sd">          this method does not modify the data or re-split the dataset.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_structure_state</span> <span class="o">!=</span> <span class="n">StructureState</span><span class="o">.</span><span class="n">COMPLETE</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Split only allowed from COMPLETE state.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># -------------------------------</span>
+        <span class="c1"># Consistency enforcement</span>
+        <span class="c1"># -------------------------------</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_train_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="o">!=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_test_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Inconsistent split state: train/test mismatch.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Idempotent behaviour</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ratio</span> <span class="o">=</span> <span class="n">ratio</span> <span class="k">if</span> <span class="n">ratio</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_fraction</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Setting train_fraction to </span><span class="si">{</span><span class="n">ratio</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+
+            <span class="n">seed</span> <span class="o">=</span> <span class="n">seed</span> <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_seed</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Setting random seed for train-test split to </span><span class="si">{</span><span class="n">seed</span><span class="si">}</span><span class="s2">....&quot;</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_train_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_complete_data</span><span class="p">,</span> <span class="n">ratio</span><span class="o">=</span><span class="n">ratio</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;Split data already exists; reusing existing train/test split (idempotent call).&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_structure_state</span> <span class="o">=</span> <span class="n">StructureState</span><span class="o">.</span><span class="n">SPLIT</span></div>
+
+
+<div class="viewcode-block" id="DataAdapter.join_data">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_adapter.html#wf_psf.data.data_adapter.DataAdapter.join_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">join_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Join train and test splits into a single complete dataset.</span>
+
+<span class="sd">        Concatenates corresponding arrays from the train and test containers</span>
+<span class="sd">        along the first axis (sample dimension) for the specified keys.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        keys : list of str, optional</span>
+<span class="sd">            Dataset fields to join. If None, uses the canonical dataset keys.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            If the adapter is not in SPLIT state or if train/test data is missing.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        Only keys present in both train and test datasets are joined.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_structure_state</span> <span class="o">!=</span> <span class="n">StructureState</span><span class="o">.</span><span class="n">SPLIT</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Join only allowed from SPLIT state.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Train or test data is missing; cannot join.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Join on specified keys or CANONICAL_KEYS by default</span>
+        <span class="n">keys_to_join</span> <span class="o">=</span> <span class="n">keys</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_canonical_keys</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_complete_data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_train_data</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_data</span><span class="p">[</span><span class="n">k</span><span class="p">]],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys_to_join</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_train_data</span> <span class="ow">and</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_test_data</span>
+        <span class="p">}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_structure_state</span> <span class="o">=</span> <span class="n">StructureState</span><span class="o">.</span><span class="n">COMPLETE</span></div>
+
+
+<div class="viewcode-block" id="DataAdapter.convert_to_tensorflow">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_adapter.html#wf_psf.data.data_adapter.DataAdapter.convert_to_tensorflow">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">convert_to_tensorflow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">simPSF</span><span class="p">,</span> <span class="n">n_bins_lambda</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert dataset containers from NumPy to TensorFlow representation.</span>
+
+<span class="sd">        Applies the configured converter to transform dataset fields associated</span>
+<span class="sd">        with canonical keys into TensorFlow-compatible formats.</span>
+
+<span class="sd">        Conversion is performed on the active structure:</span>
+
+<span class="sd">        - SPLIT: converts train and test datasets separately</span>
+<span class="sd">        - COMPLETE: converts the full dataset</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        simPSF : PSFSimulator</span>
+<span class="sd">            Simulator instance passed to the converter.</span>
+<span class="sd">        n_bins_lambda : int</span>
+<span class="sd">            Number of wavelength bins used during conversion.</span>
+<span class="sd">        mode : DatasetMode</span>
+<span class="sd">            Dataset operation mode used to select the appropriate dataset schema for a given pipeline process (e.g. training, validation, inference) </span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        RuntimeError</span>
+<span class="sd">            If no converter is configured.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        - Conversion is idempotent: if the data is already in TensorFlow</span>
+<span class="sd">        representation, this method does nothing.</span>
+
+<span class="sd">        - Converted datasets are stored in internal attributes</span>
+<span class="sd">        (``_train_tf``, ``_test_tf``, ``_complete_tf``) and do not overwrite</span>
+<span class="sd">        the original NumPy data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_representation_state</span> <span class="o">==</span> <span class="n">RepresentationState</span><span class="o">.</span><span class="n">TENSORFLOW</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_converter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;No converter provided.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_structure_state</span> <span class="o">==</span> <span class="n">StructureState</span><span class="o">.</span><span class="n">SPLIT</span><span class="p">:</span>
+
+            <span class="n">n_train</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_train_data</span><span class="p">[</span><span class="n">DATASET_INDEX_KEY</span><span class="p">])</span>
+            <span class="n">n_test</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_test_data</span><span class="p">[</span><span class="n">DATASET_INDEX_KEY</span><span class="p">])</span>
+    
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Converting training dataset to TensorFlow &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(mode=</span><span class="si">{</span><span class="n">mode</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">, samples=</span><span class="si">{</span><span class="n">n_train</span><span class="si">}</span><span class="s2">)...&quot;</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_train_tf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_converter</span><span class="o">.</span><span class="n">convert_dataset</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_train_data</span><span class="p">,</span> <span class="n">simPSF</span><span class="p">,</span> <span class="n">n_bins_lambda</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span>
+            <span class="p">)</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Converting test dataset to TensorFlow &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(mode=</span><span class="si">{</span><span class="n">mode</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">, samples=</span><span class="si">{</span><span class="n">n_test</span><span class="si">}</span><span class="s2">)...&quot;</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_test_tf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_converter</span><span class="o">.</span><span class="n">convert_dataset</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_test_data</span><span class="p">,</span> <span class="n">simPSF</span><span class="p">,</span> <span class="n">n_bins_lambda</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">n_complete</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_complete_data</span><span class="p">[</span><span class="n">DATASET_INDEX_KEY</span><span class="p">])</span>
+            
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Converting complete dataset to TensorFlow &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(mode=</span><span class="si">{</span><span class="n">mode</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">, samples=</span><span class="si">{</span><span class="n">n_complete</span><span class="si">}</span><span class="s2">)...&quot;</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_complete_tf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_converter</span><span class="o">.</span><span class="n">convert_dataset</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_complete_data</span><span class="p">,</span> <span class="n">simPSF</span><span class="p">,</span> <span class="n">n_bins_lambda</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_representation_state</span> <span class="o">=</span> <span class="n">RepresentationState</span><span class="o">.</span><span class="n">TENSORFLOW</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Dataset representation state updated to TensorFlow.&quot;</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">ratio</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Split a dataset container into train and test subsets.</span>
+
+<span class="sd">        The split is performed along the first dimension (sample axis) using a</span>
+<span class="sd">        random permutation. Only array entries whose leading dimension matches</span>
+<span class="sd">        the number of samples are split; all other entries are copied unchanged.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : DatasetContainer</span>
+<span class="sd">            Container holding the complete dataset. Expected to store array-like</span>
+<span class="sd">            values (e.g. sources, positions, masks, SEDs) indexed by field name.</span>
+<span class="sd">        ratio : float, optional</span>
+<span class="sd">            Fraction of samples assigned to the training set. If not provided,</span>
+<span class="sd">            defaults to ``self._params.train_fraction`` or 0.8.</span>
+<span class="sd">        seed : int, optional</span>
+<span class="sd">            Random seed used to generate the split.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        train_data : dict</span>
+<span class="sd">            Dictionary containing the training subset.</span>
+<span class="sd">        test_data : dict</span>
+<span class="sd">            Dictionary containing the test subset.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the dataset size cannot be inferred from canonical keys.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        - The dataset size is inferred from the first available canonical key.</span>
+<span class="sd">        - Arrays whose leading dimension does not match the inferred size are</span>
+<span class="sd">        not split and are copied as-is into both outputs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ratio</span> <span class="o">=</span> <span class="n">ratio</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_params</span><span class="p">,</span> <span class="s2">&quot;train_fraction&quot;</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">)</span>
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+        <span class="n">canonical_keys</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_canonical_keys</span>
+
+        <span class="n">n</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Determine sample size from index dataset key</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">DATASET_INDEX_KEY</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Could not determine dataset length from canonical keys </span><span class="si">{</span><span class="n">canonical_keys</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">n_train</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">ratio</span><span class="p">)</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+
+        <span class="n">train_idx</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[:</span><span class="n">n_train</span><span class="p">]</span>
+        <span class="n">test_idx</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="n">n_train</span><span class="p">:]</span>
+
+        <span class="n">train_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">test_data</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">v</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">n</span><span class="p">:</span>
+                <span class="n">train_data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">train_idx</span><span class="p">]</span>
+                <span class="n">test_data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">test_idx</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># leave arrays with different leading axis untouched</span>
+                <span class="n">train_data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+                <span class="n">test_data</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+        <span class="k">return</span> <span class="n">train_data</span><span class="p">,</span> <span class="n">test_data</span>
+    
+
+<div class="viewcode-block" id="DataAdapter.release_numpy">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_adapter.html#wf_psf.data.data_adapter.DataAdapter.release_numpy">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">release_numpy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Release NumPy datasets.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_representation_state</span> <span class="o">!=</span> <span class="n">RepresentationState</span><span class="o">.</span><span class="n">TENSORFLOW</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;NumPy can only be released after TF conversion.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_complete_data</span> <span class="o">=</span> <span class="n">DatasetContainer</span><span class="p">({})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_train_data</span> <span class="o">=</span> <span class="n">DatasetContainer</span><span class="p">({})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_test_data</span> <span class="o">=</span> <span class="n">DatasetContainer</span><span class="p">({})</span></div>
+
+
+<div class="viewcode-block" id="DataAdapter.release_tensorflow">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.data_adapter.html#wf_psf.data.data_adapter.DataAdapter.release_tensorflow">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">release_tensorflow</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Release tensorflow datasets.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_complete_tf</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_train_tf</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_test_tf</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_representation_state</span> <span class="o">=</span> <span class="n">RepresentationState</span><span class="o">.</span><span class="n">NUMPY</span></div>
+</div>
+
+
+    
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

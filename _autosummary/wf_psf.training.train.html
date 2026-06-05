@@ -78,12 +78,14 @@
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.training.train.TrainingParamsHandler"><code class="docutils literal notranslate"><span class="pre">TrainingParamsHandler</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.training.train.filepath_chkp_callback"><code class="docutils literal notranslate"><span class="pre">filepath_chkp_callback()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.training.train.get_gpu_info"><code class="docutils literal notranslate"><span class="pre">get_gpu_info()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#wf_psf.training.train.get_loss_metrics_monitor_and_outputs"><code class="docutils literal notranslate"><span class="pre">get_loss_metrics_monitor_and_outputs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.training.train.get_loss_and_metrics"><code class="docutils literal notranslate"><span class="pre">get_loss_and_metrics()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.training.train.setup_training"><code class="docutils literal notranslate"><span class="pre">setup_training()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.training.train.train"><code class="docutils literal notranslate"><span class="pre">train()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="wf_psf.training.train_utils.html">wf_psf.training.train_utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.training.training_config_handler.html">wf_psf.training.training_config_handler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.training.training_data_adapter.html">wf_psf.training.training_data_adapter</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.utils.html">wf_psf.utils</a></li>
@@ -144,13 +146,13 @@ to manage training of the psf model.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.training.train.get_gpu_info" title="wf_psf.training.train.get_gpu_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_gpu_info</span></code></a>()</p></td>
 <td><p>Get GPU Information.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.training.train.get_loss_metrics_monitor_and_outputs" title="wf_psf.training.train.get_loss_metrics_monitor_and_outputs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_loss_metrics_monitor_and_outputs</span></code></a>(...)</p></td>
-<td><p>Factory to return fresh loss, metrics (param &amp; non-param), monitor, and outputs for the current cycle.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.training.train.get_loss_and_metrics" title="wf_psf.training.train.get_loss_and_metrics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_loss_and_metrics</span></code></a>(training_handler)</p></td>
+<td><p>Get Loss and Metrics.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.training.train.setup_training" title="wf_psf.training.train.setup_training"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_training</span></code></a>()</p></td>
 <td><p>Set up Training.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.training.train.train" title="wf_psf.training.train.train"><code class="xref py py-obj docutils literal notranslate"><span class="pre">train</span></code></a>(training_params, data_conf, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.training.train.train" title="wf_psf.training.train.train"><code class="xref py py-obj docutils literal notranslate"><span class="pre">train</span></code></a>(training_params, training_adapter, ...)</p></td>
 <td><p>Train the PSF model over one or more parametric and non-parametric training cycles.</p></td>
 </tr>
 </tbody>
@@ -394,24 +396,19 @@ device name.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="wf_psf.training.train.get_loss_metrics_monitor_and_outputs">
-<span class="sig-prename descclassname"><span class="pre">wf_psf.training.train.</span></span><span class="sig-name descname"><span class="pre">get_loss_metrics_monitor_and_outputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">training_handler</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_conf</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/training/train.html#get_loss_metrics_monitor_and_outputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train.get_loss_metrics_monitor_and_outputs" title="Link to this definition"></a></dt>
-<dd><p>Factory to return fresh loss, metrics (param &amp; non-param), monitor, and outputs for the current cycle.</p>
+<dt class="sig sig-object py" id="wf_psf.training.train.get_loss_and_metrics">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.training.train.</span></span><span class="sig-name descname"><span class="pre">get_loss_and_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">training_handler</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/training/train.html#get_loss_and_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train.get_loss_and_metrics" title="Link to this definition"></a></dt>
+<dd><p>Get Loss and Metrics.</p>
+<p>Factory to return fresh loss and metrics (param &amp; non-param) for the current cycle.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>training_handler</strong> (<a class="reference internal" href="#wf_psf.training.train.TrainingParamsHandler" title="wf_psf.training.train.TrainingParamsHandler"><em>TrainingParamsHandler</em></a>) – TrainingParamsHandler object containing training parameters</p></li>
-<li><p><strong>data_conf</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><em>object</em></a>) – Data configuration object containing training and test data</p></li>
-</ul>
+<dd class="field-odd"><p><strong>training_handler</strong> (<a class="reference internal" href="#wf_psf.training.train.TrainingParamsHandler" title="wf_psf.training.train.TrainingParamsHandler"><em>TrainingParamsHandler</em></a>) – TrainingParamsHandler object containing training parameters</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><strong>loss</strong> (<em>tf.keras.losses.Loss</em>) – Loss function to be used for training</p></li>
 <li><p><strong>param_metrics</strong> (<em>list</em>) – List of metrics for the parametric model</p></li>
 <li><p><strong>non_param_metrics</strong> (<em>list</em>) – List of metrics for the non-parametric model</p></li>
-<li><p><strong>monitor</strong> (<em>str</em>) – Metric to monitor for saving the model</p></li>
-<li><p><strong>outputs</strong> (<em>tf.Tensor</em>) – Tensor containing the outputs for training</p></li>
-<li><p><strong>output_val</strong> (<em>tf.Tensor</em>) – Tensor containing the outputs for validation</p></li>
 </ul>
 </p>
 </dd>
@@ -427,7 +424,7 @@ device name.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="wf_psf.training.train.train">
-<span class="sig-prename descclassname"><span class="pre">wf_psf.training.train.</span></span><span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">training_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_conf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkpoint_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psf_model_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/training/train.html#train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train.train" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">wf_psf.training.train.</span></span><span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">training_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">training_adapter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psf_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkpoint_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">psf_model_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/training/train.html#train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.training.train.train" title="Link to this definition"></a></dt>
 <dd><p>Train the PSF model over one or more parametric and non-parametric training cycles.</p>
 <p>This function manages multi-cycle training of a parametric + non-parametric PSF model,
 including initialization, loss/metric configuration, optimizer setup, model checkpointing,
@@ -441,9 +438,12 @@ both parametric and non-parametric training stages, and training history is save
 - number of epochs per component per cycle
 - model type and training behavior flags
 - multi-cycle definitions and callbacks</p></li>
-<li><p><strong>data_conf</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><em>object</em></a>) – Contains training and validation datasets via attributes:
-- data_conf.training_data: TrainingDataHandler instance with SEDs and positions
-- data_conf.test_data: TestDataHandler instance with validation SEDs and positions</p></li>
+<li><p><strong>training_adapter</strong> (<a class="reference internal" href="wf_psf.training.training_data_adapter.html#wf_psf.training.training_data_adapter.TrainingDataAdapter" title="wf_psf.training.training_data_adapter.TrainingDataAdapter"><em>TrainingDataAdapter</em></a>) – A training-ready data adapter containing the split, tensor-converted dataset.
+When a masked loss is used, target images and masks are packed together
+within the adapter.</p></li>
+<li><p><strong>psf_model</strong> (<em>tf.keras.Model</em>) – An initialised PSF model ready for training. Certain model types
+require the complete dataset for initialisation; this is handled
+upstream in <code class="docutils literal notranslate"><span class="pre">prepare_training_inputs</span></code></p></li>
 <li><p><strong>checkpoint_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Directory where model checkpoints will be saved during training.</p></li>
 <li><p><strong>optimizer_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Directory where the optimizer history (as a NumPy .npy file) will be stored.</p></li>
 <li><p><strong>psf_model_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Directory where the final trained PSF model weights will be saved per cycle.</p></li>

@@ -207,7 +207,7 @@ Can be started with zeros.</p></li>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">losses</span></code></dt><dd><p>List of losses added using the <cite>add_loss()</cite> API.</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">metrics</span></code></dt><dd><p>List of metrics added using the <cite>add_metric()</cite> API.</p>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">metrics</span></code></dt><dd><p>List of metrics attached to the layer.</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></dt><dd><p>Name of the layer (string), set in the constructor.</p>
 </dd>
@@ -267,31 +267,37 @@ Can be started with zeros.</p></li>
 <td><p>Adds a new variable to the layer.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build</span></code>(input_shape)</p></td>
-<td><p>Creates the variables of the layer (optional, for subclass implementers).</p></td>
+<td><p>Creates the variables of the layer (for subclass implementers).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFBatchMonochromaticPSF.calculate_monochromatic_PSF" title="wf_psf.psf_models.tf_modules.tf_layers.TFBatchMonochromaticPSF.calculate_monochromatic_PSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_monochromatic_PSF</span></code></a>(current_opd)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_from_config</span></code>(config)</p></td>
+<td><p>Builds the layer's states with the supplied config dict.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFBatchMonochromaticPSF.calculate_monochromatic_PSF" title="wf_psf.psf_models.tf_modules.tf_layers.TFBatchMonochromaticPSF.calculate_monochromatic_PSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_monochromatic_PSF</span></code></a>(current_opd)</p></td>
 <td><p>Calculate monochromatic PSF from OPD info.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFBatchMonochromaticPSF.call" title="wf_psf.psf_models.tf_modules.tf_layers.TFBatchMonochromaticPSF.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(opd_batch)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFBatchMonochromaticPSF.call" title="wf_psf.psf_models.tf_modules.tf_layers.TFBatchMonochromaticPSF.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(opd_batch)</p></td>
 <td><p>Calculate the batch poly PSFs.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_mask</span></code>(inputs[, mask])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_mask</span></code>(inputs[, mask])</p></td>
 <td><p>Computes an output mask tensor.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_shape</span></code>(input_shape)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_shape</span></code>(input_shape)</p></td>
 <td><p>Computes the output shape of the layer.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_signature</span></code>(input_signature)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_signature</span></code>(input_signature)</p></td>
 <td><p>Compute the output tensor signature of the layer based on the inputs.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_params</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_params</span></code>()</p></td>
 <td><p>Count the total number of scalars composing the weights.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalize_state</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalize_state</span></code>()</p></td>
 <td><p>Finalizes the layers state after updating layer weights.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_config</span></code>(config)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_config</span></code>(config)</p></td>
 <td><p>Creates a layer from its config.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_build_config</span></code>()</p></td>
+<td><p>Returns a dictionary with the layer's input shape.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_config</span></code>()</p></td>
 <td><p>Returns the config of the layer.</p></td>
@@ -319,6 +325,12 @@ Can be started with zeros.</p></li>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFBatchMonochromaticPSF.init_mono_PSF" title="wf_psf.psf_models.tf_modules.tf_layers.TFBatchMonochromaticPSF.init_mono_PSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_mono_PSF</span></code></a>()</p></td>
 <td><p>Initialise or restart the PSF generator.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_own_variables</span></code>(store)</p></td>
+<td><p>Loads the state of the layer.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_own_variables</span></code>(store)</p></td>
+<td><p>Saves the state of the layer.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFBatchMonochromaticPSF.set_lambda_phaseN" title="wf_psf.psf_models.tf_modules.tf_layers.TFBatchMonochromaticPSF.set_lambda_phaseN"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_lambda_phaseN</span></code></a>([phase_N, lambda_obs])</p></td>
 <td><p>Set the lambda value for monochromatic PSFs and the phaseN.</p></td>
@@ -417,7 +429,7 @@ time a calculation is required. REMOVED!</p></li>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">losses</span></code></dt><dd><p>List of losses added using the <cite>add_loss()</cite> API.</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">metrics</span></code></dt><dd><p>List of metrics added using the <cite>add_metric()</cite> API.</p>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">metrics</span></code></dt><dd><p>List of metrics attached to the layer.</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></dt><dd><p>Name of the layer (string), set in the constructor.</p>
 </dd>
@@ -477,34 +489,40 @@ time a calculation is required. REMOVED!</p></li>
 <td><p>Adds a new variable to the layer.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build</span></code>(input_shape)</p></td>
-<td><p>Creates the variables of the layer (optional, for subclass implementers).</p></td>
+<td><p>Creates the variables of the layer (for subclass implementers).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFBatchPolychromaticPSF.calculate_monochromatic_PSF" title="wf_psf.psf_models.tf_modules.tf_layers.TFBatchPolychromaticPSF.calculate_monochromatic_PSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_monochromatic_PSF</span></code></a>(packed_elems)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_from_config</span></code>(config)</p></td>
+<td><p>Builds the layer's states with the supplied config dict.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFBatchPolychromaticPSF.calculate_monochromatic_PSF" title="wf_psf.psf_models.tf_modules.tf_layers.TFBatchPolychromaticPSF.calculate_monochromatic_PSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_monochromatic_PSF</span></code></a>(packed_elems)</p></td>
 <td><p>Calculate monochromatic PSF from packed elements.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFBatchPolychromaticPSF.calculate_polychromatic_PSF" title="wf_psf.psf_models.tf_modules.tf_layers.TFBatchPolychromaticPSF.calculate_polychromatic_PSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_polychromatic_PSF</span></code></a>(packed_elems)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFBatchPolychromaticPSF.calculate_polychromatic_PSF" title="wf_psf.psf_models.tf_modules.tf_layers.TFBatchPolychromaticPSF.calculate_polychromatic_PSF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calculate_polychromatic_PSF</span></code></a>(packed_elems)</p></td>
 <td><p>Calculate a polychromatic PSF.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFBatchPolychromaticPSF.call" title="wf_psf.psf_models.tf_modules.tf_layers.TFBatchPolychromaticPSF.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(inputs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFBatchPolychromaticPSF.call" title="wf_psf.psf_models.tf_modules.tf_layers.TFBatchPolychromaticPSF.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(inputs)</p></td>
 <td><p>Calculate the batch polychromatic PSFs.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_mask</span></code>(inputs[, mask])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_mask</span></code>(inputs[, mask])</p></td>
 <td><p>Computes an output mask tensor.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_shape</span></code>(input_shape)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_shape</span></code>(input_shape)</p></td>
 <td><p>Computes the output shape of the layer.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_signature</span></code>(input_signature)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_signature</span></code>(input_signature)</p></td>
 <td><p>Compute the output tensor signature of the layer based on the inputs.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_params</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_params</span></code>()</p></td>
 <td><p>Count the total number of scalars composing the weights.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalize_state</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalize_state</span></code>()</p></td>
 <td><p>Finalizes the layers state after updating layer weights.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_config</span></code>(config)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_config</span></code>(config)</p></td>
 <td><p>Creates a layer from its config.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_build_config</span></code>()</p></td>
+<td><p>Returns a dictionary with the layer's input shape.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_config</span></code>()</p></td>
 <td><p>Returns the config of the layer.</p></td>
@@ -529,6 +547,12 @@ time a calculation is required. REMOVED!</p></li>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_weights</span></code>()</p></td>
 <td><p>Returns the current weights of the layer, as NumPy arrays.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_own_variables</span></code>(store)</p></td>
+<td><p>Loads the state of the layer.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_own_variables</span></code>(store)</p></td>
+<td><p>Saves the state of the layer.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_weights</span></code>(weights)</p></td>
 <td><p>Sets the weights of the layer, from NumPy arrays.</p></td>
@@ -609,7 +633,7 @@ computed <cite>(d_max+1)*(d_max+2)/2</cite>.</p></li>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">losses</span></code></dt><dd><p>List of losses added using the <cite>add_loss()</cite> API.</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">metrics</span></code></dt><dd><p>List of metrics added using the <cite>add_metric()</cite> API.</p>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">metrics</span></code></dt><dd><p>List of metrics attached to the layer.</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></dt><dd><p>Name of the layer (string), set in the constructor.</p>
 </dd>
@@ -669,28 +693,34 @@ computed <cite>(d_max+1)*(d_max+2)/2</cite>.</p></li>
 <td><p>Adds a new variable to the layer.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build</span></code>(input_shape)</p></td>
-<td><p>Creates the variables of the layer (optional, for subclass implementers).</p></td>
+<td><p>Creates the variables of the layer (for subclass implementers).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricGraphOPD.call" title="wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricGraphOPD.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(positions)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_from_config</span></code>(config)</p></td>
+<td><p>Builds the layer's states with the supplied config dict.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricGraphOPD.call" title="wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricGraphOPD.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(positions)</p></td>
 <td><p>Calculate the OPD maps for the given positions.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_mask</span></code>(inputs[, mask])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_mask</span></code>(inputs[, mask])</p></td>
 <td><p>Computes an output mask tensor.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_shape</span></code>(input_shape)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_shape</span></code>(input_shape)</p></td>
 <td><p>Computes the output shape of the layer.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_signature</span></code>(input_signature)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_signature</span></code>(input_signature)</p></td>
 <td><p>Compute the output tensor signature of the layer based on the inputs.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_params</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_params</span></code>()</p></td>
 <td><p>Count the total number of scalars composing the weights.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalize_state</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalize_state</span></code>()</p></td>
 <td><p>Finalizes the layers state after updating layer weights.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_config</span></code>(config)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_config</span></code>(config)</p></td>
 <td><p>Creates a layer from its config.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_build_config</span></code>()</p></td>
+<td><p>Returns a dictionary with the layer's input shape.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_config</span></code>()</p></td>
 <td><p>Returns the config of the layer.</p></td>
@@ -719,8 +749,14 @@ computed <cite>(d_max+1)*(d_max+2)/2</cite>.</p></li>
 <tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricGraphOPD.init_vars" title="wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricGraphOPD.init_vars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_vars</span></code></a>()</p></td>
 <td><p>Initialize trainable variables.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricGraphOPD.predict" title="wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricGraphOPD.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(positions)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_own_variables</span></code>(store)</p></td>
+<td><p>Loads the state of the layer.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricGraphOPD.predict" title="wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricGraphOPD.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(positions)</p></td>
 <td><p>Prediction step.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_own_variables</span></code>(store)</p></td>
+<td><p>Saves the state of the layer.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricGraphOPD.set_alpha_identity" title="wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricGraphOPD.set_alpha_identity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_alpha_identity</span></code></a>()</p></td>
 <td><p>Set alpha matrix to the identity.</p></td>
@@ -829,7 +865,7 @@ computed <cite>(d_max+1)*(d_max+2)/2</cite>.</p></li>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">losses</span></code></dt><dd><p>List of losses added using the <cite>add_loss()</cite> API.</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">metrics</span></code></dt><dd><p>List of metrics added using the <cite>add_metric()</cite> API.</p>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">metrics</span></code></dt><dd><p>List of metrics attached to the layer.</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></dt><dd><p>Name of the layer (string), set in the constructor.</p>
 </dd>
@@ -889,28 +925,34 @@ computed <cite>(d_max+1)*(d_max+2)/2</cite>.</p></li>
 <td><p>Adds a new variable to the layer.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build</span></code>(input_shape)</p></td>
-<td><p>Creates the variables of the layer (optional, for subclass implementers).</p></td>
+<td><p>Creates the variables of the layer (for subclass implementers).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricMCCDOPDv2.call" title="wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricMCCDOPDv2.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(positions)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_from_config</span></code>(config)</p></td>
+<td><p>Builds the layer's states with the supplied config dict.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricMCCDOPDv2.call" title="wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricMCCDOPDv2.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(positions)</p></td>
 <td><p>Calculate the OPD maps for the given positions.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_mask</span></code>(inputs[, mask])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_mask</span></code>(inputs[, mask])</p></td>
 <td><p>Computes an output mask tensor.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_shape</span></code>(input_shape)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_shape</span></code>(input_shape)</p></td>
 <td><p>Computes the output shape of the layer.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_signature</span></code>(input_signature)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_signature</span></code>(input_signature)</p></td>
 <td><p>Compute the output tensor signature of the layer based on the inputs.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_params</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_params</span></code>()</p></td>
 <td><p>Count the total number of scalars composing the weights.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalize_state</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalize_state</span></code>()</p></td>
 <td><p>Finalizes the layers state after updating layer weights.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_config</span></code>(config)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_config</span></code>(config)</p></td>
 <td><p>Creates a layer from its config.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_build_config</span></code>()</p></td>
+<td><p>Returns a dictionary with the layer's input shape.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_config</span></code>()</p></td>
 <td><p>Returns the config of the layer.</p></td>
@@ -939,8 +981,14 @@ computed <cite>(d_max+1)*(d_max+2)/2</cite>.</p></li>
 <tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricMCCDOPDv2.init_vars" title="wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricMCCDOPDv2.init_vars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_vars</span></code></a>()</p></td>
 <td><p>Initialize trainable variables.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricMCCDOPDv2.predict" title="wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricMCCDOPDv2.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(positions)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_own_variables</span></code>(store)</p></td>
+<td><p>Loads the state of the layer.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricMCCDOPDv2.predict" title="wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricMCCDOPDv2.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>(positions)</p></td>
 <td><p>Prediction step.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_own_variables</span></code>(store)</p></td>
+<td><p>Saves the state of the layer.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricMCCDOPDv2.set_alpha_identity" title="wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricMCCDOPDv2.set_alpha_identity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_alpha_identity</span></code></a>()</p></td>
 <td><p>Set alpha matrix to the identity.</p></td>
@@ -1040,7 +1088,7 @@ computed <cite>(d_max+1)*(d_max+2)/2</cite>.</p></li>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">losses</span></code></dt><dd><p>List of losses added using the <cite>add_loss()</cite> API.</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">metrics</span></code></dt><dd><p>List of metrics added using the <cite>add_metric()</cite> API.</p>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">metrics</span></code></dt><dd><p>List of metrics attached to the layer.</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></dt><dd><p>Name of the layer (string), set in the constructor.</p>
 </dd>
@@ -1103,28 +1151,34 @@ computed <cite>(d_max+1)*(d_max+2)/2</cite>.</p></li>
 <td><p>Assign DD features matrix.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build</span></code>(input_shape)</p></td>
-<td><p>Creates the variables of the layer (optional, for subclass implementers).</p></td>
+<td><p>Creates the variables of the layer (for subclass implementers).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricPolynomialVariationsOPD.call" title="wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricPolynomialVariationsOPD.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(positions)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_from_config</span></code>(config)</p></td>
+<td><p>Builds the layer's states with the supplied config dict.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricPolynomialVariationsOPD.call" title="wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricPolynomialVariationsOPD.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(positions)</p></td>
 <td><p>Calculate the OPD maps for the given positions.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_mask</span></code>(inputs[, mask])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_mask</span></code>(inputs[, mask])</p></td>
 <td><p>Computes an output mask tensor.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_shape</span></code>(input_shape)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_shape</span></code>(input_shape)</p></td>
 <td><p>Computes the output shape of the layer.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_signature</span></code>(input_signature)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_signature</span></code>(input_signature)</p></td>
 <td><p>Compute the output tensor signature of the layer based on the inputs.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_params</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_params</span></code>()</p></td>
 <td><p>Count the total number of scalars composing the weights.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalize_state</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalize_state</span></code>()</p></td>
 <td><p>Finalizes the layers state after updating layer weights.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_config</span></code>(config)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_config</span></code>(config)</p></td>
 <td><p>Creates a layer from its config.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_build_config</span></code>()</p></td>
+<td><p>Returns a dictionary with the layer's input shape.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_config</span></code>()</p></td>
 <td><p>Returns the config of the layer.</p></td>
@@ -1152,6 +1206,12 @@ computed <cite>(d_max+1)*(d_max+2)/2</cite>.</p></li>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricPolynomialVariationsOPD.init_vars" title="wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricPolynomialVariationsOPD.init_vars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_vars</span></code></a>()</p></td>
 <td><p>Initialize trainable variables.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_own_variables</span></code>(store)</p></td>
+<td><p>Loads the state of the layer.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_own_variables</span></code>(store)</p></td>
+<td><p>Saves the state of the layer.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricPolynomialVariationsOPD.set_alpha_identity" title="wf_psf.psf_models.tf_modules.tf_layers.TFNonParametricPolynomialVariationsOPD.set_alpha_identity"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_alpha_identity</span></code></a>()</p></td>
 <td><p>Set alpha matrix to the identity.</p></td>
@@ -1258,7 +1318,7 @@ and the K elements in the <cite>top_K</cite> interpolation.</p></li>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">losses</span></code></dt><dd><p>List of losses added using the <cite>add_loss()</cite> API.</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">metrics</span></code></dt><dd><p>List of metrics added using the <cite>add_metric()</cite> API.</p>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">metrics</span></code></dt><dd><p>List of metrics attached to the layer.</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></dt><dd><p>Name of the layer (string), set in the constructor.</p>
 </dd>
@@ -1318,28 +1378,34 @@ and the K elements in the <cite>top_K</cite> interpolation.</p></li>
 <td><p>Adds a new variable to the layer.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build</span></code>(input_shape)</p></td>
-<td><p>Creates the variables of the layer (optional, for subclass implementers).</p></td>
+<td><p>Creates the variables of the layer (for subclass implementers).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFPhysicalLayer.call" title="wf_psf.psf_models.tf_modules.tf_layers.TFPhysicalLayer.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(positions)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_from_config</span></code>(config)</p></td>
+<td><p>Builds the layer's states with the supplied config dict.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFPhysicalLayer.call" title="wf_psf.psf_models.tf_modules.tf_layers.TFPhysicalLayer.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(positions)</p></td>
 <td><p>Calculate the prior Zernike coefficients for a batch of positions.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_mask</span></code>(inputs[, mask])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_mask</span></code>(inputs[, mask])</p></td>
 <td><p>Computes an output mask tensor.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_shape</span></code>(input_shape)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_shape</span></code>(input_shape)</p></td>
 <td><p>Computes the output shape of the layer.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_signature</span></code>(input_signature)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_signature</span></code>(input_signature)</p></td>
 <td><p>Compute the output tensor signature of the layer based on the inputs.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_params</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_params</span></code>()</p></td>
 <td><p>Count the total number of scalars composing the weights.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalize_state</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalize_state</span></code>()</p></td>
 <td><p>Finalizes the layers state after updating layer weights.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_config</span></code>(config)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_config</span></code>(config)</p></td>
 <td><p>Creates a layer from its config.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_build_config</span></code>()</p></td>
+<td><p>Returns a dictionary with the layer's input shape.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_config</span></code>()</p></td>
 <td><p>Returns the config of the layer.</p></td>
@@ -1373,6 +1439,12 @@ and the K elements in the <cite>top_K</cite> interpolation.</p></li>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFPhysicalLayer.interpolate_top_K" title="wf_psf.psf_models.tf_modules.tf_layers.TFPhysicalLayer.interpolate_top_K"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_top_K</span></code></a>(positions)</p></td>
 <td><p>Interpolate using only the K closest elements.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_own_variables</span></code>(store)</p></td>
+<td><p>Loads the state of the layer.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_own_variables</span></code>(store)</p></td>
+<td><p>Saves the state of the layer.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_weights</span></code>(weights)</p></td>
 <td><p>Sets the weights of the layer, from NumPy arrays.</p></td>
@@ -1518,7 +1590,7 @@ coefficient variation.</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">losses</span></code></dt><dd><p>List of losses added using the <cite>add_loss()</cite> API.</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">metrics</span></code></dt><dd><p>List of metrics added using the <cite>add_metric()</cite> API.</p>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">metrics</span></code></dt><dd><p>List of metrics attached to the layer.</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></dt><dd><p>Name of the layer (string), set in the constructor.</p>
 </dd>
@@ -1581,28 +1653,34 @@ coefficient variation.</p>
 <td><p>Assign coefficient matrix.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build</span></code>(input_shape)</p></td>
-<td><p>Creates the variables of the layer (optional, for subclass implementers).</p></td>
+<td><p>Creates the variables of the layer (for subclass implementers).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFPolynomialZernikeField.call" title="wf_psf.psf_models.tf_modules.tf_layers.TFPolynomialZernikeField.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(positions)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_from_config</span></code>(config)</p></td>
+<td><p>Builds the layer's states with the supplied config dict.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFPolynomialZernikeField.call" title="wf_psf.psf_models.tf_modules.tf_layers.TFPolynomialZernikeField.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(positions)</p></td>
 <td><p>Calculate the zernike coefficients for a given position.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_mask</span></code>(inputs[, mask])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_mask</span></code>(inputs[, mask])</p></td>
 <td><p>Computes an output mask tensor.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_shape</span></code>(input_shape)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_shape</span></code>(input_shape)</p></td>
 <td><p>Computes the output shape of the layer.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_signature</span></code>(input_signature)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_signature</span></code>(input_signature)</p></td>
 <td><p>Compute the output tensor signature of the layer based on the inputs.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_params</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_params</span></code>()</p></td>
 <td><p>Count the total number of scalars composing the weights.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalize_state</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalize_state</span></code>()</p></td>
 <td><p>Finalizes the layers state after updating layer weights.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_config</span></code>(config)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_config</span></code>(config)</p></td>
 <td><p>Creates a layer from its config.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_build_config</span></code>()</p></td>
+<td><p>Returns a dictionary with the layer's input shape.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFPolynomialZernikeField.get_coeff_matrix" title="wf_psf.psf_models.tf_modules.tf_layers.TFPolynomialZernikeField.get_coeff_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_coeff_matrix</span></code></a>()</p></td>
 <td><p>Get coefficient matrix.</p></td>
@@ -1636,6 +1714,12 @@ coefficient variation.</p>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFPolynomialZernikeField.init_coeff_matrix" title="wf_psf.psf_models.tf_modules.tf_layers.TFPolynomialZernikeField.init_coeff_matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_coeff_matrix</span></code></a>()</p></td>
 <td><p>Initialize coefficient matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_own_variables</span></code>(store)</p></td>
+<td><p>Loads the state of the layer.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_own_variables</span></code>(store)</p></td>
+<td><p>Saves the state of the layer.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_weights</span></code>(weights)</p></td>
 <td><p>Sets the weights of the layer, from NumPy arrays.</p></td>
@@ -1735,7 +1819,7 @@ to the class.</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">losses</span></code></dt><dd><p>List of losses added using the <cite>add_loss()</cite> API.</p>
 </dd>
-<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">metrics</span></code></dt><dd><p>List of metrics added using the <cite>add_metric()</cite> API.</p>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">metrics</span></code></dt><dd><p>List of metrics attached to the layer.</p>
 </dd>
 <dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">name</span></code></dt><dd><p>Name of the layer (string), set in the constructor.</p>
 </dd>
@@ -1795,28 +1879,34 @@ to the class.</p>
 <td><p>Adds a new variable to the layer.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build</span></code>(input_shape)</p></td>
-<td><p>Creates the variables of the layer (optional, for subclass implementers).</p></td>
+<td><p>Creates the variables of the layer (for subclass implementers).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFZernikeOPD.call" title="wf_psf.psf_models.tf_modules.tf_layers.TFZernikeOPD.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(z_coeffs)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_from_config</span></code>(config)</p></td>
+<td><p>Builds the layer's states with the supplied config dict.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.tf_modules.tf_layers.TFZernikeOPD.call" title="wf_psf.psf_models.tf_modules.tf_layers.TFZernikeOPD.call"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call</span></code></a>(z_coeffs)</p></td>
 <td><p>Perform the weighted sum of Zernikes coeffs and maps.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_mask</span></code>(inputs[, mask])</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_mask</span></code>(inputs[, mask])</p></td>
 <td><p>Computes an output mask tensor.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_shape</span></code>(input_shape)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_shape</span></code>(input_shape)</p></td>
 <td><p>Computes the output shape of the layer.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_signature</span></code>(input_signature)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_output_signature</span></code>(input_signature)</p></td>
 <td><p>Compute the output tensor signature of the layer based on the inputs.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_params</span></code>()</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">count_params</span></code>()</p></td>
 <td><p>Count the total number of scalars composing the weights.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalize_state</span></code>()</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">finalize_state</span></code>()</p></td>
 <td><p>Finalizes the layers state after updating layer weights.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_config</span></code>(config)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_config</span></code>(config)</p></td>
 <td><p>Creates a layer from its config.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_build_config</span></code>()</p></td>
+<td><p>Returns a dictionary with the layer's input shape.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_config</span></code>()</p></td>
 <td><p>Returns the config of the layer.</p></td>
@@ -1841,6 +1931,12 @@ to the class.</p>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_weights</span></code>()</p></td>
 <td><p>Returns the current weights of the layer, as NumPy arrays.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_own_variables</span></code>(store)</p></td>
+<td><p>Loads the state of the layer.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_own_variables</span></code>(store)</p></td>
+<td><p>Saves the state of the layer.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_weights</span></code>(weights)</p></td>
 <td><p>Sets the weights of the layer, from NumPy arrays.</p></td>

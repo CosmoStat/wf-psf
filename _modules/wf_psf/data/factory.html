@@ -1,0 +1,593 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.data.factory &mdash; wf-psf 3.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../../../_static/twemoji.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../../../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">wf_psf.data.factory</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for wf_psf.data.factory</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Factory module for creating and normalizing data adapters.</span>
+
+<span class="sd">This module defines the ``DataAdapterFactory``, which constructs ``DataAdapter``</span>
+<span class="sd">instances from a variety of dataset formats, including dictionaries,</span>
+<span class="sd">dataclasses, ``LoadedDataset`` instances, or objects with attributes exposing</span>
+<span class="sd">numpy arrays. It also integrates dataset normalization through the ``DataEnvelope``</span>
+<span class="sd">and utility routines in ``data_utils``.</span>
+
+<span class="sd">The module defines a protocol (``SupportsParams``) to allow</span>
+<span class="sd">external APIs to pass parameter containers in a generic way,</span>
+<span class="sd">supporting dataclasses, custom objects, or dictionaries.</span>
+
+<span class="sd">Key features:</span>
+
+<span class="sd">- Automatic detection of dataset structure (train/test/complete) and conversion</span>
+<span class="sd">  to ``LoadedDataset`` for downstream processing.</span>
+<span class="sd">- Normalization and validation of dataset parameters via ``normalize_data_envelope``.</span>
+<span class="sd">- Optional metadata extraction when available in input objects.</span>
+<span class="sd">- Integration with ``TensorFlowDatasetConverter`` for TF-ready dataset pipelines.</span>
+<span class="sd">- Lightweight dataset introspection utilities for in-memory datasets and canonical keys.</span>
+<span class="sd">- Logging to provide insight into dataset resolution and loading steps.</span>
+
+<span class="sd">Author: Jennifer Pollack &lt;jennifer.pollack@cea.fr&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">is_dataclass</span><span class="p">,</span> <span class="n">fields</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.data.data_adapter</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataAdapter</span><span class="p">,</span> <span class="n">LoadedDataset</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.data.npy_dataset_loader</span><span class="w"> </span><span class="kn">import</span> <span class="n">NpyDatasetLoader</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.data.tensorflow_converter</span><span class="w"> </span><span class="kn">import</span> <span class="n">TensorFlowDatasetConverter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Protocol</span><span class="p">,</span> <span class="n">runtime_checkable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.utils.read_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">RecursiveNamespace</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="c1"># Define protocols to allow external APIs to be used</span>
+<div class="viewcode-block" id="SupportsParams">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.factory.html#wf_psf.data.factory.SupportsParams">[docs]</a>
+<span class="nd">@runtime_checkable</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SupportsParams</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Protocol for dataset objects containing parameters.</span>
+
+<span class="sd">    This protocol represents objects that expose a ``params`` attribute</span>
+<span class="sd">    containing dataset parameters. This allows dataclasses, custom objects, and other parameter containers</span>
+<span class="sd">    to be accepted by the data adapter API.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    params : Any</span>
+<span class="sd">        An object (e.g., dict, structured namespace, etc) containing dataset-specific parameters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">params</span><span class="p">:</span> <span class="n">Any</span></div>
+
+
+
+<span class="c1"># Define a union type for all acceptable data formats that include parameters</span>
+<span class="n">DataInput</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">SupportsParams</span><span class="p">]</span>
+<span class="n">ParamsType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">RecursiveNamespace</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="DataEnvelope">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.factory.html#wf_psf.data.factory.DataEnvelope">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DataEnvelope</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Encapsulates separated dataset, parameters and metadata.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : Optional[Any]</span>
+<span class="sd">        The actual dataset (e.g., ``LoadedDataset``, ``dict``, ``dataclass``). Can be ``None`` if input is just params.</span>
+<span class="sd">    params : ParamsType</span>
+<span class="sd">        Configuration parameters used to resolve and load the dataset. Required for adapter construction.</span>
+<span class="sd">    metadata : Optional[dict] = None</span>
+<span class="sd">        Ancillary information about the dataset (IDs, units, provenance, etc.).</span>
+<span class="sd">        Defaults to None if not present in input.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span>
+    <span class="n">params</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<div class="viewcode-block" id="normalize_data_envelope">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.factory.html#wf_psf.data.factory.normalize_data_envelope">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">normalize_data_envelope</span><span class="p">(</span>
+    <span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">field_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;params&quot;</span><span class="p">,</span> <span class="n">metadata_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;metadata&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataEnvelope</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Normalize data envelope.</span>
+
+<span class="sd">    Normalize an input object into a ``DataEnvelope`` by extracting named</span>
+<span class="sd">    parametric fields and metadata. Supports dataclasses, dictionaries,</span>
+<span class="sd">    and generic objects with attributes.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    obj : Any</span>
+<span class="sd">        Input object containing dataset, parameters, and optionally metadata.</span>
+<span class="sd">    field_name : str, default &quot;params&quot;</span>
+<span class="sd">        Name of the field to extract as parameters.</span>
+<span class="sd">    metadata_name : str, default &quot;metadata&quot;</span>
+<span class="sd">        Name of the field to extract as metadata, if present.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    DataEnvelope</span>
+<span class="sd">        Object containing separated data, parameters, and metadata.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - The ``params`` field is optional, but may be required by downstream components (e.g. the factory) to resolve how the dataset should be constructed (in-memory vs. file-based loading).</span>
+<span class="sd">    - The ``metadata`` field is optional and ignored if not present.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># -----------------------</span>
+    <span class="c1"># Dataclass input</span>
+    <span class="c1"># -----------------------</span>
+    <span class="k">if</span> <span class="n">is_dataclass</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">metadata_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">data_fields</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">metadata_name</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">data_fields</span> <span class="k">else</span> <span class="p">{</span><span class="n">f</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">data_fields</span><span class="p">}</span>
+
+    <span class="c1"># -----------------------</span>
+    <span class="c1"># Dictionary input</span>
+    <span class="c1"># -----------------------</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">obj_copy</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+
+        <span class="c1"># Extract params</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">obj_copy</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="c1"># Extract metadata</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="n">obj_copy</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">metadata_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="c1"># Rest is data or None</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">obj_copy</span> <span class="ow">or</span> <span class="kc">None</span>
+
+    <span class="c1"># -----------------------</span>
+    <span class="c1"># Generic object with attributes</span>
+    <span class="c1"># -----------------------</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">field_name</span><span class="p">):</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">field_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">metadata_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">data_attrs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="n">field_name</span><span class="p">,</span> <span class="n">metadata_name</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">data_attrs</span> <span class="k">else</span> <span class="n">data_attrs</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported input type for data normalization: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">DataEnvelope</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="DataAdapterFactory">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.factory.html#wf_psf.data.factory.DataAdapterFactory">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DataAdapterFactory</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Factory for creating DataAdapters from various dataset formats.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DataAdapterFactory.build">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.factory.html#wf_psf.data.factory.DataAdapterFactory.build">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">build</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a DataAdapter.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : object</span>
+<span class="sd">            The dataset to be adapted. Can be:</span>
+
+<span class="sd">            - A ``LoadedDataset`` instance</span>
+<span class="sd">            - A ``dataclass`` with numpy arrays (e.g., train/test containers, parameters or shallow complete)</span>
+<span class="sd">            - A ``dict`` containing &#39;train&#39;, &#39;test&#39;, or &#39;complete&#39; keys with numpy arrays</span>
+<span class="sd">            - An ``object`` with attributes that are numpy arrays (like your train/test containers)</span>
+<span class="sd">            The factory will automatically detect the structure and convert it into a ``LoadedDataset``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        DataAdapter</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dataset</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">DataAdapterFactory</span><span class="o">.</span><span class="n">_resolve_dataset</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">converter</span> <span class="o">=</span> <span class="n">TensorFlowDatasetConverter</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">DataAdapter</span><span class="p">(</span>
+            <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span> <span class="n">converter</span><span class="o">=</span><span class="n">converter</span>
+        <span class="p">)</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_dataset</span><span class="p">(</span>
+        <span class="n">data</span><span class="p">:</span> <span class="n">DataInput</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">LoadedDataset</span><span class="p">,</span> <span class="n">ParamsType</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve dataset.</span>
+
+<span class="sd">        Resolution proceeds in two stages:</span>
+
+<span class="sd">        1. Determine whether the dataset should be loaded from disk or treated as</span>
+<span class="sd">        in-memory, based solely on the structure of `params`.</span>
+
+<span class="sd">        2. Validate consistency between `params` and the provided dataset, then</span>
+<span class="sd">        construct a `LoadedDataset` accordingly.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : DataInput</span>
+<span class="sd">            Input dataset in any supported format (dict, dataclass, or object with</span>
+<span class="sd">            attributes), optionally containing associated parameters.</span>
+
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple</span>
+<span class="sd">            A tuple containing the loaded dataset, data parameters, and metadata (optional).</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        - Dataset resolution is driven by ``params``.</span>
+<span class="sd">        - If file-based configuration (e.g. ``file`` or ``data_dir``) is detected, the dataset is loaded from disk.</span>
+<span class="sd">        - Otherwise, the dataset is assumed to be provided in memory.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Normalise data</span>
+        <span class="n">envelope</span> <span class="o">=</span> <span class="n">normalize_data_envelope</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">dataset</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">envelope</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+            <span class="n">envelope</span><span class="o">.</span><span class="n">params</span><span class="p">,</span>
+            <span class="n">envelope</span><span class="o">.</span><span class="n">metadata</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Check if data and params are None</span>
+        <span class="k">if</span> <span class="n">dataset</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No data or configuration parameters provided.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Determine dataset source (in-memory vs. file-based) from params.</span>
+        <span class="c1"># Data presence is validated against that inferred intent.</span>
+        <span class="n">in_memory</span> <span class="o">=</span> <span class="n">_is_in_memory</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+
+        <span class="c1"># Case A — In-memory data</span>
+        <span class="k">if</span> <span class="n">in_memory</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dataset</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Parameters indicate in-memory data (no &#39;file&#39;/&#39;data_dir&#39; found), &quot;</span>
+                    <span class="s2">&quot;but no dataset was provided.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">_build_loaded_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">),</span> <span class="n">params</span><span class="p">,</span> <span class="n">metadata</span><span class="p">)</span>
+
+        <span class="c1"># Case B — Load from disk</span>
+        <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing dataset parameters; cannot load data from disk.&quot;</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;No in-memory data detected. Attempting to load dataset from files &quot;</span>
+            <span class="s2">&quot;based on provided parameters.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">DataAdapterFactory</span><span class="o">.</span><span class="n">_load_dataset</span><span class="p">(</span><span class="n">params</span><span class="p">),</span> <span class="n">params</span><span class="p">,</span> <span class="n">metadata</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_load_dataset</span><span class="p">(</span><span class="n">params</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LoadedDataset</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load dataset.</span>
+
+<span class="sd">        Load dataset using configuration parameters.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        params : RecursiveNamespace</span>
+<span class="sd">            A recursive namespace object containing dataset configuration parameters needed to load data from disc.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        LoadedDataset</span>
+<span class="sd">            Dataset container populated from the provided configuration.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data_cfg</span> <span class="o">=</span> <span class="n">params</span>
+
+        <span class="c1"># -------------------------</span>
+        <span class="c1"># Case 1: Split configuration</span>
+        <span class="c1"># -------------------------</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data_cfg</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data_cfg</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">):</span>
+            <span class="n">train_loader</span> <span class="o">=</span> <span class="n">NpyDatasetLoader</span><span class="p">(</span><span class="n">data_cfg</span><span class="o">.</span><span class="n">train</span><span class="p">)</span>
+            <span class="n">test_loader</span> <span class="o">=</span> <span class="n">NpyDatasetLoader</span><span class="p">(</span><span class="n">data_cfg</span><span class="o">.</span><span class="n">test</span><span class="p">)</span>
+
+            <span class="n">train_loader</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+            <span class="n">test_loader</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+
+            <span class="k">return</span> <span class="n">LoadedDataset</span><span class="p">(</span>
+                <span class="n">train</span><span class="o">=</span><span class="n">train_loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span>
+                <span class="n">test</span><span class="o">=</span><span class="n">test_loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># -------------------------</span>
+        <span class="c1"># Case 2: Complete configuration</span>
+        <span class="c1"># -------------------------</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data_cfg</span><span class="p">,</span> <span class="s2">&quot;complete&quot;</span><span class="p">):</span>
+            <span class="n">complete_loader</span> <span class="o">=</span> <span class="n">NpyDatasetLoader</span><span class="p">(</span><span class="n">data_cfg</span><span class="o">.</span><span class="n">complete</span><span class="p">)</span>
+            <span class="n">complete_loader</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+
+            <span class="k">return</span> <span class="n">LoadedDataset</span><span class="p">(</span>
+                <span class="n">complete</span><span class="o">=</span><span class="n">complete_loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="c1"># -------------------------</span>
+        <span class="c1"># Case 3: Shallow configuration</span>
+        <span class="c1"># -------------------------</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data_cfg</span><span class="p">,</span> <span class="s2">&quot;file&quot;</span><span class="p">):</span>
+            <span class="n">shallow_loader</span> <span class="o">=</span> <span class="n">NpyDatasetLoader</span><span class="p">(</span><span class="n">data_cfg</span><span class="p">)</span>
+            <span class="n">shallow_loader</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+
+            <span class="k">return</span> <span class="n">LoadedDataset</span><span class="p">(</span>
+                <span class="n">complete</span><span class="o">=</span><span class="n">shallow_loader</span><span class="o">.</span><span class="n">dataset</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Cannot determine dataset source from configuration. Please provide either &#39;train&#39; and &#39;test&#39; configs or a &#39;file&#39; config.&quot;</span>
+            <span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_in_memory</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ParamsType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Determine whether the dataset is already held in memory.</span>
+
+<span class="sd">    Inspects ``params`` for the presence of ``file`` and ``data_dir`` keys across</span>
+<span class="sd">    all three supported config shapes: shallow (keys at the top level), complete</span>
+<span class="sd">    (keys nested under a ``complete`` block), and split (keys nested under</span>
+<span class="sd">    ``train`` and ``test`` blocks).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    params : Optional[ParamsType]</span>
+<span class="sd">        Dataset configuration parameters, either as a plain ``dict`` or a</span>
+<span class="sd">        dataclass. May be ``None`` if the caller supplied raw in-memory data</span>
+<span class="sd">        with no associated configuration. The function inspects both the</span>
+<span class="sd">        top-level structure and any nested ``complete`` block for ``file``</span>
+<span class="sd">        and ``data_dir`` keys.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        ``True`` if the dataset is in memory and no file loading is required,</span>
+<span class="sd">        ``False`` if ``params`` contains a ``file`` or ``data_dir`` pointer</span>
+<span class="sd">        indicating that data must be loaded from disk.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Params field is None, assuming data is in memory.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">has_file_pointer</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return True if obj contains &#39;file&#39; or &#39;data_dir&#39;.&quot;&quot;&quot;</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">obj</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
+            <span class="k">else</span> <span class="nb">vars</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;__dict__&quot;</span><span class="p">)</span>
+            <span class="k">else</span> <span class="p">{}</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;file&quot;</span> <span class="ow">in</span> <span class="n">d</span> <span class="ow">or</span> <span class="s2">&quot;data_dir&quot;</span> <span class="ow">in</span> <span class="n">d</span>
+
+    <span class="n">top</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">params</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span>
+        <span class="k">else</span> <span class="nb">vars</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="s2">&quot;__dict__&quot;</span><span class="p">)</span>
+        <span class="k">else</span> <span class="p">{}</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Shallow config: file/data_dir at the top level</span>
+    <span class="k">if</span> <span class="n">has_file_pointer</span><span class="p">(</span><span class="n">top</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detected file and data_dir fields, assuming data is not in memory.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="c1"># Complete (non-split) config: file/data_dir nested under &#39;complete&#39;</span>
+    <span class="k">if</span> <span class="s2">&quot;complete&quot;</span> <span class="ow">in</span> <span class="n">top</span> <span class="ow">and</span> <span class="n">has_file_pointer</span><span class="p">(</span><span class="n">top</span><span class="p">[</span><span class="s2">&quot;complete&quot;</span><span class="p">]):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detected file and data_dir fields for complete dataset configuration, assuming data is not in memory.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="c1"># Split config: file/data_dir nested under &#39;train&#39; and &#39;test&#39;</span>
+    <span class="k">if</span> <span class="s2">&quot;train&quot;</span> <span class="ow">in</span> <span class="n">top</span> <span class="ow">and</span> <span class="n">has_file_pointer</span><span class="p">(</span><span class="n">top</span><span class="p">[</span><span class="s2">&quot;train&quot;</span><span class="p">]):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detected file and data_dir fields for split dataset configuration, assuming data is not in memory.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="s2">&quot;test&quot;</span> <span class="ow">in</span> <span class="n">top</span> <span class="ow">and</span> <span class="n">has_file_pointer</span><span class="p">(</span><span class="n">top</span><span class="p">[</span><span class="s2">&quot;test&quot;</span><span class="p">]):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Detected file and data_dir fields for split dataset configuration, assuming data is not in memory.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_loaded_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LoadedDataset</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Construct a LoadedDataset from an in-memory dataset.</span>
+
+<span class="sd">    Inspects the structure of ``dataset`` to determine whether it represents</span>
+<span class="sd">    a split (train/test) or complete (non-split) dataset, and wraps it in the</span>
+<span class="sd">    appropriate ``LoadedDataset`` form. If the structure cannot be determined,</span>
+<span class="sd">    the entire object is treated as the complete dataset and a warning is logged.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dataset : Any</span>
+<span class="sd">        An in-memory dataset containing numpy arrays, provided as a plain</span>
+<span class="sd">        ``dict``, a dataclass with named fields, or an opaque object. Expected</span>
+<span class="sd">        to hold arrays under recognised keys (``&#39;train&#39;``, ``&#39;test&#39;``, or</span>
+<span class="sd">        ``&#39;complete&#39;``), though unrecognised structures are handled with a</span>
+<span class="sd">        fallback.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    LoadedDataset</span>
+<span class="sd">        A structured dataset container populated according to the detected shape of</span>
+<span class="sd">        ``dataset``:</span>
+
+<span class="sd">        - ``LoadedDataset(train=..., test=...)`` if both ``&#39;train&#39;`` and</span>
+<span class="sd">          ``&#39;test&#39;`` keys are present.</span>
+<span class="sd">        - ``LoadedDataset(complete=...)`` if a ``&#39;complete&#39;`` key is present.</span>
+<span class="sd">        - ``LoadedDataset(complete=dataset)`` as a fallback for flat or</span>
+<span class="sd">          unrecognised structures, with a logged warning.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Normalise to a plain dict so the rest of the logic is uniform,</span>
+    <span class="c1"># regardless of whether the caller passed a dict or a dataclass.</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">dataset</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="s2">&quot;__dict__&quot;</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="nb">vars</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Opaque object — treat the whole thing as the complete array.</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s2">&quot;Cannot inspect dataset structure; treating entire object as &#39;complete&#39;.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">LoadedDataset</span><span class="p">(</span><span class="n">complete</span><span class="o">=</span><span class="n">dataset</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;train&quot;</span> <span class="ow">in</span> <span class="n">d</span> <span class="ow">and</span> <span class="s2">&quot;test&quot;</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;In-memory split dataset detected (train/test).&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">LoadedDataset</span><span class="p">(</span><span class="n">train</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;train&quot;</span><span class="p">],</span> <span class="n">test</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;test&quot;</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="s2">&quot;complete&quot;</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;In-memory complete dataset detected.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">LoadedDataset</span><span class="p">(</span><span class="n">complete</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;complete&quot;</span><span class="p">])</span>
+
+    <span class="c1"># Fallback: shallow / flat structure with no recognised keys.</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+        <span class="s2">&quot;In-memory dataset has no &#39;complete&#39; or &#39;train&#39;/&#39;test&#39; keys; &quot;</span>
+        <span class="s2">&quot;treating entire dataset as &#39;complete&#39;.&quot;</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">LoadedDataset</span><span class="p">(</span><span class="n">complete</span><span class="o">=</span><span class="n">dataset</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

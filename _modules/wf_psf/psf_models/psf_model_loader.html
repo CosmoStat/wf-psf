@@ -116,16 +116,14 @@
 <div class="viewcode-block" id="load_trained_psf_model">
 <a class="viewcode-back" href="../../../_autosummary/wf_psf.psf_models.psf_model_loader.html#wf_psf.psf_models.psf_model_loader.load_trained_psf_model">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_trained_psf_model</span><span class="p">(</span><span class="n">training_conf</span><span class="p">,</span> <span class="n">data_conf</span><span class="p">,</span> <span class="n">weights_path_pattern</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Loads a trained PSF model and applies saved weights.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build PSF model and load weights.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    training_conf : RecursiveNamespace</span>
-<span class="sd">        Configuration object containing model parameters and training hyperparameters.</span>
-<span class="sd">        Supports attribute-style access to nested fields.</span>
+<span class="sd">        Training configuration namespace</span>
 <span class="sd">    data_conf : RecursiveNamespace or dict</span>
-<span class="sd">        Configuration RecursiveNamespace object or a dictionary containing data parameters (e.g. pixel data, positions, masks, etc).</span>
+<span class="sd">        Configuration RecursiveNamespace or dict containing data parameters (e.g. pixel data, positions, masks, etc).</span>
 <span class="sd">    weights_path_pattern : str</span>
 <span class="sd">        Glob-style pattern used to locate the model weights file.</span>
 
@@ -140,8 +138,8 @@
 <span class="sd">        If loading the model weights fails for any reason.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">get_psf_model</span><span class="p">(</span>
-        <span class="n">training_conf</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">model_params</span><span class="p">,</span>
-        <span class="n">training_conf</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">training_hparams</span><span class="p">,</span>
+        <span class="n">training_conf</span><span class="o">.</span><span class="n">model_params</span><span class="p">,</span>
+        <span class="n">training_conf</span><span class="o">.</span><span class="n">training_hparams</span><span class="p">,</span>
         <span class="n">data_conf</span><span class="p">,</span>
     <span class="p">)</span>
 

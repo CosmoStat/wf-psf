@@ -1,0 +1,15 @@
+wf\_psf.data.data\_adapter
+==========================
+
+.. automodule:: wf_psf.data.data_adapter
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      DataAdapter
+      LoadedDataset
+      RepresentationState
+      StructureState
+   

@@ -24,8 +24,8 @@
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="wf_psf.inference" href="wf_psf.inference.html" />
-    <link rel="prev" title="wf_psf.data.data_handler" href="wf_psf.data.data_handler.html" /> 
+    <link rel="next" title="wf_psf.data.factory" href="wf_psf.data.factory.html" />
+    <link rel="prev" title="wf_psf.data.data_utils" href="wf_psf.data.data_utils.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -67,21 +67,28 @@
 <li class="toctree-l1 current"><a class="reference internal" href="../api.html">API Reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="wf_psf.data.html">wf_psf.data</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="wf_psf.data.centroids.html">wf_psf.data.centroids</a></li>
-<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.data_handler.html">wf_psf.data.data_handler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.constants.html">wf_psf.data.constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.data_adapter.html">wf_psf.data.data_adapter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.data_config_handler.html">wf_psf.data.data_config_handler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.data_utils.html">wf_psf.data.data_utils</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">wf_psf.data.data_zernike_utils</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.data_zernike_utils.ZernikeInputs"><code class="docutils literal notranslate"><span class="pre">ZernikeInputs</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.data_zernike_utils.ZernikeInputsFactory"><code class="docutils literal notranslate"><span class="pre">ZernikeInputsFactory</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.data_zernike_utils.ZernikeDataset"><code class="docutils literal notranslate"><span class="pre">ZernikeDataset</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.data_zernike_utils.assemble_zernike_contributions"><code class="docutils literal notranslate"><span class="pre">assemble_zernike_contributions()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.data_zernike_utils.combine_zernike_contributions"><code class="docutils literal notranslate"><span class="pre">combine_zernike_contributions()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.data_zernike_utils.compute_zernike_tip_tilt"><code class="docutils literal notranslate"><span class="pre">compute_zernike_tip_tilt()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.data_zernike_utils.defocus_to_zk4_wavediff"><code class="docutils literal notranslate"><span class="pre">defocus_to_zk4_wavediff()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.data_zernike_utils.defocus_to_zk4_zemax"><code class="docutils literal notranslate"><span class="pre">defocus_to_zk4_zemax()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.data_zernike_utils.get_np_zernike_prior"><code class="docutils literal notranslate"><span class="pre">get_np_zernike_prior()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.data_zernike_utils.pad_contribution_to_order"><code class="docutils literal notranslate"><span class="pre">pad_contribution_to_order()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.data_zernike_utils.pad_tf_zernikes"><code class="docutils literal notranslate"><span class="pre">pad_tf_zernikes()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.data_zernike_utils.shift_x_y_to_zk1_2_wavediff"><code class="docutils literal notranslate"><span class="pre">shift_x_y_to_zk1_2_wavediff()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.factory.html">wf_psf.data.factory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.handlers.html">wf_psf.data.handlers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.npy_dataset_loader.html">wf_psf.data.npy_dataset_loader</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.safe_batch.html">wf_psf.data.safe_batch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.schemas.html">wf_psf.data.schemas</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.tensorflow_converter.html">wf_psf.data.tensorflow_converter</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.inference.html">wf_psf.inference</a></li>
@@ -134,16 +141,18 @@
   <section id="module-wf_psf.data.data_zernike_utils">
 <span id="wf-psf-data-data-zernike-utils"></span><h1>wf_psf.data.data_zernike_utils<a class="headerlink" href="#module-wf_psf.data.data_zernike_utils" title="Link to this heading"></a></h1>
 <p>Utilities for Zernike Data Handling.</p>
-<p>This module provides utility functions for working with Zernike coefficients, including:</p>
-<ul class="simple">
-<li><p>Prior generation</p></li>
-<li><p>Data loading</p></li>
-<li><p>Conversions between physical displacements (e.g., defocus, centroid shifts) and modal Zernike coefficients</p></li>
-</ul>
-<p>Useful in contexts where Zernike representations are used to model optical aberrations or link physical misalignments to wavefront modes.</p>
+<p>This module provides utilities for converting between physical optical
+misalignments (centroid shifts, defocus, CCD alignment effects) and
+Zernike coefficients used in wavefront modelling.</p>
+<p>It supports assembling Zernike contributions from multiple sources,
+including centroid corrections, CCD misalignment terms, and optional
+priors, for use in PSF modelling pipelines.</p>
+<p>This module does not handle data loading or model execution; it only
+provides deterministic transformations between physical parameters and
+Zernike representations.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Author<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Tobias Liaudat &lt;<a class="reference external" href="mailto:tobias&#46;liaudat&#37;&#52;&#48;cea&#46;fr">tobias<span>&#46;</span>liaudat<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;</p>
+<dt class="field-odd">Authors<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tobias Liaudat &lt;<a class="reference external" href="mailto:tobias&#46;liaudat&#37;&#52;&#48;cea&#46;fr">tobias<span>&#46;</span>liaudat<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt; and Jennifer Pollack &lt;<a class="reference external" href="mailto:jennifer&#46;pollack&#37;&#52;&#48;cea&#46;fr">jennifer<span>&#46;</span>pollack<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;</p>
 </dd>
 </dl>
 <p class="rubric">Functions</p>
@@ -153,106 +162,149 @@
 <td><p>Assemble Zernike contributions from prior, centroid correction, and CCD misalignment.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.data.data_zernike_utils.combine_zernike_contributions" title="wf_psf.data.data_zernike_utils.combine_zernike_contributions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">combine_zernike_contributions</span></code></a>(contributions)</p></td>
-<td><p>Combine multiple Zernike contributions, padding each to the max order before summing.</p></td>
+<td><p>Combine multiple Zernike contribution arrays into a single array.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.data_zernike_utils.compute_zernike_tip_tilt" title="wf_psf.data.data_zernike_utils.compute_zernike_tip_tilt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_zernike_tip_tilt</span></code></a>(star_images[, ...])</p></td>
 <td><p>Compute Zernike tip-tilt corrections for a batch of PSF images.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.data.data_zernike_utils.defocus_to_zk4_wavediff" title="wf_psf.data.data_zernike_utils.defocus_to_zk4_wavediff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">defocus_to_zk4_wavediff</span></code></a>(dz[, ...])</p></td>
-<td><p>Compute Zernike 4 value for a given defocus in WaveDifff conventions.</p></td>
+<td><p>Compute Zernike 4 value for a given defocus in WaveDiff conventions.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.data_zernike_utils.defocus_to_zk4_zemax" title="wf_psf.data.data_zernike_utils.defocus_to_zk4_zemax"><code class="xref py py-obj docutils literal notranslate"><span class="pre">defocus_to_zk4_zemax</span></code></a>(dz[, tel_focal_length, ...])</p></td>
 <td><p>Compute Zernike 4 value for a given defocus in zemax conventions.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.data.data_zernike_utils.get_np_zernike_prior" title="wf_psf.data.data_zernike_utils.get_np_zernike_prior"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_np_zernike_prior</span></code></a>(data)</p></td>
-<td><p>Get the zernike prior from the provided dataset.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.data_zernike_utils.pad_contribution_to_order" title="wf_psf.data.data_zernike_utils.pad_contribution_to_order"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pad_contribution_to_order</span></code></a>(contribution, ...)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.data.data_zernike_utils.pad_contribution_to_order" title="wf_psf.data.data_zernike_utils.pad_contribution_to_order"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pad_contribution_to_order</span></code></a>(contribution, ...)</p></td>
 <td><p>Pad a Zernike contribution array to the max Zernike order.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.data.data_zernike_utils.pad_tf_zernikes" title="wf_psf.data.data_zernike_utils.pad_tf_zernikes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pad_tf_zernikes</span></code></a>(zk_param, zk_prior, n_zks_total)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.data_zernike_utils.pad_tf_zernikes" title="wf_psf.data.data_zernike_utils.pad_tf_zernikes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pad_tf_zernikes</span></code></a>(zk_param, zk_prior, n_zks_total)</p></td>
 <td><p>Pad the Zernike coefficient tensors to match the specified total number of Zernikes.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.data_zernike_utils.shift_x_y_to_zk1_2_wavediff" title="wf_psf.data.data_zernike_utils.shift_x_y_to_zk1_2_wavediff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shift_x_y_to_zk1_2_wavediff</span></code></a>(dxy[, ...])</p></td>
-<td><p>Compute Zernike 1(2) for a given shifts in x(y) in WaveDifff conventions.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.data.data_zernike_utils.shift_x_y_to_zk1_2_wavediff" title="wf_psf.data.data_zernike_utils.shift_x_y_to_zk1_2_wavediff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shift_x_y_to_zk1_2_wavediff</span></code></a>(dxy[, ...])</p></td>
+<td><p>Compute Zernike 1(2) for a given shifts in x(y) in WaveDiff conventions.</p></td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Classes</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.data_zernike_utils.ZernikeInputs" title="wf_psf.data.data_zernike_utils.ZernikeInputs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ZernikeInputs</span></code></a>(zernike_prior, ...)</p></td>
-<td><p>Zernike-related inputs for PSF modeling, including priors and datasets for corrections.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#wf_psf.data.data_zernike_utils.ZernikeInputsFactory" title="wf_psf.data.data_zernike_utils.ZernikeInputsFactory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ZernikeInputsFactory</span></code></a>()</p></td>
-<td><p>Factory class to build ZernikeInputs based on run type and dataset configuration.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.data_zernike_utils.ZernikeDataset" title="wf_psf.data.data_zernike_utils.ZernikeDataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ZernikeDataset</span></code></a>(container)</p></td>
+<td><p>Domain-specific canonical view over a DatasetContainer PSF modelling with Zernike input layers.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py class">
-<dt class="sig sig-object py" id="wf_psf.data.data_zernike_utils.ZernikeInputs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.data.data_zernike_utils.</span></span><span class="sig-name descname"><span class="pre">ZernikeInputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zernike_prior</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">centroid_dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace" title="wf_psf.utils.read_config.RecursiveNamespace"><span class="pre">RecursiveNamespace</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">misalignment_positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/data_zernike_utils.html#ZernikeInputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_zernike_utils.ZernikeInputs" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="wf_psf.data.data_zernike_utils.ZernikeDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.data.data_zernike_utils.</span></span><span class="sig-name descname"><span class="pre">ZernikeDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">container</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="wf_psf.data.data_utils.html#wf_psf.data.data_utils.DatasetContainer" title="wf_psf.data.data_utils.DatasetContainer"><span class="pre">DatasetContainer</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/data_zernike_utils.html#ZernikeDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_zernike_utils.ZernikeDataset" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Zernike-related inputs for PSF modeling, including priors and datasets for corrections.</p>
-<p>All fields are optional to allow flexibility across different run types (training, simulation, inference) and configurations.</p>
+<p>Domain-specific canonical view over a DatasetContainer PSF modelling with Zernike input layers.</p>
+<p>Provides access to Zernike-related inputs, priors, and datasets for
+centroid and misalignment corrections</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.data_zernike_utils.ZernikeDataset.container">
+<span class="sig-name descname"><span class="pre">container</span></span><a class="headerlink" href="#wf_psf.data.data_zernike_utils.ZernikeDataset.container" title="Link to this definition"></a></dt>
+<dd><p>Container storing the underlying datasets.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>zernike_prior</strong> (<em>Optional</em><em>[</em><em>np.ndarray</em><em>]</em>) – The true Zernike prior, if provided (e.g., from PDC). Can be None if not used or not available.</p></li>
-<li><p><strong>centroid_dataset</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, </em><em>&quot;RecursiveNamespace&quot;</em><em>]</em><em>]</em>) – Dataset used for computing centroid corrections. Should contain both training and test sets if
-used. Can be None if centroid correction is not enabled or no dataset is available.</p></li>
-<li><p><strong>misalignment_positions</strong> (<em>Optional</em><em>[</em><em>np.ndarray</em><em>]</em>) – Positions used for computing CCD misalignment corrections. Should be available in inference mode if misalignment correction is enabled. Can be None if not used or not available.</p></li>
-</ul>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="wf_psf.data.data_utils.html#wf_psf.data.data_utils.DatasetContainer" title="wf_psf.data.data_utils.DatasetContainer">DatasetContainer</a></p>
 </dd>
 </dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="wf_psf.data.data_zernike_utils.ZernikeInputs.centroid_dataset">
-<span class="sig-name descname"><span class="pre">centroid_dataset</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace" title="wf_psf.utils.read_config.RecursiveNamespace"><span class="pre">RecursiveNamespace</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></em><a class="headerlink" href="#wf_psf.data.data_zernike_utils.ZernikeInputs.centroid_dataset" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="wf_psf.data.data_zernike_utils.ZernikeInputs.misalignment_positions">
-<span class="sig-name descname"><span class="pre">misalignment_positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></em><a class="headerlink" href="#wf_psf.data.data_zernike_utils.ZernikeInputs.misalignment_positions" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="wf_psf.data.data_zernike_utils.ZernikeInputs.zernike_prior">
-<span class="sig-name descname"><span class="pre">zernike_prior</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></em><a class="headerlink" href="#wf_psf.data.data_zernike_utils.ZernikeInputs.zernike_prior" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
-<dl class="py class">
-<dt class="sig sig-object py" id="wf_psf.data.data_zernike_utils.ZernikeInputsFactory">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wf_psf.data.data_zernike_utils.</span></span><span class="sig-name descname"><span class="pre">ZernikeInputsFactory</span></span><a class="reference internal" href="../_modules/wf_psf/data/data_zernike_utils.html#ZernikeInputsFactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_zernike_utils.ZernikeInputsFactory" title="Link to this definition"></a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Factory class to build ZernikeInputs based on run type and dataset configuration.</p>
-<p>This class abstracts the logic of extracting the relevant Zernike-related inputs from the dataset based on the specified run type (training, simulation, inference) and model parameters. It handles the conditional logic for which inputs are needed and how to extract them, providing a clean interface for constructing the ZernikeInputs dataclass instance.</p>
-<p class="rubric">Methods</p>
-<table class="autosummary longtable docutils align-default">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.data.data_zernike_utils.ZernikeInputsFactory.build" title="wf_psf.data.data_zernike_utils.ZernikeInputsFactory.build"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build</span></code></a>(data, run_type, model_params[, prior])</p></td>
-<td><p>Build a ZernikeInputs dataclass instance based on run type and data.</p></td>
-</tr>
-</tbody>
-</table>
-<dl class="py method">
-<dt class="sig sig-object py" id="wf_psf.data.data_zernike_utils.ZernikeInputsFactory.build">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prior</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#wf_psf.data.data_zernike_utils.ZernikeInputs" title="wf_psf.data.data_zernike_utils.ZernikeInputs"><span class="pre">ZernikeInputs</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/data/data_zernike_utils.html#ZernikeInputsFactory.build"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_zernike_utils.ZernikeInputsFactory.build" title="Link to this definition"></a></dt>
-<dd><p>Build a ZernikeInputs dataclass instance based on run type and data.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.data_zernike_utils.ZernikeDataset.zernike_prior">
+<span class="sig-name descname"><span class="pre">zernike_prior</span></span><a class="headerlink" href="#wf_psf.data.data_zernike_utils.ZernikeDataset.zernike_prior" title="Link to this definition"></a></dt>
+<dd><p>True Zernike prior (e.g., from PDC). May be None.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>Union</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a><em>, </em><a class="reference internal" href="wf_psf.utils.configs_handler.html#wf_psf.utils.configs_handler.DataConfigHandler" title="wf_psf.utils.configs_handler.DataConfigHandler"><em>DataConfigHandler</em></a><em>]</em>) – Dataset object containing star positions, priors, and optionally pixel data.</p></li>
-<li><p><strong>run_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – One of ‘training’, ‘simulation’, or ‘inference’.</p></li>
-<li><p><strong>model_params</strong> (<a class="reference internal" href="wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace" title="wf_psf.utils.read_config.RecursiveNamespace"><em>RecursiveNamespace</em></a>) – Model parameters, including flags for prior/corrections.</p></li>
-<li><p><strong>prior</strong> (<em>Optional</em><em>[</em><em>np.ndarray</em><em>]</em>) – An explicitly passed prior (overrides any inferred one if provided).</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="#wf_psf.data.data_zernike_utils.ZernikeInputs" title="wf_psf.data.data_zernike_utils.ZernikeInputs">ZernikeInputs</a></p>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[np.ndarray]</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.data_zernike_utils.ZernikeDataset.sources">
+<span class="sig-name descname"><span class="pre">sources</span></span><a class="headerlink" href="#wf_psf.data.data_zernike_utils.ZernikeDataset.sources" title="Link to this definition"></a></dt>
+<dd><p>2D image stamps of sources for centroid correction. May be None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[np.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.data_zernike_utils.ZernikeDataset.masks">
+<span class="sig-name descname"><span class="pre">masks</span></span><a class="headerlink" href="#wf_psf.data.data_zernike_utils.ZernikeDataset.masks" title="Link to this definition"></a></dt>
+<dd><p>Masks corresponding to the sources. May be None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[np.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wf_psf.data.data_zernike_utils.ZernikeDataset.positions">
+<span class="sig-name descname"><span class="pre">positions</span></span><a class="headerlink" href="#wf_psf.data.data_zernike_utils.ZernikeDataset.positions" title="Link to this definition"></a></dt>
+<dd><p>Positions for CCD misalignment corrections. May be None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[np.ndarray]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><a class="reference internal" href="#wf_psf.data.data_zernike_utils.ZernikeDataset.centroid_inputs" title="wf_psf.data.data_zernike_utils.ZernikeDataset.centroid_inputs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">centroid_inputs</span></code></a></dt><dd><p>Return a dictionary suitable for centroid correction.</p>
+</dd>
+<dt><a class="reference internal" href="#id1" title="wf_psf.data.data_zernike_utils.ZernikeDataset.masks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">masks</span></code></a></dt><dd><p>Return masks corresponding to source images.</p>
+</dd>
+<dt><a class="reference internal" href="#id2" title="wf_psf.data.data_zernike_utils.ZernikeDataset.positions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">positions</span></code></a></dt><dd><p>Return positions for CCD misalignment correction.</p>
+</dd>
+<dt><a class="reference internal" href="#id3" title="wf_psf.data.data_zernike_utils.ZernikeDataset.sources"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sources</span></code></a></dt><dd><p>Return 2D source images (stamps).</p>
+</dd>
+<dt><a class="reference internal" href="#id4" title="wf_psf.data.data_zernike_utils.ZernikeDataset.zernike_prior"><code class="xref py py-obj docutils literal notranslate"><span class="pre">zernike_prior</span></code></a></dt><dd><p>Return Zernike prior.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="wf_psf.data.data_zernike_utils.ZernikeDataset.centroid_inputs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">centroid_inputs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></em><a class="headerlink" href="#wf_psf.data.data_zernike_utils.ZernikeDataset.centroid_inputs" title="Link to this definition"></a></dt>
+<dd><p>Return a dictionary suitable for centroid correction.</p>
+<p>Includes ‘stamps’ (sources) and optionally ‘masks’ if available.
+Returns None if sources are not available.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">container</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.data.data_utils.html#wf_psf.data.data_utils.DatasetContainer" title="wf_psf.data.data_utils.DatasetContainer"><span class="pre">DatasetContainer</span></a></em><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id1">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">masks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></em><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd><p>Return masks corresponding to source images.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id2">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></em><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
+<dd><p>Return positions for CCD misalignment correction.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id3">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sources</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></em><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
+<dd><p>Return 2D source images (stamps).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id4">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">zernike_prior</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="wf_psf.psf_models.psf_models.html#wf_psf.psf_models.psf_models.PSFModelBaseFactory.None" title="wf_psf.psf_models.psf_models.PSFModelBaseFactory.None"><span class="pre">None</span></a></em><a class="headerlink" href="#id4" title="Link to this definition"></a></dt>
+<dd><p>Return Zernike prior.</p>
 </dd></dl>
 
 </dd></dl>
@@ -268,7 +320,7 @@ used. Can be None if centroid correction is not enabled or no dataset is availab
 <li><p><strong>model_params</strong> (<a class="reference internal" href="wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace" title="wf_psf.utils.read_config.RecursiveNamespace"><em>RecursiveNamespace</em></a>) – Parameters controlling which contributions to apply.</p></li>
 <li><p><strong>zernike_prior</strong> (<em>Optional</em><em>[</em><em>np.ndarray</em><em> or </em><em>tf.Tensor</em><em>]</em>) – The precomputed Zernike prior. Can be either a NumPy array or a TensorFlow tensor.
 If a Tensor, will be converted to NumPy in eager mode.</p></li>
-<li><p><strong>centroid_dataset</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><em>object</em></a><em>]</em>) – Dataset used to compute centroid correction. Must have both training and test sets.</p></li>
+<li><p><strong>centroid_dataset</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.14)"><em>object</em></a><em>]</em>) – Dataset used to compute centroid correction. Must have both training and validation sets.</p></li>
 <li><p><strong>positions</strong> (<em>Optional</em><em>[</em><em>np.ndarray</em><em> or </em><em>tf.Tensor</em><em>]</em>) – Positions used for computing CCD misalignment. Must be available in inference mode.</p></li>
 <li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Batch size for centroid correction.</p></li>
 </ul>
@@ -285,7 +337,26 @@ If a Tensor, will be converted to NumPy in eager mode.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="wf_psf.data.data_zernike_utils.combine_zernike_contributions">
 <span class="sig-prename descclassname"><span class="pre">wf_psf.data.data_zernike_utils.</span></span><span class="sig-name descname"><span class="pre">combine_zernike_contributions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contributions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/data/data_zernike_utils.html#combine_zernike_contributions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_zernike_utils.combine_zernike_contributions" title="Link to this definition"></a></dt>
-<dd><p>Combine multiple Zernike contributions, padding each to the max order before summing.</p>
+<dd><p>Combine multiple Zernike contribution arrays into a single array.</p>
+<p>Each contribution is zero-padded along the second dimension (Zernike order) to
+match the maximum order across inputs, then summed element-wise.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>contributions</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><em>np.ndarray</em><em>]</em>) – List of arrays of shape (n_samples, n_orders_i), where all arrays must share
+the same number of samples (first dimension) but may differ in Zernike order
+(second dimension).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Array of shape (n_samples, max_order) containing the summed contributions after
+zero-padding</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If the list is empty or contributions have inconsistent number of samples.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -329,7 +400,7 @@ Defaults to <cite>[-1/3, -1/3]</cite> (nominal Euclid conditions).</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="wf_psf.data.data_zernike_utils.defocus_to_zk4_wavediff">
 <span class="sig-prename descclassname"><span class="pre">wf_psf.data.data_zernike_utils.</span></span><span class="sig-name descname"><span class="pre">defocus_to_zk4_wavediff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tel_focal_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">24.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tel_diameter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/data_zernike_utils.html#defocus_to_zk4_wavediff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_zernike_utils.defocus_to_zk4_wavediff" title="Link to this definition"></a></dt>
-<dd><p>Compute Zernike 4 value for a given defocus in WaveDifff conventions.</p>
+<dd><p>Compute Zernike 4 value for a given defocus in WaveDiff conventions.</p>
 <p>All inputs should be in [m].</p>
 <p>The output zernike coefficient is in [um] units as expected by wavediff.</p>
 <dl class="field-list simple">
@@ -360,28 +431,23 @@ Defaults to <cite>[-1/3, -1/3]</cite> (nominal Euclid conditions).</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="wf_psf.data.data_zernike_utils.get_np_zernike_prior">
-<span class="sig-prename descclassname"><span class="pre">wf_psf.data.data_zernike_utils.</span></span><span class="sig-name descname"><span class="pre">get_np_zernike_prior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/data_zernike_utils.html#get_np_zernike_prior"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_zernike_utils.get_np_zernike_prior" title="Link to this definition"></a></dt>
-<dd><p>Get the zernike prior from the provided dataset.</p>
-<p>This method concatenates the stars from both the training
-and test datasets to obtain the full prior.</p>
+<dt class="sig sig-object py" id="wf_psf.data.data_zernike_utils.pad_contribution_to_order">
+<span class="sig-prename descclassname"><span class="pre">wf_psf.data.data_zernike_utils.</span></span><span class="sig-name descname"><span class="pre">pad_contribution_to_order</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contribution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/data/data_zernike_utils.html#pad_contribution_to_order"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_zernike_utils.pad_contribution_to_order" title="Link to this definition"></a></dt>
+<dd><p>Pad a Zernike contribution array to the max Zernike order.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>data</strong> (<a class="reference internal" href="wf_psf.utils.configs_handler.html#wf_psf.utils.configs_handler.DataConfigHandler" title="wf_psf.utils.configs_handler.DataConfigHandler"><em>DataConfigHandler</em></a>) – Object containing training and test datasets.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>contribution</strong> (<em>np.ndarray</em>) – Array of shape (n_samples, n_orders) representing Zernike contributions.</p></li>
+<li><p><strong>max_order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Target number of Zernike order; determines the number of columns after padding</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>zernike_prior</strong> – Numpy array containing the full prior.</p>
+<dd class="field-even"><p>Padded array of shape (n_samples, max_order) with zeros appended to the right if <cite>max_order</cite> &gt; current number of orders.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.ndarray</p>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="wf_psf.data.data_zernike_utils.pad_contribution_to_order">
-<span class="sig-prename descclassname"><span class="pre">wf_psf.data.data_zernike_utils.</span></span><span class="sig-name descname"><span class="pre">pad_contribution_to_order</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">contribution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><span class="pre">ndarray</span></a></span></span><a class="reference internal" href="../_modules/wf_psf/data/data_zernike_utils.html#pad_contribution_to_order"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_zernike_utils.pad_contribution_to_order" title="Link to this definition"></a></dt>
-<dd><p>Pad a Zernike contribution array to the max Zernike order.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -409,7 +475,7 @@ and test datasets to obtain the full prior.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="wf_psf.data.data_zernike_utils.shift_x_y_to_zk1_2_wavediff">
 <span class="sig-prename descclassname"><span class="pre">wf_psf.data.data_zernike_utils.</span></span><span class="sig-name descname"><span class="pre">shift_x_y_to_zk1_2_wavediff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dxy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tel_focal_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">24.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tel_diameter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/data/data_zernike_utils.html#shift_x_y_to_zk1_2_wavediff"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.data.data_zernike_utils.shift_x_y_to_zk1_2_wavediff" title="Link to this definition"></a></dt>
-<dd><p>Compute Zernike 1(2) for a given shifts in x(y) in WaveDifff conventions.</p>
+<dd><p>Compute Zernike 1(2) for a given shifts in x(y) in WaveDiff conventions.</p>
 <p>All inputs should be in [m].
 A displacement of, for example, 0.5 pixels should be scaled with the corresponding pixel scale,
 e.g. 12[um], to get a displacement in [m], which would be <cite>dxy=0.5*12e-6</cite>.</p>
@@ -434,8 +500,8 @@ the new PSF should be generated with <cite>-zk1</cite>.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="wf_psf.data.data_handler.html" class="btn btn-neutral float-left" title="wf_psf.data.data_handler" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="wf_psf.inference.html" class="btn btn-neutral float-right" title="wf_psf.inference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="wf_psf.data.data_utils.html" class="btn btn-neutral float-left" title="wf_psf.data.data_utils" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="wf_psf.data.factory.html" class="btn btn-neutral float-right" title="wf_psf.data.factory" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

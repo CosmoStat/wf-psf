@@ -56,6 +56,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="dependencies.html">Dependencies</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#recommended-environment">Recommended Environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installation-steps">Installation Steps</a></li>
 </ul>
 </li>
@@ -106,14 +107,33 @@
 <h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
 <p>WaveDiff is a software written in Python and uses the <a class="reference external" href="https://www.tensorflow.org">TensorFlow</a> framework to train and evaluate the model parameters of the PSF model. Therefore, it is advisable to run the WaveDiff software on machines equipped with a GPU.</p>
 <p>Note: You may want to set up a dedicated Python environment for running WaveDiff using e.g. <a class="reference external" href="https://docs.conda.io/en/latest/">Conda</a>.  You can use the minimal installer <a class="reference external" href="https://docs.conda.io/projects/miniconda/en/latest/">Miniconda</a> to set up the environment in which we run the command below to install the subset of packages needed for running WaveDiff.</p>
-<p>In the <a class="reference external" href="https://github.com/CosmoStat/wf-psf.git">WaveDiff repository</a>, we provide in the file <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code> the specific environment used in the testing of <code class="docutils literal notranslate"><span class="pre">WaveDiff</span></code>. We recommend users to work with this environment for the current release.</p>
+<section id="recommended-environment">
+<h2>Recommended Environment<a class="headerlink" href="#recommended-environment" title="Link to this heading"></a></h2>
+<p>WaveDiff is currently tested with:</p>
+<ul class="simple">
+<li><p>Python 3.10 and 3.11</p></li>
+<li><p>TensorFlow 2.15.0</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tf.keras</span></code> (bundled with TensorFlow 2.15)</p></li>
+</ul>
+<p>Python 3.9 has been removed from the CI test matrix due to TensorFlow compatibility constraints and updated internal dependencies.</p>
+<p>We recommend creating the provided conda environment before installing WaveDiff:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>environment.yml
+conda<span class="w"> </span>activate<span class="w"> </span>wavediff-env
+</pre></div>
+</div>
+</section>
 <section id="installation-steps">
 <h2>Installation Steps<a class="headerlink" href="#installation-steps" title="Link to this heading"></a></h2>
 <p>Clone the repository:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/CosmoStat/wf-psf.git
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/CosmoStat/wf-psf.git
 </pre></div>
 </div>
-<p>Next you can enter the <code class="docutils literal notranslate"><span class="pre">wf-psf</span></code> directory and run <code class="docutils literal notranslate"><span class="pre">pip</span></code> to install WaveDiff and its <a class="reference internal" href="dependencies.html"><span class="std std-doc">dependencies</span></a>.</p>
+<p>Create the recommended environment (if you haven’t already):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>environment.yml
+conda<span class="w"> </span>activate<span class="w"> </span>wavediff-env
+</pre></div>
+</div>
+<p>Install WaveDiff:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cd wf-psf
 $ pip install .
 </pre></div>

@@ -1,0 +1,414 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wf_psf.data.tensorflow_converter &mdash; wf-psf 3.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9570fddd" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/twemoji.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/custom.css?v=309026bb" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=af2ce170"></script>
+      <script src="../../../_static/doctools.js?v=888ff710"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=4825356b"></script>
+      <script src="https://unpkg.com/twemoji@latest/dist/twemoji.min.js"></script>
+      <script src="../../../_static/twemoji.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #ffb400" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            wf-psf
+              <img src="../../../_static/cosmostat_logo.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">About WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Installing WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dependencies.html">Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Running WaveDiff</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_execution.html">Basic Execution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../configuration.html">Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer/index.html">Developer Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../z_ref.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #ffb400" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">wf-psf</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">wf_psf.data.tensorflow_converter</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for wf_psf.data.tensorflow_converter</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;TensorFlow dataset converter for PSF datasets.</span>
+
+<span class="sd">This module provides the `TensorFlowDatasetConverter` class, which handles the conversion of PSF datasets (both dataclass-based and dict-based) into TensorFlow tensors suitable for training, evaluation, and inference. It includes methods for processing SEDs using a PSF simulator and converting various dataset formats into a consistent TensorFlow format.</span>
+
+<span class="sd">Author: Jennifer Pollack &lt;jennifer.pollack@cea.fr&gt;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.data.schemas</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatasetMode</span><span class="p">,</span> <span class="n">SCHEMAS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.data.data_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatasetContainer</span><span class="p">,</span> <span class="n">ConversionContext</span><span class="p">,</span> <span class="n">SEDContext</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.psf_models.psf_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">PSFSimulator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.psf_models.tf_modules.tf_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">ensure_tensor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">wf_psf.utils.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_SED_elems_in_tensorflow</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="TensorFlowDatasetConverter">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.tensorflow_converter.html#wf_psf.data.tensorflow_converter.TensorFlowDatasetConverter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TensorFlowDatasetConverter</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert structured dataset fields into TensorFlow-compatible tensors.</span>
+
+<span class="sd">    This converter applies schema-driven preprocessing and validation to</span>
+<span class="sd">    dataset fields used throughout the wf-psf pipeline. Conversion behavior</span>
+<span class="sd">    is controlled by a :class:`DatasetSchema` selected through the</span>
+<span class="sd">    corresponding :class:`DatasetMode`.</span>
+
+<span class="sd">    Required and optional dataset fields are processed according to the</span>
+<span class="sd">    active schema. Field-specific transformations are delegated to handler</span>
+<span class="sd">    functions registered in the schema, while generic fields are converted</span>
+<span class="sd">    directly to TensorFlow tensors.</span>
+
+<span class="sd">    Runtime dependencies required by specialized handlers (e.g. SED</span>
+<span class="sd">    processing) are provided through a :class:`ConversionContext`.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    - Required fields may raise exceptions or warnings depending on schema</span>
+<span class="sd">      strictness.</span>
+<span class="sd">    - Optional fields are processed only if present in the dataset.</span>
+<span class="sd">    - Tensor conversion defaults to ``tf.float32`` unless overridden by</span>
+<span class="sd">      a field-specific handler.</span>
+<span class="sd">    - This converter currently targets TensorFlow workflows and produces</span>
+<span class="sd">      TensorFlow tensor outputs suitable for training and inference.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_process_field</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">dataset</span><span class="p">,</span>
+        <span class="n">result</span><span class="p">,</span>
+        <span class="n">key</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">,</span>
+        <span class="n">context</span><span class="p">,</span>
+        <span class="n">required</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Process a single dataset field according to schema rules.</span>
+
+<span class="sd">        This method applies validation, handler dispatch, and TensorFlow</span>
+<span class="sd">        tensor conversion for an individual dataset field. Specialized</span>
+<span class="sd">        preprocessing is delegated to schema-registered handlers when</span>
+<span class="sd">        available; otherwise, values are converted directly to tensors.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dataset : DatasetContainer or dict</span>
+<span class="sd">            Input dataset containing raw field values.</span>
+<span class="sd">        result : dict</span>
+<span class="sd">            Mutable output dictionary storing converted dataset fields.</span>
+<span class="sd">        key : str</span>
+<span class="sd">            Canonical dataset field name to process.</span>
+<span class="sd">        schema : DatasetSchema</span>
+<span class="sd">            Active dataset schema defining required fields, optional</span>
+<span class="sd">            fields, strictness behavior, and field handlers.</span>
+<span class="sd">        context : ConversionContext</span>
+<span class="sd">            Runtime conversion context containing optional domain-specific</span>
+<span class="sd">            processing dependencies.</span>
+<span class="sd">        required : bool</span>
+<span class="sd">            Whether the field is required under the active schema.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            Raised if:</span>
+
+<span class="sd">            - A required field is missing while schema strictness is enabled.</span>
+<span class="sd">            - A handler requires a domain-specific context that is absent.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        - Missing optional fields are silently ignored.</span>
+<span class="sd">        - Missing required fields generate warnings when schema strictness</span>
+<span class="sd">          is disabled.</span>
+<span class="sd">        - Field handlers are resolved dynamically from the active schema.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">MISSING</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
+
+        <span class="n">v</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">MISSING</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="n">MISSING</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">required</span> <span class="ow">and</span> <span class="n">schema</span><span class="o">.</span><span class="n">strict</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Dataset field &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; required for &quot;</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">schema</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> is missing.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">required</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Dataset field &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39; required for &quot;</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">schema</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> is missing.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="k">return</span>
+
+        <span class="n">handler</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">handler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">domain_ctx</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">domain_ctx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing context for domain &#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+
+            <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">domain_ctx</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">ensure_tensor</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TensorFlowDatasetConverter.convert_dataset">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.tensorflow_converter.html#wf_psf.data.tensorflow_converter.TensorFlowDatasetConverter.convert_dataset">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">convert_dataset</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">dataset</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">DatasetContainer</span><span class="p">,</span> <span class="nb">dict</span><span class="p">],</span>
+        <span class="n">simPSF</span><span class="p">:</span> <span class="n">PSFSimulator</span><span class="p">,</span>
+        <span class="n">n_bins_lambda</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">mode</span><span class="p">:</span> <span class="n">DatasetMode</span> <span class="o">=</span> <span class="n">DatasetMode</span><span class="o">.</span><span class="n">TRAIN</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert a dataset into TensorFlow-compatible tensors.</span>
+
+<span class="sd">        Dataset conversion is performed according to the schema associated</span>
+<span class="sd">        with the selected :class:`DatasetMode`. Required and optional fields</span>
+<span class="sd">        are processed independently, and field-specific preprocessing is</span>
+<span class="sd">        delegated to registered schema handlers when applicable.</span>
+
+<span class="sd">        A :class:`ConversionContext` is constructed internally and passed</span>
+<span class="sd">        through the conversion pipeline to provide runtime dependencies</span>
+<span class="sd">        required by specialized handlers.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dataset : DatasetContainer or dict</span>
+<span class="sd">            Input dataset containing raw arrays, metadata, and optional</span>
+<span class="sd">            preprocessing fields.</span>
+<span class="sd">        simPSF : PSFSimulator</span>
+<span class="sd">            PSF simulator used for SED preprocessing operations.</span>
+<span class="sd">        n_bins_lambda : int</span>
+<span class="sd">            Number of wavelength bins used during SED discretization.</span>
+<span class="sd">        mode : DatasetMode, default=DatasetMode.TRAIN</span>
+<span class="sd">            Dataset conversion mode defining the active schema and</span>
+<span class="sd">            validation behaviour.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Dictionary containing TensorFlow tensors keyed by canonical</span>
+<span class="sd">            dataset field names.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            Raised if:</span>
+
+<span class="sd">            - A required dataset field is missing under strict schema</span>
+<span class="sd">              validation.</span>
+<span class="sd">            - A required domain-specific context is unavailable for a</span>
+<span class="sd">              registered field handler.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        - Required fields are validated according to schema strictness.</span>
+<span class="sd">        - Optional fields are processed only if present.</span>
+<span class="sd">        - Generic fields are converted using ``ensure_tensor``.</span>
+<span class="sd">        - Specialized preprocessing (e.g. SED conversion) is delegated</span>
+<span class="sd">          to registered schema handlers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">schema</span> <span class="o">=</span> <span class="n">SCHEMAS</span><span class="p">[</span><span class="n">mode</span><span class="p">]</span>
+        <span class="n">req_keys</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">required_keys</span>
+        <span class="n">opt_keys</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">optional_keys</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Using dataset schema &#39;</span><span class="si">{</span><span class="n">schema</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;(required_fields=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">req_keys</span><span class="p">)</span><span class="si">}</span><span class="s2">, &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;optional_fields=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">opt_keys</span><span class="p">)</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+
+        <span class="n">context</span> <span class="o">=</span> <span class="n">ConversionContext</span><span class="p">(</span>
+            <span class="n">seds</span><span class="o">=</span><span class="n">SEDContext</span><span class="p">(</span><span class="n">simPSF</span><span class="o">=</span><span class="n">simPSF</span><span class="p">,</span> <span class="n">n_bins_lambda</span><span class="o">=</span><span class="n">n_bins_lambda</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Handle required keys</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">req_keys</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_process_field</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+                <span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">,</span>
+                <span class="n">key</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+                <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span>
+                <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span>
+                <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Handle optional keys</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">opt_keys</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_process_field</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+                <span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">,</span>
+                <span class="n">key</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
+                <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span>
+                <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span>
+                <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="TensorFlowDatasetConverter.process_seds">
+<a class="viewcode-back" href="../../../_autosummary/wf_psf.data.tensorflow_converter.html#wf_psf.data.tensorflow_converter.TensorFlowDatasetConverter.process_seds">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_seds</span><span class="p">(</span><span class="n">sed_data</span><span class="p">,</span> <span class="n">simPSF</span><span class="p">,</span> <span class="n">n_bins_lambda</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Process SEDs using simPSF and convert to TensorFlow tensors.</span>
+
+<span class="sd">        This is a core operation that must be performed on all SED data before</span>
+<span class="sd">        use in training or inference. Converts raw SED arrays into wavelength-</span>
+<span class="sd">        binned TensorFlow tensors.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sed_data : array_like</span>
+<span class="sd">            Array of SEDs, shape (N, n_wavelengths) or similar</span>
+<span class="sd">        simPSF : PSFSimulator</span>
+<span class="sd">            PSF simulator used for SED processing.</span>
+<span class="sd">        n_bins_lambda : int</span>
+<span class="sd">            Number of wavelength bins for SED processing.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tf.Tensor</span>
+<span class="sd">            Processed SED tensor, shape (N, n_bins_lambda, n_components)</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If sed_data is None</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        - Uses tf.float64 internally for precision during generation</span>
+<span class="sd">        - Returns tf.float32 for training efficiency</span>
+<span class="sd">        - Transposes to shape (N, n_bins_lambda, n_components)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">processed</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">generate_SED_elems_in_tensorflow</span><span class="p">(</span>
+                <span class="n">sed</span><span class="p">,</span> <span class="n">simPSF</span><span class="p">,</span> <span class="n">n_bins</span><span class="o">=</span><span class="n">n_bins_lambda</span><span class="p">,</span> <span class="n">tf_dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float64</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">sed</span> <span class="ow">in</span> <span class="n">sed_data</span>
+        <span class="p">]</span>
+        <span class="n">sed_tensor</span> <span class="o">=</span> <span class="n">ensure_tensor</span><span class="p">(</span><span class="n">processed</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">sed_tensor</span><span class="p">,</span> <span class="n">perm</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023–2026, CosmoStat.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-XXXXXXXXXX', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

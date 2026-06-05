@@ -24,7 +24,7 @@
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="wf_psf.metrics.metrics_interface" href="wf_psf.metrics.metrics_interface.html" />
+    <link rel="next" title="wf_psf.metrics.metrics_config_handler" href="wf_psf.metrics.metrics_config_handler.html" />
     <link rel="prev" title="wf_psf.metrics" href="wf_psf.metrics.html" /> 
 </head>
 
@@ -76,6 +76,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.metrics.metrics.compute_shape_metrics"><code class="docutils literal notranslate"><span class="pre">compute_shape_metrics()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.metrics.metrics_config_handler.html">wf_psf.metrics.metrics_config_handler</a></li>
 <li class="toctree-l3"><a class="reference internal" href="wf_psf.metrics.metrics_interface.html">wf_psf.metrics.metrics_interface</a></li>
 </ul>
 </li>
@@ -258,7 +259,7 @@ Default is <cite>False</cite>.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="wf_psf.metrics.metrics.compute_shape_metrics">
-<span class="sig-prename descclassname"><span class="pre">wf_psf.metrics.metrics.</span></span><span class="sig-name descname"><span class="pre">compute_shape_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tf_semiparam_field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_tf_semiparam_field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simPSF_np</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SEDs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf_pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins_lda</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins_gt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_Q</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer_settings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_stars_rel_pix_rmse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/metrics/metrics.html#compute_shape_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.metrics.metrics.compute_shape_metrics" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">wf_psf.metrics.metrics.</span></span><span class="sig-name descname"><span class="pre">compute_shape_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tf_semiparam_field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_tf_semiparam_field</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simPSF_np</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf_SEDs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tf_pos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins_lda</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins_gt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_Q</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer_settings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opt_stars_rel_pix_rmse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/metrics/metrics.html#compute_shape_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.metrics.metrics.compute_shape_metrics" title="Link to this definition"></a></dt>
 <dd><p>Compute the pixel, shape and size RMSE of a PSF model.</p>
 <p>This is done at a specific sampling and output image dimension.
 It is done for polychromatic PSFs so SEDs are needed.</p>
@@ -269,7 +270,7 @@ It is done for polychromatic PSFs so SEDs are needed.</p>
 <li><p><strong>gt_tf_semiparam_field</strong> (<em>PSF field object</em>) – Ground truth model to produce gt observations at any position
 and wavelength.</p></li>
 <li><p><strong>simPSF_np</strong></p></li>
-<li><p><strong>SEDs</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>numpy.ndarray</em></a><em> [</em><em>batch x SED_samples x 2</em><em>]</em>) – SED samples for the corresponding positions.</p></li>
+<li><p><strong>tf_SEDs</strong> (<em>tf.float</em><em> [</em><em>batch x SED_samples x 2</em><em>]</em>) – SED samples for the corresponding positions of type tf.float.</p></li>
 <li><p><strong>tf_pos</strong> (<em>Tensor</em><em> [</em><em>batch x 2</em><em>]</em>) – Positions at where to predict the PSFs.</p></li>
 <li><p><strong>n_bins_lda</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of wavelength bins to use for the polychromatic PSF.</p></li>
 <li><p><strong>n_bins_gt</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>) – Number of wavelength bins to use for the ground truth polychromatic PSF.</p></li>
@@ -309,7 +310,7 @@ Default is <cite>False</cite>.</p></li>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="wf_psf.metrics.html" class="btn btn-neutral float-left" title="wf_psf.metrics" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="wf_psf.metrics.metrics_interface.html" class="btn btn-neutral float-right" title="wf_psf.metrics.metrics_interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="wf_psf.metrics.metrics_config_handler.html" class="btn btn-neutral float-right" title="wf_psf.metrics.metrics_config_handler" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

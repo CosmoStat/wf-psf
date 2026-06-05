@@ -134,20 +134,19 @@ It includes utilities to:
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#wf_psf.psf_models.psf_model_loader.load_trained_psf_model" title="wf_psf.psf_models.psf_model_loader.load_trained_psf_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_trained_psf_model</span></code></a>(training_conf, ...)</p></td>
-<td><p>Loads a trained PSF model and applies saved weights.</p></td>
+<td><p>Build PSF model and load weights.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py function">
 <dt class="sig sig-object py" id="wf_psf.psf_models.psf_model_loader.load_trained_psf_model">
 <span class="sig-prename descclassname"><span class="pre">wf_psf.psf_models.psf_model_loader.</span></span><span class="sig-name descname"><span class="pre">load_trained_psf_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">training_conf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_conf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights_path_pattern</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wf_psf/psf_models/psf_model_loader.html#load_trained_psf_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wf_psf.psf_models.psf_model_loader.load_trained_psf_model" title="Link to this definition"></a></dt>
-<dd><p>Loads a trained PSF model and applies saved weights.</p>
+<dd><p>Build PSF model and load weights.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>training_conf</strong> (<a class="reference internal" href="wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace" title="wf_psf.utils.read_config.RecursiveNamespace"><em>RecursiveNamespace</em></a>) – Configuration object containing model parameters and training hyperparameters.
-Supports attribute-style access to nested fields.</p></li>
-<li><p><strong>data_conf</strong> (<a class="reference internal" href="wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace" title="wf_psf.utils.read_config.RecursiveNamespace"><em>RecursiveNamespace</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Configuration RecursiveNamespace object or a dictionary containing data parameters (e.g. pixel data, positions, masks, etc).</p></li>
+<li><p><strong>training_conf</strong> (<a class="reference internal" href="wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace" title="wf_psf.utils.read_config.RecursiveNamespace"><em>RecursiveNamespace</em></a>) – Training configuration namespace</p></li>
+<li><p><strong>data_conf</strong> (<a class="reference internal" href="wf_psf.utils.read_config.html#wf_psf.utils.read_config.RecursiveNamespace" title="wf_psf.utils.read_config.RecursiveNamespace"><em>RecursiveNamespace</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><em>dict</em></a>) – Configuration RecursiveNamespace or dict containing data parameters (e.g. pixel data, positions, masks, etc).</p></li>
 <li><p><strong>weights_path_pattern</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Glob-style pattern used to locate the model weights file.</p></li>
 </ul>
 </dd>

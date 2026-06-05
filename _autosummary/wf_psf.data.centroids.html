@@ -24,7 +24,7 @@
     <link rel="author" title="About these documents" href="../about.html" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="wf_psf.data.data_handler" href="wf_psf.data.data_handler.html" />
+    <link rel="next" title="wf_psf.data.constants" href="wf_psf.data.constants.html" />
     <link rel="prev" title="wf_psf.data" href="wf_psf.data.html" /> 
 </head>
 
@@ -76,8 +76,17 @@
 <li class="toctree-l4"><a class="reference internal" href="#wf_psf.data.centroids.shift_ker_stack"><code class="docutils literal notranslate"><span class="pre">shift_ker_stack()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.data_handler.html">wf_psf.data.data_handler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.constants.html">wf_psf.data.constants</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.data_adapter.html">wf_psf.data.data_adapter</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.data_config_handler.html">wf_psf.data.data_config_handler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.data_utils.html">wf_psf.data.data_utils</a></li>
 <li class="toctree-l3"><a class="reference internal" href="wf_psf.data.data_zernike_utils.html">wf_psf.data.data_zernike_utils</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.factory.html">wf_psf.data.factory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.handlers.html">wf_psf.data.handlers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.npy_dataset_loader.html">wf_psf.data.npy_dataset_loader</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.safe_batch.html">wf_psf.data.safe_batch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.schemas.html">wf_psf.data.schemas</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wf_psf.data.tensorflow_converter.html">wf_psf.data.tensorflow_converter</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="wf_psf.inference.html">wf_psf.inference</a></li>
@@ -129,8 +138,20 @@
              
   <section id="module-wf_psf.data.centroids">
 <span id="wf-psf-data-centroids"></span><h1>wf_psf.data.centroids<a class="headerlink" href="#module-wf_psf.data.centroids" title="Link to this heading"></a></h1>
-<p>Centroids.</p>
-<p>A module with utils to handle PSF centroids.</p>
+<p>Centroid estimation and Zernike-based correction utilities.</p>
+<p>This module provides functionality to estimate centroids from batches of
+PSF images (with optional masks) and to compute corresponding centroid
+corrections expressed in Zernike tip-tilt coefficients.</p>
+<p>Core functionality includes:</p>
+<ul class="simple">
+<li><p>Iterative centroid estimation using an elliptical Gaussian weighting scheme.</p></li>
+<li><p>Vectorized computation of intra-pixel shifts for batches of star images.</p></li>
+<li><p>Conversion of centroid shifts into Zernike (Z1, Z2) tip-tilt coefficients
+following the WaveDiff convention.</p></li>
+<li><p>Generation of image shifting kernels (e.g. Lanczos) for sub-pixel alignment.</p></li>
+</ul>
+<p>These utilities are primarily used in PSF modeling pipelines to align
+observed star centroids with model predictions.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Author<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Tobias Liaudat &lt;<a class="reference external" href="mailto:tobias&#46;liaudat&#37;&#52;&#48;cea&#46;fr">tobias<span>&#46;</span>liaudat<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt; and Jennifer Pollack &lt;<a class="reference external" href="mailto:jennifer&#46;pollack&#37;&#52;&#48;cea&#46;fr">jennifer<span>&#46;</span>pollack<span>&#64;</span>cea<span>&#46;</span>fr</a>&gt;</p>
@@ -442,7 +463,7 @@ Defaults to <cite>[-1/3, -1/3]</cite> (nominal Euclid conditions).</p></li>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="wf_psf.data.html" class="btn btn-neutral float-left" title="wf_psf.data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="wf_psf.data.data_handler.html" class="btn btn-neutral float-right" title="wf_psf.data.data_handler" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="wf_psf.data.constants.html" class="btn btn-neutral float-right" title="wf_psf.data.constants" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

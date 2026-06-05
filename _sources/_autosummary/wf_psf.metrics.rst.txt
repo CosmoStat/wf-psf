@@ -11,4 +11,5 @@
    :recursive:
 
    metrics
+   metrics_config_handler
    metrics_interface
