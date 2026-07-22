@@ -1,0 +1,3 @@
+metrics:
+  mask_obscuration:
+    enabled: true

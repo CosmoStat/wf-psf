@@ -1,0 +1,5 @@
+metrics:
+  goodness_of_fit:
+    enabled: true
+    inference_config: inference.yaml
+    model_cache: true
