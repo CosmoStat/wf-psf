@@ -7,54 +7,73 @@ This module contains unit tests for the quality control configuration module.
 """
 
 from pathlib import Path
-from wf_psf.quality_control.config import QualityControlConfigHandler
+import pytest
+from wf_psf.quality_control.config import (
+    QualityControlConfig,
+    QualityControlConfigHandler,
+    QualityMetricConfig,
+    RejectionPolicyConfig,
+    ReportingConfig,
+)
 
-def get_quality_control_config_object(config_file):
-    fixture_path = (
-        Path(__file__).parent
-        / "data"
-        / config_file
-    )
 
-    handler = QualityControlConfigHandler(fixture_path)
-    config = handler.load()
-    return config
+def load_config(config_file: str) -> QualityControlConfig:
+    handler = QualityControlConfigHandler(Path(__file__).parent / "data" / config_file)
+    return handler.load()
+
 
 def test_quality_control_config_loading():
-
-    config = get_quality_control_config_object(
-        "quality_control.yaml"
-    )
+    config = load_config("valid/quality_control.yaml")
 
     assert "mask_obscuration" in config.metrics
+    assert isinstance(config.metrics["mask_obscuration"], QualityMetricConfig)
     assert config.metrics["mask_obscuration"].enabled is True
+
+    assert isinstance(config.metrics["goodness_of_fit"], QualityMetricConfig)
     assert config.metrics["goodness_of_fit"].params["inference_config"] == (
         "inference_config.yaml"
     )
+
+    assert isinstance(config.rejection["mask_obscuration"], RejectionPolicyConfig)
     assert config.rejection["mask_obscuration"].threshold == 0.25
+
+    assert isinstance(config.reporting, ReportingConfig)
     assert config.reporting.save_metrics is True
 
-def test_metrics_minimal():
 
-    config = get_quality_control_config_object(
-        "metrics_minimal.yaml"
-    )
+def test_metrics_minimal():
+    config = load_config("valid/metric_minimal.yaml")
 
     assert config.metrics["mask_obscuration"].enabled is True
+    assert config.metrics["mask_obscuration"].params == {}
     assert config.rejection == {}
     assert config.reporting.save_metrics is False
     assert config.reporting.log_statistics is False
 
 
-def test_goodness_of_fit_extended():
-    config = get_quality_control_config_object(
-        "goodness_of_fit_extended.yaml"
-    )
+def test_metric_enabled_must_be_boolean():
+    with pytest.raises(
+        TypeError,
+        match="Metric enabled flag for 'mask_obscuration' must be boolean",
+    ):
+        load_config("invalid/metric_invalid_enabled.yaml")
 
-    assert config.metrics["goodness_of_fit"].enabled is True
-    assert config.metrics["goodness_of_fit"].params["inference_config"] == (
-        "inference_config.yaml"
-    )
-    assert config.metrics["goodness_of_fit"].params["model_cache"] == (
-        True
-    )
+
+def test_metrics_configuration_must_be_mapping():
+    with pytest.raises(TypeError, match="Metrics configuration must be a mapping"):
+        load_config("invalid/metric_invalid_type.yaml")
+
+
+def test_rejection_configuration_must_be_mapping():
+    with pytest.raises(
+        TypeError, match="Rejection policy configuration must be a mapping"
+    ):
+        load_config("invalid/rejection_invalid_type.yaml")
+
+
+def test_reporting_configuration_must_be_mapping():
+    with pytest.raises(
+        TypeError,
+        match="Reporting configuration must be a mapping",
+    ):
+        load_config("invalid/reporting_invalid_type.yaml")
