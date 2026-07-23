@@ -5,7 +5,8 @@ metrics:
 
   goodness_of_fit:
     enabled: true
-    inference_config: inference_config.yaml
+    params:
+      inference_config: inference_config.yaml
 
 rejection:
 
@@ -20,4 +21,4 @@ rejection:
 reporting:
 
   save_metrics: true
-  log_statistics: true 
+  log_statistics: true

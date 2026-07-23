@@ -1,11 +1,12 @@
+# Future test data for validation of configuration settings
 metrics:
   goodness_of_fit:
     enabled: true
-    inference_config: inference.yaml
+    inference_config: inference_config.yaml
     model_cache: true
 
 rejection:
   goodness_of_fit:
     enabled: true
-    inference_config: 
+    inference_config:
     threshold: -1
