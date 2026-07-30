@@ -12,7 +12,6 @@ from wf_psf.utils.registry import Registry
 
 
 def test_register_and_get():
-
     registry = Registry[str, int]()
 
     registry.register("one", 1)
@@ -21,7 +20,6 @@ def test_register_and_get():
 
 
 def test_register_duplicate_key_raises():
-
     registry = Registry[str, int]()
 
     registry.register("one", 1)
@@ -34,7 +32,6 @@ def test_register_duplicate_key_raises():
 
 
 def test_get_unknown_key_raises():
-
     registry = Registry[str, int]()
 
     with pytest.raises(
@@ -45,7 +42,6 @@ def test_get_unknown_key_raises():
 
 
 def test_unregister():
-
     registry = Registry[str, int]()
 
     registry.register("one", 1)
@@ -56,7 +52,6 @@ def test_unregister():
 
 
 def test_unregister_unknown_key_raises():
-
     registry = Registry[str, int]()
 
     with pytest.raises(
@@ -67,7 +62,6 @@ def test_unregister_unknown_key_raises():
 
 
 def test_contains():
-
     registry = Registry[str, int]()
 
     registry.register("one", 1)
@@ -77,7 +71,6 @@ def test_contains():
 
 
 def test_keys():
-
     registry = Registry[str, int]()
 
     registry.register("one", 1)
@@ -87,7 +80,6 @@ def test_keys():
 
 
 def test_values():
-
     registry = Registry[str, int]()
 
     registry.register("one", 1)
@@ -97,7 +89,6 @@ def test_values():
 
 
 def test_items():
-
     registry = Registry[str, int]()
 
     registry.register("one", 1)
@@ -110,7 +101,6 @@ def test_items():
 
 
 def test_iteration():
-
     registry = Registry[str, int]()
 
     registry.register("one", 1)
@@ -123,7 +113,6 @@ def test_iteration():
 
 
 def test_get_falsey_value():
-
     registry = Registry[str, int]()
 
     registry.register("zero", 0)
@@ -132,7 +121,6 @@ def test_get_falsey_value():
 
 
 def test_get_false_boolean():
-
     registry = Registry[str, bool]()
 
     registry.register("flag", False)
