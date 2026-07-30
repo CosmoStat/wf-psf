@@ -48,7 +48,6 @@ Authors: Jennifer Pollack <jennifer.pollack@cea.fr>
 """
 
 from enum import Enum, auto
-from re import S
 import numpy as np
 from typing import Any, Optional
 from wf_psf.data.constants import (

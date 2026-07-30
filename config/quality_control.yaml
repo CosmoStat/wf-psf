@@ -1,0 +1,24 @@
+metrics:
+
+  mask_obscuration:
+    enabled: true
+
+  goodness_of_fit:
+    enabled: true
+    params:
+      inference_config: inference_config.yaml
+
+rejection:
+
+  mask_obscuration:
+    enabled: true
+    threshold: 0.25
+
+  goodness_of_fit:
+    enabled: false
+    threshold: 3.0
+
+reporting:
+
+  save_metrics: true
+  log_statistics: true 
