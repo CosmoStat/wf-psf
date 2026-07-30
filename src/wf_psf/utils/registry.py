@@ -68,6 +68,7 @@ class Registry(Generic[K, V]):
         ------
         KeyError
             If the key is not present in the registry.
+
         """
         try:
             return self._store[key]
@@ -86,6 +87,7 @@ class Registry(Generic[K, V]):
         ------
         KeyError
           If key is not present in registry.
+
         """
         if key not in self._store:
             raise KeyError(f"Key '{key}' not found in registry.")
