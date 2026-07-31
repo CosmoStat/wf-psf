@@ -17,9 +17,12 @@ from wf_psf.quality_control.metrics.goodness_of_fit import GoodnessOfFitMetric
 
 
 class CustomMetric(QualityMetric):
+    """Test metric used to verify registry extensibility."""
+
     name = "custom"
 
-    def compute(self, dataset):
+    def compute(self, dataset) -> None:
+        """Dummy implementation for testing."""
         return None
 
 
