@@ -16,6 +16,13 @@ from wf_psf.quality_control.metrics.mask_obscuration import MaskObscurationMetri
 from wf_psf.quality_control.metrics.goodness_of_fit import GoodnessOfFitMetric
 
 
+class CustomMetric(QualityMetric):
+    name = "custom"
+
+    def compute(self, dataset):
+        return None
+
+
 def test_duplicate_metric_registration_raises():
     registry = MetricsRegistry()
 
@@ -38,13 +45,6 @@ def test_unknown_metric_raises():
 
     with pytest.raises(KeyError):
         registry.get("unknown_metric")
-
-
-class CustomMetric(QualityMetric):
-    name = "custom"
-
-    def compute(self, dataset):
-        return None
 
 
 def test_custom_metric_registration():
