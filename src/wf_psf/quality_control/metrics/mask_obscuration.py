@@ -1,7 +1,7 @@
 """Mask obscuration quality metric.
 
-Defines the mask obscuration metric class with techniques for quantifying
-the number of pixels associated to a source that have been masked.
+Defines a quality metric implementation for assessing the impact of
+masked pixels on dataset samples.
 
 :Authors: Jennifer Pollack <jennifer.pollack@cea.fr>
 
@@ -11,19 +11,10 @@ from .base import QualityMetric
 
 
 class MaskObscurationMetric(QualityMetric):
-    """Mask Obscuration metric class.
-
-    Attributes
-    ----------
-    name : str
-
-    Functions
-    ---------
-    compute
-    """
+    """Assess masked pixel obscuration for each dataset sample."""
 
     name = "mask_obscuration"
 
     def compute(self, dataset):
-        """Compute metric."""
+        """Compute the mask obscuration metric for each dataset sample."""
         pass
