@@ -12,13 +12,14 @@ modifying the quality control pipeline.
 """
 
 from .base import RejectionPolicy
+import numpy as np
 
 
 class ThresholdRejectionPolicy(RejectionPolicy):
-    """Reject dataset samples according to configurable metric thresholds."""
+    """Reject dataset samples based on configurable metric thresholds."""
 
     name = "threshold"
 
-    def apply(self, metric):
-        """Apply threshold policy."""
+    def apply(self, metric: np.ndarray) -> np.ndarray:
+        """Apply threshold-based rejection to metric values."""
         raise NotImplementedError
