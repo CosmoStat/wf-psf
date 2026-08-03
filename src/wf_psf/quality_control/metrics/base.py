@@ -12,6 +12,7 @@ training, evaluation, or inference.
 """
 
 from abc import ABC, abstractmethod
+import numpy as np
 
 
 class QualityMetric(ABC):
@@ -34,5 +35,5 @@ class QualityMetric(ABC):
     name: str
 
     @abstractmethod
-    def compute(self, dataset):
+    def compute(self, dataset) -> np.ndarray:
         """Compute the quality metric for the supplied dataset."""
