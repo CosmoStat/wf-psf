@@ -12,19 +12,10 @@ from .base import QualityMetric
 
 
 class GoodnessOfFitMetric(QualityMetric):
-    """Goodness-of-fit metric class.
-
-    Attributes
-    ----------
-    name : str
-
-    Functions
-    ---------
-    compute
-    """
+    """Compute a goodness-of-fit metric (e.g. reduced chi square) for each dataset sample."""
 
     name = "goodness_of_fit"
 
     def compute(self, dataset):
-        """Compute metric."""
+        """Compute reduced chi-square values for each dataset sample."""
         pass
