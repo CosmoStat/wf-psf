@@ -15,10 +15,24 @@ from abc import ABC, abstractmethod
 
 
 class QualityMetric(ABC):
-    """Abstract interface for quality metric implementations."""
+    """Abstract interface for quality metric implementations.
+
+    Attributes
+    ----------
+    name : str
+        Unique identifier for the metric implementation. Used by
+        the MetricsRegistry to register and retrieve metric classes.
+
+
+    Methods
+    -------
+    compute(dataset)
+        Compute the quality metric for the supplied dataset.
+
+    """
 
     name: str
 
     @abstractmethod
     def compute(self, dataset):
-        """Compute one metric value for each dataset sample."""
+        """Compute the quality metric for the supplied dataset."""
