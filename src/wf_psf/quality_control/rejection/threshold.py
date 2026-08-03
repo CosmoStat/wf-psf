@@ -10,3 +10,15 @@ modifying the quality control pipeline.
 :Authors:
     Jennifer Pollack <jennifer.pollack@cea.fr>
 """
+
+from .base import RejectionPolicy
+
+
+class ThresholdRejectionPolicy(RejectionPolicy):
+    """Reject dataset samples according to configurable metric thresholds."""
+
+    name = "threshold"
+
+    def apply(self, metric):
+        """Apply threshold policy."""
+        raise NotImplementedError
