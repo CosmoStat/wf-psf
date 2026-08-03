@@ -1,10 +1,11 @@
 """Quality control rejection policy registry.
 
-Provides the registry responsible for constructing rejection policies from configuration.
+Provides the registry responsible for storing and retrieving rejection
+policy implementations.
 
-The registry decouples configuration parsing from rejection policy
-instantiation, allowing new rejection policies to be registered without
-modifying the quality control pipeline.
+The registry decouples rejection policy lookup from pipeline logic,
+allowing new rejection policies to be registered without modifying the
+quality control pipeline.
 
 :Authors:
     Jennifer Pollack <jennifer.pollack@cea.fr>
@@ -16,7 +17,7 @@ from wf_psf.utils.registry import Registry
 
 
 class RejectionPolicyRegistry(Registry[str, type[RejectionPolicy]]):
-    """Rejection policy registry class."""
+    """Registry storing available sample rejection policies."""
 
     def register_rejection_policy(self, rejection_cls: type[RejectionPolicy]) -> None:
         """Register a rejection policy implementation.

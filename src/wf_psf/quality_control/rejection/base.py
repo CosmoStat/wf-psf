@@ -28,7 +28,8 @@ class RejectionPolicy(ABC):
     Methods
     -------
     apply(metric)
-        Apply the rejection policy to the supplied quality metric and return a boolean validity mask.
+        Apply the rejection policy to the supplied quality metric and
+        return a boolean validity mask.
 
     """
 
@@ -36,4 +37,7 @@ class RejectionPolicy(ABC):
 
     @abstractmethod
     def apply(self, metric: np.ndarray) -> np.ndarray:
-        """Return a boolean validity mask identifying valid dataset samples."""
+        """Return a boolean mask identifying valid dataset samples.
+
+        The returned mask has one entry per dataset sample.
+        """
