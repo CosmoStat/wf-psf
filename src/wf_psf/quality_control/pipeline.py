@@ -2,11 +2,10 @@
 
 Defines the orchestration layer for dataset quality control.
 
-The QualityControlPipeline coordinates quality metric evaluation,
-application of rejection policies, reporting, and dataset filtering.
-Individual quality metrics and rejection policies are provided through
-their respective interfaces, allowing new methods to be added without
-modifying the pipeline implementation.
+The QualityControlPipeline coordinates quality metric evaluation and
+sample rejection. Individual quality metrics and rejection policies are
+provided through their respective interfaces, allowing new methods to
+be added without modifying the pipeline implementation.
 
 :Authors: Jennifer Pollack <jennifer.pollack@cea.fr>
 
@@ -14,6 +13,12 @@ modifying the pipeline implementation.
 
 from dataclasses import dataclass
 import numpy as np
+
+from wf_psf.quality_control.config import QualityControlConfigHandler
+from wf_psf.quality_control.metrics.base import QualityMetric
+from wf_psf.quality_control.metrics.registry import build_metrics_registry
+from wf_psf.quality_control.rejection.registry import build_rejection_policy_registry
+
 
 @dataclass
 class QualityControlResult:
@@ -50,15 +55,27 @@ class QualityControlPipeline:
     of the pipeline execution.
     """
 
-    def __init__(
-            self,
-            metrics,
-            rejection_policies,
-    ):
-        ...
+    def __init__(self, qc_config_path):
+        self.config = QualityControlConfigHandler(qc_config_path).load()
+        self.metrics_registry = build_metrics_registry()
+        self.rejection_registry = build_rejection_policy_registry()
+
+    def _instantiate_metrics(self) -> dict[str, QualityMetric]:
+        """Instantiate enabled quality metric implementation from configuration."""
+        metrics = {}
+
+        for name, metric_config in self.config.metrics.items():
+            if not metric_config.enabled:
+                continue
+
+            metric_cls = self.metrics_registry.get(name)
+
+            metrics[name] = metric_cls()
+
+        return metrics
 
     def run(self, dataset):
-
+        """Run quality control pipeline."""
+        #        metrics = self._instantiate_metrics()
         ...
-
         return QualityControlResult(...)
