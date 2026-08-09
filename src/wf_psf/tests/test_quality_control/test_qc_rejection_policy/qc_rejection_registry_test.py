@@ -6,6 +6,7 @@ This module contains unit tests for the RejectionPolicyRegistry class.
     Jennifer Pollack <jennifer.pollack@cea.fr>
 """
 
+import numpy as np
 import pytest
 from wf_psf.quality_control.rejection.base import RejectionPolicy
 from wf_psf.quality_control.rejection.registry import (
@@ -21,8 +22,8 @@ class CustomRejectionPolicy(RejectionPolicy):
     name = "custom_policy"
 
     def apply(self, metric) -> None:
-        """Dummy implementation for testing."""
-        return None
+        """Return a dummy validity mask for testing."""
+        return np.ones(metric.shape, dtype=bool)
 
 
 def test_build_rejection_registry():
@@ -52,4 +53,12 @@ def test_custom_policy_registration():
 
     registry.register_rejection_policy(CustomRejectionPolicy)
 
-    assert registry.get("custom_policy") is CustomRejectionPolicy
+    policy_cls = registry.get("custom_policy")
+    policy = policy_cls()
+
+    metric = np.array([0.1, 0.5, 0.9])
+    result = policy.apply(metric)
+
+    assert isinstance(result, np.ndarray)
+    assert result.shape == metric.shape
+    assert result.dtype == bool
