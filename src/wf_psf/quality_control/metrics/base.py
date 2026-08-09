@@ -36,4 +36,18 @@ class QualityMetric(ABC):
 
     @abstractmethod
     def compute(self, dataset) -> np.ndarray:
-        """Compute the quality metric for the supplied dataset."""
+        """Compute the quality metric for the supplied dataset.
+
+        Parameters
+        ----------
+        dataset
+            Dataset containing the samples to be evaluated. A dataset may
+            contain multiple postage stamps/images and their associated
+            metadata or auxiliary data, depending on the requirements of
+            the metric.
+
+        Returns
+        -------
+        np.ndarray
+            One metric value per dataset sample.
+        """
