@@ -11,6 +11,7 @@ including quality metric, rejection policy, and reporting configuration.
 from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
+
 from wf_psf.utils.read_config import read_yaml
 
 
@@ -20,12 +21,19 @@ class QualityMetricConfig:
 
     Attributes
     ----------
-        enabled: Whether the quality metric is enabled.
-        params: Arbitrary quality metric-specific parameters.
+    enabled : bool
+        Whether the quality metric is enabled.
+
+    params : dict
+        Quality metric-specific parameters.
+
+    required_resources : list[str]
+        Identifiers of resources required to compute the quality metric.
     """
 
     enabled: bool = True
     params: dict = field(default_factory=dict)
+    required_resources: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -34,8 +42,11 @@ class RejectionPolicyConfig:
 
     Attributes
     ----------
-        enabled: Whether rejection policy is enabled.
-        threshold: Numeric threshold used to trigger rejection policy, or None.
+    enabled : bool
+        Whether rejection policy is enabled.
+
+    threshold: float | None
+        Numeric threshold used by the rejection policy, or None if not applicable.
     """
 
     enabled: bool = False
@@ -48,12 +59,28 @@ class ReportingConfig:
 
     Attributes
     ----------
-        save_metrics: Persist computed metrics to storage.
-        log_statistics: Emit statistics to the logging system.
+    save_metrics : bool
+        Persist computed metrics to storage.
+
+    log_statistics : bool
+        Emit statistics to the logging system.
     """
 
     save_metrics: bool = False
     log_statistics: bool = False
+
+
+@dataclass
+class ResourcesConfig:
+    """Configuration for resources available for quality control execution.
+
+    Attributes
+    ----------
+    available : dict
+        Mapping of resource types to configured resource identifiers and parameters.
+    """
+
+    available: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -62,9 +89,17 @@ class QualityControlConfig:
 
     Attributes
     ----------
-        metrics: Mapping of metric name -> QualityMetricConfig.
-        rejection: Mapping of check name -> RejectionPolicyConfig.
-        reporting: ReportingConfig instance.
+    metrics : dict
+        Mapping of metric name to QualityMetricConfig instances.
+
+    rejection : dict
+        Mapping of check name to RejectionPolicyConfig instances.
+
+    reporting : ReportingConfig
+        ReportingConfig instance.
+
+    resources : ResourcesConfig
+        Available resources used during quality control execution.
     """
 
     metrics: dict[str, QualityMetricConfig] = field(default_factory=dict)
@@ -73,17 +108,38 @@ class QualityControlConfig:
 
     reporting: ReportingConfig = field(default_factory=ReportingConfig)
 
+    resources: ResourcesConfig = field(default_factory=ResourcesConfig)
+
 
 # config section parsers
 def parse_metrics_config(
     section: dict[str, dict] | None,
 ) -> dict[str, QualityMetricConfig]:
-    """Parse quality metric configuration section."""
+    """Parse the quality metrics configuration section.
+
+    Parameters
+    ----------
+    section : dict[str, dict] or None
+        Raw quality metric configuration. If None, an empty configuration
+        is returned.
+
+    Returns
+    -------
+    dict[str, QualityMetricConfig]
+        Parsed quality metric configurations keyed by metric name.
+
+    Raises
+    ------
+    TypeError
+        If the configuration section or any metric configuration is not a
+        mapping, if ``enabled`` is not boolean, if ``params`` is not a
+        mapping, or if required resource identifiers are not strings.
+    """
     if section is None:
         return {}
 
     if not isinstance(section, dict):
-        raise TypeError("Metrics configuration must be a mapping")
+        raise TypeError("Metrics configuration must be a mapping.")
 
     metrics = {}
 
@@ -101,9 +157,15 @@ def parse_metrics_config(
         if not isinstance(params, dict):
             raise TypeError(f"Metric parameters for '{name}' must be a mapping.")
 
+        required_resources = cfg.get("required_resources", [])
+
+        if not all(isinstance(resource, str) for resource in required_resources):
+            raise TypeError(
+                f"Required resources for metric '{name}' must contain only strings."
+            )
+
         metrics[name] = QualityMetricConfig(
-            enabled=enabled,
-            params=params,
+            enabled=enabled, params=params, required_resources=required_resources
         )
 
     return metrics
@@ -112,7 +174,25 @@ def parse_metrics_config(
 def parse_rejection_policy_config(
     config: dict[str, dict] | None,
 ) -> dict[str, RejectionPolicyConfig]:
-    """Parse rejection policy configuration section."""
+    """Parse the rejection policy configuration section.
+
+    Parameters
+    ----------
+    config : dict[str, dict] or None
+        Raw rejection policy configuration. If None, an empty configuration
+        is returned.
+
+    Returns
+    -------
+    dict[str, RejectionPolicyConfig]
+        Parsed rejection policy configurations keyed by metric name.
+
+    Raises
+    ------
+    TypeError
+        If the configuration section or a policy configuration is not a
+        mapping.
+    """
     if config is None:
         return {}
 
@@ -133,7 +213,24 @@ def parse_rejection_policy_config(
 
 
 def parse_reporting_config(config: dict | None) -> ReportingConfig:
-    """Parse reporting configuration section."""
+    """Parse the reporting configuration section.
+
+    Parameters
+    ----------
+    config : dict or None
+        Raw reporting configuration. If None, the default reporting
+        configuration is returned.
+
+    Returns
+    -------
+    ReportingConfig
+        Parsed reporting configuration.
+
+    Raises
+    ------
+    TypeError
+        If the configuration section is not a mapping.
+    """
     if config is None:
         return ReportingConfig()
 
@@ -143,10 +240,132 @@ def parse_reporting_config(config: dict | None) -> ReportingConfig:
     return ReportingConfig(**config)
 
 
+def parse_resources_config(
+    config: dict | None,
+) -> ResourcesConfig:
+    """Parse the resources configuration section.
+
+    Parameters
+    ----------
+    config : dict or None
+        Raw resource configuration. If None, an empty resource
+        configuration is returned.
+
+    Returns
+    -------
+    ResourcesConfig
+        Parsed resource configuration.
+
+    Raises
+    ------
+    TypeError
+        If the configuration section is not a mapping.
+    """
+    if config is None:
+        return ResourcesConfig()
+
+    if not isinstance(config, dict):
+        raise TypeError("Resources configuration must be a mapping.")
+
+    return ResourcesConfig(available=config)
+
+
+def validate_quality_control_config(config: QualityControlConfig) -> None:
+    """Validate internal consistency of a quality control configuration.
+
+    Parameters
+    ----------
+    config : QualityControlConfig
+        Parsed quality control configuration.
+
+    Raises
+    ------
+    ValueError
+        If any cross-section configuration dependency is invalid.
+    """
+    validate_metric_resources(config)
+    validate_rejection_policy_metrics(config)
+
+
+def validate_metric_resources(config: QualityControlConfig) -> None:
+    """Validate that all metric resource requirements can be resolved.
+
+    Parameters
+    ----------
+    config : QualityControlConfig
+        Parsed quality control configuration.
+
+    Raises
+    ------
+    ValueError
+        If a required resource identifier is malformed or references an
+        unavailable resource.
+    """
+    for metric_name, metric in config.metrics.items():
+        # loop over metric.required_resources
+        for req in metric.required_resources:
+            # Check if resource identifier has the correct form
+            if "." not in req:
+                raise ValueError(
+                    f"Resource identifier '{req}' must have the form "
+                    "'<resource_type>.<resource_name>'."
+                )
+            # extract resource type (e.g. 'psf_models') and name (e.g. 'standard')
+            resource_type, resource_name = req.split(".", 1)
+
+            # check compliance of resource identifier
+            if not resource_type or not resource_name:
+                raise ValueError(
+                    f"Resource identifier '{req}' must have the form "
+                    "'<resource_type>.<resource_name>'."
+                )
+
+            # check if resource_type is in config.resources.available
+            if resource_type not in config.resources.available:
+                raise ValueError(
+                    f"Metric '{metric_name}' requires unknown resource '{req}'."
+                )
+
+            # check if resournce_name is in config.resource.available[resource_type]
+            if resource_name not in config.resources.available[resource_type]:
+                raise ValueError(
+                    f"Metric '{metric_name}' requires unknown resource '{req}'."
+                )
+
+
+def validate_rejection_policy_metrics(config: QualityControlConfig) -> None:
+    """Validate rejection policies against configured quality metrics.
+
+    Parameters
+    ----------
+    config : QualityControlConfig
+        Parsed quality control configuration.
+
+    Raises
+    ------
+    ValueError
+        If an enabled rejection policy references an unknown or disabled
+        quality metric.
+    """
+    for metric_name, metric_rejection_policy in config.rejection.items():
+        if metric_rejection_policy.enabled:
+            # check that metric exists in config.metrics
+            if metric_name not in config.metrics:
+                raise ValueError(
+                    f"Rejection policy configured for unknown metric '{metric_name}' "
+                )
+
+            if not config.metrics[metric_name].enabled:
+                raise ValueError(
+                    f"Rejection policy cannot be enabled because metric '{metric_name}' is disabled."
+                )
+
+
 SECTION_PARSERS = {
     "metrics": parse_metrics_config,
     "rejection": parse_rejection_policy_config,
     "reporting": parse_reporting_config,
+    "resources": parse_resources_config,
 }
 
 
@@ -168,7 +387,22 @@ class QualityControlConfigHandler:
         self.qc_config_path = qc_config_path
 
     def load(self) -> QualityControlConfig:
-        """Load and parse configuration file."""
+        """Load, parse, and validate the quality control configuration.
+
+        Returns
+        -------
+        QualityControlConfig
+            Parsed and validated quality control configuration.
+
+        Raises
+        ------
+        TypeError
+            If a configuration section has an invalid structure or type.
+
+        ValueError
+            If the parsed configuration contains inconsistent references
+            between metrics, resources, or rejection policies.
+        """
         qc_config = read_yaml(self.qc_config_path)
         config = {}
 
@@ -176,4 +410,8 @@ class QualityControlConfigHandler:
             values = qc_config.get(section, {})
             config[section] = parser(values)
 
-        return QualityControlConfig(**config)
+        qc = QualityControlConfig(**config)
+
+        validate_quality_control_config(qc)
+
+        return qc
