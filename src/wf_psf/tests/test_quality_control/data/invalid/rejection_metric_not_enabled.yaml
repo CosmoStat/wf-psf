@@ -1,0 +1,22 @@
+resources:
+
+  psf_models:
+    standard:
+      inference_config: inference_standard.yaml
+    oversampled:
+      inference_config: inference_oversampled.yaml
+
+metrics:
+
+  mask_obscuration:
+    enabled: false
+    params:
+      aperture: gaussian
+      sigma: 2.5
+
+
+rejection:
+
+  mask_obscuration:
+    enabled: true
+    threshold: 0.25

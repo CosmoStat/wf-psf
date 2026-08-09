@@ -6,6 +6,7 @@ This module contains unit tests for the quality control configuration module.
 
 """
 
+from contextlib import nullcontext as does_not_raise
 from pathlib import Path
 import pytest
 from wf_psf.quality_control.config import (
@@ -14,6 +15,12 @@ from wf_psf.quality_control.config import (
     QualityMetricConfig,
     RejectionPolicyConfig,
     ReportingConfig,
+    ResourcesConfig,
+)
+from wf_psf.quality_control.config import (
+    parse_resources_config,
+    validate_metric_resources,
+    validate_rejection_policy_metrics,
 )
 
 
@@ -22,16 +29,70 @@ def load_config(config_file: str) -> QualityControlConfig:
     return handler.load()
 
 
+@pytest.fixture
+def qc_config_factory():
+    def factory(
+        *,
+        required_resources=None,
+        rejection_metric=None,
+        resources=None,
+        metrics=None,
+        rejection=None,
+    ):
+        return QualityControlConfig(
+            metrics=metrics
+            or {
+                "goodness_of_fit": QualityMetricConfig(
+                    enabled=True,
+                    required_resources=required_resources or [],
+                )
+            },
+            resources=resources
+            or ResourcesConfig(
+                available={
+                    "psf_models": {
+                        "standard": {
+                            "inference_config": "inference_standard.yaml",
+                        }
+                    }
+                }
+            ),
+            rejection=rejection
+            or {
+                rejection_metric or "goodness_of_fit": RejectionPolicyConfig(
+                    enabled=True,
+                    threshold=0.25,
+                )
+            },
+        )
+
+    return factory
+
+
+# Test for config loading and parsers
 def test_quality_control_config_loading():
     config = load_config("valid/quality_control.yaml")
+
+    assert isinstance(config.resources, ResourcesConfig)
+    assert "standard" in config.resources.available["psf_models"]
+    assert "oversampled" in config.resources.available["psf_models"]
+    assert (
+        config.resources.available["psf_models"]["standard"]["inference_config"]
+        == "inference_standard.yaml"
+    )
+    assert (
+        config.resources.available["psf_models"]["oversampled"]["inference_config"]
+        == "inference_oversampled.yaml"
+    )
 
     assert "mask_obscuration" in config.metrics
     assert isinstance(config.metrics["mask_obscuration"], QualityMetricConfig)
     assert config.metrics["mask_obscuration"].enabled is True
+    assert config.metrics["mask_obscuration"].required_resources == []
 
     assert isinstance(config.metrics["goodness_of_fit"], QualityMetricConfig)
-    assert config.metrics["goodness_of_fit"].params["inference_config"] == (
-        "inference_config.yaml"
+    assert config.metrics["goodness_of_fit"].required_resources == (
+        ["psf_models.standard"]
     )
 
     assert isinstance(config.rejection["mask_obscuration"], RejectionPolicyConfig)
@@ -39,6 +100,18 @@ def test_quality_control_config_loading():
 
     assert isinstance(config.reporting, ReportingConfig)
     assert config.reporting.save_metrics is True
+
+
+def test_parse_resources_config():
+    config = {
+        "psf_models": {"standard": {"inference_config": "inference_standard.yaml"}}
+    }
+
+    resources = parse_resources_config(config)
+
+    assert resources.available["psf_models"]["standard"]["inference_config"] == (
+        "inference_standard.yaml"
+    )
 
 
 def test_metrics_minimal():
@@ -77,3 +150,96 @@ def test_reporting_configuration_must_be_mapping():
         match="Reporting configuration must be a mapping",
     ):
         load_config("invalid/reporting_invalid_type.yaml")
+
+
+# Tests for validation methods
+def test_validate_metric_resources_all_valid(qc_config_factory):
+    with does_not_raise():
+        validate_metric_resources(qc_config_factory())
+
+
+def test_validate_metric_resources_invalid_identifier(qc_config_factory):
+    config = qc_config_factory(required_resources=["psf_model_standard"])
+    with pytest.raises(
+        ValueError,
+        match="Resource identifier 'psf_model_standard' must have the form '<resource_type>.<resource_name>'.",
+    ):
+        validate_metric_resources(config)
+
+
+def test_validate_metric_resources_unknown_resource_type(qc_config_factory):
+    config = qc_config_factory(required_resources=["images.segmentation_maps"])
+
+    with pytest.raises(
+        ValueError,
+        match="Metric 'goodness_of_fit' requires unknown resource 'images.segmentation_maps'.",
+    ):
+        validate_metric_resources(config)
+
+
+def test_validate_metric_resources_unknown_resource_name(qc_config_factory):
+    config = qc_config_factory(required_resources=["psf_models.imaginary"])
+
+    with pytest.raises(
+        ValueError,
+        match="Metric 'goodness_of_fit' requires unknown resource 'psf_models.imaginary'.",
+    ):
+        validate_metric_resources(config)
+
+
+def test_validate_metric_resources_empty_resource_name(qc_config_factory):
+    config = qc_config_factory(required_resources=["psf_models."])
+
+    with pytest.raises(
+        ValueError,
+        match="Resource identifier 'psf_models.' must have the form '<resource_type>.<resource_name>'.",
+    ):
+        validate_metric_resources(config)
+
+
+def test_validate_rejection_policy_metrics_all_valid(qc_config_factory):
+    with does_not_raise():
+        validate_rejection_policy_metrics(qc_config_factory())
+
+
+def test_validate_rejection_policy_metrics_metric_not_found(qc_config_factory):
+    config = qc_config_factory(rejection_metric="mask_obscuration")
+
+    with pytest.raises(
+        ValueError,
+        match="Rejection policy configured for unknown metric 'mask_obscuration'.",
+    ):
+        validate_rejection_policy_metrics(config)
+
+
+def test_validate_rejection_policy_metrics_metric_not_enabled(qc_config_factory):
+    metric = {
+        "goodness_of_fit": QualityMetricConfig(
+            enabled=False,
+            required_resources=[],
+        )
+    }
+
+    config = qc_config_factory(metrics=metric)
+
+    with pytest.raises(
+        ValueError,
+        match="Rejection policy cannot be enabled because metric 'goodness_of_fit' is disabled.",
+    ):
+        validate_rejection_policy_metrics(config)
+
+
+# Integration tests
+
+
+def test_load_config_validates_configuration_pass():
+    with does_not_raise():
+        load_config("valid/quality_control.yaml")
+
+
+def test_load_config_validates_configuration_raise_unknown_identifier():
+    with pytest.raises(
+        ValueError,
+        match="Metric 'goodness_of_fit' requires unknown resource",
+    ):
+        load_config("invalid/metric_resource_identifier_unknown.yaml")
