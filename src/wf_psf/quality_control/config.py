@@ -45,7 +45,7 @@ class RejectionPolicyConfig:
     enabled : bool
         Whether rejection policy is enabled.
 
-    threshold: float | None
+    threshold : float | None
         Numeric threshold used by the rejection policy, or None if not applicable.
     """
 
