@@ -302,32 +302,27 @@ def validate_metric_resources(config: QualityControlConfig) -> None:
         unavailable resource.
     """
     for metric_name, metric in config.metrics.items():
-        # loop over metric.required_resources
         for req in metric.required_resources:
-            # Check if resource identifier has the correct form
             if "." not in req:
                 raise ValueError(
                     f"Resource identifier '{req}' must have the form "
                     "'<resource_type>.<resource_name>'."
                 )
-            # extract resource type (e.g. 'psf_models') and name (e.g. 'standard')
+
             resource_type, resource_name = req.split(".", 1)
 
-            # check compliance of resource identifier
             if not resource_type or not resource_name:
                 raise ValueError(
                     f"Resource identifier '{req}' must have the form "
                     "'<resource_type>.<resource_name>'."
                 )
 
-            # check if resource_type is in config.resources.available
-            if resource_type not in config.resources.available:
-                raise ValueError(
-                    f"Metric '{metric_name}' requires unknown resource '{req}'."
-                )
+            resources = config.resources.available
 
-            # check if resournce_name is in config.resource.available[resource_type]
-            if resource_name not in config.resources.available[resource_type]:
+            if (
+                resource_type not in resources
+                or resource_name not in resources[resource_type]
+            ):
                 raise ValueError(
                     f"Metric '{metric_name}' requires unknown resource '{req}'."
                 )
