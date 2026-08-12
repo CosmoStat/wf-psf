@@ -93,7 +93,7 @@ class QualityControlConfig:
         Mapping of metric name to QualityMetricConfig instances.
 
     rejection : dict
-        Mapping of check name to RejectionPolicyConfig instances.
+        Mapping of rejection policy name to RejectionPolicyConfig instances.
 
     reporting : ReportingConfig
         ReportingConfig instance.
