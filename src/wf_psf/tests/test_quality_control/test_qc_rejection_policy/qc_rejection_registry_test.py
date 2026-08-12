@@ -21,7 +21,7 @@ class CustomRejectionPolicy(RejectionPolicy):
 
     name = "custom_policy"
 
-    def apply(self, metric) -> None:
+    def apply(self, metric) -> np.ndarray:
         """Return a dummy validity mask for testing."""
         return np.ones(metric.shape, dtype=bool)
 
