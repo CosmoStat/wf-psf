@@ -9,8 +9,10 @@ including quality metric, rejection policy, and reporting configuration.
 """
 
 from __future__ import annotations
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 from wf_psf.utils.read_config import read_yaml
 
@@ -80,7 +82,7 @@ class ResourcesConfig:
         Mapping of resource types to configured resource identifiers and parameters.
     """
 
-    available: dict = field(default_factory=dict)
+    available: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -113,13 +115,13 @@ class QualityControlConfig:
 
 # config section parsers
 def parse_metrics_config(
-    section: dict[str, dict] | None,
+    section: Mapping[str, Any] | None,
 ) -> dict[str, QualityMetricConfig]:
     """Parse the quality metrics configuration section.
 
     Parameters
     ----------
-    section : dict[str, dict] or None
+    section : Mapping[str, Any] or None
         Raw quality metric configuration. If None, an empty configuration
         is returned.
 
@@ -133,18 +135,19 @@ def parse_metrics_config(
     TypeError
         If the configuration section or any metric configuration is not a
         mapping, if ``enabled`` is not boolean, if ``params`` is not a
-        mapping, or if required resource identifiers are not strings.
+        mapping, or if required resource identifiers is not a list, or if
+        its entries are not strings.
     """
     if section is None:
         return {}
 
-    if not isinstance(section, dict):
+    if not isinstance(section, Mapping):
         raise TypeError("Metrics configuration must be a mapping.")
 
     metrics = {}
 
     for name, cfg in section.items():
-        if not isinstance(cfg, dict):
+        if not isinstance(cfg, Mapping):
             raise TypeError(f"Metric configuration '{name}' must be a mapping.")
 
         enabled = cfg.get("enabled", True)
@@ -154,7 +157,7 @@ def parse_metrics_config(
 
         params = cfg.get("params", {})
 
-        if not isinstance(params, dict):
+        if not isinstance(params, Mapping):
             raise TypeError(f"Metric parameters for '{name}' must be a mapping.")
 
         required_resources = cfg.get("required_resources", [])
@@ -165,20 +168,20 @@ def parse_metrics_config(
             )
 
         metrics[name] = QualityMetricConfig(
-            enabled=enabled, params=params, required_resources=required_resources
+            enabled=enabled, params=dict(params), required_resources=required_resources
         )
 
     return metrics
 
 
 def parse_rejection_policy_config(
-    config: dict[str, dict] | None,
+    section: Mapping[str, Any] | None,
 ) -> dict[str, RejectionPolicyConfig]:
     """Parse the rejection policy configuration section.
 
     Parameters
     ----------
-    config : dict[str, dict] or None
+    section : Mapping[str, Any] or None
         Raw rejection policy configuration. If None, an empty configuration
         is returned.
 
@@ -193,16 +196,16 @@ def parse_rejection_policy_config(
         If the configuration section or a policy configuration is not a
         mapping.
     """
-    if config is None:
+    if section is None:
         return {}
 
-    if not isinstance(config, dict):
+    if not isinstance(section, Mapping):
         raise TypeError("Rejection policy configuration must be a mapping.")
 
     policies = {}
 
-    for name, cfg in config.items():
-        if not isinstance(cfg, dict):
+    for name, cfg in section.items():
+        if not isinstance(cfg, Mapping):
             raise TypeError(
                 f"Rejection policy configuration '{name}' must be a mapping."
             )
@@ -212,12 +215,12 @@ def parse_rejection_policy_config(
     return policies
 
 
-def parse_reporting_config(config: dict | None) -> ReportingConfig:
+def parse_reporting_config(section: Mapping[str, Any] | None) -> ReportingConfig:
     """Parse the reporting configuration section.
 
     Parameters
     ----------
-    config : dict or None
+    section : dict or None
         Raw reporting configuration. If None, the default reporting
         configuration is returned.
 
@@ -231,23 +234,23 @@ def parse_reporting_config(config: dict | None) -> ReportingConfig:
     TypeError
         If the configuration section is not a mapping.
     """
-    if config is None:
+    if section is None:
         return ReportingConfig()
 
-    if not isinstance(config, dict):
+    if not isinstance(section, Mapping):
         raise TypeError("Reporting configuration must be a mapping.")
 
-    return ReportingConfig(**config)
+    return ReportingConfig(**section)
 
 
 def parse_resources_config(
-    config: dict | None,
+    config: Mapping[str, Any] | None,
 ) -> ResourcesConfig:
     """Parse the resources configuration section.
 
     Parameters
     ----------
-    config : dict or None
+    config : Mapping or None
         Raw resource configuration. If None, an empty resource
         configuration is returned.
 
@@ -264,10 +267,10 @@ def parse_resources_config(
     if config is None:
         return ResourcesConfig()
 
-    if not isinstance(config, dict):
+    if not isinstance(config, Mapping):
         raise TypeError("Resources configuration must be a mapping.")
 
-    return ResourcesConfig(available=config)
+    return ResourcesConfig(available=dict(config))
 
 
 def validate_quality_control_config(config: QualityControlConfig) -> None:
