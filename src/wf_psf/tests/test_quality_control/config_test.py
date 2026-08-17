@@ -39,31 +39,34 @@ def qc_config_factory():
         metrics=None,
         rejection=None,
     ):
-        return QualityControlConfig(
-            metrics=metrics
-            or {
-                "goodness_of_fit": QualityMetricConfig(
-                    enabled=True,
-                    required_resources=required_resources or [],
-                )
-            },
-            resources=resources
-            or ResourcesConfig(
-                available={
-                    "psf_models": {
-                        "standard": {
-                            "inference_config": "inference_standard.yaml",
-                        }
+        metric_default = {
+            "goodness_of_fit": QualityMetricConfig(
+                enabled=True,
+                required_resources=required_resources or [],
+            )
+        }
+
+        resources_default = ResourcesConfig(
+            available={
+                "psf_models": {
+                    "standard": {
+                        "inference_config": "inference_standard.yaml",
                     }
                 }
-            ),
-            rejection=rejection
-            or {
-                rejection_metric or "goodness_of_fit": RejectionPolicyConfig(
-                    enabled=True,
-                    threshold=0.25,
-                )
-            },
+            }
+        )
+
+        rejection_default = {
+            rejection_metric or "goodness_of_fit": RejectionPolicyConfig(
+                enabled=True,
+                threshold=0.25,
+            )
+        }
+
+        return QualityControlConfig(
+            metrics=metric_default if metrics is None else metrics,
+            resources=resources_default if resources is None else resources,
+            rejection=rejection_default if rejection is None else rejection,
         )
 
     return factory
