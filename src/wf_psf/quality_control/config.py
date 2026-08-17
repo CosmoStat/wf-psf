@@ -162,6 +162,9 @@ def parse_metrics_config(
 
         required_resources = cfg.get("required_resources", [])
 
+        if not isinstance(required_resources, list):
+            raise TypeError(f"Required resources for metric '{name}' must be a list.")
+
         if not all(isinstance(resource, str) for resource in required_resources):
             raise TypeError(
                 f"Required resources for metric '{name}' must contain only strings."

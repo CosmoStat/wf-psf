@@ -117,6 +117,22 @@ def test_parse_resources_config():
     )
 
 
+def test_required_resources_must_be_a_list():
+    with pytest.raises(
+        TypeError,
+        match="Required resources for metric 'goodness_of_fit' must be a list.",
+    ):
+        load_config("invalid/metric_required_resources_invalid_type.yaml")
+
+
+def test_required_resources_element_must_be_a_str():
+    with pytest.raises(
+        TypeError,
+        match="Required resources for metric 'goodness_of_fit' must contain only strings.",
+    ):
+        load_config("invalid/metric_required_resources_invalid_element.yaml")
+
+
 def test_metrics_minimal():
     config = load_config("valid/metric_minimal.yaml")
 
