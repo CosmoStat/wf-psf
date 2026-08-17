@@ -1,0 +1,4 @@
+metrics:
+  goodness_of_fit:
+    enabled: true
+    required_resources: psf_models.standard
