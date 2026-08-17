@@ -306,20 +306,15 @@ def validate_metric_resources(config: QualityControlConfig) -> None:
     """
     for metric_name, metric in config.metrics.items():
         for req in metric.required_resources:
-            if "." not in req:
+            parts = req.split(".")
+
+            if len(parts) != 2 or not all(parts):
                 raise ValueError(
                     f"Resource identifier '{req}' must have the form "
                     "'<resource_type>.<resource_name>'."
                 )
 
-            resource_type, resource_name = req.split(".", 1)
-
-            if not resource_type or not resource_name:
-                raise ValueError(
-                    f"Resource identifier '{req}' must have the form "
-                    "'<resource_type>.<resource_name>'."
-                )
-
+            resource_type, resource_name = parts
             resources = config.resources.available
 
             if (
