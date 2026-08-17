@@ -158,41 +158,49 @@ def test_validate_metric_resources_all_valid(qc_config_factory):
         validate_metric_resources(qc_config_factory())
 
 
-def test_validate_metric_resources_invalid_identifier(qc_config_factory):
-    config = qc_config_factory(required_resources=["psf_model_standard"])
+@pytest.mark.parametrize(
+    "required_resource",
+    [
+        "psf_model_standard",
+        "psf_models.standard.foo",
+        "psf_models.",
+        ".standard",
+    ],
+)
+def test_validate_metric_resources_invalid_identifier(
+    qc_config_factory,
+    required_resource,
+):
+    config = qc_config_factory(required_resources=[required_resource])
+
     with pytest.raises(
         ValueError,
-        match="Resource identifier 'psf_model_standard' must have the form '<resource_type>.<resource_name>'.",
+        match=(
+            f"Resource identifier '{required_resource}' must have the form "
+            "'<resource_type>.<resource_name>'."
+        ),
     ):
         validate_metric_resources(config)
 
 
-def test_validate_metric_resources_unknown_resource_type(qc_config_factory):
-    config = qc_config_factory(required_resources=["images.segmentation_maps"])
+@pytest.mark.parametrize(
+    "required_resource",
+    [
+        "images.segmentation_maps",
+        "psf_models.imaginary",
+    ],
+)
+def test_validate_metric_resources_unknown_resource(
+    qc_config_factory,
+    required_resource,
+):
+    config = qc_config_factory(required_resources=[required_resource])
 
     with pytest.raises(
         ValueError,
-        match="Metric 'goodness_of_fit' requires unknown resource 'images.segmentation_maps'.",
-    ):
-        validate_metric_resources(config)
-
-
-def test_validate_metric_resources_unknown_resource_name(qc_config_factory):
-    config = qc_config_factory(required_resources=["psf_models.imaginary"])
-
-    with pytest.raises(
-        ValueError,
-        match="Metric 'goodness_of_fit' requires unknown resource 'psf_models.imaginary'.",
-    ):
-        validate_metric_resources(config)
-
-
-def test_validate_metric_resources_empty_resource_name(qc_config_factory):
-    config = qc_config_factory(required_resources=["psf_models."])
-
-    with pytest.raises(
-        ValueError,
-        match="Resource identifier 'psf_models.' must have the form '<resource_type>.<resource_name>'.",
+        match=(
+            f"Metric 'goodness_of_fit' requires unknown resource '{required_resource}'."
+        ),
     ):
         validate_metric_resources(config)
 
