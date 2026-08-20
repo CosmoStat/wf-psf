@@ -359,33 +359,6 @@ def validate_rejection_policy_metrics(config: QualityControlConfig) -> None:
             )
 
 
-# Resource dependency helpers
-def get_required_resources(
-    config: QualityControlConfig,
-) -> set[str]:
-    """Return resources required by enabled quality metrics.
-
-    Parameters
-    ----------
-    config : QualityControlConfig
-        Validated quality control configuration.
-
-    Returns
-    -------
-        Unique resource identifiers required by enabled quality metrics.
-
-    Notes
-    -----
-    This configuration is assumed to have been validated for internal consistency between resource requirements and available resources.
-    """
-    return {
-        resource
-        for metric in config.metrics.values()
-        if metric.enabled
-        for resource in metric.required_resources
-    }
-
-
 SECTION_PARSERS = {
     "metrics": parse_metrics_config,
     "rejection": parse_rejection_policy_config,
