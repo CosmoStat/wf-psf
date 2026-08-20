@@ -1,10 +1,10 @@
-"""Quality control pipeline resources.
+"""Resource dependency handling for the quality control pipeline.
 
-Defines resource dependency helpers required by the quality control framework's quality metrics.
+Defines helpers for identifying resources required by enabled quality metrics
+and resolving those requirements against resources supplied by the caller.
 
 :Authors:
     Jennifer Pollack <jennifer.pollack@cea.fr>
-
 """
 
 from __future__ import annotations
