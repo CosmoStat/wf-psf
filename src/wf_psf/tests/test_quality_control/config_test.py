@@ -18,7 +18,6 @@ from wf_psf.quality_control.config import (
     ResourcesConfig,
 )
 from wf_psf.quality_control.config import (
-    get_required_resources,
     parse_resources_config,
     validate_metric_resources,
     validate_rejection_policy_metrics,
@@ -28,49 +27,6 @@ from wf_psf.quality_control.config import (
 def load_config(config_file: str) -> QualityControlConfig:
     handler = QualityControlConfigHandler(Path(__file__).parent / "data" / config_file)
     return handler.load()
-
-
-@pytest.fixture
-def qc_config_factory():
-    def factory(
-        *,
-        required_resources=None,
-        rejection_metric=None,
-        resources=None,
-        metrics=None,
-        rejection=None,
-    ):
-        metric_default = {
-            "goodness_of_fit": QualityMetricConfig(
-                enabled=True,
-                required_resources=required_resources or [],
-            )
-        }
-
-        resources_default = ResourcesConfig(
-            available={
-                "psf_models": {
-                    "standard": {
-                        "inference_config": "inference_standard.yaml",
-                    }
-                }
-            }
-        )
-
-        rejection_default = {
-            rejection_metric or "goodness_of_fit": RejectionPolicyConfig(
-                enabled=True,
-                threshold=0.25,
-            )
-        }
-
-        return QualityControlConfig(
-            metrics=metric_default if metrics is None else metrics,
-            resources=resources_default if resources is None else resources,
-            rejection=rejection_default if rejection is None else rejection,
-        )
-
-    return factory
 
 
 # Test for config loading and parsers
@@ -255,51 +211,6 @@ def test_validate_rejection_policy_metrics_metric_not_enabled(qc_config_factory)
         match="Rejection policy cannot be enabled because metric 'goodness_of_fit' is disabled.",
     ):
         validate_rejection_policy_metrics(config)
-
-
-# Resource dependency helper tests
-def test_get_required_resources(qc_config_factory):
-    config = qc_config_factory(
-        metrics={
-            "mask_obscuration": QualityMetricConfig(
-                enabled=True,
-                required_resources=[],
-            ),
-            "goodness_of_fit": QualityMetricConfig(
-                enabled=True,
-                required_resources=["psf_models.standard"],
-            ),
-            "shapes": QualityMetricConfig(
-                enabled=False,
-                required_resources=["psf_models.oversampled"],
-            ),
-        }
-    )
-
-    assert get_required_resources(config) == {"psf_models.standard"}
-
-
-def test_get_required_resources_combines_unique_resources(qc_config_factory):
-    config = qc_config_factory(
-        metrics={
-            "metric_a": QualityMetricConfig(
-                enabled=True,
-                required_resources=["psf_models.standard"],
-            ),
-            "metric_b": QualityMetricConfig(
-                enabled=True,
-                required_resources=[
-                    "psf_models.standard",
-                    "psf_models.oversampled",
-                ],
-            ),
-        }
-    )
-
-    assert get_required_resources(config) == {
-        "psf_models.standard",
-        "psf_models.oversampled",
-    }
 
 
 # Integration tests
