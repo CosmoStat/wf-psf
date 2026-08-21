@@ -8,7 +8,11 @@ This module contains unit tests for the quality control resources module.
 
 import pytest
 from wf_psf.quality_control.config import QualityMetricConfig
-from wf_psf.quality_control.resources import get_required_resources, resolve_resources
+from wf_psf.quality_control.resources import (
+    get_required_resources,
+    resolve_resources,
+    resolve_required_resources,
+)
 
 
 def test_get_required_resources(qc_config_factory):
@@ -103,3 +107,34 @@ def test_resolve_resources(
         expected_resolved,
         expected_missing,
     )
+
+
+# Resource resolution orchestration tests
+def test_resolve_required_resources(qc_config_factory):
+    config = qc_config_factory(
+        required_resources=["psf_models.standard"],
+    )
+    model_psfs = [1, 1, 1, 1]
+    provided = {"psf_models.standard": model_psfs}
+
+    assert resolve_required_resources(config, provided) == {
+        "psf_models.standard": model_psfs,
+    }
+
+
+def test_resolve_required_resources_missing(qc_config_factory):
+    config = qc_config_factory(
+        required_resources=["psf_models.standard"],
+    )
+
+    with pytest.raises(
+        NotImplementedError,
+        match="Required resources are not available",
+    ):
+        resolve_required_resources(config)
+
+
+def test_resolve_required_resources_no_resources_required(qc_config_factory):
+    config = qc_config_factory(required_resources=[])
+
+    assert resolve_required_resources(config) == {}
