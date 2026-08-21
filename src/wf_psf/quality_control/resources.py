@@ -73,3 +73,45 @@ def resolve_resources(
     }
     missing = required.difference(resolved)
     return resolved, missing
+
+
+def resolve_required_resources(
+    config: QualityControlConfig,
+    provided: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Resolve resources required by enabled quality metrics.
+
+    Parameters
+    ----------
+    config : QualityControlConfig
+        Quality control configuration.
+
+    provided : Mapping[str, Any] or None
+        Ready-to-use resources supplied by the pipeline caller.
+
+    Returns
+    -------
+    dict[str, Any]
+        Resources required by enabled quality metrics and supplied by the
+        caller.
+
+    Raises
+    ------
+    NotImplementedError
+        If required resources are not supplied by the caller. Preparation of
+        missing resources is not yet implemented.
+    """
+    required = get_required_resources(config)
+    provided = {} if provided is None else provided
+
+    resolved, missing = resolve_resources(
+        required=required,
+        provided=provided,
+    )
+
+    if missing:
+        raise NotImplementedError(
+            f"Required resources are not available: {sorted(missing)}"
+        )
+
+    return resolved
