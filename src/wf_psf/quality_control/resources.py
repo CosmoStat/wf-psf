@@ -12,6 +12,10 @@ from collections.abc import Mapping
 from typing import Any
 from wf_psf.quality_control.config import QualityControlConfig
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class Resources:
     """Manage resources required by quality control metrics.
@@ -68,11 +72,24 @@ class Resources:
         required = self.get_required()
         provided = {} if provided is None else provided
 
+        resolved = {
+            resource: provided[resource]
+            for resource in required
+            if resource in provided
+        }
         missing = required - provided.keys()
+        unused = provided.keys() - required
+
+        logger.debug(
+            "Resource resolution: resolved=%s, missing=%s, unused=%s",
+            sorted(resolved),
+            sorted(missing),
+            sorted(unused),
+        )
 
         if missing:
             raise NotImplementedError(
                 f"Required resources are not available: {sorted(missing)}"
             )
 
-        return {resource: provided[resource] for resource in required}
+        return resolved
