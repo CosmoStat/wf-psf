@@ -19,6 +19,7 @@ from wf_psf.quality_control.config import (
 )
 from wf_psf.quality_control.config import (
     parse_resources_config,
+    parse_rejection_policy_config,
     validate_metric_resources,
     validate_rejection_policy_metrics,
 )
@@ -56,12 +57,17 @@ def test_quality_control_config_loading():
     )
 
     assert isinstance(config.rejection["mask_obscuration"], RejectionPolicyConfig)
-    assert config.rejection["mask_obscuration"].threshold == 0.25
+    assert config.rejection["mask_obscuration"].policy == {
+        "threshold": {
+            "value": 3.0,
+        },
+    }
 
     assert isinstance(config.reporting, ReportingConfig)
     assert config.reporting.save_metrics is True
 
 
+## Tests for parsing resource configurations
 def test_parse_resources_config():
     config = {
         "psf_models": {"standard": {"inference_config": "inference_standard.yaml"}}
@@ -90,6 +96,7 @@ def test_required_resources_element_must_be_a_str():
         load_config("invalid/metric_required_resources_invalid_element.yaml")
 
 
+## Tests for parsing metrics configurations
 def test_metrics_minimal():
     config = load_config("valid/metric_minimal.yaml")
 
@@ -103,7 +110,7 @@ def test_metrics_minimal():
 def test_metric_enabled_must_be_boolean():
     with pytest.raises(
         TypeError,
-        match="Metric enabled flag for 'mask_obscuration' must be boolean",
+        match="Metric `enabled` flag for 'mask_obscuration' must be boolean",
     ):
         load_config("invalid/metric_invalid_enabled.yaml")
 
@@ -113,6 +120,7 @@ def test_metrics_configuration_must_be_mapping():
         load_config("invalid/metric_invalid_type.yaml")
 
 
+## Tests for parsing rejection policy configurations
 def test_rejection_configuration_must_be_mapping():
     with pytest.raises(
         TypeError, match="Rejection policy configuration must be a mapping"
@@ -120,6 +128,70 @@ def test_rejection_configuration_must_be_mapping():
         load_config("invalid/rejection_invalid_type.yaml")
 
 
+def test_rejection_policy_configuration_metric_must_be_mapping():
+    with pytest.raises(
+        TypeError,
+        match="Rejection policy configuration 'goodness_of_fit' must be a mapping",
+    ):
+        parse_rejection_policy_config({"goodness_of_fit": 0.25})
+
+
+def test_rejection_policy_enabled_must_be_boolean():
+    with pytest.raises(
+        TypeError,
+        match="enabled.*must be boolean",
+    ):
+        parse_rejection_policy_config({"goodness_of_fit": {"enabled": "yes"}})
+
+
+def test_rejection_policy_must_specify_one_policy():
+    with pytest.raises(
+        ValueError,
+        match="must specify exactly one policy type",
+    ):
+        parse_rejection_policy_config(
+            {
+                "goodness_of_fit": {
+                    "policy": {
+                        "threshold": {"value": 0.25},
+                        "quantile": {"value": 0.95},
+                    }
+                }
+            }
+        )
+
+
+def test_disabled_rejection_policy_does_not_require_policy():
+    result = parse_rejection_policy_config({"goodness_of_fit": {"enabled": False}})
+
+    assert result == {"goodness_of_fit": RejectionPolicyConfig(enabled=False)}
+
+
+def test_rejection_policy_configuration():
+    result = parse_rejection_policy_config(
+        {
+            "goodness_of_fit": {
+                "enabled": True,
+                "policy": {
+                    "threshold": {
+                        "value": 0.25,
+                    }
+                },
+            }
+        }
+    )
+
+    assert result["goodness_of_fit"] == RejectionPolicyConfig(
+        enabled=True,
+        policy={
+            "threshold": {
+                "value": 0.25,
+            }
+        },
+    )
+
+
+## Tests for parsing reporting configurations
 def test_reporting_configuration_must_be_mapping():
     with pytest.raises(
         TypeError,

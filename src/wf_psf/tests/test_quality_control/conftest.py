@@ -37,7 +37,11 @@ def qc_config_factory():
         rejection_default = {
             rejection_metric or "goodness_of_fit": RejectionPolicyConfig(
                 enabled=True,
-                threshold=0.25,
+                policy={
+                    "threshold": {
+                        "value": 0.25,
+                    },
+                },
             )
         }
 

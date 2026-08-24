@@ -47,12 +47,12 @@ class RejectionPolicyConfig:
     enabled : bool
         Whether rejection policy is enabled.
 
-    threshold : float | None
-        Numeric threshold used by the rejection policy, or None if not applicable.
+    policy : dict[str, Any]
+        Rejection policy configuration keyed by policy type.
     """
 
     enabled: bool = False
-    threshold: float | None = None
+    policy: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -153,7 +153,7 @@ def parse_metrics_config(
         enabled = cfg.get("enabled", True)
 
         if not isinstance(enabled, bool):
-            raise TypeError(f"Metric enabled flag for '{name}' must be boolean.")
+            raise TypeError(f"Metric `enabled` flag for '{name}' must be boolean.")
 
         params = cfg.get("params", {})
 
@@ -198,6 +198,9 @@ def parse_rejection_policy_config(
     TypeError
         If the configuration section or a policy configuration is not a
         mapping.
+
+    ValueError
+        If the policy configuration for a metric does not specify exactly one policy.
     """
     if section is None:
         return {}
@@ -207,13 +210,51 @@ def parse_rejection_policy_config(
 
     policies = {}
 
-    for name, cfg in section.items():
+    for metric_name, cfg in section.items():
         if not isinstance(cfg, Mapping):
             raise TypeError(
-                f"Rejection policy configuration '{name}' must be a mapping."
+                f"Rejection policy configuration '{metric_name}' must be a mapping."
             )
 
-        policies[name] = RejectionPolicyConfig(**cfg)
+        enabled = cfg.get("enabled", True)
+
+        if not isinstance(enabled, bool):
+            raise TypeError(
+                f"Rejection policy `enabled` flag for '{metric_name}' must be boolean."
+            )
+
+        if not enabled:
+            policies[metric_name] = RejectionPolicyConfig(enabled=False)
+            continue
+
+        policy = cfg.get("policy", {})
+
+        if not isinstance(policy, Mapping):
+            raise TypeError(
+                f"Rejection policy `policy` field for '{metric_name}' must be a mapping."
+            )
+
+        if len(policy) != 1:
+            raise ValueError(
+                f"Rejection policy configuration for '{metric_name}' "
+                "must specify exactly one policy type."
+            )
+
+        policy_name, policy_params = next(iter(policy.items()))
+
+        if not isinstance(policy_name, str):
+            raise TypeError(
+                f"Rejection policy identifier '{policy_name}' for '{metric_name}' must be a string."
+            )
+
+        if not isinstance(policy_params, Mapping):
+            raise TypeError(
+                f"Rejection policy parameters for '{metric_name}' must be a mapping."
+            )
+
+        policies[metric_name] = RejectionPolicyConfig(
+            enabled=enabled, policy=dict(policy)
+        )
 
     return policies
 

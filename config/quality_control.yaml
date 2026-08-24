@@ -32,7 +32,9 @@ rejection:
 
   goodness_of_fit:
     enabled: false
-    threshold: 3.0
+    policy:
+      threshold:
+        value: 3.0
 
 reporting:
 
