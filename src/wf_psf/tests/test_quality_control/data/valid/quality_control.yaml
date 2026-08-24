@@ -33,11 +33,15 @@ rejection:
 
   mask_obscuration:
     enabled: true
-    threshold: 0.25
+    policy:
+      threshold:
+        value: 3.0
 
   goodness_of_fit:
     enabled: false
-    threshold: 3.0
+    policy:
+      threshold:
+        value: 3.0
 
 reporting:
 
