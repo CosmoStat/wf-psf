@@ -33,7 +33,7 @@ class QualityMetricConfig:
         Identifiers of resources required to compute the quality metric.
     """
 
-    enabled: bool = True
+    enabled: bool = False
     params: dict = field(default_factory=dict)
     required_resources: list[str] = field(default_factory=list)
 
@@ -150,7 +150,7 @@ def parse_metrics_config(
         if not isinstance(cfg, Mapping):
             raise TypeError(f"Metric configuration '{name}' must be a mapping.")
 
-        enabled = cfg.get("enabled", True)
+        enabled = cfg.get("enabled", False)
 
         if not isinstance(enabled, bool):
             raise TypeError(f"Metric `enabled` flag for '{name}' must be boolean.")
@@ -216,7 +216,7 @@ def parse_rejection_policy_config(
                 f"Rejection policy configuration '{metric_name}' must be a mapping."
             )
 
-        enabled = cfg.get("enabled", True)
+        enabled = cfg.get("enabled", False)
 
         if not isinstance(enabled, bool):
             raise TypeError(
