@@ -18,7 +18,6 @@ metrics:
     enabled: true
     required_resources:
       - psf_models.standard
-
     params:
       statistic: reduced_chi_square
       normalize_residuals: true
