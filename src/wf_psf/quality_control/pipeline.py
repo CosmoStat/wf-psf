@@ -15,9 +15,12 @@ from dataclasses import dataclass
 import numpy as np
 
 from wf_psf.quality_control.config import QualityControlConfigHandler
+from wf_psf.quality_control.context import QualityControlContext
 from wf_psf.quality_control.metrics.base import QualityMetric
 from wf_psf.quality_control.metrics.registry import build_metrics_registry
+from wf_psf.quality_control.rejection.base import RejectionPolicy
 from wf_psf.quality_control.rejection.registry import build_rejection_policy_registry
+from wf_psf.quality_control.resources import Resources
 
 
 @dataclass
@@ -61,7 +64,18 @@ class QualityControlPipeline:
         self.rejection_registry = build_rejection_policy_registry()
 
     def _instantiate_metrics(self) -> dict[str, QualityMetric]:
-        """Instantiate enabled quality metric implementation from configuration."""
+        """Instantiate enabled quality metric implementations from configuration.
+
+        Returns
+        -------
+        dict[str, QualityMetric]
+            Enabled quality metric implementations keyed by metric name.
+
+        Notes
+        -----
+        The quality control configuration is assumed to have been validated
+        before policy instantiation.
+        """
         metrics = {}
 
         for name, metric_config in self.config.metrics.items():
@@ -74,8 +88,72 @@ class QualityControlPipeline:
 
         return metrics
 
-    def run(self, dataset):
-        """Run quality control pipeline."""
-        #        metrics = self._instantiate_metrics()
-        ...
-        return QualityControlResult(...)
+    def _instantiate_rejection_policies(self) -> dict[str, RejectionPolicy]:
+        """Instantiate enabled rejection policy implementations.
+
+        Returns
+        -------
+        dict[str, RejectionPolicy]
+            Enabled rejection policy implementations keyed by metric name.
+
+        Notes
+        -----
+        The quality control configuration is assumed to have been validated
+        before policy instantiation.
+        """
+        rejection_policies = {}
+
+        for metric_name, rejection_config in self.config.rejection.items():
+            if not rejection_config.enabled:
+                continue
+
+            policy_name, policy_params = next(iter(rejection_config.policy.items()))
+            policy_cls = self.rejection_registry.get(policy_name)
+
+            rejection_policies[metric_name] = policy_cls(**policy_params)
+        return rejection_policies
+
+    def run(self, dataset, provided_resources=None):
+        """Run quality control pipeline.
+
+        Parameters
+        ----------
+        dataset : Any
+            Dataset or data container supplied to the quality control pipeline.
+
+        provided_resources : Mapping[str, Any] or None
+            Ready-to-use resources supplied by the pipeline caller, keyed by resource identifier.
+
+        Notes
+        -----
+        The pipeline is expected to be invoked only when at least one quality metric is enabled in the quality control configuration.
+        """
+        resource_manager = Resources(self.config)
+        resolved_resources = resource_manager.resolve(provided_resources)
+
+        context = QualityControlContext(dataset, resolved_resources)
+
+        metrics = self._instantiate_metrics()
+
+        metric_results = {
+            name: metric.compute(context) for name, metric in metrics.items()
+        }
+
+        rejection_policies = self._instantiate_rejection_policies()
+
+        rejection_masks = {
+            name: policy.apply(metric_results[name])
+            for name, policy in rejection_policies.items()
+        }
+
+        if rejection_masks:
+            valid_mask = np.logical_and.reduce(list(rejection_masks.values()))
+        else:
+            metric_result = next(iter(metric_results.values()))
+            valid_mask = np.ones(metric_result.shape, dtype=bool)
+
+        return QualityControlResult(
+            metrics=metric_results,
+            rejection_masks=rejection_masks,
+            valid_mask=valid_mask,
+        )
