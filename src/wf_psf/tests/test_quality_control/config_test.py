@@ -152,10 +152,11 @@ def test_rejection_policy_must_specify_one_policy():
         parse_rejection_policy_config(
             {
                 "goodness_of_fit": {
+                    "enabled": True,
                     "policy": {
                         "threshold": {"value": 0.25},
                         "quantile": {"value": 0.95},
-                    }
+                    },
                 }
             }
         )
