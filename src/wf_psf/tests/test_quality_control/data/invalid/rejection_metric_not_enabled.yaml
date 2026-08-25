@@ -19,4 +19,6 @@ rejection:
 
   mask_obscuration:
     enabled: true
-    threshold: 0.25
+    policy:
+      threshold:
+        value: 0.25
