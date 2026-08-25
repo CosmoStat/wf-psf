@@ -146,31 +146,35 @@ def parse_metrics_config(
 
     metrics = {}
 
-    for name, cfg in section.items():
+    for metric_name, cfg in section.items():
         if not isinstance(cfg, Mapping):
-            raise TypeError(f"Metric configuration '{name}' must be a mapping.")
+            raise TypeError(f"Metric configuration '{metric_name}' must be a mapping.")
 
         enabled = cfg.get("enabled", False)
 
         if not isinstance(enabled, bool):
-            raise TypeError(f"Metric `enabled` flag for '{name}' must be boolean.")
+            raise TypeError(
+                f"Metric `enabled` flag for '{metric_name}' must be boolean."
+            )
 
         params = cfg.get("params", {})
 
         if not isinstance(params, Mapping):
-            raise TypeError(f"Metric parameters for '{name}' must be a mapping.")
+            raise TypeError(f"Metric parameters for '{metric_name}' must be a mapping.")
 
         required_resources = cfg.get("required_resources", [])
 
         if not isinstance(required_resources, list):
-            raise TypeError(f"Required resources for metric '{name}' must be a list.")
+            raise TypeError(
+                f"Required resources for metric '{metric_name}' must be a list."
+            )
 
         if not all(isinstance(resource, str) for resource in required_resources):
             raise TypeError(
-                f"Required resources for metric '{name}' must contain only strings."
+                f"Required resources for metric '{metric_name}' must contain only strings."
             )
 
-        metrics[name] = QualityMetricConfig(
+        metrics[metric_name] = QualityMetricConfig(
             enabled=enabled, params=dict(params), required_resources=required_resources
         )
 
