@@ -16,9 +16,22 @@ import numpy as np
 
 
 class ThresholdRejectionPolicy(RejectionPolicy):
-    """Reject dataset samples based on configurable metric thresholds."""
+    """Reject dataset samples based on configurable metric threshold.
+
+    Attributes
+    ----------
+    name : str
+        Policy identifier used by the rejection policy registry.
+
+    value : float
+        Threshold applied by the rejection policy.
+
+    """
 
     name = "threshold"
+
+    def __init__(self, value: float):
+        self.value = value
 
     def apply(self, metric: np.ndarray) -> np.ndarray:
         """Apply threshold-based rejection to metric values."""
