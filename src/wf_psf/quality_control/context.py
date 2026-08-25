@@ -19,7 +19,7 @@ class QualityControlContext:
 
     Attributes
     ----------
-    dataset : dict[str, Any]
+    dataset : Any
         Dataset or data container supplied to the quality control pipeline.
 
     resources : dict[str, Any]
@@ -27,5 +27,5 @@ class QualityControlContext:
         resource identifier.
     """
 
-    dataset: Any = None
+    dataset: Any
     resources: dict[str, Any] = field(default_factory=dict)
