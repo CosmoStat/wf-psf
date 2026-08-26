@@ -231,7 +231,13 @@ def parse_rejection_policy_config(
             policies[metric_name] = RejectionPolicyConfig(enabled=False)
             continue
 
-        policy = cfg.get("policy", {})
+        if "policy" not in cfg:
+            raise ValueError(
+                f"Rejection policy configuration for '{metric_name}' "
+                "must specify a `policy`."
+            )
+
+        policy = cfg["policy"]
 
         if not isinstance(policy, Mapping):
             raise TypeError(
