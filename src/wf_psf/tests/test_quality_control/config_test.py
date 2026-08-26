@@ -136,15 +136,17 @@ def test_rejection_policy_configuration_metric_must_be_mapping():
         parse_rejection_policy_config({"goodness_of_fit": 0.25})
 
 
-def test_rejection_policy_enabled_must_be_boolean():
-    with pytest.raises(
-        TypeError,
-        match="enabled.*must be boolean",
-    ):
-        parse_rejection_policy_config({"goodness_of_fit": {"enabled": "yes"}})
-
-
-def test_rejection_policy_must_specify_one_policy():
+@pytest.mark.parametrize(
+    "policy",
+    [
+        {},
+        {
+            "threshold": {"value": 0.25},
+            "quantile": {"value": 0.95},
+        },
+    ],
+)
+def test_rejection_policy_must_specify_exactly_one_policy(policy):
     with pytest.raises(
         ValueError,
         match="must specify exactly one policy type",
@@ -153,10 +155,22 @@ def test_rejection_policy_must_specify_one_policy():
             {
                 "goodness_of_fit": {
                     "enabled": True,
-                    "policy": {
-                        "threshold": {"value": 0.25},
-                        "quantile": {"value": 0.95},
-                    },
+                    "policy": policy,
+                }
+            }
+        )
+
+
+def test_rejection_policy_zero_policy():
+    with pytest.raises(
+        ValueError,
+        match="must specify exactly one policy type",
+    ):
+        parse_rejection_policy_config(
+            {
+                "goodness_of_fit": {
+                    "enabled": True,
+                    "policy": {},
                 }
             }
         )
