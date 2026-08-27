@@ -22,6 +22,10 @@ from wf_psf.quality_control.rejection.base import RejectionPolicy
 from wf_psf.quality_control.rejection.registry import build_rejection_policy_registry
 from wf_psf.quality_control.resources import Resources
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 @dataclass
 class QualityControlResult:
@@ -80,11 +84,14 @@ class QualityControlPipeline:
 
         for name, metric_config in self.config.metrics.items():
             if not metric_config.enabled:
+                logger.debug("Skipping metric %s: not enabled.", name)
                 continue
 
             metric_cls = self.metrics_registry.get(name)
 
             metrics[name] = metric_cls()
+
+        logger.debug("Instantiated metrics: %s", list(metrics))
 
         return metrics
 
@@ -105,12 +112,16 @@ class QualityControlPipeline:
 
         for metric_name, rejection_config in self.config.rejection.items():
             if not rejection_config.enabled:
+                logger.debug("Skipping rejection policy %s: not enabled.", metric_name)
                 continue
 
             policy_name, policy_params = next(iter(rejection_config.policy.items()))
             policy_cls = self.rejection_registry.get(policy_name)
 
             rejection_policies[metric_name] = policy_cls(**policy_params)
+
+        logger.debug("Instantiated rejection policies: %s", list(rejection_policies))
+
         return rejection_policies
 
     def run(self, dataset, provided_resources=None):
