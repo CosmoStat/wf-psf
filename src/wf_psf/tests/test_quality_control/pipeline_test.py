@@ -63,9 +63,9 @@ def test_pipeline_instantiate_rejection_policy_valid(pipeline_factory):
 
 
 # Test pipeline runner
-def test_pipeline_run(pipeline_factory):
+def test_pipeline_run_single_rejection_policy(pipeline_factory):
     metric_result = np.array([1.0, 2.0, 3.0])
-    rejection_mask = np.array([True, False, True])
+    validity_mask = np.array([True, False, True])
 
     with (
         patch.object(
@@ -81,7 +81,7 @@ def test_pipeline_run(pipeline_factory):
         patch.object(
             ThresholdRejectionPolicy,
             "apply",
-            return_value=rejection_mask,
+            return_value=validity_mask,
         ) as mock_apply,
     ):
         pipeline = pipeline_factory("valid/quality_control.yaml")
@@ -109,15 +109,86 @@ def test_pipeline_run(pipeline_factory):
         )
 
         assert np.array_equal(
-            result.rejection_masks["mask_obscuration"],
+            result.validity_masks["mask_obscuration"],
             np.array([True, False, True]),
         )
 
-        assert "goodness_of_fit" not in result.rejection_masks
+        assert "goodness_of_fit" not in result.validity_masks
         assert "shapes" not in result.metrics
-        assert "shapes" not in result.rejection_masks
+        assert "shapes" not in result.validity_masks
 
         assert np.array_equal(
             result.valid_mask,
             np.array([True, False, True]),
+        )
+
+
+def test_pipeline_run_multiple_rejection_policies(pipeline_factory):
+    metric_result = np.array([1.0, 2.0, 3.0])
+    validity_masks = [
+        np.array([True, True, False]),
+        np.array([True, False, True]),
+    ]
+
+    with (
+        patch.object(
+            MaskObscurationMetric,
+            "compute",
+            return_value=metric_result,
+        ) as mock_mask_compute,
+        patch.object(
+            GoodnessOfFitMetric,
+            "compute",
+            return_value=metric_result,
+        ) as mock_gof_compute,
+        patch.object(
+            ThresholdRejectionPolicy,
+            "apply",
+            side_effect=validity_masks,
+        ) as mock_apply,
+    ):
+        pipeline = pipeline_factory(
+            "valid/quality_control_multiple_rejection_policies.yaml"
+        )
+
+        dataset = np.array([1.0, 2.0, 3.0])
+        provided_resources = {"psf_models.standard": np.array([1.0, 2.0, 3.0])}
+
+        result = pipeline.run(
+            dataset=dataset,
+            provided_resources=provided_resources,
+        )
+
+        mock_mask_compute.assert_called_once()
+        mock_gof_compute.assert_called_once()
+        assert mock_apply.call_count == 2
+
+        assert np.array_equal(
+            result.metrics["mask_obscuration"],
+            np.array([1.0, 2.0, 3.0]),
+        )
+
+        assert np.array_equal(
+            result.metrics["goodness_of_fit"],
+            np.array([1.0, 2.0, 3.0]),
+        )
+
+        assert np.array_equal(
+            result.validity_masks["mask_obscuration"],
+            np.array([True, True, False]),
+        )
+
+        assert np.array_equal(
+            result.validity_masks["goodness_of_fit"],
+            np.array([True, False, True]),
+        )
+
+        assert np.array_equal(
+            result.valid_mask,
+            np.array([True, False, False]),
+        )
+
+        assert np.array_equal(
+            result.valid_mask,
+            np.array([True, False, False]),
         )
