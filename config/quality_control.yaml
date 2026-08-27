@@ -18,7 +18,6 @@ metrics:
     enabled: true
     required_resources:
       - psf_models.standard
-
     params:
       statistic: reduced_chi_square
       normalize_residuals: true
@@ -28,7 +27,9 @@ rejection:
 
   mask_obscuration:
     enabled: true
-    threshold: 0.25
+    policy:
+      threshold:
+        value: 0.25
 
   goodness_of_fit:
     enabled: false
