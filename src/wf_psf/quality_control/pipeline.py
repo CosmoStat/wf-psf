@@ -36,7 +36,7 @@ class QualityControlResult:
     metrics
         Computed quality metrics indexed by metric name.
 
-    rejection_masks
+    validity_masks
         Boolean validity masks produced by each rejection policy.
 
     valid_mask
@@ -46,7 +46,7 @@ class QualityControlResult:
 
     metrics: dict[str, np.ndarray]
 
-    rejection_masks: dict[str, np.ndarray]
+    validity_masks: dict[str, np.ndarray]
 
     valid_mask: np.ndarray
 
@@ -170,19 +170,21 @@ class QualityControlPipeline:
 
         rejection_policies = self._instantiate_rejection_policies()
 
-        rejection_masks = {
+        validity_masks = {
             name: policy.apply(metric_results[name])
             for name, policy in rejection_policies.items()
         }
 
-        if rejection_masks:
-            valid_mask = np.logical_and.reduce(list(rejection_masks.values()))
+        if validity_masks:
+            # True indicates a valid sample. A sample is valid only if it passes
+            # every enabled rejection policy.
+            valid_mask = np.logical_and.reduce(list(validity_masks.values()))
         else:
             metric_result = next(iter(metric_results.values()))
             valid_mask = np.ones(metric_result.shape, dtype=bool)
 
         return QualityControlResult(
             metrics=metric_results,
-            rejection_masks=rejection_masks,
+            validity_masks=validity_masks,
             valid_mask=valid_mask,
         )
