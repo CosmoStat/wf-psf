@@ -124,6 +124,23 @@ class QualityControlPipeline:
 
         return rejection_policies
 
+    def _resolve_resources(self, provided_resources):
+        """Resolve resources required by enabled quality metrics.
+
+        Parameters
+        ----------
+        provided_resources : Mapping[str, Any] or None
+            Ready-to-use resources supplied by the pipeline caller, keyed by
+            resource identifier.
+
+        Returns
+        -------
+        dict[str, Any]
+            Resolved resources required by enabled quality metrics.
+        """
+        resource_manager = Resources(self.config)
+        return resource_manager.resolve(provided_resources)
+
     def run(self, dataset, provided_resources=None):
         """Run quality control pipeline.
 
@@ -139,8 +156,9 @@ class QualityControlPipeline:
         -----
         The pipeline is expected to be invoked only when at least one quality metric is enabled in the quality control configuration.
         """
-        resource_manager = Resources(self.config)
-        resolved_resources = resource_manager.resolve(provided_resources)
+        resolved_resources = self._resolve_resources(
+            provided_resources=provided_resources
+        )
 
         context = QualityControlContext(dataset, resolved_resources)
 
