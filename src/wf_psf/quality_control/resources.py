@@ -8,13 +8,16 @@ and resolving those requirements against resources supplied by the caller.
 """
 
 from __future__ import annotations
-from collections.abc import Mapping
+from collections.abc import Mapping, Callable
 from typing import Any
 from wf_psf.quality_control.config import QualityControlConfig
 
 import logging
 
 logger = logging.getLogger(__name__)
+
+ResourcePreparer = Callable[[Any, dict[str, Any]], Any]
+RESOURCE_PREPARERS: dict[str, ResourcePreparer] = {}
 
 
 class Resources:
@@ -46,9 +49,41 @@ class Resources:
             for resource in metric.required_resources
         }
 
+    def prepare_resources(self, missing: set, dataset: Any | None) -> dict[str, Any]:
+        """Prepare resources required by enabled quality metrics.
+
+        Parameters
+        ----------
+        missing: set
+            Unique resource identifiers required by enabled quality metrics.
+
+        dataset: Any
+            Dataset or data container required to prepare resources.
+
+        Returns
+        -------
+        dict[str, Any]
+            Prepared resources indexed by resource identifier.
+        """
+        resources_config = self.config.resources.available
+
+        prepared_resources = {}
+        for identifier in missing:
+            family, variant = identifier.split(".", 1)
+
+            resource_config = resources_config[family][variant]
+
+            preparer = RESOURCE_PREPARERS[family]
+            prepared_resource = preparer(dataset, resource_config)
+
+            prepared_resources[identifier] = prepared_resource
+
+        return prepared_resources
+
     def resolve(
         self,
         provided: Mapping[str, Any] | None = None,
+        dataset: Any | None = None,
     ) -> dict[str, Any]:
         """Resolve resources required by enabled quality metrics.
 
@@ -57,17 +92,15 @@ class Resources:
         provided : Mapping[str, Any] or None
             Ready-to-use resources supplied by the pipeline caller.
 
+        dataset : Any or None
+            Dataset or data container required to prepare missing resources.
+
         Returns
         -------
         dict[str, Any]
             Resources required by enabled quality metrics and supplied by the
             caller.
 
-        Raises
-        ------
-        NotImplementedError
-            If required resources are not supplied by the caller. Preparation of
-            missing resources is not yet implemented.
         """
         required = self.get_required()
         provided = {} if provided is None else provided
@@ -77,8 +110,13 @@ class Resources:
             for resource in required
             if resource in provided
         }
+
         missing = required - provided.keys()
         unused = provided.keys() - required
+
+        if missing:
+            prepared_resources = self.prepare_resources(missing, dataset)
+            resolved.update(prepared_resources)
 
         logger.debug(
             "Resource resolution: resolved=%s, missing=%s, unused=%s",
@@ -86,10 +124,5 @@ class Resources:
             sorted(missing),
             sorted(unused),
         )
-
-        if missing:
-            raise NotImplementedError(
-                f"Required resources are not available: {sorted(missing)}"
-            )
 
         return resolved
