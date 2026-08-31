@@ -29,7 +29,8 @@ def qc_config_factory():
                 "psf_models": {
                     "standard": {
                         "inference_config": "inference_standard.yaml",
-                    }
+                    },
+                    "oversampled": {"inference_config": "inference_oversampled.yaml"},
                 }
             }
         )
