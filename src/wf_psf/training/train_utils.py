@@ -367,6 +367,81 @@ def configure_optimizer_and_loss(
     return optimizer, loss, metrics
 
 
+def _is_masked_loss(loss: Union[str, Callable, None]) -> bool:
+    """
+    Check whether the given loss corresponds to the masked mean squared error.
+
+    Parameters
+    ----------
+    loss: str, callable, optional
+        The loss function (or its name) used for training.
+
+    Returns
+    -------
+    bool
+        True if the loss is the ``masked_mean_squared_error``, False otherwise.
+    """
+    if loss is None:
+        return False
+    return (isinstance(loss, str) and loss == "masked_mean_squared_error") or (
+        hasattr(loss, "name") and loss.name == "masked_mean_squared_error"
+    )
+
+
+def estimate_noise_sigma(
+    outputs: tf.Tensor,
+    loss: Union[str, Callable, None] = None,
+) -> np.ndarray:
+    """
+    Estimate the per-observation noise standard deviation.
+
+    For each image in ``outputs``, the noise standard deviation is estimated with
+    :class:`wf_psf.utils.utils.NoiseEstimator`, which applies a robust MAD-based
+    estimator on the unmasked background pixels (i.e. pixels outside a central
+    exclusion window, and outside the per-image mask when a masked loss is used).
+
+    This helper isolates the noise-estimation step so that the resulting sigma can
+    be reused independently of the training-specific sample-weight logic (e.g. for
+    goodness-of-fit metrics such as reduced chi-squared in validation workflows).
+
+    Parameters
+    ----------
+    outputs: tf.Tensor
+        Image data. When ``loss`` is ``"masked_mean_squared_error"``, a 4D tensor
+        of shape ``(batch_size, height, width, 2)`` is expected, where the last
+        dimension holds ``[image, mask]``. Otherwise, a 3D tensor of shape
+        ``(batch_size, height, width)`` is expected.
+    loss: str, callable, optional
+        The loss function (or its name) used for training. If the loss is
+        ``"masked_mean_squared_error"``, the per-image mask stored in
+        ``outputs[..., 1]`` is combined with the exclusion window before
+        estimating the noise. Default is None.
+
+    Returns
+    -------
+    np.ndarray
+        A 1D array of shape ``(batch_size,)`` containing the estimated noise
+        standard deviation for each image.
+    """
+    img_dim = (outputs.shape[1], outputs.shape[2])
+    win_rad = np.ceil(outputs.shape[1] / 3.33)
+    std_est = NoiseEstimator(img_dim=img_dim, win_rad=win_rad)
+
+    if _is_masked_loss(loss):
+        logger.info("Estimating noise standard deviation for masked images..")
+        images = outputs[..., 0]
+        masks = np.array(1 - outputs[..., 1], dtype=bool)
+        imgs_std = np.array(
+            [std_est.estimate_noise(_im, _win) for _im, _win in zip(images, masks)]
+        )
+    else:
+        logger.info("Estimating noise standard deviation for images..")
+        # Estimate noise standard deviation
+        imgs_std = np.array([std_est.estimate_noise(_im) for _im in outputs])
+
+    return imgs_std
+
+
 def calculate_sample_weights(
     outputs: tf.Tensor,
     use_sample_weights: bool,
@@ -405,25 +480,8 @@ def calculate_sample_weights(
         An array of sample weights, or None if `use_sample_weights` is False.
     """
     if use_sample_weights:
-        img_dim = (outputs.shape[1], outputs.shape[2])
-        win_rad = np.ceil(outputs.shape[1] / 3.33)
-        std_est = NoiseEstimator(img_dim=img_dim, win_rad=win_rad)
-
-        if loss is not None and (
-            (isinstance(loss, str) and loss == "masked_mean_squared_error")
-            or (hasattr(loss, "name") and loss.name == "masked_mean_squared_error")
-        ):
-            
-            logger.info("Estimating noise standard deviation for masked images..")
-            images = outputs[..., 0]
-            masks = np.array(1 - outputs[..., 1], dtype=bool)
-            imgs_std = np.array(
-                [std_est.estimate_noise(_im, _win) for _im, _win in zip(images, masks)]
-            )
-        else:
-            logger.info("Estimating noise standard deviation for images..")
-            # Estimate noise standard deviation
-            imgs_std = np.array([std_est.estimate_noise(_im) for _im in outputs])
+        # Estimate the per-observation noise standard deviation
+        imgs_std = estimate_noise_sigma(outputs, loss)
 
         # Calculate variances
         variances = imgs_std**2
