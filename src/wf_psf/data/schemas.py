@@ -74,6 +74,7 @@ class DatasetSchema:
     handlers : dict[str, Callable[..., Any]] = None
         Handler for specific dataset fields (e.g. seds)
     """
+
     id: str
     required_keys: tuple[str, ...]
     optional_keys: tuple[str, ...]
@@ -86,7 +87,7 @@ TRAIN_SCHEMA = DatasetSchema(
     required_keys=CANONICAL_DATASET_KEYS,
     optional_keys=CONST_OPTIONAL_KEYS,
     strict=True,
-    handlers={SED_DOMAIN: process_seds_handler}
+    handlers={SED_DOMAIN: process_seds_handler},
 )
 """
 Dataset schema used during model training.
@@ -101,7 +102,7 @@ EVALUATION_SCHEMA = DatasetSchema(
     required_keys=CANONICAL_DATASET_KEYS,
     optional_keys=CONST_OPTIONAL_KEYS,
     strict=True,
-    handlers={"seds": process_seds_handler}
+    handlers={"seds": process_seds_handler},
 )
 """
 Dataset schema used during model evaluation.
@@ -118,8 +119,8 @@ INFERENCE_SCHEMA = DatasetSchema(
         "positions",
     ),
     optional_keys=CONST_OPTIONAL_KEYS,
-    strict=False,
-    handlers={"seds": process_seds_handler}
+    strict=True,
+    handlers={"seds": process_seds_handler},
 )
 """
 Dataset schema used during inference.
