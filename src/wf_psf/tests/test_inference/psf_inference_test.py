@@ -18,6 +18,7 @@ from wf_psf.inference.psf_inference import (
     InferenceConfigHandler,
     PSFInference,
     PSFInferenceEngine,
+    generate_psf_models,
 )
 from wf_psf.utils.read_config import RecursiveNamespace
 
@@ -646,3 +647,24 @@ def test_engine_clear_cache(psf_setup):
     assert inference.engine._inferred_psfs is None, (
         "PSF cache should be cleared to None"
     )
+
+
+@patch("wf_psf.inference.psf_inference.PSFInference")
+def test_generate_psf_models(mock_psf_inference, mock_dataset):
+    expected_psfs = np.random.rand(2, 32, 32)
+    mock_psf_inference.return_value.get_psfs.return_value = expected_psfs
+
+    dataset, _, _ = mock_dataset
+
+    result = generate_psf_models(
+        dataset=dataset,
+        inference_config_path="dummy_path.yaml",
+    )
+
+    mock_psf_inference.assert_called_once_with(
+        inference_config_path="dummy_path.yaml",
+        dataset=dataset,
+    )
+    mock_psf_inference.return_value.get_psfs.assert_called_once_with()
+
+    np.testing.assert_array_equal(result, expected_psfs)
