@@ -229,6 +229,59 @@ def test_calculate_sample_weights_high_variance(mock_noise_estimator, loss):
 
 
 @pytest.mark.parametrize(
+    "loss", [None, "mean_squared_error", "masked_mean_squared_error"]
+)
+def test_estimate_noise_sigma_shape_and_positivity(loss):
+    """estimate_noise_sigma returns one positive sigma per observation."""
+    batch_size, height, width = 5, 32, 32
+
+    if loss == "masked_mean_squared_error":
+        outputs = np.random.rand(batch_size, height, width, 2)
+        outputs[..., 1] = np.random.randint(0, 2, size=(batch_size, height, width))
+    else:
+        outputs = np.random.rand(batch_size, height, width)
+
+    sigma = train_utils.estimate_noise_sigma(outputs, loss)
+
+    assert isinstance(sigma, np.ndarray)
+    assert sigma.shape == (batch_size,)
+    assert np.all(sigma > 0)
+
+
+@pytest.mark.parametrize(
+    "loss", [None, "mean_squared_error", "masked_mean_squared_error"]
+)
+def test_calculate_sample_weights_uses_estimate_noise_sigma(loss):
+    """calculate_sample_weights delegates noise estimation to estimate_noise_sigma."""
+    batch_size, height, width = 5, 32, 32
+
+    if loss == "masked_mean_squared_error":
+        outputs = np.random.rand(batch_size, height, width, 2)
+        outputs[..., 1] = np.random.randint(0, 2, size=(batch_size, height, width))
+    else:
+        outputs = np.random.rand(batch_size, height, width)
+
+    fake_sigma = np.linspace(1.0, 2.0, batch_size)
+    with patch.object(
+        train_utils, "estimate_noise_sigma", return_value=fake_sigma
+    ) as mock_sigma:
+        result = train_utils.calculate_sample_weights(
+            outputs, use_sample_weights=True, loss=loss
+        )
+
+    mock_sigma.assert_called_once()
+    # Passed the same outputs and loss through
+    called_outputs, called_loss = mock_sigma.call_args[0][:2]
+    assert called_outputs is outputs
+    assert called_loss == loss
+
+    # Weights are the median-normalised inverse variance of the returned sigma
+    expected = 1 / fake_sigma**2
+    expected /= np.median(expected)
+    np.testing.assert_allclose(result, expected)
+
+
+@pytest.mark.parametrize(
     "loss_function, metric_function",
     [
         (tf.keras.losses.MeanSquaredError(), tf.keras.metrics.MeanSquaredError()),
