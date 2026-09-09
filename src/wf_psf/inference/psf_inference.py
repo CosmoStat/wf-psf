@@ -297,41 +297,58 @@ class PSFInferenceEngine:
 
 
 class PSFInference:
-    """
-    Perform PSF inference using a pre-trained WaveDiff model.
+    """Perform PSF inference using a pre-trained WaveDiff model.
 
-    This class handles the setup for PSF inference, including loading configuration
-    files, instantiating the PSF simulator and data adapters, and preparing the
-    input data required for inference.
+    This class manages the configuration and data preparation required to
+    generate PSF models from a pre-trained WaveDiff model. It loads the
+    inference configuration, prepares the input dataset through the
+    appropriate data adapter, and manages the PSF inference engine.
 
     Parameters
     ----------
     inference_config_path : str
         Path to the inference configuration YAML file.
     dataset : PSFDataset
-        Dataset storing array-like data (e.g. x_field, y_field, SEDs, etc) for PSF model generation
-
+        Dataset containing the source positions and SEDs required for PSF
+        inference. Optional source images and masks may also be provided.
 
     Attributes
     ----------
     inference_config_path : str
         Path to the inference configuration file.
     dataset : PSFDataset
-        Dataset storing array-like data (e.g. x_field, y_field, SEDs, etc) for PSF model generation
+        Dataset used as input for PSF inference.
     engine : PSFInferenceEngine or None
-        The inference engine instance.
+        PSF inference engine used to generate the PSF models. The engine
+        is initialized when inference is first run.
 
     Examples
     --------
-    Basic usage with position coordinates and SEDs:
+    Basic usage with source positions and SEDs:
 
     .. code-block:: python
 
-        psf_inf = PSFInference(
-            inference_config_path="config.yaml", x_field=[100.5, 200.3], y_field=[150.2, 250.8], seds=sed_array
+        import numpy as np
+
+        dataset = PSFDataset(
+            positions=np.array(
+                [
+                    [100.5, 150.2],
+                    [200.3, 250.8],
+                ]
+            ),
+            seds=sed_array,
+            sources=source_images,
         )
+
+        psf_inf = PSFInference(
+            inference_config_path="config.yaml",
+            dataset=dataset,
+        )
+
         psf_inf.run_inference()
-        psf = psf_inf.get_psf(0)
+        psfs = psf_inf.get_psfs()
+        psf = psfs[0]
     """
 
     def __init__(self, inference_config_path: str, dataset: PSFDataset):
@@ -723,3 +740,31 @@ class PSFInference:
         self._cycle = None
         self._output_dim = None
         self.engine = None
+
+
+def generate_psf_models(
+    dataset: PSFDataset,
+    inference_config_path: str,
+) -> np.ndarray:
+    """Generate PSF models for a dataset.
+
+    Parameters
+    ----------
+    dataset : PSFDataset
+            Dataset containing the positions, SEDs, and source data required
+            for PSF model generation.
+
+    inference_config_path : str
+        Path to the inference configuration file.
+
+    Returns
+    -------
+    np.ndarray
+        Generated PSF models.
+
+    """
+    psf_inference = PSFInference(
+        inference_config_path=inference_config_path,
+        dataset=dataset,
+    )
+    return psf_inference.get_psfs()
