@@ -11,7 +11,62 @@ import pytest
 from unittest.mock import Mock, call
 
 from wf_psf.quality_control.config import QualityMetricConfig
-from wf_psf.quality_control.resources import RESOURCE_PREPARERS, Resources
+from wf_psf.quality_control.resources import (
+    RESOURCE_PREPARERS,
+    Resources,
+    register_resource_preparer,
+)
+
+
+def test_register_resource_preparer(monkeypatch):
+    registry = {}
+
+    monkeypatch.setattr("wf_psf.quality_control.resources.RESOURCE_PREPARERS", registry)
+
+    @register_resource_preparer("test_resource")
+    def prepare_resource(config):
+        pass
+
+    assert "test_resource" in registry
+    assert registry["test_resource"] is prepare_resource
+
+
+def test_register_resource_preparer_rejects_duplicate(monkeypatch):
+    registry = {}
+
+    monkeypatch.setattr(
+        "wf_psf.quality_control.resources.RESOURCE_PREPARERS",
+        registry,
+    )
+
+    @register_resource_preparer("test_resource")
+    def first_preparer(config):
+        pass
+
+    with pytest.raises(ValueError, match="already registered"):
+
+        @register_resource_preparer("test_resource")
+        def second_preparer(config):
+            pass
+
+
+def test_register_resource_preparer_override(monkeypatch):
+    registry = {}
+
+    monkeypatch.setattr(
+        "wf_psf.quality_control.resources.RESOURCE_PREPARERS",
+        registry,
+    )
+
+    @register_resource_preparer("test_resource")
+    def first_preparer(config):
+        pass
+
+    @register_resource_preparer("test_resource", override=True)
+    def second_preparer(config):
+        pass
+
+    assert registry["test_resource"] is second_preparer
 
 
 def test_get_required(qc_config_factory):
@@ -106,6 +161,29 @@ def test_prepare_resources(qc_config_factory, monkeypatch):
         ],
         any_order=True,
     )
+
+
+def test_prepare_resources_missing_preparer(qc_config_factory, monkeypatch):
+    registry = {}
+
+    monkeypatch.setattr(
+        "wf_psf.quality_control.resources.RESOURCE_PREPARERS",
+        registry,
+    )
+
+    config = qc_config_factory(
+        required_resources=["psf_models.standard"],
+    )
+    resources = Resources(config)
+
+    with pytest.raises(
+        KeyError,
+        match="No resource preparer is registered for resource family 'psf_models'",
+    ):
+        resources.resolve(
+            provided=None,
+            dataset={"data": [1.0, 2.0, 3.0]},
+        )
 
 
 # Resource resolution orchestration tests

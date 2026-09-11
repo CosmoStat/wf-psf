@@ -20,6 +20,33 @@ ResourcePreparer = Callable[[Any, dict[str, Any]], Any]
 RESOURCE_PREPARERS: dict[str, ResourcePreparer] = {}
 
 
+def register_resource_preparer(family: str, *, override: bool = False):
+    """Register a resource preparer.
+
+    A decorator to add built-in or custom resource
+    preparer methods to the RESOURCE_PREPARERS registry.
+
+    Parameters
+    ----------
+    family : str
+        Resource family used as a key in the resource preparer registry.
+    override : bool
+        If True, replace an existing preparer registered for this family.
+        If False, raise an error if a preparer is already registered.
+    """
+
+    def decorator(preparer):
+        if not override and family in RESOURCE_PREPARERS:
+            raise ValueError(
+                f"Resource preparer for family: '{family}' is already registered."
+            )
+
+        RESOURCE_PREPARERS[family] = preparer
+        return preparer
+
+    return decorator
+
+
 class Resources:
     """Manage resources required by quality control metrics.
 
@@ -73,7 +100,14 @@ class Resources:
 
             resource_config = resources_config[family][variant]
 
-            preparer = RESOURCE_PREPARERS[family]
+            try:
+                preparer = RESOURCE_PREPARERS[family]
+            except KeyError as exc:
+                raise KeyError(
+                    f"No resource preparer is registered for resource family "
+                    f"'{family}' required by resource '{identifier}'."
+                    "Register a resource preparer using the `register_resource_preparer` decorator."
+                ) from exc
             prepared_resource = preparer(dataset, resource_config)
 
             prepared_resources[identifier] = prepared_resource
