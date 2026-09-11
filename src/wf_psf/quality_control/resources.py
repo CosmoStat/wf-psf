@@ -49,7 +49,7 @@ class Resources:
             for resource in metric.required_resources
         }
 
-    def prepare_resources(self, missing: set, dataset: Any | None) -> dict[str, Any]:
+    def prepare_resources(self, missing: set[str], dataset: Any) -> dict[str, Any]:
         """Prepare resources required by enabled quality metrics.
 
         Parameters
