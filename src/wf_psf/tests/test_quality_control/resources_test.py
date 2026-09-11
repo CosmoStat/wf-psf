@@ -16,6 +16,7 @@ from wf_psf.quality_control.resources import (
     Resources,
     register_resource_preparer,
 )
+from wf_psf.quality_control.resource_identifier import ResourceIdentifier
 
 
 def test_register_resource_preparer(monkeypatch):
@@ -78,16 +79,22 @@ def test_get_required(qc_config_factory):
             ),
             "goodness_of_fit": QualityMetricConfig(
                 enabled=True,
-                required_resources=["psf_models.standard"],
+                required_resources=[
+                    ResourceIdentifier.from_string("psf_models.standard")
+                ],
             ),
             "shapes": QualityMetricConfig(
                 enabled=False,
-                required_resources=["psf_models.oversampled"],
+                required_resources=[
+                    ResourceIdentifier.from_string("psf_models.oversampled")
+                ],
             ),
         }
     )
     resources = Resources(config)
-    assert resources.get_required() == {"psf_models.standard"}
+    assert resources.get_required() == {
+        ResourceIdentifier.from_string("psf_models.standard")
+    }
 
 
 def test_get_required_combines_unique_resources(qc_config_factory):
@@ -95,13 +102,15 @@ def test_get_required_combines_unique_resources(qc_config_factory):
         metrics={
             "metric_a": QualityMetricConfig(
                 enabled=True,
-                required_resources=["psf_models.standard"],
+                required_resources=[
+                    ResourceIdentifier.from_string("psf_models.standard")
+                ],
             ),
             "metric_b": QualityMetricConfig(
                 enabled=True,
                 required_resources=[
-                    "psf_models.standard",
-                    "psf_models.oversampled",
+                    ResourceIdentifier.from_string("psf_models.standard"),
+                    ResourceIdentifier.from_string("psf_models.oversampled"),
                 ],
             ),
         }
@@ -109,12 +118,12 @@ def test_get_required_combines_unique_resources(qc_config_factory):
 
     resources = Resources(config)
     assert resources.get_required() == {
-        "psf_models.standard",
-        "psf_models.oversampled",
+        ResourceIdentifier.from_string("psf_models.standard"),
+        ResourceIdentifier.from_string("psf_models.oversampled"),
     }
 
 
-def test_prepare_resources(qc_config_factory, monkeypatch):
+def test_prepare_resources_valid(qc_config_factory, monkeypatch):
     def prepare_side_effect(_dataset, resource_config):
         if resource_config == config.resources.available["psf_models"]["standard"]:
             return np.ones((3, 32, 32))
@@ -125,25 +134,35 @@ def test_prepare_resources(qc_config_factory, monkeypatch):
         raise AssertionError(f"Unexpected resource config: {resource_config}")
 
     config = qc_config_factory(
-        required_resources=["psf_models.standard", "psf_models.oversampled"],
+        required_resources=[
+            ResourceIdentifier.from_string("psf_models.standard"),
+            ResourceIdentifier.from_string("psf_models.oversampled"),
+        ],
     )
 
-    missing = {"psf_models.standard", "psf_models.oversampled"}
+    missing = {
+        ResourceIdentifier.from_string("psf_models.standard"),
+        ResourceIdentifier.from_string("psf_models.oversampled"),
+    }
     dataset = {"data": [1.0, 2.0, 3.0]}
 
     mock_preparer = Mock(side_effect=prepare_side_effect)
-    monkeypatch.setitem(RESOURCE_PREPARERS, "psf_models", mock_preparer)
+    monkeypatch.setitem(
+        RESOURCE_PREPARERS,
+        "psf_models",
+        mock_preparer,
+    )
 
     resources = Resources(config)
 
     prepared = resources.prepare_resources(missing, dataset)
 
     assert np.array_equal(
-        prepared["psf_models.standard"],
+        prepared[ResourceIdentifier.from_string("psf_models.standard")],
         np.ones((3, 32, 32)),
     )
     assert np.array_equal(
-        prepared["psf_models.oversampled"],
+        prepared[ResourceIdentifier.from_string("psf_models.oversampled")],
         2 * np.ones((3, 32, 32)),
     )
 
@@ -172,7 +191,7 @@ def test_prepare_resources_missing_preparer(qc_config_factory, monkeypatch):
     )
 
     config = qc_config_factory(
-        required_resources=["psf_models.standard"],
+        required_resources=[ResourceIdentifier.from_string("psf_models.standard")],
     )
     resources = Resources(config)
 
@@ -181,7 +200,7 @@ def test_prepare_resources_missing_preparer(qc_config_factory, monkeypatch):
         match="No resource preparer is registered for resource family 'psf_models'",
     ):
         resources.resolve(
-            provided=None,
+            provided_resources=None,
             dataset={"data": [1.0, 2.0, 3.0]},
         )
 
@@ -191,12 +210,12 @@ def test_prepare_resources_missing_preparer(qc_config_factory, monkeypatch):
     ("required_resources", "provided", "expected_resolved"),
     [
         (
-            {"psf_models.standard"},
+            {ResourceIdentifier.from_string("psf_models.standard")},
             {"psf_models.standard": [1, 1, 1, 1]},
             {"psf_models.standard": [1, 1, 1, 1]},
         ),
         (
-            {"psf_models.standard"},
+            {ResourceIdentifier.from_string("psf_models.standard")},
             {
                 "psf_models.standard": [1, 1, 1, 1],
                 "psf_models.oversampled": [2, 2, 2, 2],
@@ -212,7 +231,7 @@ def test_prepare_resources_missing_preparer(qc_config_factory, monkeypatch):
         ),
     ],
 )
-def test_resolve_resources_provided(
+def test_resolve_resources_provided_valid(
     qc_config_factory,
     required_resources,
     provided,
@@ -226,7 +245,7 @@ def test_resolve_resources_provided(
 
 def test_resolve_resources_missing(qc_config_factory, monkeypatch):
     config = qc_config_factory(
-        required_resources=["psf_models.standard"],
+        required_resources=[ResourceIdentifier.from_string("psf_models.standard")],
     )
     resources = Resources(config)
 
@@ -235,7 +254,7 @@ def test_resolve_resources_missing(qc_config_factory, monkeypatch):
     mock_preparer = Mock(return_value=mock_psf_models)
     monkeypatch.setitem(RESOURCE_PREPARERS, "psf_models", mock_preparer)
 
-    resolved = resources.resolve(provided=None, dataset=dataset)
+    resolved = resources.resolve(provided_resources=None, dataset=dataset)
     assert np.array_equal(
         resolved["psf_models.standard"],
         mock_psf_models,
@@ -254,11 +273,14 @@ def test_resolve_resources_provided_and_prepare_missing(qc_config_factory, monke
     mock_preparer = Mock(return_value=mock_oversampled_psfs)
     monkeypatch.setitem(RESOURCE_PREPARERS, "psf_models", mock_preparer)
 
-    required_resources = {"psf_models.standard", "psf_models.oversampled"}
+    required_resources = {
+        ResourceIdentifier.from_string("psf_models.standard"),
+        ResourceIdentifier.from_string("psf_models.oversampled"),
+    }
     config = qc_config_factory(required_resources=required_resources)
 
     resources = Resources(config)
-    resolved = resources.resolve(provided=provided, dataset=dataset)
+    resolved = resources.resolve(provided_resources=provided, dataset=dataset)
 
     assert np.array_equal(
         resolved["psf_models.standard"], provided["psf_models.standard"]
@@ -278,10 +300,10 @@ def test_resolve_resources_provided_takes_precedence(qc_config_factory, monkeypa
     mock_preparer = Mock(return_value=mock_psf_models)
     monkeypatch.setitem(RESOURCE_PREPARERS, "psf_models", mock_preparer)
 
-    required_resources = {"psf_models.standard"}
+    required_resources = {ResourceIdentifier.from_string("psf_models.standard")}
     config = qc_config_factory(required_resources=required_resources)
     resources = Resources(config)
-    resolved = resources.resolve(provided=provided, dataset=dataset)
+    resolved = resources.resolve(provided_resources=provided, dataset=dataset)
 
     assert np.array_equal(
         resolved["psf_models.standard"], provided["psf_models.standard"]
