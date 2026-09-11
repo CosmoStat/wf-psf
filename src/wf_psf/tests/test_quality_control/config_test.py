@@ -23,6 +23,7 @@ from wf_psf.quality_control.config import (
     validate_metric_resources,
     validate_rejection_policy_metrics,
 )
+from wf_psf.quality_control.resource_identifier import ResourceIdentifier
 
 
 def load_config(config_file: str) -> QualityControlConfig:
@@ -53,7 +54,7 @@ def test_quality_control_config_loading():
 
     assert isinstance(config.metrics["goodness_of_fit"], QualityMetricConfig)
     assert config.metrics["goodness_of_fit"].required_resources == (
-        ["psf_models.standard"]
+        [ResourceIdentifier.from_string("psf_models.standard")]
     )
 
     assert isinstance(config.rejection["mask_obscuration"], RejectionPolicyConfig)
@@ -238,33 +239,8 @@ def test_validate_metric_resources_all_valid(qc_config_factory):
 @pytest.mark.parametrize(
     "required_resource",
     [
-        "psf_model_standard",
-        "psf_models.standard.foo",
-        "psf_models.",
-        ".standard",
-    ],
-)
-def test_validate_metric_resources_invalid_identifier(
-    qc_config_factory,
-    required_resource,
-):
-    config = qc_config_factory(required_resources=[required_resource])
-
-    with pytest.raises(
-        ValueError,
-        match=(
-            f"Resource identifier '{required_resource}' must have the form "
-            "'<resource_type>.<resource_name>'."
-        ),
-    ):
-        validate_metric_resources(config)
-
-
-@pytest.mark.parametrize(
-    "required_resource",
-    [
-        "images.segmentation_maps",
-        "psf_models.imaginary",
+        ResourceIdentifier.from_string("images.segmentation_maps"),
+        ResourceIdentifier.from_string("psf_models.imaginary"),
     ],
 )
 def test_validate_metric_resources_unknown_resource(
