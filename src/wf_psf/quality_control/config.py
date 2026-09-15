@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from wf_psf.quality_control.resource_identifier import ResourceIdentifier
 from wf_psf.utils.read_config import read_yaml
 
 
@@ -29,13 +30,13 @@ class QualityMetricConfig:
     params : dict
         Quality metric-specific parameters.
 
-    required_resources : list[str]
+    required_resources : list[ResourceIdentifier]
         Identifiers of resources required to compute the quality metric.
     """
 
     enabled: bool = False
     params: dict = field(default_factory=dict)
-    required_resources: list[str] = field(default_factory=list)
+    required_resources: list[ResourceIdentifier] = field(default_factory=list)
 
 
 @dataclass
@@ -169,10 +170,14 @@ def parse_metrics_config(
                 f"Required resources for metric '{metric_name}' must be a list."
             )
 
-        if not all(isinstance(resource, str) for resource in required_resources):
+        if not all(isinstance(identifier, str) for identifier in required_resources):
             raise TypeError(
                 f"Required resources for metric '{metric_name}' must contain only strings."
             )
+
+        required_resources = [
+            ResourceIdentifier.from_string(resource) for resource in required_resources
+        ]
 
         metrics[metric_name] = QualityMetricConfig(
             enabled=enabled, params=dict(params), required_resources=required_resources
@@ -356,28 +361,18 @@ def validate_metric_resources(config: QualityControlConfig) -> None:
     Raises
     ------
     ValueError
-        If a required resource identifier is malformed or references an
-        unavailable resource.
+        If a required resource identifier is not available in the configured resources.
     """
     for metric_name, metric in config.metrics.items():
-        for req in metric.required_resources:
-            parts = req.split(".")
-
-            if len(parts) != 2 or not all(parts):
-                raise ValueError(
-                    f"Resource identifier '{req}' must have the form "
-                    "'<resource_type>.<resource_name>'."
-                )
-
-            resource_type, resource_name = parts
+        for resource_id in metric.required_resources:
             resources = config.resources.available
 
             if (
-                resource_type not in resources
-                or resource_name not in resources[resource_type]
+                resource_id.family not in resources
+                or resource_id.variant not in resources[resource_id.family]
             ):
                 raise ValueError(
-                    f"Metric '{metric_name}' requires unknown resource '{req}'."
+                    f"Metric '{metric_name}' requires unknown resource '{resource_id}'."
                 )
 
 
