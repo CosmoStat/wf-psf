@@ -7,8 +7,9 @@ masked pixels on dataset samples.
 
 """
 
+from typing import Any, ClassVar
+import numpy as np
 from .base import QualityMetric
-from typing import ClassVar
 
 
 class PixelMaskMetric(QualityMetric):
@@ -24,6 +25,6 @@ class PixelMaskMetric(QualityMetric):
         }
     )
 
-    def compute(self, dataset):
+    def compute(self, dataset: Any) -> dict[str, np.ndarray]:
         """Compute pixel-mask metrics for each dataset sample."""
-        pass
+        ...
