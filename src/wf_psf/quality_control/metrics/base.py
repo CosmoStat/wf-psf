@@ -14,8 +14,11 @@ training, evaluation, or inference.
 from abc import ABC, abstractmethod
 import numpy as np
 from typing import Any
+<<<<<<< HEAD
 
 from wf_psf.quality_control.context import QualityControlContext
+=======
+>>>>>>> 0637dc0 (Add constructor to QualityMetric ABC class)
 
 
 class QualityMetric(ABC):
