@@ -89,7 +89,7 @@ class QualityControlPipeline:
 
             metric_cls = self.metrics_registry.get(name)
 
-            metrics[name] = metric_cls()
+            metrics[name] = metric_cls(metric_config.params)
 
         logger.debug("Instantiated metrics: %s", list(metrics))
 

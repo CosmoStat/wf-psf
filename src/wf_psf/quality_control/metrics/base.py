@@ -13,6 +13,7 @@ training, evaluation, or inference.
 
 from abc import ABC, abstractmethod
 import numpy as np
+from typing import Any
 
 
 class QualityMetric(ABC):
@@ -24,6 +25,8 @@ class QualityMetric(ABC):
         Unique identifier for the metric implementation. Used by
         the MetricsRegistry to register and retrieve metric classes.
 
+    params : dict[str, Any]
+        Parameter set for configuring a specific metric.
 
     Methods
     -------
@@ -34,8 +37,11 @@ class QualityMetric(ABC):
 
     name: str
 
+    def __init__(self, params: dict[str, Any]):
+        self.params = params
+
     @abstractmethod
-    def compute(self, dataset) -> np.ndarray:
+    def compute(self, dataset: Any) -> dict[str, np.ndarray]:
         """Compute the quality metric for the supplied dataset.
 
         Parameters
@@ -48,6 +54,8 @@ class QualityMetric(ABC):
 
         Returns
         -------
-        np.ndarray
-            One metric value per dataset sample.
+        dict[str, np.ndarray]
+            Mapping of diagnostic names to arrays containing one value per
+            dataset sample. All returned arrays must be aligned with the dataset
+            samples.
         """
