@@ -12,7 +12,7 @@ from wf_psf.quality_control.metrics.registry import (
     MetricsRegistry,
     build_metrics_registry,
 )
-from wf_psf.quality_control.metrics.mask_obscuration import MaskObscurationMetric
+from wf_psf.quality_control.metrics.pixel_masks import PixelMaskMetric
 from wf_psf.quality_control.metrics.goodness_of_fit import GoodnessOfFitMetric
 
 
@@ -29,16 +29,16 @@ class CustomMetric(QualityMetric):
 def test_duplicate_metric_registration_raises():
     registry = MetricsRegistry()
 
-    registry.register_metric(MaskObscurationMetric)
+    registry.register_metric(PixelMaskMetric)
 
     with pytest.raises(ValueError):
-        registry.register_metric(MaskObscurationMetric)
+        registry.register_metric(PixelMaskMetric)
 
 
 def test_build_metrics_registry():
     registry = build_metrics_registry()
 
-    assert registry.get("mask_obscuration") is MaskObscurationMetric
+    assert registry.get("pixel_mask") is PixelMaskMetric
 
     assert registry.get("goodness_of_fit") is GoodnessOfFitMetric
 

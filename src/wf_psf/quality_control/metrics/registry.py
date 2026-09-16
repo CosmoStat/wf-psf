@@ -7,7 +7,7 @@ quality metric implementations used to assess dataset sample quality.
     Jennifer Pollack <jennifer.pollack@cea.fr>
 """
 
-from .mask_obscuration import MaskObscurationMetric
+from .pixel_masks import PixelMaskMetric
 from .goodness_of_fit import GoodnessOfFitMetric
 from .base import QualityMetric
 from wf_psf.utils.registry import Registry
@@ -39,6 +39,6 @@ class MetricsRegistry(Registry[str, type[QualityMetric]]):
 def build_metrics_registry():
     """Create the registry of built-in quality metrics."""
     registry = MetricsRegistry()
-    registry.register_metric(MaskObscurationMetric)
+    registry.register_metric(PixelMaskMetric)
     registry.register_metric(GoodnessOfFitMetric)
     return registry

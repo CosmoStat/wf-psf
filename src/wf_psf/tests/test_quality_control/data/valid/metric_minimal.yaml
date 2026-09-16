@@ -1,5 +1,5 @@
 metrics:
 
-  mask_obscuration:
+  pixel_mask:
     enabled: true
 

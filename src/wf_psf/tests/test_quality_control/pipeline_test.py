@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from wf_psf.quality_control.pipeline import QualityControlPipeline
 from wf_psf.quality_control.config import QualityControlConfig
-from wf_psf.quality_control.metrics.mask_obscuration import MaskObscurationMetric
+from wf_psf.quality_control.metrics.pixel_masks import PixelMaskMetric
 from wf_psf.quality_control.metrics.goodness_of_fit import GoodnessOfFitMetric
 from wf_psf.quality_control.rejection.threshold import ThresholdRejectionPolicy
 
@@ -26,7 +26,7 @@ def test_pipeline_constructor(pipeline_factory):
     assert isinstance(pipeline.config, QualityControlConfig)
 
     # Check metrics registry
-    assert pipeline.metrics_registry.get("mask_obscuration") is MaskObscurationMetric
+    assert pipeline.metrics_registry.get("pixel_mask") is PixelMaskMetric
     assert pipeline.metrics_registry.get("goodness_of_fit") is GoodnessOfFitMetric
 
     # Check rejection registry
@@ -39,7 +39,7 @@ def test_pipeline_instantiate_metrics_valid(pipeline_factory):
     metrics = pipeline._instantiate_metrics()
 
     assert len(metrics) == 2
-    assert isinstance(metrics["mask_obscuration"], MaskObscurationMetric)
+    assert isinstance(metrics["pixel_mask"], PixelMaskMetric)
     assert isinstance(metrics["goodness_of_fit"], GoodnessOfFitMetric)
 
 
@@ -56,8 +56,8 @@ def test_pipeline_instantiate_rejection_policy_valid(pipeline_factory):
     rejection_policies = pipeline._instantiate_rejection_policies()
 
     assert len(rejection_policies) == 1
-    assert isinstance(rejection_policies["mask_obscuration"], ThresholdRejectionPolicy)
-    assert rejection_policies["mask_obscuration"].value == 3.0
+    assert isinstance(rejection_policies["pixel_mask"], ThresholdRejectionPolicy)
+    assert rejection_policies["pixel_mask"].value == 3.0
 
     assert "goodness_of_fit" not in rejection_policies
 
@@ -69,7 +69,7 @@ def test_pipeline_run_single_rejection_policy(pipeline_factory):
 
     with (
         patch.object(
-            MaskObscurationMetric,
+            PixelMaskMetric,
             "compute",
             return_value=metric_result,
         ) as mock_mask_compute,
@@ -99,7 +99,7 @@ def test_pipeline_run_single_rejection_policy(pipeline_factory):
         mock_apply.assert_called_once_with(metric_result)
 
         assert np.array_equal(
-            result.metrics["mask_obscuration"],
+            result.metrics["pixel_mask"],
             np.array([1.0, 2.0, 3.0]),
         )
 
@@ -109,7 +109,7 @@ def test_pipeline_run_single_rejection_policy(pipeline_factory):
         )
 
         assert np.array_equal(
-            result.validity_masks["mask_obscuration"],
+            result.validity_masks["pixel_mask"],
             np.array([True, False, True]),
         )
 
@@ -132,7 +132,7 @@ def test_pipeline_run_multiple_rejection_policies(pipeline_factory):
 
     with (
         patch.object(
-            MaskObscurationMetric,
+            PixelMaskMetric,
             "compute",
             return_value=metric_result,
         ) as mock_mask_compute,
@@ -164,7 +164,7 @@ def test_pipeline_run_multiple_rejection_policies(pipeline_factory):
         assert mock_apply.call_count == 2
 
         assert np.array_equal(
-            result.metrics["mask_obscuration"],
+            result.metrics["pixel_mask"],
             np.array([1.0, 2.0, 3.0]),
         )
 
@@ -174,7 +174,7 @@ def test_pipeline_run_multiple_rejection_policies(pipeline_factory):
         )
 
         assert np.array_equal(
-            result.validity_masks["mask_obscuration"],
+            result.validity_masks["pixel_mask"],
             np.array([True, True, False]),
         )
 

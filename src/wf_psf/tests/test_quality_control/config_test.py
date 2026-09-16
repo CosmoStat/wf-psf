@@ -47,18 +47,18 @@ def test_quality_control_config_loading():
         == "inference_oversampled.yaml"
     )
 
-    assert "mask_obscuration" in config.metrics
-    assert isinstance(config.metrics["mask_obscuration"], QualityMetricConfig)
-    assert config.metrics["mask_obscuration"].enabled is True
-    assert config.metrics["mask_obscuration"].required_resources == []
+    assert "pixel_mask" in config.metrics
+    assert isinstance(config.metrics["pixel_mask"], QualityMetricConfig)
+    assert config.metrics["pixel_mask"].enabled is True
+    assert config.metrics["pixel_mask"].required_resources == []
 
     assert isinstance(config.metrics["goodness_of_fit"], QualityMetricConfig)
     assert config.metrics["goodness_of_fit"].required_resources == (
         [ResourceIdentifier.from_string("psf_models.standard")]
     )
 
-    assert isinstance(config.rejection["mask_obscuration"], RejectionPolicyConfig)
-    assert config.rejection["mask_obscuration"].policy == {
+    assert isinstance(config.rejection["pixel_mask"], RejectionPolicyConfig)
+    assert config.rejection["pixel_mask"].policy == {
         "threshold": {
             "value": 3.0,
         },
@@ -101,8 +101,8 @@ def test_required_resources_element_must_be_a_str():
 def test_metrics_minimal():
     config = load_config("valid/metric_minimal.yaml")
 
-    assert config.metrics["mask_obscuration"].enabled is True
-    assert config.metrics["mask_obscuration"].params == {}
+    assert config.metrics["pixel_mask"].enabled is True
+    assert config.metrics["pixel_mask"].params == {}
     assert config.rejection == {}
     assert config.reporting.save_metrics is False
     assert config.reporting.log_statistics is False
@@ -111,7 +111,7 @@ def test_metrics_minimal():
 def test_metric_enabled_must_be_boolean():
     with pytest.raises(
         TypeError,
-        match="Metric `enabled` flag for 'mask_obscuration' must be boolean",
+        match="Metric `enabled` flag for 'pixel_mask' must be boolean",
     ):
         load_config("invalid/metric_invalid_enabled.yaml")
 
@@ -264,11 +264,11 @@ def test_validate_rejection_policy_metrics_all_valid(qc_config_factory):
 
 
 def test_validate_rejection_policy_metrics_metric_not_found(qc_config_factory):
-    config = qc_config_factory(rejection_metric="mask_obscuration")
+    config = qc_config_factory(rejection_metric="pixel_mask")
 
     with pytest.raises(
         ValueError,
-        match="Rejection policy configured for unknown metric 'mask_obscuration'.",
+        match="Rejection policy configured for unknown metric 'pixel_mask'.",
     ):
         validate_rejection_policy_metrics(config)
 

@@ -10,11 +10,11 @@ masked pixels on dataset samples.
 from .base import QualityMetric
 
 
-class MaskObscurationMetric(QualityMetric):
-    """Assess masked pixel obscuration for each dataset sample."""
+class PixelMaskMetric(QualityMetric):
+    """Evaluate pixel-mask metrics for each dataset sample."""
 
-    name = "mask_obscuration"
+    name = "pixel_mask"
 
     def compute(self, dataset):
-        """Compute the mask obscuration metric for each dataset sample."""
+        """Compute pixel-mask metrics for each dataset sample."""
         pass

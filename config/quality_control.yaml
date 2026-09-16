@@ -8,11 +8,13 @@ resources:
 
 metrics:
 
-  mask_obscuration:
+  pixel_mask:
     enabled: true
     params:
-      aperture: gaussian
-      sigma: 2.5
+      aperture:
+        type: circular
+        radius: 2.6
+        unit: sigma
 
   goodness_of_fit:
     enabled: true
@@ -25,7 +27,7 @@ metrics:
 
 rejection:
 
-  mask_obscuration:
+  pixel_mask:
     enabled: true
     policy:
       threshold:
