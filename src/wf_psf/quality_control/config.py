@@ -390,18 +390,19 @@ def validate_rejection_policy_metrics(config: QualityControlConfig) -> None:
         If an enabled rejection policy references an unknown or disabled
         quality metric.
     """
-    for metric_name, metric_rejection_policy in config.rejection.items():
-        if not metric_rejection_policy.enabled:
+    for metric_name, rejection_policy in config.rejection.items():
+        if not rejection_policy.enabled:
             continue
 
         if metric_name not in config.metrics:
             raise ValueError(
-                f"Rejection policy configured for unknown metric '{metric_name}' "
+                f"Rejection policy configured for unknown metric '{metric_name}'."
             )
 
         if not config.metrics[metric_name].enabled:
             raise ValueError(
-                f"Rejection policy cannot be enabled because metric '{metric_name}' is disabled."
+                f"Rejection policy cannot be enabled because metric "
+                f"'{metric_name}' is disabled."
             )
 
 
