@@ -73,7 +73,7 @@ def test_register_resource_preparer_override(monkeypatch):
 def test_get_required(qc_config_factory):
     config = qc_config_factory(
         metrics={
-            "mask_obscuration": QualityMetricConfig(
+            "pixel_mask": QualityMetricConfig(
                 enabled=True,
                 required_resources=[],
             ),
