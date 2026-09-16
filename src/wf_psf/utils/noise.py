@@ -149,3 +149,33 @@ class NoiseEstimator:
         # Use the default window if no mask is provided
         return self.sigma_mad(image[self.window])
 
+    def estimate_noise_batch(
+        self, images: np.ndarray, masks: np.ndarray = None
+    ) -> np.ndarray:
+        """
+        Estimate the noise standard deviation for a batch of images.
+
+        Parameters
+        ----------
+        images : np.ndarray
+            A batch of images with shape ``(batch_size, height, width)``.
+        masks : np.ndarray, optional
+            A batch of boolean masks with the same shape as `images`, specifying
+            which pixels to include in the noise estimation for each image. If
+            None, only the exclusion window is used for every image.
+
+        Returns
+        -------
+        np.ndarray
+            A 1D array of shape ``(batch_size,)`` containing the estimated noise
+            standard deviation for each image.
+        """
+        if masks is None:
+            return np.array([self.estimate_noise(_im) for _im in images])
+
+        return np.array(
+            [
+                self.estimate_noise(_im, _mask)
+                for _im, _mask in zip(images, masks)
+            ]
+        )

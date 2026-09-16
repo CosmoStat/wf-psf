@@ -13,7 +13,8 @@ import numpy as np
 import tensorflow as tf
 from typing import Optional, Callable, Union
 from wf_psf.psf_models.psf_models import compile_PSF_model
-from wf_psf.utils.utils import NoiseEstimator, generalised_sigmoid
+from wf_psf.utils.noise import NoiseEstimator
+from wf_psf.utils.utils import generalised_sigmoid
 import logging
 
 logger = logging.getLogger(__name__)
@@ -395,14 +396,12 @@ def estimate_noise_sigma(
     """
     Estimate the per-observation noise standard deviation.
 
-    For each image in ``outputs``, the noise standard deviation is estimated with
-    :class:`wf_psf.utils.utils.NoiseEstimator`, which applies a robust MAD-based
-    estimator on the unmasked background pixels (i.e. pixels outside a central
-    exclusion window, and outside the per-image mask when a masked loss is used).
-
-    This helper isolates the noise-estimation step so that the resulting sigma can
-    be reused independently of the training-specific sample-weight logic (e.g. for
-    goodness-of-fit metrics such as reduced chi-squared in validation workflows).
+    This resolves the image and, when applicable, the per-image mask from the
+    training-specific ``outputs``/``loss`` representation, then delegates the
+    actual batch estimation to :meth:`wf_psf.utils.noise.NoiseEstimator.estimate_noise_batch`,
+    which applies a robust MAD-based estimator on the unmasked background pixels
+    (i.e. pixels outside a central exclusion window, and outside the per-image
+    mask when one is provided).
 
     Parameters
     ----------
@@ -431,15 +430,12 @@ def estimate_noise_sigma(
         logger.info("Estimating noise standard deviation for masked images..")
         images = outputs[..., 0]
         masks = np.array(1 - outputs[..., 1], dtype=bool)
-        imgs_std = np.array(
-            [std_est.estimate_noise(_im, _win) for _im, _win in zip(images, masks)]
-        )
     else:
         logger.info("Estimating noise standard deviation for images..")
-        # Estimate noise standard deviation
-        imgs_std = np.array([std_est.estimate_noise(_im) for _im in outputs])
+        images = outputs
+        masks = None
 
-    return imgs_std
+    return std_est.estimate_noise_batch(images, masks)
 
 
 def calculate_sample_weights(
