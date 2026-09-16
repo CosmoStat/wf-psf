@@ -34,6 +34,9 @@ def mock_noise_estimator():
         mock_instance.estimate_noise.side_effect = lambda img, mask=None: np.std(
             img
         )  # Mock behavior
+        mock_instance.estimate_noise_batch.side_effect = (
+            lambda images, masks=None: np.array([np.std(img) for img in images])
+        )
         yield mock_instance
 
 
