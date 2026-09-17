@@ -389,6 +389,39 @@ def _is_masked_loss(loss: Union[str, Callable, None]) -> bool:
     )
 
 
+def _resolve_training_outputs(
+    outputs: tf.Tensor, loss: Union[str, Callable, None]
+) -> tuple[tf.Tensor, Optional[np.ndarray]]:
+    """
+    Resolve the training-specific ``outputs``/``loss`` representation into a
+    plain image and, for a masked loss, a per-image mask.
+
+    Parameters
+    ----------
+    outputs: tf.Tensor
+        Image data. When ``loss`` is ``"masked_mean_squared_error"``, a 4D tensor
+        of shape ``(batch_size, height, width, 2)`` is expected, where the last
+        dimension holds ``[image, mask]``. Otherwise, a 3D tensor of shape
+        ``(batch_size, height, width)`` is expected.
+    loss: str, callable, optional
+        The loss function (or its name) used for training.
+
+    Returns
+    -------
+    tuple of (tf.Tensor, np.ndarray or None)
+        The resolved images and, for a masked loss, the corresponding boolean
+        masks (``outputs[..., 1]`` inverted); otherwise ``None``.
+    """
+    if _is_masked_loss(loss):
+        images = outputs[..., 0]
+        masks = np.array(1 - outputs[..., 1], dtype=bool)
+    else:
+        images = outputs
+        masks = None
+
+    return images, masks
+
+
 def calculate_sample_weights(
     images: tf.Tensor,
     masks: Optional[np.ndarray] = None,
@@ -726,17 +759,9 @@ def general_train_cycle(
         learning_rate_param, param_optim, param_loss, param_metrics
     )
 
-    # Resolve the training-specific outputs/loss representation into a plain
-    # image (and, for a masked loss, a per-image mask) before computing weights
-    if _is_masked_loss(loss):
-        images = outputs[..., 0]
-        masks = np.array(1 - outputs[..., 1], dtype=bool)
-    else:
-        images = outputs
-        masks = None
-
     # Calculate sample weights
     if use_sample_weights:
+        images, masks = _resolve_training_outputs(outputs, loss)
         sample_weight = calculate_sample_weights(
             images,
             masks,
