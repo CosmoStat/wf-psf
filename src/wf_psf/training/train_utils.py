@@ -13,7 +13,8 @@ import numpy as np
 import tensorflow as tf
 from typing import Optional, Callable, Union
 from wf_psf.psf_models.psf_models import compile_PSF_model
-from wf_psf.utils.utils import NoiseEstimator, generalised_sigmoid
+from wf_psf.utils.noise import NoiseEstimator
+from wf_psf.utils.utils import generalised_sigmoid
 import logging
 
 logger = logging.getLogger(__name__)
@@ -367,31 +368,85 @@ def configure_optimizer_and_loss(
     return optimizer, loss, metrics
 
 
-def calculate_sample_weights(
-    outputs: tf.Tensor,
-    use_sample_weights: bool,
-    loss: Union[str, Callable, None],
-    apply_sigmoid: bool = False,
-    sigmoid_max_val: float = 5.0,
-    sigmoid_power_k: float = 1.0,
-) -> Optional[np.ndarray]:
+def _is_masked_loss(loss: Union[str, Callable, None]) -> bool:
     """
-    Calculate sample weights based on image noise standard deviation.
+    Check whether the given loss corresponds to the masked mean squared error.
 
-    The function computes sample weights by estimating the noise standard deviation for each image, calculating the inverse variance,
-    and then normalizing the weights by dividing by the median.
+    Parameters
+    ----------
+    loss: str, callable, optional
+        The loss function (or its name) used for training.
+
+    Returns
+    -------
+    bool
+        True if the loss is the ``masked_mean_squared_error``, False otherwise.
+    """
+    if loss is None:
+        return False
+    return (isinstance(loss, str) and loss == "masked_mean_squared_error") or (
+        hasattr(loss, "name") and loss.name == "masked_mean_squared_error"
+    )
+
+
+def _resolve_training_outputs(
+    outputs: tf.Tensor, loss: Union[str, Callable, None]
+) -> tuple[tf.Tensor, Optional[np.ndarray]]:
+    """
+    Resolve the training-specific ``outputs``/``loss`` representation into a
+    plain image and, for a masked loss, a per-image mask.
 
     Parameters
     ----------
     outputs: tf.Tensor
+        Image data. When ``loss`` is ``"masked_mean_squared_error"``, a 4D tensor
+        of shape ``(batch_size, height, width, 2)`` is expected, where the last
+        dimension holds ``[image, mask]``. Otherwise, a 3D tensor of shape
+        ``(batch_size, height, width)`` is expected.
+    loss: str, callable, optional
+        The loss function (or its name) used for training.
+
+    Returns
+    -------
+    tuple of (tf.Tensor, np.ndarray or None)
+        The resolved images and, for a masked loss, the corresponding boolean
+        masks (``outputs[..., 1]`` inverted); otherwise ``None``.
+    """
+    if _is_masked_loss(loss):
+        images = outputs[..., 0]
+        masks = np.array(1 - outputs[..., 1], dtype=bool)
+    else:
+        images = outputs
+        masks = None
+
+    return images, masks
+
+
+def calculate_sample_weights(
+    images: tf.Tensor,
+    masks: Optional[np.ndarray] = None,
+    apply_sigmoid: bool = False,
+    sigmoid_max_val: float = 5.0,
+    sigmoid_power_k: float = 1.0,
+) -> np.ndarray:
+    """
+    Calculate sample weights based on image noise standard deviation.
+
+    The function estimates the per-observation noise standard deviation with
+    :class:`wf_psf.utils.noise.NoiseEstimator`, computes sample weights from the
+    inverse variance, and normalizes the weights by dividing by the median.
+
+    Parameters
+    ----------
+    images: tf.Tensor
         A 3D tensor of shape (batch_size, height, width) representing images, where the first dimension is the batch size
         and the next two dimensions are the image height and width.
-    use_sample_weights: bool
-        Flag indicating whether to compute sample weights. If True, sample weights will be computed based on the image noise.
-    loss: str, callable, optional
-        The loss function used for training. If the loss name is "masked_mean_squared_error", the function will calculate the noise standard deviation for masked images.
+    masks: np.ndarray, optional
+        A batch of boolean masks with the same shape as `images`, specifying
+        which pixels to include in the noise estimation for each image. If
+        None, only the exclusion window is used for every image. Default is None.
     apply_sigmoid: bool, optional
-        Flag indicating whether to apply a generalized sigmoid function to the sample weights. Default is True.
+        Flag indicating whether to apply a generalized sigmoid function to the sample weights. Default is False.
     sigmoid_max_val: float, optional
         The maximum value for the sigmoid function. Default is 5.0.
     sigmoid_power_k: float, optional
@@ -401,45 +456,27 @@ def calculate_sample_weights(
 
     Returns
     -------
-    np.ndarray or None
-        An array of sample weights, or None if `use_sample_weights` is False.
+    np.ndarray
+        An array of sample weights.
     """
-    if use_sample_weights:
-        img_dim = (outputs.shape[1], outputs.shape[2])
-        win_rad = np.ceil(outputs.shape[1] / 3.33)
-        std_est = NoiseEstimator(img_dim=img_dim, win_rad=win_rad)
+    img_dim = (images.shape[1], images.shape[2])
+    std_est = NoiseEstimator(img_dim=img_dim)
 
-        if loss is not None and (
-            (isinstance(loss, str) and loss == "masked_mean_squared_error")
-            or (hasattr(loss, "name") and loss.name == "masked_mean_squared_error")
-        ):
-            
-            logger.info("Estimating noise standard deviation for masked images..")
-            images = outputs[..., 0]
-            masks = np.array(1 - outputs[..., 1], dtype=bool)
-            imgs_std = np.array(
-                [std_est.estimate_noise(_im, _win) for _im, _win in zip(images, masks)]
-            )
-        else:
-            logger.info("Estimating noise standard deviation for images..")
-            # Estimate noise standard deviation
-            imgs_std = np.array([std_est.estimate_noise(_im) for _im in outputs])
+    # Estimate the per-observation noise standard deviation
+    imgs_std = std_est.estimate_noise_batch(images, masks)
 
-        # Calculate variances
-        variances = imgs_std**2
+    # Calculate variances
+    variances = imgs_std**2
 
-        # Use inverse variance for weights and scale by median
-        sample_weight = 1 / variances
-        sample_weight /= np.median(sample_weight)
+    # Use inverse variance for weights and scale by median
+    sample_weight = 1 / variances
+    sample_weight /= np.median(sample_weight)
 
-        # Apply a generalized sigmoid function to the sample weights
-        if apply_sigmoid:
-            sample_weight = generalised_sigmoid(
-                sample_weight, max_val=sigmoid_max_val, power_k=sigmoid_power_k
-            )
-
-    else:
-        sample_weight = None
+    # Apply a generalized sigmoid function to the sample weights
+    if apply_sigmoid:
+        sample_weight = generalised_sigmoid(
+            sample_weight, max_val=sigmoid_max_val, power_k=sigmoid_power_k
+        )
 
     return sample_weight
 
@@ -723,14 +760,17 @@ def general_train_cycle(
     )
 
     # Calculate sample weights
-    sample_weight = calculate_sample_weights(
-        outputs,
-        use_sample_weights,
-        loss,
-        apply_sigmoid,
-        sigmoid_max_val,
-        sigmoid_power_k,
-    )
+    if use_sample_weights:
+        images, masks = _resolve_training_outputs(outputs, loss)
+        sample_weight = calculate_sample_weights(
+            images,
+            masks,
+            apply_sigmoid,
+            sigmoid_max_val,
+            sigmoid_power_k,
+        )
+    else:
+        sample_weight = None
 
     # Define the training cycle
     if cycle_def in ("parametric", "complete", "only-parametric"):
