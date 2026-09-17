@@ -14,6 +14,25 @@ def test_initialization():
     assert estimator.window.shape == img_dim
 
 
+def test_default_win_rad():
+    """Test that the default_win_rad derives an int radius from the image dimensions."""
+    assert NoiseEstimator.default_win_rad((32, 32)) == 10
+    assert NoiseEstimator.default_win_rad((40, 40)) == 13
+    assert NoiseEstimator.default_win_rad((100, 76)) == 31
+    assert isinstance(NoiseEstimator.default_win_rad((32, 32)), int)
+
+
+def test_initialization_uses_default_win_rad_when_omitted():
+    """Test that omitting win_rad falls back to default_win_rad and produces the same window."""
+    img_dim = (50, 50)
+    estimator = NoiseEstimator(img_dim)
+    explicit_estimator = NoiseEstimator(img_dim, NoiseEstimator.default_win_rad(img_dim))
+
+    assert estimator.win_rad == NoiseEstimator.default_win_rad(img_dim)
+    assert isinstance(estimator.win_rad, int)
+    np.testing.assert_array_equal(estimator.window, explicit_estimator.window)
+
+
 def test_init_window():
     """Test that the exclusion window is correctly initialized."""
     img_dim = (50, 50)

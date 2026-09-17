@@ -31,9 +31,6 @@ def mock_noise_estimator():
     """Mock the NoiseEstimator class to return a fixed noise estimate."""
     with patch("wf_psf.training.train_utils.NoiseEstimator") as MockNoiseEstimator:
         mock_instance = MockNoiseEstimator.return_value
-        mock_instance.estimate_noise.side_effect = lambda img, mask=None: np.std(
-            img
-        )  # Mock behavior
         mock_instance.estimate_noise_batch.side_effect = (
             lambda images, masks=None: np.array([np.std(img) for img in images])
         )
@@ -192,12 +189,38 @@ def test_calculate_sample_weights_high_variance(mock_noise_estimator):
     ],
 )
 def test_is_masked_loss(loss, expected):
-    """_is_masked_loss identifies the masked_mean_squared_error loss by name."""
+    """Test that _is_masked_loss identifies the masked_mean_squared_error loss by name."""
     assert train_utils._is_masked_loss(loss) is expected
 
 
+def test_resolve_training_outputs_unmasked_loss():
+    """Test that for a non-masked loss, outputs pass through unchanged and masks is None."""
+    outputs = np.random.rand(4, 8, 8)
+    images, masks = train_utils._resolve_training_outputs(
+        outputs, "mean_squared_error"
+    )
+
+    assert images is outputs
+    assert masks is None
+
+
+def test_resolve_training_outputs_masked_loss():
+    """Test that for a masked loss, outputs are split into images and an inverted boolean mask."""
+    batch_size, height, width = 4, 8, 8
+    images = np.random.rand(batch_size, height, width)
+    raw_masks = np.random.randint(0, 2, size=(batch_size, height, width))
+    outputs = np.stack([images, raw_masks], axis=-1)
+
+    resolved_images, resolved_masks = train_utils._resolve_training_outputs(
+        outputs, "masked_mean_squared_error"
+    )
+
+    np.testing.assert_array_equal(resolved_images, images)
+    np.testing.assert_array_equal(resolved_masks, np.array(1 - raw_masks, dtype=bool))
+
+
 def test_calculate_sample_weights_uses_noise_estimator_batch():
-    """calculate_sample_weights delegates noise estimation to NoiseEstimator.estimate_noise_batch."""
+    """Test that calculate_sample_weights delegates noise estimation to NoiseEstimator.estimate_noise_batch."""
     batch_size, height, width = 5, 32, 32
     images = np.random.rand(batch_size, height, width)
     masks = np.random.randint(0, 2, size=(batch_size, height, width)).astype(bool)
@@ -358,13 +381,13 @@ def test_general_train_cycle_handles_cycle_def(
     if non_param_train:
         expected_calls.append(call(param_bool=False, nonparam_bool=True))
 
-    mock_model.set_trainable_layers.assert_has_calls(expected_calls, any_order=False)
+    mock_model.set_trainable_layers.asserFootert_has_calls(expected_calls, any_order=False)
 
 
 def test_general_train_cycle_resolves_images_and_masks_for_masked_loss(
     mock_test_setup,
 ):
-    """general_train_cycle unpacks image/mask from outputs when the loss is masked,
+    """Test that general_train_cycle unpacks image/mask from outputs when the loss is masked,
     before calculate_sample_weights ever sees the data."""
     mock_model = mock_test_setup["mock_model"]
     inputs = mock_test_setup["inputs"]
@@ -374,8 +397,10 @@ def test_general_train_cycle_resolves_images_and_masks_for_masked_loss(
     raw_masks = np.random.randint(0, 2, size=(batch_size, height, width))
     outputs = np.stack([images, raw_masks], axis=-1)
 
-    with patch("wf_psf.training.train_utils.calculate_sample_weights") as mock_calc:
-        mock_calc.return_value = np.ones(batch_size)
+    with patch(
+        "wf_psf.training.train_utils.calculate_sample_weights"
+    ) as mock_calculate_sample_weights:
+        mock_calculate_sample_weights.return_value = np.ones(batch_size)
         train_utils.general_train_cycle(
             psf_model=mock_model,
             inputs=inputs,
@@ -391,19 +416,21 @@ def test_general_train_cycle_resolves_images_and_masks_for_masked_loss(
             cycle_def="parametric",
         )
 
-    mock_calc.assert_called_once()
-    called_images, called_masks = mock_calc.call_args[0][:2]
+    mock_calculate_sample_weights.assert_called_once()
+    called_images, called_masks = mock_calculate_sample_weights.call_args[0][:2]
     np.testing.assert_array_equal(called_images, images)
     np.testing.assert_array_equal(called_masks, np.array(1 - raw_masks, dtype=bool))
 
 
 def test_general_train_cycle_skips_sample_weights_when_disabled(mock_test_setup):
-    """general_train_cycle leaves sample_weight as None and never calls
+    """Test that general_train_cycle leaves sample_weight as None and never calls
     calculate_sample_weights when use_sample_weights is False."""
     mock_model = mock_test_setup["mock_model"]
 
     with (
-        patch("wf_psf.training.train_utils.calculate_sample_weights") as mock_calc,
+        patch(
+            "wf_psf.training.train_utils.calculate_sample_weights"
+        ) as mock_calculate_sample_weights,
         patch("wf_psf.training.train_utils.train_cycle_part") as mock_train_cycle_part,
     ):
         mock_train_cycle_part.return_value = MagicMock()
@@ -421,7 +448,7 @@ def test_general_train_cycle_skips_sample_weights_when_disabled(mock_test_setup)
             cycle_def="parametric",
         )
 
-    mock_calc.assert_not_called()
+    mock_calculate_sample_weights.assert_not_called()
     _, train_cycle_part_kwargs = mock_train_cycle_part.call_args
     assert train_cycle_part_kwargs["sample_weight"] is None
 
