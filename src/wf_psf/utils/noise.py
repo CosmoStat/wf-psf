@@ -15,11 +15,12 @@ class NoiseEstimator:
     ----------
     img_dim : tuple of int
         The dimensions of the image as (height, width).
-    win_rad : int
-        The radius of the exclusion window (in pixels).
+    win_rad : int, optional
+        The radius of the exclusion window (in pixels). If None, a default
+        radius is derived from `img_dim` (see :meth:`default_win_rad`).
     """
 
-    def __init__(self, img_dim: tuple[int, int], win_rad: int) -> None:
+    def __init__(self, img_dim: tuple[int, int], win_rad: int = None) -> None:
         """
         Initialize a NoiseEstimator instance.
 
@@ -30,9 +31,10 @@ class NoiseEstimator:
         ----------
         img_dim : tuple of int
             The dimensions of the image as (height, width).
-        win_rad : int
+        win_rad : int, optional
             The radius of the exclusion window in pixels. Pixels within this radius
-            of the image center are excluded from noise estimation.
+            of the image center are excluded from noise estimation. If None, the
+            radius is derived from `img_dim` via :meth:`default_win_rad`.
 
         Notes
         -----
@@ -41,9 +43,29 @@ class NoiseEstimator:
         (excluded) and pixels outside are marked True (included).
         """
         self.img_dim: tuple[int, int] = img_dim
-        self.win_rad: int = win_rad
+        self.win_rad: int = (
+            win_rad if win_rad is not None else self.default_win_rad(img_dim)
+        )
 
         self._init_window()  # Initialize self.window
+
+    @staticmethod
+    def default_win_rad(img_dim: tuple[int, int]) -> int:
+        """
+        Compute a default exclusion-window radius from the image dimensions.
+
+        Parameters
+        ----------
+        img_dim : tuple of int
+            The dimensions of the image as (height, width).
+
+        Returns
+        -------
+        int
+            The default exclusion-window radius, in pixels, for an image of
+            this size.
+        """
+        return int(np.ceil(img_dim[0] / 3.33))
 
     def _init_window(self):
         """
