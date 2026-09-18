@@ -12,15 +12,17 @@ import tensorflow as tf
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 from wf_psf.data.data_adapter import RepresentationState
+from wf_psf.data.schemas import DatasetMode
+from wf_psf.inference.psf_dataset import PSFDataset
 from wf_psf.inference.psf_inference import (
     InferenceConfigHandler,
     PSFInference,
     PSFInferenceEngine,
+    generate_psf_models,
 )
 from wf_psf.utils.read_config import RecursiveNamespace
 
 
-#!!!!!! CONFIG FIXTURES !!!!!!!!!
 @pytest.fixture
 def mock_training_config():
     training_config = RecursiveNamespace(
@@ -79,107 +81,68 @@ def mock_inference_config():
     return inference_config
 
 
-#!!!!!! DATASET FIXTURES !!!!!!!!!
 @pytest.fixture
-def mock_dataset():
+def mock_dataset(mock_inference_config):
     """
     Unified mock dataset fixture for positions, SEDs, and expected PSFs.
     Can be sliced or reshaped for single/multi-source tests.
     """
-    dataset = {}
+    tf_dataset = {}
 
     # Multi-source example
-    dataset["num_sources_multi"] = 2
-    dataset["num_bins"] = 10
-    dataset["output_dim"] = 32
+    tf_dataset["num_sources_multi"] = 2
+    tf_dataset["num_bins"] = mock_inference_config.inference.model_params.n_bins_lambda
+    tf_dataset["output_dim"] = mock_inference_config.inference.model_params.output_dim
 
-    positions_multi = np.array([[0.1, 0.1], [0.2, 0.2]], dtype=np.float32)
-    seds_multi = np.random.rand(
-        dataset["num_sources_multi"], dataset["num_bins"], 2
-    ).astype(np.float32)
-    expected_psfs_multi = np.random.rand(
-        dataset["num_sources_multi"], dataset["output_dim"], dataset["output_dim"]
-    ).astype(np.float32)
+    # PSF Dataset class
+    psf_dataset_multi = PSFDataset(
+        positions=np.array([[0.1, 0.1], [0.2, 0.2]], dtype=np.float32),
+        seds=np.random.rand(
+            tf_dataset["num_sources_multi"], tf_dataset["num_bins"], 2
+        ).astype(np.float32),
+        sources=np.random.rand(
+            tf_dataset["num_sources_multi"],
+            tf_dataset["output_dim"],
+            tf_dataset["output_dim"],
+        ).astype(np.float32),
+    )
 
     # Single-source example (reshaped or sliced)
-    dataset["num_sources_single"] = 1
-    positions_single = positions_multi[:1]
-    seds_single = seds_multi[:1]
-    expected_psfs_single = expected_psfs_multi[:1]
+    psf_dataset_single = PSFDataset(
+        positions=np.asarray(psf_dataset_multi.positions)[:1],
+        seds=np.asarray(psf_dataset_multi.seds)[:1],
+        sources=np.asarray(psf_dataset_multi.sources)[:1],
+    )
 
     # Convert to tensors
-    dataset["positions_multi_tf"] = tf.convert_to_tensor(positions_multi)
-    dataset["seds_multi_tf"] = tf.convert_to_tensor(seds_multi)
-    dataset["expected_psfs_multi"] = expected_psfs_multi
+    tf_dataset["positions_multi_tf"] = tf.convert_to_tensor(
+        np.asarray(psf_dataset_multi.positions)
+    )
+    tf_dataset["seds_multi_tf"] = tf.convert_to_tensor(
+        np.asarray(psf_dataset_multi.seds)
+    )
+    tf_dataset["expected_psfs_multi"] = psf_dataset_multi.sources
 
-    dataset["positions_single_tf"] = tf.convert_to_tensor(positions_single)
-    dataset["seds_single_tf"] = tf.convert_to_tensor(seds_single)
-    dataset["expected_psfs_single"] = expected_psfs_single
+    tf_dataset["positions_single_tf"] = tf.convert_to_tensor(
+        np.asarray(psf_dataset_single.positions)
+    )
+    tf_dataset["seds_single_tf"] = tf.convert_to_tensor(
+        np.asarray(psf_dataset_single.seds)
+    )
+    tf_dataset["expected_psfs_single"] = psf_dataset_single.sources
 
-    return dataset
+    return psf_dataset_multi, psf_dataset_single, tf_dataset
 
 
-#!!!!!! ADAPTER FIXTURE !!!!!!!!!
 @pytest.fixture
-def mock_data_adapter(mock_dataset):
+def mock_data_adapter():
     """
     Adapter fixture that uses the unified mock dataset.
     """
     adapter = MagicMock()
     adapter.representation_state = RepresentationState.NUMPY
     adapter.convert_to_tensorflow = MagicMock()
-    adapter.complete_data = {
-        "positions": mock_dataset["positions_multi_tf"].numpy(),
-        "seds": mock_dataset["seds_multi_tf"].numpy(),
-    }
     return adapter
-
-
-#!!!!!! PSF FIXTURES !!!!!!!!!
-@pytest.fixture
-def psf_test_setup(mock_dataset, mock_inference_config):
-    inference = PSFInference(
-        "dummy_path.yaml",
-        x_field=[0.1, 0.2],
-        y_field=[0.1, 0.2],
-        seds=mock_dataset["seds_multi_tf"].numpy(),
-    )
-    inference._config_handler = MagicMock()
-    inference._config_handler.inference_config = mock_inference_config.inference
-    inference._trained_psf_model = MagicMock()
-
-    return {
-        "inference": inference,
-        "mock_positions": mock_dataset["positions_multi_tf"],
-        "mock_seds": mock_dataset["seds_multi_tf"],
-        "expected_psfs": mock_dataset["expected_psfs_multi"],
-        "num_sources": mock_dataset["num_sources_multi"],
-        "num_bins": mock_dataset["num_bins"],
-        "output_dim": mock_dataset["output_dim"],
-    }
-
-
-@pytest.fixture
-def psf_single_star_setup(mock_dataset, mock_inference_config):
-    inference = PSFInference(
-        "dummy_path.yaml",
-        x_field=0.1,
-        y_field=0.1,
-        seds=mock_dataset["seds_single_tf"].numpy()[0],  # shape (num_bins, 2)
-    )
-    inference._config_handler = MagicMock()
-    inference._config_handler.inference_config = mock_inference_config.inference
-    inference._trained_psf_model = MagicMock()
-
-    return {
-        "inference": inference,
-        "mock_positions": mock_dataset["positions_single_tf"],
-        "mock_seds": mock_dataset["seds_single_tf"],
-        "expected_psfs": mock_dataset["expected_psfs_single"],
-        "num_sources": mock_dataset["num_sources_single"],
-        "num_bins": mock_dataset["num_bins"],
-        "output_dim": mock_dataset["output_dim"],
-    }
 
 
 @pytest.fixture(params=["single", "multi"])
@@ -193,41 +156,35 @@ def psf_setup(mock_dataset, mock_inference_config, request):
     request.param : str
         "single" for single-source setup, "multi" for multi-source setup.
     """
-    if request.param == "multi":
-        num_sources = mock_dataset["num_sources_multi"]
-        positions_tf = mock_dataset["positions_multi_tf"]
-        seds_tf = mock_dataset["seds_multi_tf"]
-        expected_psfs = mock_dataset["expected_psfs_multi"]
-        x_field = [float(x) for x in positions_tf[:, 0].numpy()]
-        y_field = [float(y) for y in positions_tf[:, 1].numpy()]
-        seds_input = seds_tf.numpy()
-    else:
-        num_sources = mock_dataset["num_sources_single"]
-        positions_tf = mock_dataset["positions_single_tf"]
-        seds_tf = mock_dataset["seds_single_tf"]
-        expected_psfs = mock_dataset["expected_psfs_single"]
-        x_field = float(positions_tf[0, 0].numpy())
-        y_field = float(positions_tf[0, 1].numpy())
-        seds_input = seds_tf.numpy()[0]  # shape (num_bins, 2)
 
-    inference = PSFInference(
-        "dummy_path.yaml",
-        x_field=x_field,
-        y_field=y_field,
-        seds=seds_input,
+    if request.param == "multi":
+        psf_dataset, _, tf_dataset = mock_dataset
+        num_sources = tf_dataset["num_sources_multi"]
+        positions = tf_dataset["positions_multi_tf"]
+        seds = tf_dataset["seds_multi_tf"]
+        expected_psfs = tf_dataset["expected_psfs_multi"]
+    else:
+        _, psf_dataset, tf_dataset = mock_dataset
+        num_sources = 1
+        positions = tf_dataset["positions_single_tf"]
+        seds = tf_dataset["seds_single_tf"]
+        expected_psfs = tf_dataset["expected_psfs_single"]
+
+    psf_generator = PSFInference(
+        inference_config_path="dummy_path.yaml", dataset=psf_dataset
     )
-    inference._config_handler = MagicMock()
-    inference._config_handler.inference_config = mock_inference_config.inference
-    inference._trained_psf_model = MagicMock()
+    psf_generator._config_handler = MagicMock()
+    psf_generator._config_handler.inference_config = mock_inference_config.inference
+    psf_generator._trained_psf_model = MagicMock()
 
     return {
-        "inference": inference,
-        "mock_positions": positions_tf,
-        "mock_seds": seds_tf,
+        "mock_psf_generator": psf_generator,
+        "mock_positions": positions,
+        "mock_seds": seds,
         "expected_psfs": expected_psfs,
         "num_sources": num_sources,
-        "num_bins": mock_dataset["num_bins"],
-        "output_dim": mock_dataset["output_dim"],
+        "num_bins": tf_dataset["num_bins"],
+        "output_dim": tf_dataset["output_dim"],
         "mode": request.param,  # "single" or "multi"
     }
 
@@ -239,7 +196,7 @@ def mock_compute_psfs_with_cache(psf_setup):
     that populates the engine's cache.
     Works for both single-star and multi-star setups.
     """
-    inference = psf_setup["inference"]
+    mock_psf_generator = psf_setup["mock_psf_generator"]
     mock_positions = psf_setup["mock_positions"]
     mock_seds = psf_setup["mock_seds"]
     expected_psfs = psf_setup["expected_psfs"]
@@ -248,14 +205,14 @@ def mock_compute_psfs_with_cache(psf_setup):
 
         def fake_compute_psfs(positions, seds):
             # Populate the engine cache with the expected PSFs
-            inference.engine._inferred_psfs = expected_psfs
+            mock_psf_generator.engine._inferred_psfs = expected_psfs
             return expected_psfs
 
         mock_compute_psfs.side_effect = fake_compute_psfs
 
         yield {
             "mock": mock_compute_psfs,
-            "inference": inference,
+            "psf_generator": mock_psf_generator,
             "positions": mock_positions,
             "seds": mock_seds,
             "expected_psfs": expected_psfs,
@@ -263,17 +220,25 @@ def mock_compute_psfs_with_cache(psf_setup):
         }
 
 
-def test_prepare_configs(mock_training_config, mock_inference_config):
+# -----------------------
+# Tests
+# -----------------------
+def test_prepare_configs(mock_training_config, mock_inference_config, mock_dataset):
     """Test preparing configurations for inference."""
     # Mock the model_params object with some initial values
     training_config = mock_training_config
     inference_config = mock_inference_config
 
+    # Extract PSF dataset from mock_daaset
+    psf_dataset, _, _ = mock_dataset
+
     # Make copy of the original training config model_params
     original_model_params = mock_training_config.training.model_params
 
     # Instantiate PSFInference
-    psf_inf = PSFInference("/dummy/path.yaml")
+    psf_generator = PSFInference(
+        inference_config_path="/dummy/path.yaml", dataset=psf_dataset
+    )
 
     # Mock the config handler attribute with a mock InferenceConfigHandler
     mock_config_handler = MagicMock(spec=InferenceConfigHandler)
@@ -285,43 +250,21 @@ def test_prepare_configs(mock_training_config, mock_inference_config):
         InferenceConfigHandler.overwrite_model_params
     )
 
-    psf_inf._config_handler = mock_config_handler
+    psf_generator._config_handler = mock_config_handler
 
     # Run prepare_configs
-    psf_inf.prepare_configs()
+    psf_generator.prepare_configs()
 
     # Assert that the training model_params were updated
     assert original_model_params.output_Q == 1
     assert original_model_params.output_dim == 64
 
 
-def test_config_handler_lazy_load(monkeypatch):
-    inference = PSFInference("dummy_path.yaml")
-
-    called = {}
-
-    class DummyHandler:
-        def load_configs(self):
-            called["load"] = True
-            self.inference_config = {}
-            self.training_config = {}
-            self.data_config = {}
-
-        def overwrite_model_params(self, *args):
-            pass
-
-    monkeypatch.setattr(
-        "wf_psf.inference.psf_inference.InferenceConfigHandler",
-        lambda path: DummyHandler(),
+def test_batch_size_positive(mock_dataset):
+    psf_dataset, _, _ = mock_dataset
+    inference = PSFInference(
+        inference_config_path="dummy_path.yaml", dataset=psf_dataset
     )
-
-    inference.prepare_configs()
-
-    assert "load" in called  # Confirm lazy load happened
-
-
-def test_batch_size_positive():
-    inference = PSFInference("dummy_path.yaml")
     inference._config_handler = MagicMock()
     inference._config_handler.inference_config = SimpleNamespace(
         batch_size=4, model_params=SimpleNamespace(output_dim=32)
@@ -329,27 +272,98 @@ def test_batch_size_positive():
     assert inference.batch_size == 4
 
 
-def test_prepare_dataset_for_inference(psf_test_setup):
-    inference = psf_test_setup["inference"]
+@pytest.mark.parametrize(("schema_mode"), ["INFERENCE", "EVALUATION"])
+def test_schema_mode(mock_inference_config, schema_mode):
+    handler = InferenceConfigHandler.__new__(InferenceConfigHandler)
+    mock_inference_config.inference.schema_mode = schema_mode
+    handler.inference_config = mock_inference_config.inference
 
-    dataset = inference._prepare_dataset_for_inference()
+    assert handler.schema_mode == DatasetMode[schema_mode]
 
-    assert "positions" in dataset
-    assert "seds" in dataset
-    assert dataset["positions"].shape == (2, 2)
+
+def test_schema_mode_invalid(mock_inference_config):
+    handler = InferenceConfigHandler.__new__(InferenceConfigHandler)
+    handler.inference_config = mock_inference_config.inference
+    handler.inference_config.schema_mode = "invalid"
+
+    with pytest.raises(ValueError, match="Invalid dataset schema mode"):
+        _ = handler.schema_mode
+
+
+def test_compute_psfs_valid_inputs(psf_setup):
+    psf_generator = psf_setup["mock_psf_generator"]
+    expected_psfs = psf_setup["expected_psfs"]
+
+    engine = PSFInferenceEngine(
+        trained_model=psf_generator.trained_psf_model,
+        batch_size=psf_generator.batch_size,
+        output_dim=psf_generator.output_dim,
+    )
+
+    engine.trained_model.return_value = tf.convert_to_tensor(expected_psfs)
+
+    tf_positions = psf_setup["mock_positions"]
+    tf_seds = psf_setup["mock_seds"]
+
+    inferred_psfs = engine.compute_psfs(positions=tf_positions, sed_data=tf_seds)
+
+    np.testing.assert_array_equal(inferred_psfs, expected_psfs)
+
+
+def test_compute_psfs_invalid_positions_shape(psf_setup):
+    psf_generator = psf_setup["mock_psf_generator"]
+
+    engine = PSFInferenceEngine(
+        trained_model=psf_generator.trained_psf_model,
+        batch_size=psf_generator.batch_size,
+        output_dim=psf_generator.output_dim,
+    )
+
+    invalid_positions = tf.zeros((2, 3))
+    sed_data = psf_setup["mock_seds"]
+
+    with pytest.raises(
+        ValueError,
+        match=r"positions must have shape \(n_samples, 2\)",
+    ):
+        engine.compute_psfs(
+            positions=invalid_positions,
+            sed_data=sed_data,
+        )
+
+
+def test_compute_psfs_empty_positions(psf_setup):
+    psf_generator = psf_setup["mock_psf_generator"]
+
+    engine = PSFInferenceEngine(
+        trained_model=psf_generator.trained_psf_model,
+        batch_size=psf_generator.batch_size,
+        output_dim=psf_generator.output_dim,
+    )
+
+    empty_positions = tf.zeros((0, 2))
+    empty_seds = tf.zeros((0, 10, 2))
+
+    with pytest.raises(
+        ValueError,
+        match="positions must contain at least one sample",
+    ):
+        engine.compute_psfs(
+            positions=empty_positions,
+            sed_data=empty_seds,
+        )
 
 
 @patch("wf_psf.inference.psf_inference.DataAdapterFactory.build")
 @patch("wf_psf.inference.psf_inference.psf_models.simPSF")
 def test_data_adapter_property_adapter_build(
-    _, mock_build, psf_test_setup, mock_data_adapter
+    _, mock_build, psf_setup, mock_data_adapter
 ):
-    inference = psf_test_setup["inference"]
+    psf_generator = psf_setup["mock_psf_generator"]
 
     mock_build.return_value = mock_data_adapter
 
-    # Prevent real PSF simulator creation
-    adapter = inference.inference_data_adapter
+    adapter = psf_generator.inference_data_adapter
 
     assert adapter == mock_data_adapter
     mock_build.assert_called_once()
@@ -357,30 +371,31 @@ def test_data_adapter_property_adapter_build(
 
 @patch("wf_psf.inference.psf_inference.DataAdapterFactory.build")
 @patch("wf_psf.inference.psf_inference.psf_models.simPSF")
-def test_data_adapter_cached(_, mock_build, psf_test_setup, mock_data_adapter):
-    inference = psf_test_setup["inference"]
+def test_data_adapter_cached(_, mock_build, psf_setup, mock_data_adapter):
+    psf_generator = psf_setup["mock_psf_generator"]
     mock_build.return_value = mock_data_adapter
 
-    adapter1 = inference.inference_data_adapter
-    adapter2 = inference.inference_data_adapter
+    adapter1 = psf_generator.inference_data_adapter
+    adapter2 = psf_generator.inference_data_adapter
 
     assert adapter1 is adapter2
     mock_build.assert_called_once()
 
 
 @patch("wf_psf.inference.psf_inference.DataAdapterFactory.build")
-def test_data_adapter_no_conversion_if_tensorflow(mock_build, psf_test_setup):
-    adapter = MagicMock()
-    adapter.representation_state = RepresentationState.TENSORFLOW
-    adapter.convert_to_tensorflow = MagicMock()
+def test_data_adapter_no_conversion_if_tensorflow(
+    mock_build, psf_setup, mock_data_adapter
+):
+    # Set representation state to TENSORFLOW
+    mock_data_adapter.representation_state = RepresentationState.TENSORFLOW
 
-    mock_build.return_value = adapter
+    mock_build.return_value = mock_data_adapter
 
-    inference = psf_test_setup["inference"]
+    psf_generator = psf_setup["mock_psf_generator"]
 
-    inference.inference_data_adapter
+    psf_generator.inference_data_adapter
 
-    adapter.convert_to_tensorflow.assert_not_called()
+    mock_data_adapter.convert_to_tensorflow.assert_not_called()
 
 
 @patch("wf_psf.inference.psf_inference.load_trained_psf_model")
@@ -388,11 +403,12 @@ def test_load_inference_model(
     mock_load_trained_psf_model,
     mock_training_config,
     mock_inference_config,
+    mock_dataset,
+    mock_data_adapter,
 ):
-    mock_adapter = MagicMock()
-    mock_adapter.complete_data = {"positions": np.zeros((2, 2))}
+    psf_dataset, _, _ = mock_dataset
 
-    psf_inf = PSFInference("dummy_path.yaml", x_field=2, y_field=2)
+    psf_inf = PSFInference(inference_config_path="dummy_path.yaml", dataset=psf_dataset)
 
     mock_config_handler = MagicMock(spec=InferenceConfigHandler)
     mock_config_handler.trained_model_path = "mock/path/to/model"
@@ -401,18 +417,11 @@ def test_load_inference_model(
     mock_config_handler.model_subdir = "psf_model"
 
     psf_inf._config_handler = mock_config_handler
-    psf_inf._model_data_adapter = mock_adapter
+    psf_inf._model_data_adapter = mock_data_adapter
 
     psf_inf.load_inference_model()
 
     mock_load_trained_psf_model.assert_called_once()
-
-
-def test_prepare_dataset_missing_positions():
-    inference = PSFInference("dummy_path.yaml")
-
-    with pytest.raises(ValueError):
-        inference._prepare_dataset_for_inference()
 
 
 @patch.object(PSFInference, "prepare_configs")
@@ -425,47 +434,118 @@ def test_run_inference(
     mock_compute_psfs,
     mock_prepare_configs,
     mock_data_adapter,
-    psf_test_setup,
+    psf_setup,
 ):
     # Mock factory build
     mock_build.return_value = mock_data_adapter
-    inference = psf_test_setup["inference"]
+    psf_generator = psf_setup["mock_psf_generator"]
+
+    # Set complete_data in mock_data_adapter
+    mock_data_adapter.complete_data = {
+        "positions": psf_setup["mock_positions"],
+        "seds": psf_setup["mock_seds"],
+    }
 
     # Lazy-load inference.data_adapter
-    inference.inference_data_adapter
+    psf_generator.inference_data_adapter
 
     mock_positions = mock_data_adapter.complete_data["positions"]
     mock_seds = mock_data_adapter.complete_data["seds"]
-    expected_psfs = psf_test_setup["expected_psfs"]
+    expected_psfs = psf_setup["expected_psfs"]
 
     mock_compute_psfs.return_value = expected_psfs
 
-    psfs = inference.run_inference()
+    psfs = psf_generator.run_inference()
 
     assert isinstance(psfs, np.ndarray)
     assert psfs.shape == expected_psfs.shape
     mock_prepare_configs.assert_called_once()
     mock_compute_psfs.assert_called_once_with(mock_positions, mock_seds)
     mock_data_adapter.convert_to_tensorflow.assert_called_once_with(
-        inference.simPSF,
-        inference.n_bins_lambda,
-        mode=inference.config_handler.schema_mode,
+        psf_generator.simPSF,
+        psf_generator.n_bins_lambda,
+        mode=psf_generator.config_handler.schema_mode,
     )
+
+
+@patch.object(PSFInference, "prepare_configs")
+@patch("wf_psf.inference.psf_inference.DataAdapterFactory.build")
+@patch("wf_psf.inference.psf_inference.psf_models.simPSF")
+def test_run_inference_invalid_complete_data_type(
+    _,
+    mock_build,
+    mock_prepare_configs,
+    mock_data_adapter,
+    psf_setup,
+):
+    # Mock factory build
+    mock_build.return_value = mock_data_adapter
+    psf_generator = psf_setup["mock_psf_generator"]
+
+    # Set complete_data in mock_data_adapter
+    mock_data_adapter.complete_data = []
+
+    with pytest.raises(
+        TypeError,
+        match="Expected inference adapter complete_data to be a dict",
+    ):
+        psf_generator.run_inference()
+
+
+@pytest.mark.parametrize(
+    ("invalid_field", "error_message"),
+    [
+        (
+            "positions",
+            "Expected inference positions to be a TensorFlow Tensor",
+        ),
+        (
+            "seds",
+            "Expected inference SED data to be a TensorFlow Tensor",
+        ),
+    ],
+)
+@patch.object(PSFInference, "prepare_configs")
+@patch("wf_psf.inference.psf_inference.DataAdapterFactory.build")
+@patch("wf_psf.inference.psf_inference.psf_models.simPSF")
+def test_run_inference_invalid_product_type(
+    _,
+    mock_build,
+    mock_prepare_configs,
+    mock_data_adapter,
+    psf_setup,
+    invalid_field,
+    error_message,
+):
+    mock_build.return_value = mock_data_adapter
+    psf_generator = psf_setup["mock_psf_generator"]
+
+    complete_data = {
+        "positions": psf_setup["mock_positions"],
+        "seds": psf_setup["mock_seds"],
+    }
+    complete_data[invalid_field] = np.asarray(complete_data[invalid_field])
+
+    mock_data_adapter.complete_data = complete_data
+
+    with pytest.raises(TypeError, match=error_message):
+        psf_generator.run_inference()
 
 
 @patch("wf_psf.inference.psf_inference.psf_models.simPSF")
 def test_simpsf_uses_updated_model_params(
-    mock_simpsf, mock_training_config, mock_inference_config
+    mock_simpsf, mock_training_config, mock_inference_config, mock_dataset
 ):
     """Test that simPSF uses the updated model parameters."""
     training_config = mock_training_config.training
     inference_config = mock_inference_config.inference
+    psf_dataset, _, _ = mock_dataset
 
     # Set the expected output_Q
     expected_output_Q = inference_config.model_params.output_Q
     training_config.model_params.output_Q = expected_output_Q
 
-    # Create fake psf instance
+    # Create fake sim psf instance
     fake_psf_instance = MagicMock()
     fake_psf_instance.output_Q = expected_output_Q
     mock_simpsf.return_value = fake_psf_instance
@@ -477,7 +557,9 @@ def test_simpsf_uses_updated_model_params(
     mock_config_handler.model_subdir = "psf_model"
     mock_config_handler.data_config = MagicMock()
 
-    modeller = PSFInference("dummy_path.yaml")
+    modeller = PSFInference(
+        inference_config_path="dummy_path.yaml", dataset=psf_dataset
+    )
     modeller._config_handler = mock_config_handler
 
     modeller.prepare_configs()
@@ -493,23 +575,23 @@ def test_simpsf_uses_updated_model_params(
 
 def test_get_psfs_runs_inference(mock_compute_psfs_with_cache):
     """Test that get_psfs uses cached PSFs after first computation."""
-    inference = mock_compute_psfs_with_cache["inference"]
+    psf_generator = mock_compute_psfs_with_cache["psf_generator"]
     expected_psfs = mock_compute_psfs_with_cache["expected_psfs"]
 
-    inference.engine = MagicMock()
-    inference.engine.inferred_psfs = None
-    inference.engine.get_psfs.return_value = expected_psfs
+    psf_generator.engine = MagicMock()
+    psf_generator.engine.inferred_psfs = None
+    psf_generator.engine.get_psfs.return_value = expected_psfs
 
-    with patch.object(inference, "run_inference") as mock_run:
+    with patch.object(psf_generator, "run_inference") as mock_run:
 
         def fake_run():
-            inference.engine.inferred_psfs = expected_psfs
+            psf_generator.engine.inferred_psfs = expected_psfs
             return expected_psfs
 
         mock_run.side_effect = fake_run
 
-        psfs_1 = inference.get_psfs()
-        psfs_2 = inference.get_psfs()
+        psfs_1 = psf_generator.get_psfs()
+        psfs_2 = psf_generator.get_psfs()
 
         np.testing.assert_array_equal(psfs_1, expected_psfs)
         np.testing.assert_array_equal(psfs_2, expected_psfs)
@@ -517,21 +599,9 @@ def test_get_psfs_runs_inference(mock_compute_psfs_with_cache):
         mock_run.assert_called_once()
 
 
-def test_psf_shapes(psf_setup):
-    setup = psf_setup
-    psfs = setup["expected_psfs"]
-    assert psfs.shape == (
-        setup["num_sources"],
-        setup["output_dim"],
-        setup["output_dim"],
-    )
-    if setup["mode"] == "single":
-        assert setup["num_sources"] == 1
-
-
-def test_inference_clear_cache(psf_test_setup):
+def test_inference_clear_cache(psf_setup):
     """Test that PSFInference clear_cache resets the instance of PSFInference."""
-    inference = psf_test_setup["inference"]
+    inference = psf_setup["mock_psf_generator"]
     inference._simPSF = MagicMock()
     inference._data_adapter = MagicMock()
     inference._trained_psf_model = MagicMock()
@@ -556,10 +626,10 @@ def test_inference_clear_cache(psf_test_setup):
     assert inference.engine is None
 
 
-def test_engine_clear_cache(psf_test_setup):
+def test_engine_clear_cache(psf_setup):
     """Test that clear_cache resets the internal PSF cache."""
-    inference = psf_test_setup["inference"]
-    expected_psfs = psf_test_setup["expected_psfs"]
+    inference = psf_setup["mock_psf_generator"]
+    expected_psfs = psf_setup["expected_psfs"]
 
     # Create the engine and compute PSFs
     inference.engine = PSFInferenceEngine(
@@ -577,3 +647,24 @@ def test_engine_clear_cache(psf_test_setup):
     assert inference.engine._inferred_psfs is None, (
         "PSF cache should be cleared to None"
     )
+
+
+@patch("wf_psf.inference.psf_inference.PSFInference")
+def test_generate_psf_models(mock_psf_inference, mock_dataset):
+    expected_psfs = np.random.rand(2, 32, 32)
+    mock_psf_inference.return_value.get_psfs.return_value = expected_psfs
+
+    dataset, _, _ = mock_dataset
+
+    result = generate_psf_models(
+        dataset=dataset,
+        inference_config_path="dummy_path.yaml",
+    )
+
+    mock_psf_inference.assert_called_once_with(
+        inference_config_path="dummy_path.yaml",
+        dataset=dataset,
+    )
+    mock_psf_inference.return_value.get_psfs.assert_called_once_with()
+
+    np.testing.assert_array_equal(result, expected_psfs)
