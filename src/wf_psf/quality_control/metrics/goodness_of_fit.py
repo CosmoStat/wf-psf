@@ -8,9 +8,10 @@ data.
 
 """
 
+from wf_psf.quality_control.context import QualityControlContext
+
 from .base import QualityMetric
 import numpy as np
-from typing import Any
 
 
 class GoodnessOfFitMetric(QualityMetric):
@@ -18,6 +19,6 @@ class GoodnessOfFitMetric(QualityMetric):
 
     name = "goodness_of_fit"
 
-    def compute(self, dataset: Any) -> dict[str, np.ndarray]:
+    def compute(self, context: QualityControlContext) -> dict[str, np.ndarray]:
         """Compute reduced chi-square values for each dataset sample."""
         ...
