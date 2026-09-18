@@ -56,6 +56,6 @@ class QualityMetric(ABC):
         -------
         dict[str, np.ndarray]
             Mapping of diagnostic names to arrays containing one value per
-            dataset sample. All returned arrays must be aligned with the dataset
+            dataset sample. All returned arrays are aligned with the dataset
             samples.
         """
