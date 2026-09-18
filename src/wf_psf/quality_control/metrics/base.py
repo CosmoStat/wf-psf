@@ -15,6 +15,8 @@ from abc import ABC, abstractmethod
 import numpy as np
 from typing import Any
 
+from wf_psf.quality_control.context import QualityControlContext
+
 
 class QualityMetric(ABC):
     """Abstract interface for quality metric implementations.
@@ -30,8 +32,8 @@ class QualityMetric(ABC):
 
     Methods
     -------
-    compute(dataset)
-        Compute the quality metric for the supplied dataset.
+    compute(context)
+        Compute the quality metric for the supplied quality control context.
 
     """
 
@@ -41,16 +43,14 @@ class QualityMetric(ABC):
         self.params = params
 
     @abstractmethod
-    def compute(self, dataset: Any) -> dict[str, np.ndarray]:
-        """Compute the quality metric for the supplied dataset.
+    def compute(self, context: QualityControlContext) -> dict[str, np.ndarray]:
+        """Compute the quality metric for the supplied context.
 
         Parameters
         ----------
-        dataset
-            Dataset containing the samples to be evaluated. A dataset may
-            contain multiple postage stamps/images and their associated
-            metadata or auxiliary data, depending on the requirements of
-            the metric.
+        context : QualityControlContext
+            Context storing the dataset and resolved resources
+            shared across the quality control pipeline.
 
         Returns
         -------
