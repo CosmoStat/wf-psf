@@ -180,39 +180,30 @@ def test_calculate_sample_weights_high_variance(mock_noise_estimator):
 
 
 @pytest.mark.parametrize(
-    "loss, expected",
-    [
-        (None, False),
-        ("mean_squared_error", False),
-        ("masked_mean_squared_error", True),
-        (train_utils.MaskedMeanSquaredError(), True),
-    ],
+    "loss_name", [None, "mean_squared_error", "some_other_loss"]
 )
-def test_is_masked_loss(loss, expected):
-    """Test that _is_masked_loss identifies the masked_mean_squared_error loss by name."""
-    assert train_utils._is_masked_loss(loss) is expected
-
-
-def test_resolve_training_outputs_unmasked_loss():
-    """Test that for a non-masked loss, outputs pass through unchanged and masks is None."""
+def test_resolve_training_outputs_unmasked_loss(loss_name):
+    """Test that for a non-"masked_"-prefixed loss name, outputs pass through unchanged and masks is None."""
     outputs = np.random.rand(4, 8, 8)
-    images, masks = train_utils._resolve_training_outputs(
-        outputs, "mean_squared_error"
-    )
+    images, masks = train_utils._resolve_training_outputs(outputs, loss_name)
 
     assert images is outputs
     assert masks is None
 
 
-def test_resolve_training_outputs_masked_loss():
-    """Test that for a masked loss, outputs are split into images and an inverted boolean mask."""
+@pytest.mark.parametrize(
+    "loss_name", ["masked_mean_squared_error", "masked_huber_error"]
+)
+def test_resolve_training_outputs_masked_loss(loss_name):
+    """Test that any loss name starting with "masked_" splits outputs into images
+    and an inverted boolean mask, so new masked losses work without code changes."""
     batch_size, height, width = 4, 8, 8
     images = np.random.rand(batch_size, height, width)
     raw_masks = np.random.randint(0, 2, size=(batch_size, height, width))
     outputs = np.stack([images, raw_masks], axis=-1)
 
     resolved_images, resolved_masks = train_utils._resolve_training_outputs(
-        outputs, "masked_mean_squared_error"
+        outputs, loss_name
     )
 
     np.testing.assert_array_equal(resolved_images, images)
