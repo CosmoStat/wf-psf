@@ -13,4 +13,3 @@ For top level release notes, leave all the headers commented out.
 
 - Moved `NoiseEstimator` from `utils.utils` to a dedicated `utils.noise` module, and initialised it with a default exclusion-window radius (`NoiseEstimator.default_win_rad`).
 - Simplified `train_utils.calculate_sample_weights` to `calculate_sample_weights(images, masks=None, ...)`. It no longer needs to know about `loss` or `use_sample_weights`. `general_train_cycle` now resolves the training output representation.
-- Removed `train_utils.estimate_noise_sigma`, which is now redundant after the refactors.
