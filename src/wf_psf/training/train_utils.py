@@ -11,7 +11,7 @@ Authors: Tobias Liaudat <tobias.liaudat@cea.fr>, Ezequiel Centofanti <ezequiel.c
 
 import numpy as np
 import tensorflow as tf
-from typing import Optional, Callable, Union
+from typing import Optional, Callable
 from wf_psf.psf_models.psf_models import compile_PSF_model
 from wf_psf.utils.noise import NoiseEstimator
 from wf_psf.utils.utils import generalised_sigmoid
@@ -368,43 +368,25 @@ def configure_optimizer_and_loss(
     return optimizer, loss, metrics
 
 
-def _is_masked_loss(loss: Union[str, Callable, None]) -> bool:
-    """
-    Check whether the given loss corresponds to the masked mean squared error.
-
-    Parameters
-    ----------
-    loss: str, callable, optional
-        The loss function (or its name) used for training.
-
-    Returns
-    -------
-    bool
-        True if the loss is the ``masked_mean_squared_error``, False otherwise.
-    """
-    if loss is None:
-        return False
-    return (isinstance(loss, str) and loss == "masked_mean_squared_error") or (
-        hasattr(loss, "name") and loss.name == "masked_mean_squared_error"
-    )
-
-
 def _resolve_training_outputs(
-    outputs: tf.Tensor, loss: Union[str, Callable, None]
+    outputs: tf.Tensor, loss_name: Optional[str]
 ) -> tuple[tf.Tensor, Optional[np.ndarray]]:
     """
-    Resolve the training-specific ``outputs``/``loss`` representation into a
-    plain image and, for a masked loss, a per-image mask.
+    Resolve the training-specific ``outputs`` representation into a plain
+    image, and in case of a masked loss, a per-image mask.
 
     Parameters
     ----------
     outputs: tf.Tensor
-        Image data. When ``loss`` is ``"masked_mean_squared_error"``, a 4D tensor
+        Image data. When ``loss_name`` starts with ``"masked_"``, a 4D tensor
         of shape ``(batch_size, height, width, 2)`` is expected, where the last
         dimension holds ``[image, mask]``. Otherwise, a 3D tensor of shape
         ``(batch_size, height, width)`` is expected.
-    loss: str, callable, optional
-        The loss function (or its name) used for training.
+    loss_name: str, optional
+        The name of the loss function used for training (e.g. ``loss.name``).
+        Any name starting with ``"masked_"`` (e.g. ``"masked_mean_squared_error"``)
+        is treated as a masked loss, so new masked losses work without updating
+        this function.
 
     Returns
     -------
@@ -412,7 +394,7 @@ def _resolve_training_outputs(
         The resolved images and, for a masked loss, the corresponding boolean
         masks (``outputs[..., 1]`` inverted); otherwise ``None``.
     """
-    if _is_masked_loss(loss):
+    if loss_name is not None and loss_name.startswith("masked_"):
         images = outputs[..., 0]
         masks = np.array(1 - outputs[..., 1], dtype=bool)
     else:
@@ -761,7 +743,9 @@ def general_train_cycle(
 
     # Calculate sample weights
     if use_sample_weights:
-        images, masks = _resolve_training_outputs(outputs, loss)
+        images, masks = _resolve_training_outputs(
+            outputs, getattr(loss, "name", loss)
+        )
         sample_weight = calculate_sample_weights(
             images,
             masks,
