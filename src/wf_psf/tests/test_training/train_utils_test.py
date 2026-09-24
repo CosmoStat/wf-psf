@@ -180,7 +180,14 @@ def test_calculate_sample_weights_high_variance(mock_noise_estimator):
 
 
 @pytest.mark.parametrize(
-    "loss_name", [None, "mean_squared_error", "some_other_loss"]
+    "loss_name",
+    [
+        None,
+        "mean_squared_error",
+        "some_other_loss",
+        "non_masked_loss",
+        "unmasked_mse_loss",
+    ],
 )
 def test_resolve_training_outputs_unmasked_loss(loss_name):
     """Test that for a non-"masked_"-prefixed loss name, outputs pass through unchanged and masks is None."""
