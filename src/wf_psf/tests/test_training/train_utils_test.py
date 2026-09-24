@@ -187,6 +187,7 @@ def test_calculate_sample_weights_high_variance(mock_noise_estimator):
         "some_other_loss",
         "non_masked_loss",
         "unmasked_mse_loss",
+        "masked",
     ],
 )
 def test_resolve_training_outputs_unmasked_loss(loss_name):
