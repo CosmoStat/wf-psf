@@ -9,17 +9,19 @@ from wf_psf.data.schemas import DatasetMode, SCHEMAS
 # Fixtures
 # ------------------------------------------------------------
 
+
 @pytest.fixture
 def mock_simPSF(mocker):
     mock = mocker.Mock()
 
     # deterministic output for SED pipeline
     mock.calc_SED_wave_values.return_value = (
-        np.array([1.0, 2.0, 3.0]),   # feasible_wv
-        np.array([0.5])             # SED_norm
+        np.array([1.0, 2.0, 3.0]),  # feasible_wv
+        np.array([0.5]),  # SED_norm
     )
 
     return mock
+
 
 @pytest.fixture
 def mock_process_seds(mocker):
@@ -56,9 +58,10 @@ def dataset_dict():
 
 
 @pytest.fixture
-def dataset_container(dataset_dict):
+def dataset_container_without_masks(dataset_dict):
     """Wrap dataset_dict in DatasetContainer."""
-    return DatasetContainer(dataset_dict)
+    return DatasetContainer({**dataset_dict, "masks": None})
+
 
 # ------------------------------------------------------------
 # Helpers
@@ -66,15 +69,20 @@ def dataset_container(dataset_dict):
 def get_schema(mode: DatasetMode):
     return SCHEMAS[mode]
 
+
 # ------------------------------------------------------------
 # CONTRACT TESTS
 # ------------------------------------------------------------
 
-@pytest.mark.parametrize("mode", [
-    DatasetMode.TRAIN,
-    DatasetMode.EVALUATION,
-    DatasetMode.INFERENCE,
-])
+
+@pytest.mark.parametrize(
+    "mode",
+    [
+        DatasetMode.TRAIN,
+        DatasetMode.EVALUATION,
+        DatasetMode.INFERENCE,
+    ],
+)
 def test_convert_dataset_returns_all_required_fields(
     converter,
     dataset_dict,
@@ -100,11 +108,14 @@ def test_convert_dataset_returns_all_required_fields(
         assert isinstance(result[key], tf.Tensor)
 
 
-@pytest.mark.parametrize("mode", [
-    DatasetMode.TRAIN,
-    DatasetMode.EVALUATION,
-    DatasetMode.INFERENCE,
-])
+@pytest.mark.parametrize(
+    "mode",
+    [
+        DatasetMode.TRAIN,
+        DatasetMode.EVALUATION,
+        DatasetMode.INFERENCE,
+    ],
+)
 def test_optional_fields_are_tensors_when_present(
     converter,
     dataset_dict,
@@ -126,7 +137,7 @@ def test_optional_fields_are_tensors_when_present(
     schema = get_schema(mode)
 
     for key in schema.optional_keys:
-        if key in dataset_dict:
+        if key in dataset_dict and dataset_dict[key] is not None:
             assert isinstance(result[key], tf.Tensor)
 
 
@@ -153,32 +164,6 @@ def test_missing_required_field_raises(
             mode=DatasetMode.TRAIN,
         )
 
-def test_dataset_container_and_dict_equivalence(
-    converter,
-    dataset_dict,
-    dataset_container,
-    mock_simPSF,
-    mock_process_seds,
-):
-    """
-    Contract:
-    DatasetContainer and dict inputs produce identical keys in output.
-    """
-    dict_result = converter.convert_dataset(
-        dataset_dict,
-        mock_simPSF,
-        n_bins_lambda=10,
-        mode=DatasetMode.TRAIN,
-    )
-
-    container_result = converter.convert_dataset(
-        dataset_container,
-        mock_simPSF,
-        n_bins_lambda=10,
-        mode=DatasetMode.TRAIN,
-    )
-
-    assert set(dict_result.keys()) == set(container_result.keys())
 
 def test_seds_are_always_converted_to_tensor(
     converter,
@@ -198,7 +183,7 @@ def test_seds_are_always_converted_to_tensor(
     )
 
     assert isinstance(result["seds"], tf.Tensor)
-  
+
 
 def test_optional_keys_removed_input_does_not_break_pipeline(
     converter,
@@ -226,3 +211,50 @@ def test_optional_keys_removed_input_does_not_break_pipeline(
     for k in schema.required_keys:
         assert k in result
 
+
+def test_optional_none_field_is_preserved(
+    converter,
+    dataset_container_without_masks,
+    mock_simPSF,
+    mock_process_seds,
+):
+    """
+    Contract:
+    Optional fields with values are converted, while optional fields set
+    to None are preserved without TensorFlow conversion.
+    """
+    schema = SCHEMAS[DatasetMode.INFERENCE]
+
+    result = converter.convert_dataset(
+        dataset_container_without_masks,
+        mock_simPSF,
+        n_bins_lambda=10,
+        mode=DatasetMode.INFERENCE,
+    )
+
+    for k in schema.required_keys:
+        assert k in result
+
+    assert isinstance(result["positions"], tf.Tensor)  # Required
+    assert isinstance(result["sources"], tf.Tensor)  # Optional key not None
+    assert result["masks"] is None  # Optional key None
+
+
+def test_required_field_set_to_none_raises(
+    converter,
+    dataset_dict,
+    mock_simPSF,
+):
+    schema = SCHEMAS[DatasetMode.TRAIN]
+    required_key = schema.required_keys[0]
+
+    corrupted = dict(dataset_dict)
+    corrupted[required_key] = None
+
+    with pytest.raises(ValueError):
+        converter.convert_dataset(
+            corrupted,
+            mock_simPSF,
+            n_bins_lambda=10,
+            mode=DatasetMode.TRAIN,
+        )

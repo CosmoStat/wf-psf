@@ -21,6 +21,7 @@ from enum import Enum, auto
 from typing import Callable, Any
 from wf_psf.data.constants import (
     CANONICAL_DATASET_KEYS,
+    INFERENCE_OPTIONAL_KEYS,
     OPTIONAL_KEYS as CONST_OPTIONAL_KEYS,
     SED_DOMAIN,
 )
@@ -118,7 +119,7 @@ INFERENCE_SCHEMA = DatasetSchema(
         "seds",
         "positions",
     ),
-    optional_keys=CONST_OPTIONAL_KEYS,
+    optional_keys=INFERENCE_OPTIONAL_KEYS,
     strict=True,
     handlers={"seds": process_seds_handler},
 )
