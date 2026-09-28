@@ -261,6 +261,7 @@ def test_prepare_configs(mock_training_config, mock_inference_config, mock_datas
 
 
 def test_batch_size_positive(mock_dataset):
+    """Test that batch_size is read from the inference configuration."""
     psf_dataset, _, _ = mock_dataset
     inference = PSFInference(
         inference_config_path="dummy_path.yaml", dataset=psf_dataset
@@ -274,6 +275,7 @@ def test_batch_size_positive(mock_dataset):
 
 @pytest.mark.parametrize(("schema_mode"), ["INFERENCE", "EVALUATION"])
 def test_schema_mode(mock_inference_config, schema_mode):
+    """Test that the configured schema mode is resolved to DatasetMode."""
     handler = InferenceConfigHandler.__new__(InferenceConfigHandler)
     mock_inference_config.inference.schema_mode = schema_mode
     handler.inference_config = mock_inference_config.inference
@@ -282,6 +284,7 @@ def test_schema_mode(mock_inference_config, schema_mode):
 
 
 def test_schema_mode_invalid(mock_inference_config):
+    """Test that an invalid scham mode raises ValueError."""
     handler = InferenceConfigHandler.__new__(InferenceConfigHandler)
     handler.inference_config = mock_inference_config.inference
     handler.inference_config.schema_mode = "invalid"
@@ -291,6 +294,7 @@ def test_schema_mode_invalid(mock_inference_config):
 
 
 def test_compute_psfs_valid_inputs(psf_setup):
+    """Test that PSFs are computed correctly for valid inputs."""
     psf_generator = psf_setup["mock_psf_generator"]
     expected_psfs = psf_setup["expected_psfs"]
 
@@ -311,6 +315,7 @@ def test_compute_psfs_valid_inputs(psf_setup):
 
 
 def test_compute_psfs_invalid_positions_shape(psf_setup):
+    """Test that invalid position shapes raise ValueError."""
     psf_generator = psf_setup["mock_psf_generator"]
 
     engine = PSFInferenceEngine(
@@ -333,6 +338,7 @@ def test_compute_psfs_invalid_positions_shape(psf_setup):
 
 
 def test_compute_psfs_empty_positions(psf_setup):
+    """Test that empty positions raise ValueError."""
     psf_generator = psf_setup["mock_psf_generator"]
 
     engine = PSFInferenceEngine(
@@ -359,6 +365,7 @@ def test_compute_psfs_empty_positions(psf_setup):
 def test_data_adapter_property_adapter_build(
     _, mock_build, psf_setup, mock_data_adapter
 ):
+    """Test that the inference data adapter is built on first access."""
     psf_generator = psf_setup["mock_psf_generator"]
 
     mock_build.return_value = mock_data_adapter
@@ -372,6 +379,7 @@ def test_data_adapter_property_adapter_build(
 @patch("wf_psf.inference.psf_inference.DataAdapterFactory.build")
 @patch("wf_psf.inference.psf_inference.psf_models.simPSF")
 def test_data_adapter_cached(_, mock_build, psf_setup, mock_data_adapter):
+    """Test that the inference data adapter is cached after first access."""
     psf_generator = psf_setup["mock_psf_generator"]
     mock_build.return_value = mock_data_adapter
 
@@ -386,6 +394,7 @@ def test_data_adapter_cached(_, mock_build, psf_setup, mock_data_adapter):
 def test_data_adapter_no_conversion_if_tensorflow(
     mock_build, psf_setup, mock_data_adapter
 ):
+    """Test that TensorFlow data is not converted again."""
     # Set representation state to TENSORFLOW
     mock_data_adapter.representation_state = RepresentationState.TENSORFLOW
 
@@ -406,6 +415,7 @@ def test_load_inference_model(
     mock_dataset,
     mock_data_adapter,
 ):
+    """Test that inference converts the data and computes PSFs."""
     psf_dataset, _, _ = mock_dataset
 
     psf_inf = PSFInference(inference_config_path="dummy_path.yaml", dataset=psf_dataset)
@@ -436,6 +446,7 @@ def test_run_inference(
     mock_data_adapter,
     psf_setup,
 ):
+    """Test that invalid complete data types raise TypeError."""
     # Mock factory build
     mock_build.return_value = mock_data_adapter
     psf_generator = psf_setup["mock_psf_generator"]
@@ -478,6 +489,7 @@ def test_run_inference_invalid_complete_data_type(
     mock_data_adapter,
     psf_setup,
 ):
+    """Test that invalidc complete data types raise TypeError."""
     # Mock factory build
     mock_build.return_value = mock_data_adapter
     psf_generator = psf_setup["mock_psf_generator"]
@@ -517,6 +529,7 @@ def test_run_inference_invalid_product_type(
     invalid_field,
     error_message,
 ):
+    """Test that non-TensorFlow inference data raises TypeError."""
     mock_build.return_value = mock_data_adapter
     psf_generator = psf_setup["mock_psf_generator"]
 
@@ -651,6 +664,7 @@ def test_engine_clear_cache(psf_setup):
 
 @patch("wf_psf.inference.psf_inference.PSFInference")
 def test_generate_psf_models(mock_psf_inference, mock_dataset):
+    """Test that generate_psf_models delegates to PSFInference."""
     expected_psfs = np.random.rand(2, 32, 32)
     mock_psf_inference.return_value.get_psfs.return_value = expected_psfs
 

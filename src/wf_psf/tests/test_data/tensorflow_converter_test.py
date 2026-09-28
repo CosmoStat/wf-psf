@@ -245,6 +245,10 @@ def test_required_field_set_to_none_raises(
     dataset_dict,
     mock_simPSF,
 ):
+    """
+    Contract:
+    Required field set to None under strict schema raises ValueError.
+    """
     schema = SCHEMAS[DatasetMode.TRAIN]
     required_key = schema.required_keys[0]
 
