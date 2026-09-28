@@ -84,29 +84,29 @@ class TensorFlowDatasetConverter:
         ValueError
             Raised if:
 
-            - A required field is missing while schema strictness is enabled.
+            - A required field is missing or ``None`` while schema strictness is enabled.
             - A handler requires a domain-specific context that is absent.
 
         Notes
         -----
-        - Missing optional fields are silently ignored.
+        - Missing optional fields, or optional fields with a value of ``None``, are silently ignored.
         - Missing required fields generate warnings when schema strictness
           is disabled.
         - Field handlers are resolved dynamically from the active schema.
         """
-        MISSING = object()
+        _MISSING = object()
 
-        v = dataset.get(key, MISSING)
+        v = dataset.get(key, _MISSING)
 
-        if v is MISSING:
+        if v is _MISSING or v is None:
             if required and schema.strict:
                 raise ValueError(
-                    f"Dataset field '{key}' required for " f"{schema.id} is missing."
+                    f"Dataset field '{key}' required for {schema.id} is missing."
                 )
 
             if required:
                 logger.warning(
-                    f"Dataset field '{key}' required for " f"{schema.id} is missing."
+                    f"Dataset field '{key}' required for {schema.id} is missing."
                 )
 
             return
@@ -175,7 +175,7 @@ class TensorFlowDatasetConverter:
         Notes
         -----
         - Required fields are validated according to schema strictness.
-        - Optional fields are processed only if present.
+        - Optional fields are processed only if present and non-None.
         - Generic fields are converted using ``ensure_tensor``.
         - Specialized preprocessing (e.g. SED conversion) is delegated
           to registered schema handlers.
@@ -260,6 +260,7 @@ class TensorFlowDatasetConverter:
             )
             for sed in sed_data
         ]
+
         sed_tensor = ensure_tensor(processed, dtype=tf.float32)
 
         return tf.transpose(sed_tensor, perm=[0, 2, 1])

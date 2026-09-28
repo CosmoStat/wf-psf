@@ -21,6 +21,7 @@ from enum import Enum, auto
 from typing import Callable, Any
 from wf_psf.data.constants import (
     CANONICAL_DATASET_KEYS,
+    INFERENCE_OPTIONAL_KEYS,
     OPTIONAL_KEYS as CONST_OPTIONAL_KEYS,
     SED_DOMAIN,
 )
@@ -74,6 +75,7 @@ class DatasetSchema:
     handlers : dict[str, Callable[..., Any]] = None
         Handler for specific dataset fields (e.g. seds)
     """
+
     id: str
     required_keys: tuple[str, ...]
     optional_keys: tuple[str, ...]
@@ -86,7 +88,7 @@ TRAIN_SCHEMA = DatasetSchema(
     required_keys=CANONICAL_DATASET_KEYS,
     optional_keys=CONST_OPTIONAL_KEYS,
     strict=True,
-    handlers={SED_DOMAIN: process_seds_handler}
+    handlers={SED_DOMAIN: process_seds_handler},
 )
 """
 Dataset schema used during model training.
@@ -101,7 +103,7 @@ EVALUATION_SCHEMA = DatasetSchema(
     required_keys=CANONICAL_DATASET_KEYS,
     optional_keys=CONST_OPTIONAL_KEYS,
     strict=True,
-    handlers={"seds": process_seds_handler}
+    handlers={"seds": process_seds_handler},
 )
 """
 Dataset schema used during model evaluation.
@@ -117,9 +119,9 @@ INFERENCE_SCHEMA = DatasetSchema(
         "seds",
         "positions",
     ),
-    optional_keys=CONST_OPTIONAL_KEYS,
-    strict=False,
-    handlers={"seds": process_seds_handler}
+    optional_keys=INFERENCE_OPTIONAL_KEYS,
+    strict=True,
+    handlers={"seds": process_seds_handler},
 )
 """
 Dataset schema used during inference.

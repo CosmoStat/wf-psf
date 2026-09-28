@@ -16,6 +16,7 @@ Authors: Jennifer Pollack <jennifer.pollack@cea.fr>
 """
 
 import tensorflow as tf
+from typing import Any
 
 
 @tf.function
@@ -73,15 +74,15 @@ def find_position_indices(obs_pos, batch_positions):
     return indices
 
 
-def ensure_tensor(input_array, dtype=tf.float32):
+def ensure_tensor(input_array: Any, dtype=tf.float32) -> tf.Tensor:
     """
     Ensure the input is a TensorFlow tensor of the specified dtype.
 
     Parameters
     ----------
-    input_array : array-like, tf.Tensor, or np.ndarray
+    input_array : Any
         The input to convert.
-    dtype : tf.DType, optional
+    dtype : tf.dtypes.DType, optional
         The desired TensorFlow dtype (default: tf.float32).
 
     Returns
