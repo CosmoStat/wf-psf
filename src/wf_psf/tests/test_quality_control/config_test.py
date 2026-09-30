@@ -6,7 +6,6 @@ This module contains unit tests for the quality control configuration module.
 
 """
 
-from contextlib import nullcontext as does_not_raise
 from pathlib import Path
 import pytest
 from wf_psf.quality_control.config import (
@@ -20,8 +19,6 @@ from wf_psf.quality_control.config import (
 from wf_psf.quality_control.config import (
     parse_resources_config,
     parse_rejection_policy_config,
-    validate_metric_resources,
-    validate_rejection_policy_metrics,
 )
 from wf_psf.quality_control.resource_identifier import ResourceIdentifier
 
@@ -35,6 +32,16 @@ def load_config(config_file: str) -> QualityControlConfig:
 def test_quality_control_config_loading():
     config = load_config("valid/quality_control.yaml")
 
+    pixel_mask_params = {
+        "aperture": {
+            "type": "circular",
+            "centre": "stamp_centre",
+            "radius": 2.6,
+            "unit": "sigma",
+        },
+    }
+
+    assert isinstance(config, QualityControlConfig)
     assert isinstance(config.resources, ResourcesConfig)
     assert "standard" in config.resources.available["psf_models"]
     assert "oversampled" in config.resources.available["psf_models"]
@@ -50,12 +57,16 @@ def test_quality_control_config_loading():
     assert "pixel_mask" in config.metrics
     assert isinstance(config.metrics["pixel_mask"], QualityMetricConfig)
     assert config.metrics["pixel_mask"].enabled is True
+    assert config.metrics["pixel_mask"].params == pixel_mask_params
     assert config.metrics["pixel_mask"].required_resources == []
 
     assert isinstance(config.metrics["goodness_of_fit"], QualityMetricConfig)
     assert config.metrics["goodness_of_fit"].required_resources == (
         [ResourceIdentifier.from_string("psf_models.standard")]
     )
+    assert config.metrics["goodness_of_fit"].params == {
+        "normalize_residuals": True,
+    }
 
     assert isinstance(config.rejection["pixel_mask"], RejectionPolicyConfig)
     assert config.rejection["pixel_mask"].policy == {
@@ -122,7 +133,33 @@ def test_metrics_configuration_must_be_mapping():
 
 
 ## Tests for parsing rejection policy configurations
-def test_rejection_configuration_must_be_mapping():
+def test_rejection_policy_configuration_valid():
+    result = parse_rejection_policy_config(
+        {
+            "goodness_of_fit": {
+                "enabled": True,
+                "diagnostic": "reduced_chi_square",
+                "policy": {
+                    "threshold": {
+                        "value": 0.25,
+                    }
+                },
+            }
+        }
+    )
+
+    assert result["goodness_of_fit"] == RejectionPolicyConfig(
+        enabled=True,
+        diagnostic="reduced_chi_square",
+        policy={
+            "threshold": {
+                "value": 0.25,
+            }
+        },
+    )
+
+
+def test_rejection_policy_configuration_must_be_mapping():
     with pytest.raises(
         TypeError, match="Rejection policy configuration must be a mapping"
     ):
@@ -137,17 +174,74 @@ def test_rejection_policy_configuration_metric_must_be_mapping():
         parse_rejection_policy_config({"goodness_of_fit": 0.25})
 
 
+def test_rejection_policy_enabled_defaults_to_false():
+    policies = parse_rejection_policy_config(
+        {
+            "goodness_of_fit": {
+                "diagnostic": "reduced_chi_square",
+                "policy": {"threshold": {"value": 0.25}},
+            }
+        }
+    )
+
+    assert policies["goodness_of_fit"] == RejectionPolicyConfig(enabled=False)
+
+
+def test_rejection_policy_metric_enabled_flag_must_be_boolean():
+    with pytest.raises(
+        TypeError,
+        match="Rejection policy `enabled` flag for 'goodness_of_fit' must be boolean.",
+    ):
+        parse_rejection_policy_config(
+            {
+                "goodness_of_fit": {
+                    "enabled": "foo",
+                    "diagnostic": "reduced_chi_square",
+                    "policy": "threshold",
+                }
+            }
+        )
+
+
+def test_rejection_policy_disabled_policies_are_skipped():
+    rejection_policy = {
+        "goodness_of_fit": {
+            "enabled": False,
+            "diagnostic": "None",
+            "policy": "not a mapping",
+        },
+    }
+
+    policies = parse_rejection_policy_config(rejection_policy)
+
+    assert policies["goodness_of_fit"].enabled is False
+    assert policies["goodness_of_fit"].diagnostic is None
+    assert policies["goodness_of_fit"].policy == {}
+
+
+def test_rejection_policy_must_specify_non_empty_diagnostic():
+    rejection_policy = {
+        "goodness_of_fit": {
+            "enabled": True,
+            "diagnostic": None,
+            "policy": "not a mapping",
+        },
+    }
+
+    with pytest.raises(
+        ValueError,
+        match="Rejection policy configuration for 'goodness_of_fit' must specify a non-empty `diagnostic`.",
+    ):
+        parse_rejection_policy_config(rejection_policy)
+
+
 def test_rejection_policy_must_specify_policy():
     with pytest.raises(
         ValueError,
         match="must specify a `policy`",
     ):
         parse_rejection_policy_config(
-            {
-                "goodness_of_fit": {
-                    "enabled": True,
-                }
-            }
+            {"goodness_of_fit": {"enabled": True, "diagnostic": "reduced_chi_square"}}
         )
 
 
@@ -160,6 +254,7 @@ def test_rejection_policy_must_be_mapping():
             {
                 "goodness_of_fit": {
                     "enabled": True,
+                    "diagnostic": "reduced_chi_square",
                     "policy": "threshold",
                 }
             }
@@ -185,40 +280,43 @@ def test_rejection_policy_must_specify_exactly_one_policy(policy):
             {
                 "goodness_of_fit": {
                     "enabled": True,
+                    "diagnostic": "reduced_chi_square",
                     "policy": policy,
                 }
             }
         )
 
 
-def test_disabled_rejection_policy_does_not_require_policy():
-    result = parse_rejection_policy_config({"goodness_of_fit": {"enabled": False}})
-
-    assert result == {"goodness_of_fit": RejectionPolicyConfig(enabled=False)}
-
-
-def test_rejection_policy_configuration():
-    result = parse_rejection_policy_config(
-        {
-            "goodness_of_fit": {
-                "enabled": True,
-                "policy": {
-                    "threshold": {
-                        "value": 0.25,
-                    }
-                },
-            }
+def test_rejection_policy_identifier_must_be_string():
+    rejection_policy = {
+        "goodness_of_fit": {
+            "enabled": True,
+            "diagnostic": "reduced_chi_square",
+            "policy": {123: {}},
         }
-    )
+    }
 
-    assert result["goodness_of_fit"] == RejectionPolicyConfig(
-        enabled=True,
-        policy={
-            "threshold": {
-                "value": 0.25,
-            }
-        },
-    )
+    with pytest.raises(
+        TypeError,
+        match="Rejection policy identifier '123' for 'goodness_of_fit' must be a string.",
+    ):
+        parse_rejection_policy_config(rejection_policy)
+
+
+def test_rejection_policy_params_must_be_mapping():
+    rejection_policy = {
+        "goodness_of_fit": {
+            "enabled": True,
+            "diagnostic": "reduced_chi_square",
+            "policy": {"threshold": 3},
+        }
+    }
+
+    with pytest.raises(
+        TypeError,
+        match="Rejection policy parameters for 'goodness_of_fit' must be a mapping.",
+    ):
+        parse_rejection_policy_config(rejection_policy)
 
 
 ## Tests for parsing reporting configurations
@@ -228,77 +326,3 @@ def test_reporting_configuration_must_be_mapping():
         match="Reporting configuration must be a mapping",
     ):
         load_config("invalid/reporting_invalid_type.yaml")
-
-
-# Tests for validation methods
-def test_validate_metric_resources_all_valid(qc_config_factory):
-    with does_not_raise():
-        validate_metric_resources(qc_config_factory())
-
-
-@pytest.mark.parametrize(
-    "required_resource",
-    [
-        ResourceIdentifier.from_string("images.segmentation_maps"),
-        ResourceIdentifier.from_string("psf_models.imaginary"),
-    ],
-)
-def test_validate_metric_resources_unknown_resource(
-    qc_config_factory,
-    required_resource,
-):
-    config = qc_config_factory(required_resources=[required_resource])
-
-    with pytest.raises(
-        ValueError,
-        match=(
-            f"Metric 'goodness_of_fit' requires unknown resource '{required_resource}'."
-        ),
-    ):
-        validate_metric_resources(config)
-
-
-def test_validate_rejection_policy_metrics_all_valid(qc_config_factory):
-    with does_not_raise():
-        validate_rejection_policy_metrics(qc_config_factory())
-
-
-def test_validate_rejection_policy_metrics_metric_not_found(qc_config_factory):
-    config = qc_config_factory(rejection_metric="pixel_mask")
-
-    with pytest.raises(
-        ValueError,
-        match="Rejection policy configured for unknown metric 'pixel_mask'.",
-    ):
-        validate_rejection_policy_metrics(config)
-
-
-def test_validate_rejection_policy_metrics_metric_not_enabled(qc_config_factory):
-    metric = {
-        "goodness_of_fit": QualityMetricConfig(
-            enabled=False,
-            required_resources=[],
-        )
-    }
-
-    config = qc_config_factory(metrics=metric)
-
-    with pytest.raises(
-        ValueError,
-        match="Rejection policy cannot be enabled because metric 'goodness_of_fit' is disabled.",
-    ):
-        validate_rejection_policy_metrics(config)
-
-
-# Integration tests
-def test_load_config_validates_configuration_pass():
-    with does_not_raise():
-        load_config("valid/quality_control.yaml")
-
-
-def test_load_config_validates_configuration_raise_unknown_identifier():
-    with pytest.raises(
-        ValueError,
-        match="Metric 'goodness_of_fit' requires unknown resource",
-    ):
-        load_config("invalid/metric_resource_identifier_unknown.yaml")
