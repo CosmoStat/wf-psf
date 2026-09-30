@@ -38,6 +38,7 @@ def qc_config_factory():
         rejection_default = {
             rejection_metric or "goodness_of_fit": RejectionPolicyConfig(
                 enabled=True,
+                diagnostic="reduced_chi_square",
                 policy={
                     "threshold": {
                         "value": 0.25,
