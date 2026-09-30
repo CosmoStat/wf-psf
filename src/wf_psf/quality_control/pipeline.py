@@ -34,7 +34,7 @@ class QualityControlResult:
     Attributes
     ----------
     metrics
-        Computed quality metrics indexed by metric name.
+        Computed quality diagnostics indexed by metric name and diagnostic name.
 
     validity_masks
         Boolean validity masks produced by each rejection policy.
@@ -44,7 +44,7 @@ class QualityControlResult:
         rejection policies.
     """
 
-    metrics: dict[str, np.ndarray]
+    metrics: dict[str, dict[str, np.ndarray]]
 
     validity_masks: dict[str, np.ndarray]
 
@@ -66,6 +66,7 @@ class QualityControlPipeline:
         self.config = QualityControlConfigHandler(qc_config_path).load()
         self.metrics_registry = build_metrics_registry()
         self.rejection_registry = build_rejection_policy_registry()
+        self.validate_configuration()
 
     def _instantiate_metrics(self) -> dict[str, QualityMetric]:
         """Instantiate enabled quality metric implementations from configuration.
@@ -141,6 +142,82 @@ class QualityControlPipeline:
         resource_manager = Resources(self.config)
         return resource_manager.resolve(provided_resources)
 
+    def validate_configuration(self) -> None:
+        """Validate internal consistency of a quality control configuration.
+
+        Raises
+        ------
+        ValueError
+            If any cross-section configuration dependency is invalid.
+        """
+        self.validate_metric_resource_requirements()
+        self.validate_rejection_policy_metrics()
+
+    def validate_metric_resource_requirements(self) -> None:
+        """Validate that resource requirements of enabled metrics are configured.
+
+        Raises
+        ------
+        ValueError
+            If a required resource identifier is not available in the configured resources.
+
+        Notes
+        -----
+        A configured resource can be overriden by the pipeline
+        caller using the `provided_resources` argument.  This static validation ensures that
+        each resource identifier required by an enabled metric is declared in the
+        resources configuration, regardless of whethe resource will be ultimately supplied
+        by the caller or prepared by the pipeline.
+
+        """
+        resources = self.config.resources.available
+
+        for metric_name, metric in self.config.metrics.items():
+            if not metric.enabled:
+                continue
+
+            for resource_id in metric.required_resources:
+                if (
+                    resource_id.family not in resources
+                    or resource_id.variant not in resources[resource_id.family]
+                ):
+                    raise ValueError(
+                        f"Metric '{metric_name}' requires unknown resource '{resource_id}'."
+                    )
+
+    def validate_rejection_policy_metrics(self) -> None:
+        """Validate rejection policies against configured quality metrics.
+
+        Raises
+        ------
+        ValueError
+            If an enabled rejection policy references an unknown or disabled
+            quality metric, or specifies an invalid diagnostic.
+        """
+        for metric_name, rejection_policy in self.config.rejection.items():
+            if not rejection_policy.enabled:
+                continue
+
+            if metric_name not in self.config.metrics:
+                raise ValueError(
+                    f"Rejection policy configured for unknown metric '{metric_name}'."
+                )
+
+            if not self.config.metrics[metric_name].enabled:
+                raise ValueError(
+                    f"Rejection policy cannot be enabled because metric '{metric_name}' is disabled."
+                )
+
+            metric_cls = self.metrics_registry.get(metric_name)
+
+            if metric_cls is None:
+                raise ValueError(f"Quality metric '{metric_name}' is not registered.")
+
+            if rejection_policy.diagnostic not in metric_cls.diagnostics:
+                raise ValueError(
+                    f"Diagnostic '{rejection_policy.diagnostic}' is not provided by the metric '{metric_name}'."
+                )
+
     def run(self, dataset, provided_resources=None):
         """Run quality control pipeline.
 
@@ -170,18 +247,23 @@ class QualityControlPipeline:
 
         rejection_policies = self._instantiate_rejection_policies()
 
-        validity_masks = {
-            name: policy.apply(metric_results[name])
-            for name, policy in rejection_policies.items()
-        }
+        validity_masks = {}
+        for name, policy in rejection_policies.items():
+            diagnostic_identifier = self.config.rejection[name].diagnostic
+            assert diagnostic_identifier is not None
 
-        if validity_masks:
+            diagnostic = metric_results[name][diagnostic_identifier]
+            validity_masks[name] = policy.apply(diagnostic)
+
+        if validity_masks != {}:
             # True indicates a valid sample. A sample is valid only if it passes
             # every enabled rejection policy.
             valid_mask = np.logical_and.reduce(list(validity_masks.values()))
         else:
+            # If rejection policy not enabled, generate boolean unity mask
             metric_result = next(iter(metric_results.values()))
-            valid_mask = np.ones(metric_result.shape, dtype=bool)
+            diagnostic_result = next(iter(metric_result.values()))
+            valid_mask = np.ones(diagnostic_result.shape, dtype=bool)
 
         return QualityControlResult(
             metrics=metric_results,
