@@ -7,6 +7,7 @@ This module contains unit tests for the quality control metrics pixel masks modu
 """
 
 import pytest
+from wf_psf.tests.test_quality_control.test_utils import PSFDataset
 
 import numpy as np
 from typing import Any
@@ -27,29 +28,6 @@ def params_factory():
         }
 
     return params
-
-
-class PSFDataset:
-    """Simple dataset of numpy arrays."""
-
-    def __init__(self, n_src: int = 10, n_pix: int = 32):
-        self.n_src = n_src
-        self.n_pix = n_pix
-        self.positions = np.arange(n_src * 2).reshape(n_src, 2)
-        self.masks = np.zeros((n_src, n_pix, n_pix), dtype=bool)
-
-
-@pytest.fixture
-def dataset_factory():
-    def factory(n_src=10, n_pix=32):
-        return PSFDataset(n_src=n_src, n_pix=n_pix)
-
-    return factory
-
-
-@pytest.fixture
-def context():
-    return QualityControlContext(dataset=PSFDataset())
 
 
 @pytest.mark.parametrize(
