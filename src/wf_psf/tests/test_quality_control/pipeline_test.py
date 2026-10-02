@@ -475,10 +475,7 @@ def test_pipeline_run_rejection_policy_disabled(pipeline_factory):
         assert "shapes" not in result.metrics
 
         assert result.validity_masks == {}
-
-        np.testing.assert_array_equal(
-            result.valid_mask, np.ones(len(dataset), dtype=bool)
-        )
+        assert np.array_equal(result.valid_mask, np.ones(3, dtype=bool))
 
 
 def test_pipeline_run_pixel_mask_metrics_without_rejection(
