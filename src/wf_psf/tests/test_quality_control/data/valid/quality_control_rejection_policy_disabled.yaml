@@ -22,21 +22,26 @@ metrics:
     required_resources:
       - psf_models.standard
     params:
-      statistic: reduced_chi_square
       normalize_residuals: true
+
+  shapes:
+    enabled: false
+    required_resources:
+      - psf_models.oversampled
+
 
 rejection:
 
   pixel_mask:
+    enabled: false
     diagnostic: aperture_masked_fraction
-    enabled: true
     policy:
       threshold:
         value: 3.0
 
   goodness_of_fit:
+    enabled: false
     diagnostic: reduced_chi_square
-    enabled: true
     policy:
       threshold:
         value: 3.0

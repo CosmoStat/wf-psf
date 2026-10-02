@@ -1,10 +1,14 @@
 import pytest
+
+from wf_psf.tests.test_quality_control.test_utils import PSFDataset
+
 from wf_psf.quality_control.config import (
     QualityControlConfig,
     QualityMetricConfig,
     RejectionPolicyConfig,
     ResourcesConfig,
 )
+from wf_psf.quality_control.context import QualityControlContext
 
 
 @pytest.fixture
@@ -38,6 +42,7 @@ def qc_config_factory():
         rejection_default = {
             rejection_metric or "goodness_of_fit": RejectionPolicyConfig(
                 enabled=True,
+                diagnostic="reduced_chi_square",
                 policy={
                     "threshold": {
                         "value": 0.25,
@@ -53,3 +58,16 @@ def qc_config_factory():
         )
 
     return factory
+
+
+@pytest.fixture
+def dataset_factory():
+    def factory(n_src=10, n_pix=32):
+        return PSFDataset(n_src=n_src, n_pix=n_pix)
+
+    return factory
+
+
+@pytest.fixture
+def context():
+    return QualityControlContext(dataset=PSFDataset())
