@@ -11,6 +11,7 @@ from wf_psf.quality_control.config import (
     RejectionPolicyConfig,
 )
 
+
 from wf_psf.quality_control.metrics.pixel_masks import PixelMaskMetric
 from wf_psf.quality_control.metrics.goodness_of_fit import GoodnessOfFitMetric
 from wf_psf.quality_control.rejection.threshold import ThresholdRejectionPolicy
@@ -428,8 +429,6 @@ def test_pipeline_run_rejection_policy_disabled(pipeline_factory):
         "reduced_chi_square": np.array([1.2, 1.4, 1.1]),
     }
 
-    validity_mask = np.array([True, True, True])
-
     with (
         patch.object(
             PixelMaskMetric,
@@ -444,7 +443,6 @@ def test_pipeline_run_rejection_policy_disabled(pipeline_factory):
         patch.object(
             ThresholdRejectionPolicy,
             "apply",
-            return_value=validity_mask,
         ) as mock_apply,
     ):
         pipeline = pipeline_factory(
@@ -477,8 +475,48 @@ def test_pipeline_run_rejection_policy_disabled(pipeline_factory):
         assert "shapes" not in result.metrics
 
         assert result.validity_masks == {}
+        assert np.array_equal(result.valid_mask, np.ones(3, dtype=bool))
 
+
+def test_pipeline_run_pixel_mask_metrics_without_rejection(
+    dataset_factory, pipeline_factory
+):
+    dataset = dataset_factory(n_src=2, n_pix=5)
+    dataset.masks = np.array(
+        [
+            [
+                [True, False, False, False, True],
+                [False, False, False, False, False],
+                [False, True, False, False, False],
+                [False, True, False, False, False],
+                [True, False, False, False, True],
+            ],
+            [
+                [True, False, False, False, True],
+                [False, True, True, False, False],
+                [False, True, True, False, False],
+                [False, True, True, False, False],
+                [True, False, False, False, False],
+            ],
+        ]
+    )
+
+    pipeline = pipeline_factory("valid/quality_control_pixel_masks_metrics.yaml")
+
+    result = pipeline.run(
+        dataset=dataset,
+    )
+
+    expected = {
+        "total_masked_pixels": np.array([6, 9]),
+        "total_masked_fraction": np.array([6 / 25, 9 / 25]),
+        "aperture_masked_pixels": np.array([2, 6]),
+        "aperture_masked_fraction": np.array([2 / 9, 2 / 3]),
+    }
+
+    for diagnostic_id, diagnostic_result in expected.items():
         assert np.array_equal(
-            result.valid_mask,
-            validity_mask,
+            result.metrics["pixel_mask"][diagnostic_id], diagnostic_result
         )
+    assert result.validity_masks == {}
+    assert np.array_equal(result.valid_mask, np.ones(2, dtype=bool))

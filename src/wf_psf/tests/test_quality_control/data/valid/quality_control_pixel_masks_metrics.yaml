@@ -1,0 +1,25 @@
+metrics:
+
+  pixel_mask:
+    enabled: true
+    params:
+      aperture:
+        type: circular
+        centre: stamp_centre
+        radius: 1.5
+        unit: pixel
+
+
+rejection:
+
+  pixel_mask:
+    enabled: false
+    diagnostic: aperture_masked_fraction
+    policy:
+      threshold:
+        value: 3.0
+
+reporting:
+
+  save_metrics: true
+  log_statistics: true
