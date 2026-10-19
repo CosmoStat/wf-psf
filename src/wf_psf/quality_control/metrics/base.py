@@ -29,6 +29,8 @@ class QualityMetric(ABC):
 
     diagnostics : ClassVar[frozenset[str]]
         Immutable set of diagnostic names exposed by the metric.
+        Used by the quality control pipeline to validate rejection-policy
+        configuration. Subclasses may override this declaration.
 
     params : dict[str, Any]
         Parameter set for configuring a specific metric.
