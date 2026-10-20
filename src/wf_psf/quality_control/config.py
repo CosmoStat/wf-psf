@@ -45,6 +45,9 @@ class RejectionPolicyConfig:
 
     Attributes
     ----------
+    diagnostic : str
+        Diagnostic from the quality metric to use when applying a rejection policy.
+
     enabled : bool
         Whether rejection policy is enabled.
 
@@ -52,6 +55,7 @@ class RejectionPolicyConfig:
         Rejection policy configuration keyed by policy type.
     """
 
+    diagnostic: str
     enabled: bool = False
     policy: dict[str, Any] = field(default_factory=dict)
 
@@ -225,6 +229,14 @@ def parse_rejection_policy_config(
                 f"Rejection policy configuration '{metric_name}' must be a mapping."
             )
 
+        diagnostic = cfg.get("diagnostic", None)
+
+        if not isinstance(diagnostic, str) or not diagnostic:
+            raise ValueError(
+                f"Rejection policy configuration for '{metric_name}' "
+                "must specify a non-empty `diagnostic`."
+            )
+
         enabled = cfg.get("enabled", False)
 
         if not isinstance(enabled, bool):
@@ -233,7 +245,9 @@ def parse_rejection_policy_config(
             )
 
         if not enabled:
-            policies[metric_name] = RejectionPolicyConfig(enabled=False)
+            policies[metric_name] = RejectionPolicyConfig(
+                diagnostic=diagnostic, enabled=False
+            )
             continue
 
         if "policy" not in cfg:
@@ -268,7 +282,7 @@ def parse_rejection_policy_config(
             )
 
         policies[metric_name] = RejectionPolicyConfig(
-            enabled=enabled, policy=dict(policy)
+            diagnostic=diagnostic, enabled=enabled, policy=dict(policy)
         )
 
     return policies
@@ -332,80 +346,6 @@ def parse_resources_config(
     return ResourcesConfig(available=dict(config))
 
 
-#  validators for internal consistency of config sections
-def validate_quality_control_config(config: QualityControlConfig) -> None:
-    """Validate internal consistency of a quality control configuration.
-
-    Parameters
-    ----------
-    config : QualityControlConfig
-        Parsed quality control configuration.
-
-    Raises
-    ------
-    ValueError
-        If any cross-section configuration dependency is invalid.
-    """
-    validate_metric_resources(config)
-    validate_rejection_policy_metrics(config)
-
-
-def validate_metric_resources(config: QualityControlConfig) -> None:
-    """Validate that all metric resource requirements can be resolved.
-
-    Parameters
-    ----------
-    config : QualityControlConfig
-        Parsed quality control configuration.
-
-    Raises
-    ------
-    ValueError
-        If a required resource identifier is not available in the configured resources.
-    """
-    for metric_name, metric in config.metrics.items():
-        for resource_id in metric.required_resources:
-            resources = config.resources.available
-
-            if (
-                resource_id.family not in resources
-                or resource_id.variant not in resources[resource_id.family]
-            ):
-                raise ValueError(
-                    f"Metric '{metric_name}' requires unknown resource '{resource_id}'."
-                )
-
-
-def validate_rejection_policy_metrics(config: QualityControlConfig) -> None:
-    """Validate rejection policies against configured quality metrics.
-
-    Parameters
-    ----------
-    config : QualityControlConfig
-        Parsed quality control configuration.
-
-    Raises
-    ------
-    ValueError
-        If an enabled rejection policy references an unknown or disabled
-        quality metric.
-    """
-    for metric_name, rejection_policy in config.rejection.items():
-        if not rejection_policy.enabled:
-            continue
-
-        if metric_name not in config.metrics:
-            raise ValueError(
-                f"Rejection policy configured for unknown metric '{metric_name}'."
-            )
-
-        if not config.metrics[metric_name].enabled:
-            raise ValueError(
-                f"Rejection policy cannot be enabled because metric "
-                f"'{metric_name}' is disabled."
-            )
-
-
 SECTION_PARSERS = {
     "metrics": parse_metrics_config,
     "rejection": parse_rejection_policy_config,
@@ -437,7 +377,7 @@ class QualityControlConfigHandler:
         Returns
         -------
         QualityControlConfig
-            Parsed and validated quality control configuration.
+            Parsed quality control configuration.
 
         Raises
         ------
@@ -445,8 +385,8 @@ class QualityControlConfigHandler:
             If a configuration section has an invalid structure or type.
 
         ValueError
-            If the parsed configuration contains inconsistent references
-            between metrics, resources, or rejection policies.
+            If a configuration section contains an invalid value or
+            configuration structure.
         """
         qc_config = read_yaml(self.qc_config_path)
         config = {}
@@ -455,8 +395,4 @@ class QualityControlConfigHandler:
             values = qc_config.get(section, {})
             config[section] = parser(values)
 
-        qc = QualityControlConfig(**config)
-
-        validate_quality_control_config(qc)
-
-        return qc
+        return QualityControlConfig(**config)

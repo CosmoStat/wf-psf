@@ -13,7 +13,7 @@ training, evaluation, or inference.
 
 from abc import ABC, abstractmethod
 import numpy as np
-from typing import Any
+from typing import Any, ClassVar
 
 from wf_psf.quality_control.context import QualityControlContext
 
@@ -27,6 +27,11 @@ class QualityMetric(ABC):
         Unique identifier for the metric implementation. Used by
         the MetricsRegistry to register and retrieve metric classes.
 
+    diagnostics : ClassVar[frozenset[str]]
+        Immutable set of diagnostic names exposed by the metric.
+        Used by the quality control pipeline to validate rejection-policy
+        configuration. Subclasses may override this declaration.
+
     params : dict[str, Any]
         Parameter set for configuring a specific metric.
 
@@ -37,7 +42,8 @@ class QualityMetric(ABC):
 
     """
 
-    name: str
+    name: ClassVar[str]
+    diagnostics: ClassVar[frozenset[str]]
 
     def __init__(self, params: dict[str, Any]):
         self.params = params

@@ -13,6 +13,7 @@ metrics:
     params:
       aperture:
         type: circular
+        centre: stamp_centre
         radius: 2.6
         unit: sigma
 
@@ -21,7 +22,6 @@ metrics:
     required_resources:
       - psf_models.standard
     params:
-      statistic: reduced_chi_square
       normalize_residuals: true
 
   shapes:
@@ -34,12 +34,14 @@ rejection:
 
   pixel_mask:
     enabled: true
+    diagnostic: aperture_masked_fraction
     policy:
       threshold:
         value: 3.0
 
   goodness_of_fit:
     enabled: false
+    diagnostic: reduced_chi_square
     policy:
       threshold:
         value: 3.0

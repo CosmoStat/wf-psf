@@ -13,6 +13,7 @@ metrics:
     params:
       aperture:
         type: circular
+        centre: stamp_centre
         radius: 2.6
         unit: sigma
 
@@ -27,12 +28,14 @@ metrics:
 rejection:
 
   pixel_mask:
+    diagnostic: aperture_masked_fraction
     enabled: true
     policy:
       threshold:
         value: 3.0
 
   goodness_of_fit:
+    diagnostic: reduced_chi_square
     enabled: true
     policy:
       threshold:
