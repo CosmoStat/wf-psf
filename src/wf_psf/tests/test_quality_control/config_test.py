@@ -184,7 +184,9 @@ def test_rejection_policy_enabled_defaults_to_false():
         }
     )
 
-    assert policies["goodness_of_fit"] == RejectionPolicyConfig(enabled=False)
+    assert policies["goodness_of_fit"] == RejectionPolicyConfig(
+        diagnostic="reduced_chi_square", enabled=False
+    )
 
 
 def test_rejection_policy_metric_enabled_flag_must_be_boolean():
@@ -207,7 +209,7 @@ def test_rejection_policy_disabled_policies_are_skipped():
     rejection_policy = {
         "goodness_of_fit": {
             "enabled": False,
-            "diagnostic": "None",
+            "diagnostic": "foo",
             "policy": "not a mapping",
         },
     }
@@ -215,7 +217,7 @@ def test_rejection_policy_disabled_policies_are_skipped():
     policies = parse_rejection_policy_config(rejection_policy)
 
     assert policies["goodness_of_fit"].enabled is False
-    assert policies["goodness_of_fit"].diagnostic is None
+    assert policies["goodness_of_fit"].diagnostic == "foo"
     assert policies["goodness_of_fit"].policy == {}
 
 

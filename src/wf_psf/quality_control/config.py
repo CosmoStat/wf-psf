@@ -45,18 +45,18 @@ class RejectionPolicyConfig:
 
     Attributes
     ----------
+    diagnostic : str
+        Diagnostic from the quality metric to use when applying a rejection policy.
+
     enabled : bool
         Whether rejection policy is enabled.
-
-    diagnostic : str | None
-        Diagnostic from the quality metric to use when applying a rejection policy.
 
     policy : dict[str, Any]
         Rejection policy configuration keyed by policy type.
     """
 
+    diagnostic: str
     enabled: bool = False
-    diagnostic: str | None = None
     policy: dict[str, Any] = field(default_factory=dict)
 
 
@@ -229,6 +229,14 @@ def parse_rejection_policy_config(
                 f"Rejection policy configuration '{metric_name}' must be a mapping."
             )
 
+        diagnostic = cfg.get("diagnostic", None)
+
+        if not isinstance(diagnostic, str) or not diagnostic:
+            raise ValueError(
+                f"Rejection policy configuration for '{metric_name}' "
+                "must specify a non-empty `diagnostic`."
+            )
+
         enabled = cfg.get("enabled", False)
 
         if not isinstance(enabled, bool):
@@ -237,16 +245,10 @@ def parse_rejection_policy_config(
             )
 
         if not enabled:
-            policies[metric_name] = RejectionPolicyConfig(enabled=False)
-            continue
-
-        diagnostic = cfg.get("diagnostic", None)
-
-        if not isinstance(diagnostic, str) or not diagnostic:
-            raise ValueError(
-                f"Rejection policy configuration for '{metric_name}' "
-                "must specify a non-empty `diagnostic`."
+            policies[metric_name] = RejectionPolicyConfig(
+                diagnostic=diagnostic, enabled=False
             )
+            continue
 
         if "policy" not in cfg:
             raise ValueError(
@@ -280,7 +282,7 @@ def parse_rejection_policy_config(
             )
 
         policies[metric_name] = RejectionPolicyConfig(
-            enabled=enabled, diagnostic=diagnostic, policy=dict(policy)
+            diagnostic=diagnostic, enabled=enabled, policy=dict(policy)
         )
 
     return policies
