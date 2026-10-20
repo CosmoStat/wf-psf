@@ -250,8 +250,6 @@ class QualityControlPipeline:
         validity_masks = {}
         for name, policy in rejection_policies.items():
             diagnostic_identifier = self.config.rejection[name].diagnostic
-            assert diagnostic_identifier is not None
-
             diagnostic = metric_results[name][diagnostic_identifier]
             validity_masks[name] = policy.apply(diagnostic)
 
