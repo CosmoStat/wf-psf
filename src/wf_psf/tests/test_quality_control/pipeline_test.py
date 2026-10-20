@@ -478,7 +478,7 @@ def test_pipeline_run_rejection_policy_disabled(pipeline_factory):
 
         assert result.validity_masks == {}
 
-        assert np.array_equal(
+        np.testing.assert_array_equal(
             result.valid_mask,
-            validity_mask,
+            np.ones(len(dataset), dtype=bool),
         )
