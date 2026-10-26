@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from wf_psf.quality_control.rejection.operators import COMPARISON_OPERATORS
 from wf_psf.quality_control.resource_identifier import ResourceIdentifier
 from wf_psf.utils.read_config import read_yaml
 
@@ -279,6 +280,14 @@ def parse_rejection_policy_config(
         if not isinstance(policy_params, Mapping):
             raise TypeError(
                 f"Rejection policy parameters for '{metric_name}' must be a mapping."
+            )
+
+        operator = policy_params.get("operator", "<")
+
+        if operator not in COMPARISON_OPERATORS:
+            raise ValueError(
+                f"Unsupported operator '{operator}'. "
+                f"Supported operators are: {', '.join(COMPARISON_OPERATORS)}."
             )
 
         policies[metric_name] = RejectionPolicyConfig(
