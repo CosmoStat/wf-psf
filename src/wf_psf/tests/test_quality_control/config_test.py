@@ -20,6 +20,7 @@ from wf_psf.quality_control.config import (
     parse_resources_config,
     parse_rejection_policy_config,
 )
+from wf_psf.quality_control.rejection.operators import COMPARISON_OPERATORS
 from wf_psf.quality_control.resource_identifier import ResourceIdentifier
 
 
@@ -70,9 +71,7 @@ def test_quality_control_config_loading():
 
     assert isinstance(config.rejection["pixel_mask"], RejectionPolicyConfig)
     assert config.rejection["pixel_mask"].policy == {
-        "threshold": {
-            "value": 3.0,
-        },
+        "threshold": {"value": 3.0, "operator": "<"},
     }
 
     assert isinstance(config.reporting, ReportingConfig)
@@ -139,11 +138,7 @@ def test_rejection_policy_configuration_valid():
             "goodness_of_fit": {
                 "enabled": True,
                 "diagnostic": "reduced_chi_square",
-                "policy": {
-                    "threshold": {
-                        "value": 0.25,
-                    }
-                },
+                "policy": {"threshold": {"value": 0.25, "operator": "<"}},
             }
         }
     )
@@ -154,6 +149,7 @@ def test_rejection_policy_configuration_valid():
         policy={
             "threshold": {
                 "value": 0.25,
+                "operator": "<",
             }
         },
     )
@@ -179,7 +175,7 @@ def test_rejection_policy_enabled_defaults_to_false():
         {
             "goodness_of_fit": {
                 "diagnostic": "reduced_chi_square",
-                "policy": {"threshold": {"value": 0.25}},
+                "policy": {"threshold": {"value": 0.25, "operator": "<"}},
             }
         }
     )
@@ -268,8 +264,8 @@ def test_rejection_policy_must_be_mapping():
     [
         {},
         {
-            "threshold": {"value": 0.25},
-            "quantile": {"value": 0.95},
+            "threshold": {"value": 0.25, "operator": "<"},
+            "quantile": {"value": 0.95, "operator": "<"},
         },
     ],
 )
@@ -317,6 +313,46 @@ def test_rejection_policy_params_must_be_mapping():
     with pytest.raises(
         TypeError,
         match="Rejection policy parameters for 'goodness_of_fit' must be a mapping.",
+    ):
+        parse_rejection_policy_config(rejection_policy)
+
+
+@pytest.mark.parametrize("operator", list(COMPARISON_OPERATORS))
+def test_rejection_policy_configuration_supported_operator(operator):
+    rejection_policy = {
+        "goodness_of_fit": {
+            "enabled": True,
+            "diagnostic": "reduced_chi_square",
+            "policy": {
+                "threshold": {
+                    "value": 0.25,
+                    "operator": operator,
+                }
+            },
+        }
+    }
+
+    result = parse_rejection_policy_config(rejection_policy)
+
+    assert result["goodness_of_fit"].policy["threshold"]["operator"] == operator
+
+
+def test_rejection_policy_params_unsupported_operator():
+    rejection_policy = {
+        "goodness_of_fit": {
+            "enabled": True,
+            "diagnostic": "reduced_chi_square",
+            "policy": {
+                "threshold": {
+                    "value": 3.0,
+                    "operator": "foo",
+                },
+            },
+        },
+    }
+    with pytest.raises(
+        ValueError,
+        match=f"Unsupported operator 'foo'. Supported operators are: {', '.join(COMPARISON_OPERATORS)}.",
     ):
         parse_rejection_policy_config(rejection_policy)
 
