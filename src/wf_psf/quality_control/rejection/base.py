@@ -13,6 +13,7 @@ evaluation, or inference.
 
 from abc import ABC, abstractmethod
 import numpy as np
+from numpy.typing import NDArray
 
 
 class RejectionPolicy(ABC):
@@ -36,7 +37,7 @@ class RejectionPolicy(ABC):
     name: str
 
     @abstractmethod
-    def apply(self, metric: np.ndarray) -> np.ndarray:
+    def apply(self, metric: np.ndarray) -> NDArray[np.bool_]:
         """Apply the rejection policy to metric values.
 
         Returns
