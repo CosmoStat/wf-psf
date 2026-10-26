@@ -253,12 +253,12 @@ class QualityControlPipeline:
             diagnostic = metric_results[name][diagnostic_identifier]
             validity_masks[name] = policy.apply(diagnostic)
 
-        if validity_masks != {}:
+        if validity_masks:
             # True indicates a valid sample. A sample is valid only if it passes
             # every enabled rejection policy.
             valid_mask = np.logical_and.reduce(list(validity_masks.values()))
         else:
-            # If rejection policy not enabled, generate boolean unity mask
+            # If rejection policy not enabled, generate an all-True validity mask.
             metric_result = next(iter(metric_results.values()))
             diagnostic_result = next(iter(metric_result.values()))
             valid_mask = np.ones(diagnostic_result.shape, dtype=bool)
