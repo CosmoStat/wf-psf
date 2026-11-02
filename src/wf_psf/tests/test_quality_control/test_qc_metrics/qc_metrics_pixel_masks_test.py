@@ -13,7 +13,7 @@ import pytest
 
 from wf_psf.quality_control.context import QualityControlContext
 from wf_psf.quality_control.metrics.pixel_masks import PixelMaskMetric
-from wf_psf.tests.test_quality_control.test_utils import PSFDataset
+from wf_psf.tests.test_quality_control.test_utils import PSFDataset, get_radial_mask
 
 
 @pytest.fixture()
@@ -129,15 +129,7 @@ def test_get_aperture_radius_invalid(radius, params_factory):
             "stamp_centre",
             1,
             None,
-            np.array(
-                [
-                    [False, False, False, False, False],
-                    [False, False, True, False, False],
-                    [False, True, True, True, False],
-                    [False, False, True, False, False],
-                    [False, False, False, False, False],
-                ]
-            ),
+            get_radial_mask(shape=(5, 5), centre=(2, 2), radius=1),
         ),
         (
             "stamp_centre",
@@ -158,29 +150,13 @@ def test_get_aperture_radius_invalid(radius, params_factory):
             "centroid",
             1,
             np.array([[1, 2]]),
-            np.array(
-                [
-                    [False, False, False, False, False],
-                    [False, True, False, False, False],
-                    [True, True, True, False, False],
-                    [False, True, False, False, False],
-                    [False, False, False, False, False],
-                ]
-            ),
+            get_radial_mask(shape=(5, 5), centre=(1, 2), radius=1),
         ),
         (
             "centroid",
             1,
             np.array([[1, 3]]),
-            np.array(
-                [
-                    [False, False, False, False, False],
-                    [False, False, False, False, False],
-                    [False, True, False, False, False],
-                    [True, True, True, False, False],
-                    [False, True, False, False, False],
-                ]
-            ),
+            get_radial_mask(shape=(5, 5), centre=(1, 3), radius=1),
         ),
     ],
 )

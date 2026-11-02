@@ -18,3 +18,16 @@ class PSFDataset:
         self.n_pix = n_pix
         self.positions = np.arange(n_src * 2).reshape(n_src, 2)
         self.masks = np.zeros((n_src, n_pix, n_pix), dtype=bool)
+
+
+def get_radial_mask(
+    shape: tuple[int, int],
+    centre: tuple[float, float],
+    radius: float,
+) -> np.ndarray:
+    """Generate a circular boolean mask for testing."""
+    ny, nx = shape
+    y, x = np.ogrid[:ny, :nx]
+    cx, cy = centre
+
+    return np.hypot(x - cx, y - cy) <= radius
