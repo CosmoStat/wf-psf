@@ -6,13 +6,14 @@ This module contains unit tests for the quality control metrics pixel masks modu
     Jennifer Pollack <jennifer.pollack@cea.fr>
 """
 
-import pytest
-from wf_psf.tests.test_quality_control.test_utils import PSFDataset
+from typing import Any
 
 import numpy as np
-from typing import Any
+import pytest
+
 from wf_psf.quality_control.context import QualityControlContext
 from wf_psf.quality_control.metrics.pixel_masks import PixelMaskMetric
+from wf_psf.tests.test_quality_control.test_utils import PSFDataset
 
 
 @pytest.fixture()
