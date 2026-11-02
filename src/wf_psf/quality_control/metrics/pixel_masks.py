@@ -9,6 +9,8 @@ masked pixels on dataset samples.
 
 from typing import ClassVar
 import numpy as np
+import warnings
+
 from .base import QualityMetric
 from wf_psf.quality_control.context import QualityControlContext
 
@@ -162,23 +164,43 @@ class PixelMaskMetric(QualityMetric):
         Returns
         -------
         tuple[np.ndarray, np.ndarray]
-            Number of masked pixels within the aperture and fraction of aperture pixels that are masked, respectively. Both arrays have shape ``(n_samples,)``.
-
-        Raises
-        ------
-        ValueError
-            If the aperture contains no pixels for one or more samples, which would result in division by zero when computing the masked-pixel fraction.
-
+            Number of masked pixels within the aperture and fraction of aperture pixels that are masked, respectively. Both arrays have shape ``(n_samples,)``. Samples with an empty aperture have NaN values for both diagnostics.
         """
         masks = self._get_masks(context)
+
         aperture = self._get_aperture_mask(context=context)
 
-        n_aperture_masked_pixels = np.sum(masks & aperture, axis=(1, 2))
         n_aperture_pixels = np.sum(aperture, axis=(1, 2))
 
-        if np.any(n_aperture_pixels == 0):
-            raise ValueError("Aperture contains no pixels for one or more samples.")
+        invalid_aperture = n_aperture_pixels == 0
+        valid_aperture = ~invalid_aperture
 
-        aperture_masked_fraction = n_aperture_masked_pixels / n_aperture_pixels
+        n_aperture_masked_pixels = np.full(
+            np.size(masks, axis=0),
+            np.nan,
+            dtype=float,
+        )
+
+        aperture_masked_fraction = np.full(
+            np.size(masks, axis=0),
+            np.nan,
+            dtype=float,
+        )
+
+        n_aperture_masked_pixels[valid_aperture] = np.sum(
+            masks[valid_aperture] & aperture[valid_aperture],
+            axis=(1, 2),
+        ).astype(float)
+
+        aperture_masked_fraction[valid_aperture] = (
+            n_aperture_masked_pixels[valid_aperture] / n_aperture_pixels[valid_aperture]
+        )
+
+        if np.any(invalid_aperture):
+            warnings.warn(
+                "The configured aperture contains no pixels for one or more samples. "
+                "Aperture-masked pixel statistics have been set to NaN for these samples.",
+                RuntimeWarning,
+            )
 
         return n_aperture_masked_pixels, aperture_masked_fraction
