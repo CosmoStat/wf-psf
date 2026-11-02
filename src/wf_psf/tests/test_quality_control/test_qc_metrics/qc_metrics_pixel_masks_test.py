@@ -335,22 +335,54 @@ def test_compute_aperture_masked_pixel_stats_valid(
     np.testing.assert_allclose(aperture_stats[1], expected[1])
 
 
-def test_compute_aperture_masked_pixel_stats_invalid(params_factory, dataset_factory):
+def test_compute_aperture_masked_pixel_stats_empty_stamp_centre_aperture(
+    params_factory, dataset_factory
+):
     aperture_params = {
         "type": "circular",
         "centre": "stamp_centre",
         "radius": 0.7,
         "unit": "pixel",
     }
-    dataset = dataset_factory(n_src=1, n_pix=32)
+    dataset = dataset_factory(n_src=3, n_pix=32)
     context = QualityControlContext(dataset=dataset)
 
     pixel_mask = PixelMaskMetric(params=params_factory(aperture_params))
 
-    with pytest.raises(
-        ValueError, match="Aperture contains no pixels for one or more samples."
+    with pytest.warns(
+        RuntimeWarning,
+        match="The configured aperture contains no pixels for one or more samples. "
+        "Aperture-masked pixel statistics have been set to NaN for these samples.",
     ):
         _ = pixel_mask._compute_aperture_masked_pixel_stats(context)
+
+
+def test_compute_aperture_masked_pixel_stats_empty_centroid_aperture(
+    params_factory, dataset_factory
+):
+    aperture_params = {
+        "type": "circular",
+        "centre": "centroid",
+        "radius": 0.5,
+        "unit": "pixel",
+    }
+    dataset = dataset_factory(n_src=3, n_pix=32)
+    dataset.positions = np.array([[0.1, 0.1], [13.4, 13.4], [15, 15]])
+    context = QualityControlContext(dataset=dataset)
+
+    pixel_mask = PixelMaskMetric(params=params_factory(aperture_params))
+
+    with pytest.warns(
+        RuntimeWarning,
+        match="The configured aperture contains no pixels for one or more samples. "
+        "Aperture-masked pixel statistics have been set to NaN for these samples.",
+    ):
+        n_aperture_masked_pixels, aperture_masked_fraction = (
+            pixel_mask._compute_aperture_masked_pixel_stats(context)
+        )
+
+    np.testing.assert_array_equal(n_aperture_masked_pixels, np.array([0, np.nan, 0]))
+    np.testing.assert_array_equal(aperture_masked_fraction, np.array([0, np.nan, 0]))
 
 
 def test_compute(params_factory, dataset_factory):
