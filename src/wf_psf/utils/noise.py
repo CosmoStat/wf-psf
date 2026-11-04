@@ -20,7 +20,7 @@ class NoiseEstimator:
         radius is derived from `img_dim` (see :meth:`default_win_rad`).
     """
 
-    def __init__(self, img_dim: tuple[int, int], win_rad: int = None) -> None:
+    def __init__(self, img_dim: tuple[int, int], win_rad: int | None = None) -> None:
         """
         Initialize a NoiseEstimator instance.
 
@@ -97,7 +97,7 @@ class NoiseEstimator:
                 if np.sqrt((_x - mid_x) ** 2 + (_y - mid_y) ** 2) <= self.win_rad:
                     self.window[_x, _y] = False
 
-    def apply_mask(self, mask: np.ndarray = None) -> np.ndarray:
+    def apply_mask(self, mask: np.ndarray | None = None) -> np.ndarray:
         """
         Apply a given mask to the exclusion window.
 
@@ -148,31 +148,103 @@ class NoiseEstimator:
         """
         return 1.4826 * np.median(np.abs(x - np.median(x)))
 
-    def estimate_noise(self, image: np.ndarray, mask: np.ndarray = None) -> float:
+    def estimate_noise(
+        self, image: np.ndarray, mask: np.ndarray | None = None
+    ) -> float:
         """
-        Estimates the noise level of an image using the MAD estimator.
+        Estimate the noise level of an image using the MAD estimator.
 
         Parameters
         ----------
         image : np.ndarray
             The input image for noise estimation.
         mask : np.ndarray, optional
-            A boolean mask specifying which pixels to include in the noise estimation.
-            If None, the default exclusion window is used. The mask should have the same shape as `image`.
+            Boolean validity mask with the same shape as ``image``.
+            ``True`` indicates a valid pixel. If None, the default
+            central exclusion window is used.
 
         Returns
         -------
         float
-            The estimated noise standard deviation (MAD of the image pixels within the window or mask).
+            Estimated noise standard deviation using the MAD estimator.
         """
-        if mask is not None:
-            return self.sigma_mad(image[self.apply_mask(mask)])
+        noise_mask = self.window if mask is None else self.apply_mask(mask)
+        return self.sigma_mad(image[noise_mask])
 
-        # Use the default window if no mask is provided
-        return self.sigma_mad(image[self.window])
+    def estimate_noise_with_fallback(
+        self, image: np.ndarray, mask: np.ndarray | None = None
+    ) -> tuple[float, bool, int]:
+        """Estimate noise using MAD, with a fallback to a broader pixel selection.
+
+        Parameters
+        ----------
+        image : np.ndarray
+            Input image with shape ``(height, width)``.
+        mask : np.ndarray, optional
+            Boolean validity mask with the same shape as ``image``. ``True`` indicates a valid pixel. If None, all image pixels are considered valid.
+
+        Returns
+        -------
+        tuple[float, bool, int]
+            Estimated noise standard deviation, whether the fallback was used, and the number of pixels used in the final noise estimation.
+
+        """
+        valid_pixels = np.ones(self.img_dim, dtype=bool) if mask is None else mask
+        noise_pixels = self.window & valid_pixels
+
+        fallback_used = False
+        pixels_used = noise_pixels
+
+        if noise_pixels.any():
+            sigma = self.sigma_mad(image[noise_pixels])
+        else:
+            sigma = np.nan
+
+        if not np.isfinite(sigma) or sigma <= 0:
+            fallback_used = True
+            pixels_used = valid_pixels
+            sigma = self.sigma_mad(image[valid_pixels]) if pixels_used.any() else np.nan
+
+        return sigma, fallback_used, int(pixels_used.sum())
+
+    def _validate_image_inputs(
+        self, image: np.ndarray, mask: np.ndarray | None = None
+    ) -> None:
+        """Validate image and optional validity mask shapes."""
+        if image.shape != self.img_dim:
+            raise ValueError(
+                f"Expected image dimensions {self.img_dim}, got {image.shape}."
+            )
+
+        if mask is not None and mask.shape != image.shape:
+            raise ValueError("mask and image must have matching shapes.")
+
+    def _validate_batch_inputs(
+        self, images: np.ndarray, masks: np.ndarray | None = None
+    ) -> None:
+        """Validate image and mask batch dimensions and shapes.
+
+        Parameters
+        ----------
+        images : np.ndarray
+            A batch of images with shape ``(batch_size, height, width)``.
+        masks : np.ndarray
+            A batch of boolean masks with the same shape as `images`, specifying
+            which pixels to include in the noise estimation for each image.
+
+        """
+        if images.ndim != 3:
+            raise ValueError("images must have shape (batch_size, height, width).")
+
+        if masks is not None and masks.shape != images.shape:
+            raise ValueError("masks and images must have matching shapes.")
+
+        for i, image in enumerate(images):
+            mask = None if masks is None else masks[i]
+            self._validate_image_inputs(image, mask)
 
     def estimate_noise_batch(
-        self, images: np.ndarray, masks: np.ndarray = None
+        self, images: np.ndarray, masks: np.ndarray | None = None
     ) -> np.ndarray:
         """
         Estimate the noise standard deviation for a batch of images.
@@ -183,8 +255,8 @@ class NoiseEstimator:
             A batch of images with shape ``(batch_size, height, width)``.
         masks : np.ndarray, optional
             A batch of boolean masks with the same shape as `images`, specifying
-            which pixels to include in the noise estimation for each image. If
-            None, only the exclusion window is used for every image.
+            which pixels to include in the noise estimation for each image. ``True``
+            indicates a valid pixel. If None, all pixels outside the central exclusion window are used for noise estimation.
 
         Returns
         -------
@@ -192,12 +264,49 @@ class NoiseEstimator:
             A 1D array of shape ``(batch_size,)`` containing the estimated noise
             standard deviation for each image.
         """
+        self._validate_batch_inputs(images, masks)
+
         if masks is None:
-            return np.array([self.estimate_noise(_im) for _im in images])
+            return np.array([self.estimate_noise(image) for image in images])
 
         return np.array(
-            [
-                self.estimate_noise(_im, _mask)
-                for _im, _mask in zip(images, masks)
+            [self.estimate_noise(image, mask) for image, mask in zip(images, masks)]
+        )
+
+    def estimate_noise_batch_with_fallback(
+        self, images: np.ndarray, masks: np.ndarray | None = None
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Estimate noise for a batch of images, with a fallback to all valid pixels.
+
+        Parameters
+        ----------
+        images : np.ndarray
+                    A batch of images with shape ``(batch_size, height, width)``.
+        masks : np.ndarray, optional
+            A batch of boolean masks with the same shape as `images`, specifying
+            which pixels to include in the noise estimation for each image. ``True``
+            indicates a valid pixel. If None, all pixels are considered valid. Noise is initially estimated outside the central exclusion window, with a fallback to the entire image if necessary.
+
+        Returns
+        -------
+        tuple[np.ndarray, np.ndarray, np.ndarray]
+            Noise estimates, fallback indicators, and the number of
+            pixels used to calculate each returned noise estimate.
+        """
+        self._validate_batch_inputs(images, masks)
+
+        if masks is None:
+            results = [self.estimate_noise_with_fallback(image) for image in images]
+        else:
+            results = [
+                self.estimate_noise_with_fallback(image, mask)
+                for image, mask in zip(images, masks)
             ]
+
+        sigma, fallback_used, n_pixels_used = zip(*results)
+
+        return (
+            np.asarray(sigma),
+            np.asarray(fallback_used),
+            np.asarray(n_pixels_used),
         )
