@@ -188,6 +188,11 @@ class NoiseEstimator:
         tuple[float, bool, int]
             Estimated noise standard deviation, whether the fallback was used, and the number of pixels used in the final noise estimation.
 
+        Warning
+        -------
+        The fallback estimate includes pixels within the central exclusion
+        window and may therefore introduce bias. This fallback is not
+        intended for production use.
         """
         valid_pixels = np.ones(self.img_dim, dtype=bool) if mask is None else mask
         noise_pixels = self.window & valid_pixels
@@ -292,6 +297,11 @@ class NoiseEstimator:
         tuple[np.ndarray, np.ndarray, np.ndarray]
             Noise estimates, fallback indicators, and the number of
             pixels used to calculate each returned noise estimate.
+
+        Warning
+        -------
+        The fallback estimate may be biased because it includes pixels within the
+        central exclusion window. It is not intended for production use.
         """
         self._validate_batch_inputs(images, masks)
 
