@@ -292,7 +292,7 @@ def test_estimate_noise_with_fallback_batch():
     ["estimate_noise_batch", "estimate_noise_batch_with_fallback"],
 )
 def test_estimate_noise_batch_rejects_images_with_wrong_dimensions(method_name):
-    """estimate_noise_batch rejects images that are not 3D."""
+    """Batch methods reject images that are not 3D."""
     estimator = NoiseEstimator(img_dim=(30, 30))
 
     images = np.random.normal(0, 3, size=(4, 30, 30, 1))
@@ -306,8 +306,24 @@ def test_estimate_noise_batch_rejects_images_with_wrong_dimensions(method_name):
     "method_name",
     ["estimate_noise_batch", "estimate_noise_batch_with_fallback"],
 )
+def test_estimate_noise_batch_rejects_empty_images(method_name):
+    """Batch methods reject an empty image batch."""
+    estimator = NoiseEstimator(img_dim=(30, 30))
+
+    images = np.empty((0, 30, 30))
+
+    method = getattr(estimator, method_name)
+
+    with pytest.raises(ValueError, match="images batch must not be empty."):
+        method(images)
+
+
+@pytest.mark.parametrize(
+    "method_name",
+    ["estimate_noise_batch", "estimate_noise_batch_with_fallback"],
+)
 def test_estimate_noise_batch_rejects_images_with_wrong_image_shape(method_name):
-    """estimate_noise_batch rejects images with unexpected spatial dimensions."""
+    """Batch methods reject images with unexpected spatial dimensions."""
     estimator = NoiseEstimator(img_dim=(30, 30))
 
     images = np.random.normal(0, 3, size=(4, 32, 30))
@@ -323,7 +339,7 @@ def test_estimate_noise_batch_rejects_images_with_wrong_image_shape(method_name)
     ["estimate_noise_batch", "estimate_noise_batch_with_fallback"],
 )
 def test_estimate_noise_batch_rejects_masks_with_wrong_shape(method_name):
-    """estimate_noise_batch rejects masks that do not match the image batch."""
+    """Batch methods reject masks that do not match the image batch."""
     estimator = NoiseEstimator(img_dim=(30, 30))
 
     images = np.random.normal(0, 3, size=(4, 30, 30))
@@ -340,7 +356,7 @@ def test_estimate_noise_batch_rejects_masks_with_wrong_shape(method_name):
     ["estimate_noise_batch", "estimate_noise_batch_with_fallback"],
 )
 def test_estimate_noise_batch_rejects_masks_with_wrong_batch_size(method_name):
-    """estimate_noise_batch rejects masks with a different batch size."""
+    """Batch methods reject masks with a different batch size."""
     estimator = NoiseEstimator(img_dim=(30, 30))
 
     images = np.random.normal(0, 3, size=(4, 30, 30))

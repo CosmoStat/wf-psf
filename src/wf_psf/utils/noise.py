@@ -241,6 +241,9 @@ class NoiseEstimator:
         if images.ndim != 3:
             raise ValueError("images must have shape (batch_size, height, width).")
 
+        if images.shape[0] == 0:
+            raise ValueError("images batch must not be empty.")
+
         if masks is not None and masks.shape != images.shape:
             raise ValueError("masks and images must have matching shapes.")
 
