@@ -168,6 +168,8 @@ class NoiseEstimator:
         float
             Estimated noise standard deviation using the MAD estimator.
         """
+        self._validate_image_inputs(image, mask)
+
         noise_mask = self.window if mask is None else self.apply_mask(mask)
         return self.sigma_mad(image[noise_mask])
 
@@ -194,6 +196,8 @@ class NoiseEstimator:
         window and may therefore introduce bias. This fallback is not
         intended for production use.
         """
+        self._validate_image_inputs(image, mask)
+
         valid_pixels = np.ones(self.img_dim, dtype=bool) if mask is None else mask
         noise_pixels = self.window & valid_pixels
 

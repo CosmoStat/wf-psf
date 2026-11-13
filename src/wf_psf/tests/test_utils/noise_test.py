@@ -95,6 +95,37 @@ def test_estimate_noise_with_custom_mask():
     assert np.isclose(noise_estimation, 5, atol=1)
 
 
+@pytest.mark.parametrize(
+    "method_name",
+    ["estimate_noise", "estimate_noise_with_fallback"],
+)
+def test_estimate_noise_rejects_images_with_wrong_dimensions(method_name):
+    """Scalar methods reject images with incorrect dimensions."""
+    estimator = NoiseEstimator(img_dim=(30, 30))
+    image = np.zeros((20, 20))
+
+    method = getattr(estimator, method_name)
+
+    with pytest.raises(ValueError, match="Expected image dimensions"):
+        method(image)
+
+
+@pytest.mark.parametrize(
+    "method_name",
+    ["estimate_noise", "estimate_noise_with_fallback"],
+)
+def test_estimate_noise_rejects_masks_with_wrong_shapes(method_name):
+    """Scalar methods reject masks with incorrect dimensions."""
+    estimator = NoiseEstimator(img_dim=(20, 20))
+    image = np.zeros((20, 20))
+    masks = np.zeros((10, 10))
+
+    method = getattr(estimator, method_name)
+
+    with pytest.raises(ValueError, match="mask and image must have matching shapes."):
+        method(image, masks)
+
+
 def test_apply_mask_with_none_mask():
     """Test apply_mask when mask is None."""
     img_dim = (10, 10)
