@@ -13,7 +13,11 @@ import pytest
 
 from wf_psf.quality_control.context import QualityControlContext
 from wf_psf.quality_control.metrics.pixel_masks import PixelMaskMetric
-from wf_psf.tests.test_quality_control.test_utils import PSFDataset, get_radial_mask
+from wf_psf.tests.test_quality_control.test_utils import (
+    PSFDataset,
+    get_pixel_mask,
+    get_radial_mask,
+)
 
 
 @pytest.fixture()
@@ -135,15 +139,7 @@ def test_get_aperture_radius_invalid(radius, params_factory):
             "stamp_centre",
             np.sqrt(2),
             None,
-            np.array(
-                [
-                    [False, False, False, False, False],
-                    [False, True, True, True, False],
-                    [False, True, True, True, False],
-                    [False, True, True, True, False],
-                    [False, False, False, False, False],
-                ]
-            ),
+            get_radial_mask(shape=(5, 5), centre=(2, 2), radius=np.sqrt(2)),
         ),
         ("stamp_centre", 10, None, np.ones((5, 5), dtype=bool)),
         (
@@ -188,33 +184,15 @@ def test_get_aperture_mask_valid(
             "stamp_centre",
             1,
             None,
-            np.array(
-                [
-                    [
-                        [False, False, False, False, False],
-                        [False, False, False, False, False],
-                        [False, False, True, False, False],
-                        [False, False, False, False, False],
-                        [False, False, False, False, False],
-                    ]
-                ]
-            ),
+            get_radial_mask(shape=(5, 5), centre=(2, 2), radius=0),
             (1, 0.2),
         ),
         (
             "stamp_centre",
             np.sqrt(2),
             None,
-            np.array(
-                [
-                    [
-                        [True, False, False, False, True],
-                        [False, False, False, False, False],
-                        [False, False, False, False, False],
-                        [False, False, False, False, False],
-                        [True, False, False, False, True],
-                    ]
-                ]
+            get_pixel_mask(
+                shape=(5, 5), masked_pixels=[(0, 0), (0, 4), (4, 0), (4, 4)]
             ),
             (0, 0),
         ),
@@ -222,16 +200,8 @@ def test_get_aperture_mask_valid(
             "stamp_centre",
             2,
             None,
-            np.array(
-                [
-                    [
-                        [True, False, False, False, True],
-                        [False, False, False, False, False],
-                        [False, False, True, False, False],
-                        [False, False, False, False, False],
-                        [True, False, False, False, True],
-                    ]
-                ]
+            get_pixel_mask(
+                shape=(5, 5), masked_pixels=[(0, 0), (0, 4), (2, 2), (4, 0), (4, 4)]
             ),
             (1, 1 / 13),
         ),
@@ -239,16 +209,8 @@ def test_get_aperture_mask_valid(
             "stamp_centre",
             10,
             None,
-            np.array(
-                [
-                    [
-                        [True, False, False, False, True],
-                        [False, False, False, False, False],
-                        [False, False, True, False, False],
-                        [False, False, False, False, False],
-                        [True, False, False, False, True],
-                    ]
-                ]
+            get_pixel_mask(
+                shape=(5, 5), masked_pixels=[(0, 0), (0, 4), (2, 2), (4, 0), (4, 4)]
             ),
             (5, 0.2),
         ),
@@ -256,34 +218,20 @@ def test_get_aperture_mask_valid(
             "centroid",
             1,
             np.array([[1, 2]]),
-            np.array(
-                [
-                    [
-                        [True, False, False, False, True],
-                        [False, False, False, False, False],
-                        [False, False, True, False, False],
-                        [False, False, False, False, False],
-                        [True, False, False, False, True],
-                    ]
-                ]
-            ),
+            get_pixel_mask(
+                shape=(5, 5),
+                masked_pixels=[(0, 0), (0, 4), (2, 2), (4, 0), (4, 4)],
+            )[None, :, :],
             (1, 0.2),
         ),
         (
             "centroid",
             2,
             np.array([[1, 3]]),
-            np.array(
-                [
-                    [
-                        [True, False, False, False, True],
-                        [False, False, False, False, False],
-                        [False, False, True, False, False],
-                        [False, False, False, False, False],
-                        [True, False, False, False, True],
-                    ]
-                ]
-            ),
+            get_pixel_mask(
+                shape=(5, 5),
+                masked_pixels=[(0, 0), (0, 4), (2, 2), (4, 0), (4, 4)],
+            )[None, :, :],
             (2, 2 / 11),
         ),
     ],
@@ -371,16 +319,15 @@ def test_compute(params_factory, dataset_factory):
     }
 
     dataset = dataset_factory(n_src=1, n_pix=5)
-    dataset.masks = np.array(
-        [
-            [
-                [True, False, False, False, True],
-                [False, False, False, False, False],
-                [False, False, True, False, False],
-                [False, False, False, False, False],
-                [True, False, False, False, False],
-            ]
-        ]
+    dataset.masks = get_pixel_mask(
+        shape=(5, 5),
+        masked_pixels=[
+            (0, 0),
+            (0, 4),
+            (2, 2),
+            (4, 0),
+            (4, 4),
+        ],
     )
     context = QualityControlContext(dataset=dataset)
 

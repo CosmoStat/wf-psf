@@ -20,6 +20,19 @@ class PSFDataset:
         self.masks = np.zeros((n_src, n_pix, n_pix), dtype=bool)
 
 
+def get_pixel_mask(
+    shape: tuple[int, int],
+    masked_pixels: list[tuple[int, int]],
+) -> np.ndarray:
+    """Generate a boolean pixel mask from masked pixel coordinates."""
+    mask = np.zeros(shape, dtype=bool)
+
+    for y, x in masked_pixels:
+        mask[y, x] = True
+
+    return mask
+
+
 def get_radial_mask(
     shape: tuple[int, int],
     centre: tuple[float, float],
