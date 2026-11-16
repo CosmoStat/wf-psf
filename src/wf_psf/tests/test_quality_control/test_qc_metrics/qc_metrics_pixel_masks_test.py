@@ -326,9 +326,8 @@ def test_compute(params_factory, dataset_factory):
             (0, 4),
             (2, 2),
             (4, 0),
-            (4, 4),
         ],
-    )
+    )[None, :, :]
     context = QualityControlContext(dataset=dataset)
 
     pixel_mask = PixelMaskMetric(params=params_factory(aperture_params))
