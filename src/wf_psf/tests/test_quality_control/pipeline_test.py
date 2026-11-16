@@ -476,10 +476,7 @@ def test_pipeline_run_rejection_policy_disabled(pipeline_factory):
         assert "shapes" not in result.metrics
 
         assert result.validity_masks == {}
-
-        np.testing.assert_array_equal(
-            result.valid_mask, np.ones(len(dataset), dtype=bool)
-        )
+        assert np.array_equal(result.valid_mask, np.ones(3, dtype=bool))
 
 
 def test_pipeline_run_pixel_mask_metrics_without_rejection(
@@ -528,3 +525,62 @@ def test_pipeline_run_pixel_mask_metrics_without_rejection(
         )
     assert result.validity_masks == {}
     assert np.array_equal(result.valid_mask, np.ones(2, dtype=bool))
+
+
+def test_pipeline_run_pixel_mask_metrics_and_rejection(
+    dataset_factory, pipeline_factory
+):
+    dataset = dataset_factory(n_src=2, n_pix=5)
+    dataset.masks = np.array(
+        [
+            get_pixel_mask(
+                shape=(5, 5),
+                masked_pixels=[(0, 0), (0, 4), (2, 1), (3, 1), (4, 0), (4, 4)],
+            ),
+            get_pixel_mask(
+                shape=(5, 5),
+                masked_pixels=[
+                    (0, 0),
+                    (0, 4),
+                    (1, 1),
+                    (1, 2),
+                    (2, 1),
+                    (2, 2),
+                    (3, 1),
+                    (3, 2),
+                    (4, 0),
+                ],
+            ),
+        ]
+    )
+
+    pipeline = pipeline_factory(
+        "valid/quality_control_pixel_masks_metrics_and_rejection.yaml"
+    )
+
+    result = pipeline.run(
+        dataset=dataset,
+    )
+
+    expected = {
+        "total_masked_pixels": np.array([6, 9]),
+        "total_masked_fraction": np.array([6 / 25, 9 / 25]),
+        "aperture_masked_pixels": np.array([2, 6]),
+        "aperture_masked_fraction": np.array([2 / 9, 2 / 3]),
+    }
+
+    for diagnostic_id, diagnostic_result in expected.items():
+        assert np.array_equal(
+            result.metrics["pixel_mask"][diagnostic_id], diagnostic_result
+        )
+
+    assert result.validity_masks["pixel_mask"].dtype == np.bool_
+    np.testing.assert_array_equal(
+        result.validity_masks["pixel_mask"],
+        np.array([True, False]),
+    )
+
+    np.testing.assert_array_equal(
+        result.valid_mask,
+        np.array([True, False]),
+    )
