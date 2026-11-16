@@ -16,6 +16,7 @@ from wf_psf.quality_control.metrics.pixel_masks import PixelMaskMetric
 from wf_psf.quality_control.metrics.goodness_of_fit import GoodnessOfFitMetric
 from wf_psf.quality_control.rejection.threshold import ThresholdRejectionPolicy
 from wf_psf.quality_control.resource_identifier import ResourceIdentifier
+from wf_psf.tests.test_quality_control.test_utils import get_pixel_mask
 
 
 @pytest.fixture
@@ -487,20 +488,24 @@ def test_pipeline_run_pixel_mask_metrics_without_rejection(
     dataset = dataset_factory(n_src=2, n_pix=5)
     dataset.masks = np.array(
         [
-            [
-                [True, False, False, False, True],
-                [False, False, False, False, False],
-                [False, True, False, False, False],
-                [False, True, False, False, False],
-                [True, False, False, False, True],
-            ],
-            [
-                [True, False, False, False, True],
-                [False, True, True, False, False],
-                [False, True, True, False, False],
-                [False, True, True, False, False],
-                [True, False, False, False, False],
-            ],
+            get_pixel_mask(
+                shape=(5, 5),
+                masked_pixels=[(0, 0), (0, 4), (2, 1), (3, 1), (4, 0), (4, 4)],
+            ),
+            get_pixel_mask(
+                shape=(5, 5),
+                masked_pixels=[
+                    (0, 0),
+                    (0, 4),
+                    (1, 1),
+                    (1, 2),
+                    (2, 1),
+                    (2, 2),
+                    (3, 1),
+                    (3, 2),
+                    (4, 0),
+                ],
+            ),
         ]
     )
 
