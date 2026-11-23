@@ -21,8 +21,8 @@ metrics:
     enabled: true
     required_resources:
       - psf_models.standard
-    params:
-      normalize_residuals: true
+    params: {}
+
 
   shapes:
     enabled: false
@@ -41,7 +41,7 @@ rejection:
 
   goodness_of_fit:
     enabled: false
-    diagnostic: reduced_chi_square
+    diagnostic: reduced_chi2_mad
     policy:
       threshold:
         value: 3.0

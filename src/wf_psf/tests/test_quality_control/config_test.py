@@ -64,9 +64,7 @@ def test_quality_control_config_loading():
     assert config.metrics["goodness_of_fit"].required_resources == (
         [ResourceIdentifier.from_string("psf_models.standard")]
     )
-    assert config.metrics["goodness_of_fit"].params == {
-        "normalize_residuals": True,
-    }
+    assert config.metrics["goodness_of_fit"].params == {}
 
     assert isinstance(config.rejection["pixel_mask"], RejectionPolicyConfig)
     assert config.rejection["pixel_mask"].policy == {
