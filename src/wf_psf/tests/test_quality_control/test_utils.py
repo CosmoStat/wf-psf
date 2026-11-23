@@ -17,7 +17,9 @@ class PSFDataset:
         self.n_src = n_src
         self.n_pix = n_pix
         self.positions = np.arange(n_src * 2).reshape(n_src, 2)
+        self.sources = np.zeros((n_src, n_pix, n_pix), dtype=float)
         self.masks = np.zeros((n_src, n_pix, n_pix), dtype=bool)
+        self.icovs = None
 
 
 def get_pixel_mask(
