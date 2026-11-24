@@ -31,7 +31,7 @@ class ThresholdRejectionPolicy(RejectionPolicy):
         Threshold applied by the rejection policy.
 
     operator : str
-        Operator used by the rejection policy to evaluate metric against the threshold value.
+        Comparison operator applied as ``metric operator threshold_value``. Observations satisfying the comparison are retained (True in the validity mask); observations that do not are rejected (False).
 
     """
 
