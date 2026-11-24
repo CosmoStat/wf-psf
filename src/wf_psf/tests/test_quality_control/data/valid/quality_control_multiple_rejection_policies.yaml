@@ -33,6 +33,7 @@ rejection:
     policy:
       threshold:
         value: 3.0
+        operator: ">"
 
   goodness_of_fit:
     diagnostic: reduced_chi_square
@@ -40,6 +41,7 @@ rejection:
     policy:
       threshold:
         value: 3.0
+        operator: "<"
 
 reporting:
 

@@ -318,7 +318,7 @@ def test_rejection_policy_params_must_be_mapping():
 
 
 @pytest.mark.parametrize("operator", list(COMPARISON_OPERATORS))
-def test_rejection_policy_configuration_supported_operator(operator):
+def test_rejection_policy_configuration_preserves_operator(operator):
     rejection_policy = {
         "goodness_of_fit": {
             "enabled": True,
@@ -335,26 +335,6 @@ def test_rejection_policy_configuration_supported_operator(operator):
     result = parse_rejection_policy_config(rejection_policy)
 
     assert result["goodness_of_fit"].policy["threshold"]["operator"] == operator
-
-
-def test_rejection_policy_params_unsupported_operator():
-    rejection_policy = {
-        "goodness_of_fit": {
-            "enabled": True,
-            "diagnostic": "reduced_chi_square",
-            "policy": {
-                "threshold": {
-                    "value": 3.0,
-                    "operator": "foo",
-                },
-            },
-        },
-    }
-    with pytest.raises(
-        ValueError,
-        match=f"Unsupported operator 'foo'. Supported operators are: {', '.join(COMPARISON_OPERATORS)}.",
-    ):
-        parse_rejection_policy_config(rejection_policy)
 
 
 ## Tests for parsing reporting configurations

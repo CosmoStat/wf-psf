@@ -15,6 +15,8 @@ from wf_psf.quality_control.rejection.base import RejectionPolicy
 from wf_psf.quality_control.rejection.threshold import ThresholdRejectionPolicy
 from wf_psf.utils.registry import Registry
 
+from typing import Any
+
 
 class RejectionPolicyRegistry(Registry[str, type[RejectionPolicy]]):
     """Registry storing available sample rejection policies."""
@@ -32,6 +34,15 @@ class RejectionPolicyRegistry(Registry[str, type[RejectionPolicy]]):
 
         """
         self.register(rejection_cls.name, rejection_cls)
+
+    def resolve(
+        self, policy_config: dict[str, Any]
+    ) -> tuple[type[RejectionPolicy], dict[str, Any]]:
+        """Resolve a rejection policy class and its parameters."""
+        policy_name, policy_params = next(iter(policy_config.items()))
+        policy_cls = self.get(policy_name)
+
+        return policy_cls, policy_params
 
 
 def build_rejection_policy_registry() -> RejectionPolicyRegistry:

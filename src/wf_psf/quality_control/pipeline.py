@@ -116,8 +116,9 @@ class QualityControlPipeline:
                 logger.debug("Skipping rejection policy %s: not enabled.", metric_name)
                 continue
 
-            policy_name, policy_params = next(iter(rejection_config.policy.items()))
-            policy_cls = self.rejection_registry.get(policy_name)
+            policy_cls, policy_params = self.rejection_registry.resolve(
+                rejection_config.policy
+            )
 
             rejection_policies[metric_name] = policy_cls(**policy_params)
 
@@ -151,7 +152,7 @@ class QualityControlPipeline:
             If any cross-section configuration dependency is invalid.
         """
         self.validate_metric_resource_requirements()
-        self.validate_rejection_policy_metrics()
+        self.validate_rejection_policies()
 
     def validate_metric_resource_requirements(self) -> None:
         """Validate that resource requirements of enabled metrics are configured.
@@ -185,14 +186,14 @@ class QualityControlPipeline:
                         f"Metric '{metric_name}' requires unknown resource '{resource_id}'."
                     )
 
-    def validate_rejection_policy_metrics(self) -> None:
-        """Validate rejection policies against configured quality metrics.
+    def validate_rejection_policies(self) -> None:
+        """Validate rejection policies configurations.
 
         Raises
         ------
         ValueError
             If an enabled rejection policy references an unknown or disabled
-            quality metric, or specifies an invalid diagnostic.
+            quality metric, specifies an invalid diagnostic, or invalid policy parameters.
         """
         for metric_name, rejection_policy in self.config.rejection.items():
             if not rejection_policy.enabled:
@@ -217,6 +218,12 @@ class QualityControlPipeline:
                 raise ValueError(
                     f"Diagnostic '{rejection_policy.diagnostic}' is not provided by the metric '{metric_name}'."
                 )
+
+            policy_cls, policy_params = self.rejection_registry.resolve(
+                rejection_policy.policy
+            )
+
+            policy_cls.validate_config(policy_params)
 
     def run(self, dataset, provided_resources=None):
         """Run quality control pipeline.
