@@ -113,7 +113,7 @@ def test_validate_metric_resources_unknown_resource(
 
 @patch("wf_psf.quality_control.pipeline.QualityControlConfigHandler")
 @patch("wf_psf.quality_control.pipeline.QualityControlPipeline.validate_configuration")
-def test_validate_rejection_policy_metrics_all_valid(
+def test_validate_rejection_policies_all_valid(
     mock_validate_configuration, mock_config_handler, qc_config_factory
 ):
     mock_config_handler.return_value.load.return_value = qc_config_factory()
@@ -121,12 +121,12 @@ def test_validate_rejection_policy_metrics_all_valid(
 
     pipeline = QualityControlPipeline(qc_config_path="foo.yaml")
     with does_not_raise():
-        pipeline.validate_rejection_policy_metrics()
+        pipeline.validate_rejection_policies()
 
 
 @patch("wf_psf.quality_control.pipeline.QualityControlConfigHandler")
 @patch("wf_psf.quality_control.pipeline.QualityControlPipeline.validate_configuration")
-def test_validate_rejection_policy_disabled_policy(
+def test_validate_rejection_policies_disabled_policy(
     mock_validate_configuration, mock_config_handler, qc_config_factory
 ):
     # Define an invalid rejection policy that is disabled
@@ -143,12 +143,12 @@ def test_validate_rejection_policy_disabled_policy(
 
     # Verify no error is raised because disabled policies are skipped
     pipeline = QualityControlPipeline(qc_config_path="foo.yaml")
-    pipeline.validate_rejection_policy_metrics()
+    pipeline.validate_rejection_policies()
 
 
 @patch("wf_psf.quality_control.pipeline.QualityControlConfigHandler")
 @patch("wf_psf.quality_control.pipeline.QualityControlPipeline.validate_configuration")
-def test_validate_rejection_policy_metrics_unknown_metric(
+def test_validate_rejection_policies_unknown_metric(
     mock_validate_configuration, mock_config_handler, qc_config_factory
 ):
     rejection_policy = {
@@ -169,12 +169,12 @@ def test_validate_rejection_policy_metrics_unknown_metric(
         ValueError,
         match="Rejection policy configured for unknown metric 'foo_metric'.",
     ):
-        pipeline.validate_rejection_policy_metrics()
+        pipeline.validate_rejection_policies()
 
 
 @patch("wf_psf.quality_control.pipeline.QualityControlConfigHandler")
 @patch("wf_psf.quality_control.pipeline.QualityControlPipeline.validate_configuration")
-def test_validate_rejection_policy_metrics_metric_not_enabled(
+def test_validate_rejection_policies_metric_not_enabled(
     mock_validate_configuration, mock_config_handler, qc_config_factory
 ):
     metric = {
@@ -194,12 +194,12 @@ def test_validate_rejection_policy_metrics_metric_not_enabled(
         ValueError,
         match="Rejection policy cannot be enabled because metric 'goodness_of_fit' is disabled.",
     ):
-        pipeline.validate_rejection_policy_metrics()
+        pipeline.validate_rejection_policies()
 
 
 @patch("wf_psf.quality_control.pipeline.QualityControlConfigHandler")
 @patch("wf_psf.quality_control.pipeline.QualityControlPipeline.validate_configuration")
-def test_validate_rejection_policy_metrics_metric_not_registered(
+def test_validate_rejection_policies_metric_not_registered(
     mock_validate_configuration, mock_config_handler, qc_config_factory
 ):
     rejection_policy = {
@@ -226,12 +226,12 @@ def test_validate_rejection_policy_metrics_metric_not_registered(
         KeyError,
         match="Key 'foo_metric' not found.",
     ):
-        pipeline.validate_rejection_policy_metrics()
+        pipeline.validate_rejection_policies()
 
 
 @patch("wf_psf.quality_control.pipeline.QualityControlConfigHandler")
 @patch("wf_psf.quality_control.pipeline.QualityControlPipeline.validate_configuration")
-def test_validate_rejection_policy_metrics_diagnostic_not_found(
+def test_validate_rejection_policies_diagnostic_not_found(
     mock_validate_configuration, mock_config_handler, qc_config_factory
 ):
     rejection_policy = {
@@ -256,7 +256,38 @@ def test_validate_rejection_policy_metrics_diagnostic_not_found(
         ValueError,
         match="Diagnostic 'bad_diagnostic' is not provided by the metric 'pixel_mask'.",
     ):
-        pipeline.validate_rejection_policy_metrics()
+        pipeline.validate_rejection_policies()
+
+
+@patch("wf_psf.quality_control.pipeline.QualityControlConfigHandler")
+@patch("wf_psf.quality_control.pipeline.QualityControlPipeline.validate_configuration")
+def test_validate_rejection_policies_invalid_policy_params(
+    mock_validate_configuration, mock_config_handler, qc_config_factory
+):
+    # Configure threshold policy with an unsupported operator.
+    rejection_policy = {
+        "pixel_mask": RejectionPolicyConfig(
+            enabled=True,
+            diagnostic="aperture_masked_fraction",
+            policy={"threshold": {"operator": "foo", "value": 10}},
+        )
+    }
+    metric = {
+        "pixel_mask": QualityMetricConfig(
+            enabled=True,
+            required_resources=[],
+        )
+    }
+    config = qc_config_factory(rejection=rejection_policy, metrics=metric)
+    mock_config_handler.return_value.load.return_value = config
+    mock_validate_configuration.return_value = None
+    pipeline = QualityControlPipeline(qc_config_path="foo.yaml")
+
+    with pytest.raises(
+        ValueError,
+        match="Unsupported operator",
+    ):
+        pipeline.validate_rejection_policies()
 
 
 # Test pipeline runner

@@ -12,10 +12,11 @@ modifying the quality control pipeline.
 """
 
 from .base import RejectionPolicy
-from .operators import COMPARISON_OPERATORS
+from .operators import COMPARISON_OPERATORS, validate_comparison_operator
 
 import numpy as np
 from numpy.typing import NDArray
+from typing import Any
 
 
 class ThresholdRejectionPolicy(RejectionPolicy):
@@ -36,9 +37,25 @@ class ThresholdRejectionPolicy(RejectionPolicy):
 
     name = "threshold"
 
-    def __init__(self, value: float, operator: str = ">"):
-        if operator not in COMPARISON_OPERATORS:
-            raise ValueError(f"Unsupported threshold operator '{operator}'.")
+    @classmethod
+    def validate_config(cls, params: dict[str, Any]) -> None:
+        """Validate threshold rejection policy configuration."""
+        operator = params.get("operator")
+        validate_comparison_operator(operator=operator)
+
+        value = params.get("value")
+
+        if value is None:
+            raise ValueError("Threshold rejection policy requires a 'value' parameter.")
+
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise TypeError("Threshold value must be a float or an int.")
+
+        if not np.isfinite(value):
+            raise ValueError("Threshold value must be finite.")
+
+    def __init__(self, value: float, operator: str):
+        self.validate_config({"value": value, "operator": operator})
 
         self.value = value
         self.operator = operator

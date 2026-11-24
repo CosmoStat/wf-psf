@@ -46,6 +46,7 @@ def qc_config_factory():
                 policy={
                     "threshold": {
                         "value": 0.25,
+                        "operator": "<",
                     },
                 },
             )

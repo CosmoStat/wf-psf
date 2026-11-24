@@ -14,6 +14,7 @@ evaluation, or inference.
 from abc import ABC, abstractmethod
 import numpy as np
 from numpy.typing import NDArray
+from typing import Any
 
 
 class RejectionPolicy(ABC):
@@ -35,6 +36,10 @@ class RejectionPolicy(ABC):
     """
 
     name: str
+
+    @classmethod
+    def validate_config(cls, params: dict[str, Any]) -> None:
+        """Validate policy-specific configuration parameters."""
 
     @abstractmethod
     def apply(self, metric: np.ndarray) -> NDArray[np.bool_]:

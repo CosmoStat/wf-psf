@@ -8,6 +8,7 @@ This module contains unit tests for the RejectionPolicyRegistry class.
 
 import numpy as np
 import pytest
+
 from wf_psf.quality_control.rejection.base import RejectionPolicy
 from wf_psf.quality_control.rejection.registry import (
     RejectionPolicyRegistry,
@@ -62,3 +63,22 @@ def test_custom_policy_registration():
     assert isinstance(result, np.ndarray)
     assert result.shape == metric.shape
     assert result.dtype == bool
+
+
+def test_resolve_returns_policy_class_and_params():
+    registry = build_rejection_policy_registry()
+
+    policy_config = {
+        "threshold": {
+            "value": 0.25,
+            "operator": "<",
+        }
+    }
+
+    policy_cls, policy_params = registry.resolve(policy_config)
+
+    assert policy_cls is ThresholdRejectionPolicy
+    assert policy_params == {
+        "value": 0.25,
+        "operator": "<",
+    }
