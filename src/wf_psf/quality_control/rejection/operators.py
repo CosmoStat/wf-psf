@@ -3,6 +3,7 @@
 :Authors:
     Jennifer Pollack <jennifer.pollack@cea.fr>
 """
+from __future__ import annotations
 
 from operator import ge, gt, le, lt
 from types import MappingProxyType
