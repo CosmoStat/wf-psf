@@ -300,8 +300,8 @@ def test_pipeline_run_single_rejection_policy(pipeline_factory):
     }
 
     gof_metric_results = {
-        "chi_square": np.array([123.0, 345.0, 678.0]),
-        "reduced_chi_square": np.array([1.2, 1.4, 1.1]),
+        "chi2_mad": np.array([123.0, 345.0, 678.0]),
+        "reduced_chi2_mad": np.array([1.2, 1.4, 1.1]),
     }
 
     validity_mask = np.array([True, False, True])
@@ -374,8 +374,8 @@ def test_pipeline_run_multiple_rejection_policies(pipeline_factory):
     }
 
     gof_metric_results = {
-        "chi_square": np.array([123.0, 345.0, 678.0]),
-        "reduced_chi_square": np.array([1.2, 1.4, 1.1]),
+        "chi2_mad": np.array([123.0, 345.0, 678.0]),
+        "reduced_chi2_mad": np.array([1.2, 1.4, 1.1]),
     }
     validity_masks = [
         np.array([True, True, False]),
@@ -416,7 +416,7 @@ def test_pipeline_run_multiple_rejection_policies(pipeline_factory):
         mock_apply.assert_has_calls(
             [
                 call(pixel_mask_metric_results["aperture_masked_fraction"]),
-                call(gof_metric_results["reduced_chi_square"]),
+                call(gof_metric_results["reduced_chi2_mad"]),
             ],
             any_order=True,
         )
@@ -457,8 +457,8 @@ def test_pipeline_run_rejection_policy_disabled(pipeline_factory):
     }
 
     gof_metric_results = {
-        "chi_square": np.array([123.0, 345.0, 678.0]),
-        "reduced_chi_square": np.array([1.2, 1.4, 1.1]),
+        "chi2": np.array([123.0, 345.0, 678.0]),
+        "reduced_chi2_mad": np.array([1.2, 1.4, 1.1]),
     }
 
     with (
