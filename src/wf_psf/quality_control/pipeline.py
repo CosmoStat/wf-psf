@@ -225,7 +225,7 @@ class QualityControlPipeline:
 
             policy_cls.validate_config(policy_params)
 
-    def run(self, dataset, provided_resources=None):
+    def run(self, dataset, provided_resources=None) -> QualityControlResult:
         """Run quality control pipeline.
 
         Parameters
@@ -235,6 +235,12 @@ class QualityControlPipeline:
 
         provided_resources : Mapping[str, Any] or None
             Ready-to-use resources supplied by the pipeline caller, keyed by resource identifier.
+
+        Returns
+        -------
+        QualityControlResult
+            Result containing the evaluated quality metrics, per-metric
+            validity masks, and the aggregated validity mask.
 
         Notes
         -----
