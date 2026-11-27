@@ -11,6 +11,8 @@ modifying the quality control pipeline.
     Jennifer Pollack <jennifer.pollack@cea.fr>
 """
 
+from __future__ import annotations
+
 from .base import RejectionPolicy
 from .operators import COMPARISON_OPERATORS, validate_comparison_operator
 
